@@ -15,11 +15,14 @@ export type UserDocument = {
   profile?: ProfileData;
 };
 
-const uri = process.env.MONGODB_URI ?? "";
 const dbName = process.env.MONGODB_DB_NAME ?? "bucharena";
 
-if (!uri) {
-  throw new Error("MONGODB_URI ist nicht gesetzt.");
+function getUri(): string {
+  const value = process.env.MONGODB_URI ?? "";
+  if (!value) {
+    throw new Error("MONGODB_URI ist nicht gesetzt.");
+  }
+  return value;
 }
 
 let client: MongoClient | null = null;
@@ -32,7 +35,7 @@ async function getClient() {
   }
 
   if (!connectPromise) {
-    connectPromise = new MongoClient(uri).connect();
+    connectPromise = new MongoClient(getUri()).connect();
   }
 
   client = await connectPromise;
