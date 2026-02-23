@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     }
 
     const list = await users
-      .find({}, { projection: { _id: 0, username: 1, email: 1 } })
+      .find({}, { projection: { _id: 0, username: 1, email: 1, role: 1, status: 1 } })
       .sort({ username: 1 })
       .toArray();
 

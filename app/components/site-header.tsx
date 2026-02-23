@@ -38,6 +38,11 @@ export default function SiteHeader() {
             Autoren
           </Link>
           {loggedIn && (
+            <Link href="/diskussionen" className="footer-button">
+              Diskussionen
+            </Link>
+          )}
+          {loggedIn && (
             <Link href="/support" className="footer-button">
               Support
             </Link>

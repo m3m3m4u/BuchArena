@@ -27,9 +27,9 @@ export default function HomePage() {
             Willkommen in der <span className="home-brand">BuchArena</span>
           </h1>
           <p className="home-hero-sub">
-            Die Plattform für Kinderbuch-Autorinnen und -Autoren.
+            Die Plattform für Autorinnen und Autoren aller Genres.
             <br />
-            Veröffentliche deine Geschichten, entdecke neue Bücher und vernetze
+            Veröffentliche deine Bücher, entdecke neue Werke und vernetze
             dich mit anderen Kreativen.
           </p>
           {!loggedIn && (
@@ -63,7 +63,7 @@ export default function HomePage() {
             <span className="home-card-icon">📚</span>
             <h3>Bücher veröffentlichen</h3>
             <p>
-              Lade deine Kinderbücher hoch, gestalte ansprechende Buchseiten mit
+              Lade deine Bücher hoch, gestalte ansprechende Buchseiten mit
               Cover und Beschreibung – und teile sie mit der&nbsp;Welt.
             </p>
           </div>
@@ -71,7 +71,7 @@ export default function HomePage() {
             <span className="home-card-icon">🔍</span>
             <h3>Bücher entdecken</h3>
             <p>
-              Stöbere durch eine wachsende Sammlung an Kinderbüchern von
+              Stöbere durch eine wachsende Sammlung an Büchern aller Genres von
               talentierten Autorinnen und Autoren aus der Community.
             </p>
           </div>

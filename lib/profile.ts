@@ -18,6 +18,8 @@ export type ProfileData = {
     crop: ProfileImageCrop;
   };
   name: ProfileField;
+  motto: ProfileField;
+  beruf: ProfileField;
   city: ProfileField;
   country: ProfileField;
   socialInstagram: ProfileField;
@@ -41,6 +43,14 @@ export function createDefaultProfile(): ProfileData {
       },
     },
     name: {
+      value: "",
+      visibility: "internal",
+    },
+    motto: {
+      value: "",
+      visibility: "internal",
+    },
+    beruf: {
       value: "",
       visibility: "internal",
     },

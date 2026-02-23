@@ -12,6 +12,10 @@ type DiscoverBook = {
   genre: string;
   ageFrom: number;
   ageTo: number;
+  publisher: string;
+  isbn: string;
+  pageCount: number;
+  language: string;
   description: string;
   buyLinks: string[];
   presentationVideoUrl: string;
@@ -131,6 +135,10 @@ export default function BuecherPage() {
                       <p>Genre: {book.genre}</p>
                       <p>Alter: {book.ageFrom} bis {book.ageTo}</p>
                       <p>Erscheinungsjahr: {book.publicationYear}</p>
+                      {book.publisher && <p>Verlag: {book.publisher}</p>}
+                      {book.isbn && <p>ISBN: {book.isbn}</p>}
+                      {book.pageCount > 0 && <p>Seitenanzahl: {book.pageCount}</p>}
+                      {book.language && <p>Sprache: {book.language}</p>}
                       {book.description && <p>{book.description}</p>}
                     </div>
                   </div>

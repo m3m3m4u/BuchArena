@@ -13,6 +13,7 @@ type UserRow = {
   email: string;
   passwordHash: string;
   role: "USER" | "SUPERADMIN";
+  status?: string;
 };
 
 export async function POST(request: Request) {
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     const users = await getUsersCollection();
     const user = (await users.findOne(
       { $or: [{ username: identifier }, { email: normalizedEmail }] },
-      { projection: { username: 1, email: 1, passwordHash: 1, role: 1 } }
+      { projection: { username: 1, email: 1, passwordHash: 1, role: 1, status: 1 } }
     )) as UserRow | null;
 
     if (!user) {
@@ -47,6 +48,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { message: "Ungültige Anmeldedaten." },
         { status: 401 }
+      );
+    }
+
+    if (user.status === "deactivated") {
+      return NextResponse.json(
+        { message: "Dein Konto ist deaktiviert. Bitte wende dich an den Support." },
+        { status: 403 }
       );
     }
 

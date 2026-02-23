@@ -3,6 +3,15 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+type BookExcerpt = {
+  id: string;
+  type: "text" | "mp3";
+  title: string;
+  content?: string;
+  fileUrl?: string;
+  createdAt: string;
+};
+
 type BookDetail = {
   id: string;
   ownerUsername: string;
@@ -12,10 +21,15 @@ type BookDetail = {
   genre: string;
   ageFrom: number;
   ageTo: number;
+  publisher: string;
+  isbn: string;
+  pageCount: number;
+  language: string;
   description: string;
   buyLinks: string[];
   presentationVideoUrl: string;
   presentationVideoInternal: boolean;
+  excerpts: BookExcerpt[];
   createdAt: string;
 };
 
@@ -123,6 +137,18 @@ export default function BookDetailPage({ params }: PageProps) {
                   {book.publicationYear > 0 && (
                     <p><strong>Erscheinungsjahr:</strong> {book.publicationYear}</p>
                   )}
+                  {book.publisher && (
+                    <p><strong>Verlag:</strong> {book.publisher}</p>
+                  )}
+                  {book.isbn && (
+                    <p><strong>ISBN:</strong> {book.isbn}</p>
+                  )}
+                  {book.pageCount > 0 && (
+                    <p><strong>Seitenanzahl:</strong> {book.pageCount}</p>
+                  )}
+                  {book.language && (
+                    <p><strong>Sprache:</strong> {book.language}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -142,6 +168,31 @@ export default function BookDetailPage({ params }: PageProps) {
                     <a key={link} href={link} target="_blank" rel="noreferrer">
                       {link}
                     </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {book.excerpts && book.excerpts.length > 0 && (
+              <div className="book-detail-section">
+                <h2>Textausschnitte</h2>
+                <div className="excerpt-display-list">
+                  {book.excerpts.map((ex) => (
+                    <div key={ex.id} className="excerpt-display-item">
+                      <h3>
+                        {ex.title}
+                        <span className="excerpt-badge">{ex.type === "mp3" ? "MP3" : "Text"}</span>
+                      </h3>
+                      {ex.type === "text" && ex.content && (
+                        <p className="excerpt-text-content">{ex.content}</p>
+                      )}
+                      {ex.type === "mp3" && ex.fileUrl && (
+                        <audio controls preload="none" className="excerpt-audio-player">
+                          <source src={ex.fileUrl} type="audio/mpeg" />
+                          Ihr Browser unterstützt kein Audio.
+                        </audio>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>

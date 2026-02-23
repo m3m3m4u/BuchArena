@@ -8,6 +8,15 @@ import {
   type LoggedInAccount,
 } from "@/lib/client-account";
 
+type BookExcerpt = {
+  id: string;
+  type: "text" | "mp3";
+  title: string;
+  content?: string;
+  fileUrl?: string;
+  createdAt: string;
+};
+
 type Book = {
   id: string;
   ownerUsername: string;
@@ -17,10 +26,15 @@ type Book = {
   genre: string;
   ageFrom: number;
   ageTo: number;
+  publisher?: string;
+  isbn?: string;
+  pageCount?: number;
+  language?: string;
   description: string;
   buyLinks: string[];
   presentationVideoUrl: string;
   presentationVideoInternal: true;
+  excerpts: BookExcerpt[];
   createdAt: string;
 };
 
@@ -33,6 +47,10 @@ export default function MeineBuecherPage() {
   const [genre, setGenre] = useState("");
   const [ageFrom, setAgeFrom] = useState("");
   const [ageTo, setAgeTo] = useState("");
+  const [publisher, setPublisher] = useState("");
+  const [isbn, setIsbn] = useState("");
+  const [pageCount, setPageCount] = useState("");
+  const [language, setLanguage] = useState("");
   const [description, setDescription] = useState("");
   const [buyLinksText, setBuyLinksText] = useState("");
   const [presentationVideoUrl, setPresentationVideoUrl] = useState("");
@@ -43,6 +61,14 @@ export default function MeineBuecherPage() {
   const [isBookOverlayOpen, setIsBookOverlayOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
+
+  /* ── excerpt state ── */
+  const [excerptTitle, setExcerptTitle] = useState("");
+  const [excerptType, setExcerptType] = useState<"text" | "mp3">("text");
+  const [excerptContent, setExcerptContent] = useState("");
+  const [excerptFile, setExcerptFile] = useState<File | null>(null);
+  const [isUploadingExcerpt, setIsUploadingExcerpt] = useState(false);
+  const [currentBookExcerpts, setCurrentBookExcerpts] = useState<BookExcerpt[]>([]);
 
   useEffect(() => {
     function syncAccount() {
@@ -109,9 +135,18 @@ export default function MeineBuecherPage() {
     setGenre("");
     setAgeFrom("");
     setAgeTo("");
+    setPublisher("");
+    setIsbn("");
+    setPageCount("");
+    setLanguage("");
     setDescription("");
     setBuyLinksText("");
     setPresentationVideoUrl("");
+    setExcerptTitle("");
+    setExcerptType("text");
+    setExcerptContent("");
+    setExcerptFile(null);
+    setCurrentBookExcerpts([]);
     setIsBookOverlayOpen(false);
   }
 
@@ -123,9 +158,18 @@ export default function MeineBuecherPage() {
     setGenre("");
     setAgeFrom("");
     setAgeTo("");
+    setPublisher("");
+    setIsbn("");
+    setPageCount("");
+    setLanguage("");
     setDescription("");
     setBuyLinksText("");
     setPresentationVideoUrl("");
+    setExcerptTitle("");
+    setExcerptType("text");
+    setExcerptContent("");
+    setExcerptFile(null);
+    setCurrentBookExcerpts([]);
     setIsBookOverlayOpen(true);
   }
 
@@ -152,6 +196,10 @@ export default function MeineBuecherPage() {
           genre,
           ageFrom: Number(ageFrom),
           ageTo: Number(ageTo),
+          publisher,
+          isbn,
+          pageCount: Number(pageCount),
+          language,
           description,
           buyLinks: buyLinksText
             .split(/\r?\n/)
@@ -187,12 +235,106 @@ export default function MeineBuecherPage() {
     setGenre(book.genre);
     setAgeFrom(String(book.ageFrom));
     setAgeTo(String(book.ageTo));
+    setPublisher(book.publisher ?? "");
+    setIsbn(book.isbn ?? "");
+    setPageCount(book.pageCount ? String(book.pageCount) : "");
+    setLanguage(book.language ?? "");
     setDescription(book.description);
     setBuyLinksText(book.buyLinks.join("\n"));
     setPresentationVideoUrl(book.presentationVideoUrl);
+    setCurrentBookExcerpts(book.excerpts ?? []);
+    setExcerptTitle("");
+    setExcerptType("text");
+    setExcerptContent("");
+    setExcerptFile(null);
     setIsBookOverlayOpen(true);
     setMessage("");
     setIsError(false);
+  }
+
+  async function onUploadExcerpt() {
+    if (!account?.username || !editingBookId) {
+      return;
+    }
+
+    setIsUploadingExcerpt(true);
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const formData = new FormData();
+      formData.append("bookId", editingBookId);
+      formData.append("username", account.username);
+      formData.append("title", excerptTitle);
+      formData.append("type", excerptType);
+
+      if (excerptType === "mp3") {
+        if (!excerptFile) {
+          throw new Error("Bitte eine MP3-Datei auswählen.");
+        }
+        formData.append("file", excerptFile);
+      } else {
+        formData.append("content", excerptContent);
+      }
+
+      const response = await fetch("/api/books/upload-excerpt", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = (await response.json()) as { message?: string; excerpt?: BookExcerpt };
+      if (!response.ok) {
+        throw new Error(data.message ?? "Textausschnitt konnte nicht hochgeladen werden.");
+      }
+
+      if (data.excerpt) {
+        setCurrentBookExcerpts((prev) => [...prev, data.excerpt as BookExcerpt]);
+      }
+
+      setExcerptTitle("");
+      setExcerptContent("");
+      setExcerptFile(null);
+      setMessage("Textausschnitt hinzugefügt.");
+      await refreshBooks(account.username);
+    } catch (error) {
+      setIsError(true);
+      setMessage(error instanceof Error ? error.message : "Textausschnitt konnte nicht hochgeladen werden.");
+    } finally {
+      setIsUploadingExcerpt(false);
+    }
+  }
+
+  async function onDeleteExcerpt(excerptId: string) {
+    if (!account?.username || !editingBookId) {
+      return;
+    }
+
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const response = await fetch("/api/books/delete-excerpt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookId: editingBookId,
+          ownerUsername: account.username,
+          excerptId,
+        }),
+      });
+
+      const data = (await response.json()) as { message?: string };
+      if (!response.ok) {
+        throw new Error(data.message ?? "Textausschnitt konnte nicht gelöscht werden.");
+      }
+
+      setCurrentBookExcerpts((prev) => prev.filter((e) => e.id !== excerptId));
+      setMessage("Textausschnitt gelöscht.");
+      await refreshBooks(account.username);
+    } catch (error) {
+      setIsError(true);
+      setMessage(error instanceof Error ? error.message : "Textausschnitt konnte nicht gelöscht werden.");
+    }
   }
 
   async function onUploadCover(file: File) {
@@ -316,6 +458,10 @@ export default function MeineBuecherPage() {
                     <p>
                       Alter: {book.ageFrom} bis {book.ageTo}
                     </p>
+                    {book.publisher && <p>Verlag: {book.publisher}</p>}
+                    {book.isbn && <p>ISBN: {book.isbn}</p>}
+                    {book.pageCount !== undefined && book.pageCount > 0 && <p>Seitenanzahl: {book.pageCount}</p>}
+                    {book.language && <p>Sprache: {book.language}</p>}
                     {book.description && <p>Beschreibung: {book.description}</p>}
                     {book.buyLinks.length > 0 && (
                       <div className="book-meta-row">
@@ -408,6 +554,31 @@ export default function MeineBuecherPage() {
                 </div>
 
                 <label>
+                  Verlag
+                  <input value={publisher} onChange={(event) => setPublisher(event.target.value)} />
+                </label>
+
+                <label>
+                  ISBN
+                  <input value={isbn} onChange={(event) => setIsbn(event.target.value)} />
+                </label>
+
+                <label>
+                  Seitenanzahl
+                  <input
+                    type="number"
+                    min={0}
+                    value={pageCount}
+                    onChange={(event) => setPageCount(event.target.value)}
+                  />
+                </label>
+
+                <label>
+                  Sprache
+                  <input value={language} onChange={(event) => setLanguage(event.target.value)} />
+                </label>
+
+                <label>
                   Beschreibung
                   <textarea
                     value={description}
@@ -459,6 +630,104 @@ export default function MeineBuecherPage() {
                 </label>
 
                 {isUploadingCover && <span className="input-help">Cover wird hochgeladen ...</span>}
+
+                {/* ── Textausschnitte ── */}
+                {editingBookId && (
+                  <div className="excerpt-section">
+                    <h3>Textausschnitte</h3>
+
+                    {currentBookExcerpts.length > 0 && (
+                      <div className="excerpt-list">
+                        {currentBookExcerpts.map((ex) => (
+                          <div key={ex.id} className="excerpt-item">
+                            <div className="excerpt-item-info">
+                              <strong>{ex.title}</strong>
+                              <span className="excerpt-badge">{ex.type === "mp3" ? "MP3" : "Text"}</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="footer-button small"
+                              onClick={() => onDeleteExcerpt(ex.id)}
+                            >
+                              Entfernen
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="excerpt-form">
+                      <label>
+                        Titel des Ausschnitts
+                        <input
+                          value={excerptTitle}
+                          onChange={(event) => setExcerptTitle(event.target.value)}
+                          placeholder="z.B. Kapitel 1 – Leseprobe"
+                        />
+                      </label>
+
+                      <div className="excerpt-type-row">
+                        <label>
+                          <input
+                            type="radio"
+                            name="excerptType"
+                            value="text"
+                            checked={excerptType === "text"}
+                            onChange={() => setExcerptType("text")}
+                          />
+                          Text
+                        </label>
+                        <label>
+                          <input
+                            type="radio"
+                            name="excerptType"
+                            value="mp3"
+                            checked={excerptType === "mp3"}
+                            onChange={() => setExcerptType("mp3")}
+                          />
+                          MP3-Datei
+                        </label>
+                      </div>
+
+                      {excerptType === "text" ? (
+                        <label>
+                          Textinhalt
+                          <textarea
+                            value={excerptContent}
+                            onChange={(event) => setExcerptContent(event.target.value)}
+                            rows={5}
+                            placeholder="Textausschnitt eingeben ..."
+                          />
+                        </label>
+                      ) : (
+                        <label>
+                          MP3-Datei hochladen
+                          <input
+                            type="file"
+                            accept=".mp3,audio/mpeg"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0] ?? null;
+                              setExcerptFile(file);
+                              event.currentTarget.value = "";
+                            }}
+                          />
+                          {excerptFile && (
+                            <span className="input-help">{excerptFile.name}</span>
+                          )}
+                        </label>
+                      )}
+
+                      <button
+                        type="button"
+                        className="footer-button"
+                        onClick={onUploadExcerpt}
+                        disabled={isUploadingExcerpt}
+                      >
+                        {isUploadingExcerpt ? "Wird hochgeladen ..." : "Textausschnitt hinzufügen"}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

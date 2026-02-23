@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import {
   ACCOUNT_CHANGED_EVENT,
+  clearStoredAccount,
   getStoredAccount,
   type LoggedInAccount,
 } from "@/lib/client-account";
@@ -30,6 +31,7 @@ export default function ProfilPage() {
   const [isImageOverlayOpen, setIsImageOverlayOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
   const dragStateRef = useRef<{
     pointerId: number;
     startX: number;
@@ -306,6 +308,32 @@ export default function ProfilPage() {
         />
 
         <FieldWithVisibility
+          label="Motto"
+          value={profile.motto.value}
+          visibility={profile.motto.visibility}
+          onValueChange={(value) =>
+            setProfile((current) => ({
+              ...current,
+              motto: { ...current.motto, value },
+            }))
+          }
+          onVisibilityChange={(visibility) => updateVisibility("motto", visibility)}
+        />
+
+        <FieldWithVisibility
+          label="Beruf"
+          value={profile.beruf.value}
+          visibility={profile.beruf.visibility}
+          onValueChange={(value) =>
+            setProfile((current) => ({
+              ...current,
+              beruf: { ...current.beruf, value },
+            }))
+          }
+          onVisibilityChange={(visibility) => updateVisibility("beruf", visibility)}
+        />
+
+        <FieldWithVisibility
           label="Ort"
           value={profile.city.value}
           visibility={profile.city.visibility}
@@ -467,6 +495,54 @@ export default function ProfilPage() {
         </button>
 
         <p className={isError ? "message error" : "message"}>{message}</p>
+
+        {/* Konto deaktivieren – nur für den eigenen Account (nicht als Admin für andere) */}
+        {account && (!requestedUser || requestedUser === account.username) && account.role !== "SUPERADMIN" && (
+          <div className="deactivate-section">
+            <hr />
+            <h2>Konto deaktivieren</h2>
+            <p className="deactivate-hint">
+              Wenn du dein Konto deaktivierst, werden dein Profil und deine Bücher
+              nicht mehr öffentlich angezeigt. Du kannst dich nicht mehr einloggen,
+              bis ein Admin dein Konto wieder aktiviert.
+            </p>
+            <button
+              type="button"
+              className="footer-button danger"
+              disabled={isDeactivating}
+              onClick={async () => {
+                if (!confirm("Möchtest du dein Konto wirklich deaktivieren?")) {
+                  return;
+                }
+                setIsDeactivating(true);
+                setMessage("");
+                setIsError(false);
+                try {
+                  const res = await fetch("/api/profile/deactivate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: account.username }),
+                  });
+                  const data = (await res.json()) as { message?: string };
+                  if (!res.ok) {
+                    throw new Error(data.message ?? "Deaktivierung fehlgeschlagen.");
+                  }
+                  clearStoredAccount();
+                  setMessage(data.message ?? "Konto deaktiviert.");
+                } catch (err) {
+                  setIsError(true);
+                  setMessage(
+                    err instanceof Error ? err.message : "Deaktivierung fehlgeschlagen."
+                  );
+                } finally {
+                  setIsDeactivating(false);
+                }
+              }}
+            >
+              {isDeactivating ? "Wird deaktiviert ..." : "Konto deaktivieren"}
+            </button>
+          </div>
+        )}
       </section>
 
       {isImageOverlayOpen && (

@@ -22,8 +22,13 @@ export async function GET() {
       .toArray();
 
     const users = await usersCollection
-      .find({}, { projection: { username: 1, profile: 1 } })
+      .find(
+        { $or: [{ status: { $exists: false } }, { status: "active" }] },
+        { projection: { username: 1, profile: 1 } }
+      )
       .toArray();
+
+    const activeUsernames = new Set(users.map((u) => u.username));
 
     const profileByUser = new Map<string, string>();
     for (const user of users) {
@@ -34,6 +39,9 @@ export async function GET() {
     const grouped = new Map<string, AuthorDiscoverItem>();
     for (const book of books) {
       const key = book.ownerUsername;
+      if (!activeUsernames.has(key)) {
+        continue;
+      }
       if (!grouped.has(key)) {
         grouped.set(key, {
           username: key,

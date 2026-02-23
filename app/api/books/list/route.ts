@@ -37,6 +37,7 @@ export async function POST(request: Request) {
         buyLinks: book.buyLinks,
         presentationVideoUrl: book.presentationVideoUrl,
         presentationVideoInternal: book.presentationVideoInternal,
+        excerpts: book.excerpts ?? [],
         createdAt: book.createdAt,
       })),
     });

@@ -11,6 +11,8 @@ import {
 type UserListEntry = {
   username: string;
   email: string;
+  role: string;
+  status?: string;
 };
 
 export default function AdminPage() {
@@ -18,6 +20,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<UserListEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [busyUser, setBusyUser] = useState<string | null>(null);
 
   useEffect(() => {
     function syncAccount() {
@@ -75,6 +78,61 @@ export default function AdminPage() {
     loadUsers();
   }, [account]);
 
+  async function changeUserStatus(
+    targetUsername: string,
+    action: "activate" | "deactivate" | "delete"
+  ) {
+    if (!account) return;
+
+    const labels: Record<string, string> = {
+      activate: "aktivieren",
+      deactivate: "deaktivieren",
+      delete: "endgültig löschen",
+    };
+
+    if (!confirm(`Benutzer \u201e${targetUsername}\u201c wirklich ${labels[action]}?`)) {
+      return;
+    }
+
+    setBusyUser(targetUsername);
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/admin/users/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requesterUsername: account.username,
+          targetUsername,
+          action,
+        }),
+      });
+
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) {
+        throw new Error(data.message ?? "Aktion fehlgeschlagen.");
+      }
+
+      setMessage(data.message ?? "Erfolgreich.");
+
+      if (action === "delete") {
+        setUsers((prev) => prev.filter((u) => u.username !== targetUsername));
+      } else {
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.username === targetUsername
+              ? { ...u, status: action === "deactivate" ? "deactivated" : "active" }
+              : u
+          )
+        );
+      }
+    } catch {
+      setMessage("Aktion fehlgeschlagen.");
+    } finally {
+      setBusyUser(null);
+    }
+  }
+
   if (!account) {
     return (
       <main className="centered-main">
@@ -105,24 +163,69 @@ export default function AdminPage() {
                 <tr>
                   <th>Name</th>
                   <th>E-Mail</th>
-                  <th>Profil</th>
+                  <th>Status</th>
+                  <th>Aktionen</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
-                  <tr key={user.username}>
-                    <td>{user.username}</td>
-                    <td>{user.email}</td>
-                    <td>
-                      <Link
-                        href={`/profil?user=${encodeURIComponent(user.username)}`}
-                        className="footer-button"
-                      >
-                        Profil
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                {users.map((user) => {
+                  const isDeactivated = user.status === "deactivated";
+                  const isSuperAdmin = user.role === "SUPERADMIN";
+                  const isBusy = busyUser === user.username;
+
+                  return (
+                    <tr key={user.username} className={isDeactivated ? "row-deactivated" : ""}>
+                      <td>{user.username}</td>
+                      <td>{user.email}</td>
+                      <td>
+                        {isSuperAdmin
+                          ? "Admin"
+                          : isDeactivated
+                          ? "Deaktiviert"
+                          : "Aktiv"}
+                      </td>
+                      <td className="admin-actions">
+                        <Link
+                          href={`/profil?user=${encodeURIComponent(user.username)}`}
+                          className="footer-button small"
+                        >
+                          Profil
+                        </Link>
+                        {!isSuperAdmin && (
+                          <>
+                            {isDeactivated ? (
+                              <button
+                                type="button"
+                                className="footer-button small"
+                                disabled={isBusy}
+                                onClick={() => changeUserStatus(user.username, "activate")}
+                              >
+                                Aktivieren
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="footer-button small danger"
+                                disabled={isBusy}
+                                onClick={() => changeUserStatus(user.username, "deactivate")}
+                              >
+                                Deaktivieren
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className="footer-button small danger"
+                              disabled={isBusy}
+                              onClick={() => changeUserStatus(user.username, "delete")}
+                            >
+                              Löschen
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

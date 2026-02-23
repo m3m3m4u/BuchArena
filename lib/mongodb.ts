@@ -3,14 +3,18 @@ import { MongoClient, type Collection, type Db, MongoServerError } from "mongodb
 import type { BookDocument } from "@/lib/books";
 import type { ProfileData } from "@/lib/profile";
 import type { SupportPost } from "@/lib/support";
+import type { DiscussionDocument } from "@/lib/discussions";
 
 export type UserRole = "USER" | "SUPERADMIN";
+
+export type UserStatus = "active" | "deactivated";
 
 export type UserDocument = {
   username: string;
   email: string;
   passwordHash: string;
   role: UserRole;
+  status?: UserStatus;
   createdAt: Date;
   profile?: ProfileData;
 };
@@ -25,21 +29,27 @@ function getUri(): string {
   return value;
 }
 
-let client: MongoClient | null = null;
-let connectPromise: Promise<MongoClient> | null = null;
-let setupPromise: Promise<void> | null = null;
+/* ── Serverless-safe connection caching via globalThis ── */
 
-async function getClient() {
-  if (client) {
-    return client;
+const globalWithMongo = globalThis as typeof globalThis & {
+  _mongoClientPromise?: Promise<MongoClient>;
+  _mongoSetupDone?: boolean;
+};
+
+function getClientPromise(): Promise<MongoClient> {
+  if (!globalWithMongo._mongoClientPromise) {
+    const uri = getUri();
+    const client = new MongoClient(uri, {
+      connectTimeoutMS: 10_000,
+      serverSelectionTimeoutMS: 10_000,
+    });
+    globalWithMongo._mongoClientPromise = client.connect().catch((err) => {
+      // Reset so next call retries instead of caching a rejected promise
+      globalWithMongo._mongoClientPromise = undefined;
+      throw err;
+    });
   }
-
-  if (!connectPromise) {
-    connectPromise = new MongoClient(getUri()).connect();
-  }
-
-  client = await connectPromise;
-  return client;
+  return globalWithMongo._mongoClientPromise;
 }
 
 async function initializeDatabase(db: Db) {
@@ -52,6 +62,10 @@ async function initializeDatabase(db: Db) {
 
   const support = db.collection<SupportPost>("support");
   await support.createIndex({ createdAt: -1 });
+
+  const discussions = db.collection<DiscussionDocument>("discussions");
+  await discussions.createIndex({ lastActivityAt: -1 });
+  await discussions.createIndex({ authorUsername: 1 });
 
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
@@ -71,13 +85,19 @@ async function initializeDatabase(db: Db) {
 }
 
 export async function getDatabase(): Promise<Db> {
-  const activeClient = await getClient();
+  const activeClient = await getClientPromise();
   const db = activeClient.db(dbName);
 
-  if (!setupPromise) {
-    setupPromise = initializeDatabase(db);
+  if (!globalWithMongo._mongoSetupDone) {
+    try {
+      await initializeDatabase(db);
+      globalWithMongo._mongoSetupDone = true;
+    } catch (err) {
+      // Don't cache setup failures – allow retries
+      console.error("MongoDB setup error:", err);
+      throw err;
+    }
   }
-  await setupPromise;
 
   return db;
 }
@@ -95,6 +115,11 @@ export async function getBooksCollection(): Promise<Collection<BookDocument>> {
 export async function getSupportCollection(): Promise<Collection<SupportPost>> {
   const db = await getDatabase();
   return db.collection<SupportPost>("support");
+}
+
+export async function getDiscussionsCollection(): Promise<Collection<DiscussionDocument>> {
+  const db = await getDatabase();
+  return db.collection<DiscussionDocument>("discussions");
 }
 
 export function isDuplicateKeyError(error: unknown) {

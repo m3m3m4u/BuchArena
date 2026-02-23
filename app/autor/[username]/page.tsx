@@ -130,6 +130,14 @@ export default function AuthorProfilePage({ params }: PageProps) {
     return [city, country].filter(Boolean).join(", ");
   }, [profile.city, profile.country]);
 
+  const visibleMotto = useMemo(() => {
+    return profile.motto?.visibility === "public" ? profile.motto.value : "";
+  }, [profile.motto]);
+
+  const visibleBeruf = useMemo(() => {
+    return profile.beruf?.visibility === "public" ? profile.beruf.value : "";
+  }, [profile.beruf]);
+
   const socialLinks = useMemo(() => {
     const entries = [
       { label: "Instagram", field: profile.socialInstagram },
@@ -163,7 +171,9 @@ export default function AuthorProfilePage({ params }: PageProps) {
 
               <div>
                 <h1>{visibleName}</h1>
+                {visibleBeruf && <p className="author-beruf">{visibleBeruf}</p>}
                 {visibleCityCountry && <p>{visibleCityCountry}</p>}
+                {visibleMotto && <p className="author-motto"><em>„{visibleMotto}"</em></p>}
               </div>
             </div>
 

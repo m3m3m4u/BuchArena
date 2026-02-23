@@ -24,6 +24,10 @@ export async function POST(request: Request) {
     const genre = body.genre?.trim();
     const ageFrom = toNumber(body.ageFrom, 0);
     const ageTo = toNumber(body.ageTo, 0);
+    const publisher = body.publisher?.trim() ?? "";
+    const isbn = body.isbn?.trim() ?? "";
+    const pageCount = toNumber(body.pageCount, 0);
+    const language = body.language?.trim() ?? "";
     const description = body.description?.trim() ?? "";
     const buyLinks = (body.buyLinks ?? []).map((entry) => entry.trim()).filter(Boolean);
     const presentationVideoUrl = body.presentationVideoUrl?.trim() ?? "";
@@ -60,6 +64,10 @@ export async function POST(request: Request) {
           genre,
           ageFrom,
           ageTo,
+          publisher: publisher.slice(0, 500),
+          isbn: isbn.slice(0, 30),
+          pageCount,
+          language: language.slice(0, 100),
           description: description.slice(0, 5000),
           buyLinks: buyLinks.slice(0, 20),
           presentationVideoUrl: presentationVideoUrl.slice(0, 500),
