@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
 
@@ -23,6 +24,14 @@ export default function HomePage() {
       {/* Hero */}
       <section className="home-hero">
         <div className="home-hero-inner">
+          <Image
+            src="/logo.png"
+            alt="BuchArena Logo"
+            width={140}
+            height={140}
+            priority
+            className="home-hero-logo"
+          />
           <h1 className="home-hero-title">
             Willkommen in der <span className="home-brand">BuchArena</span>
           </h1>

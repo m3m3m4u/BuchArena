@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
 
@@ -21,7 +22,10 @@ export default function SiteHeader() {
   return (
     <header className="site-header">
       <div className="site-shell">
-        <strong>BuchArena</strong>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>
+          <Image src="/logo.png" alt="BuchArena" width={32} height={32} style={{ borderRadius: '50%' }} />
+          <strong>BuchArena</strong>
+        </Link>
         <nav>
           <Link href="/" className="footer-button">
             Startseite

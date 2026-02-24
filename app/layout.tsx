@@ -7,6 +7,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "BuchArena",
   description: "Next.js App für BuchArena",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
