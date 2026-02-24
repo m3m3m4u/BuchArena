@@ -61,10 +61,10 @@ export default function HomePage() {
         <div className="home-cards">
           <div className="home-card">
             <span className="home-card-icon">📚</span>
-            <h3>Bücher veröffentlichen</h3>
+            <h3>Bücher präsentieren</h3>
             <p>
-              Lade deine Bücher hoch, gestalte ansprechende Buchseiten mit
-              Cover und Beschreibung – und teile sie mit der&nbsp;Welt.
+              Erstelle ansprechende Buchseiten mit Cover und Beschreibung
+              – und mache dein Werk in der Community&nbsp;sichtbar.
             </p>
           </div>
           <div className="home-card">
