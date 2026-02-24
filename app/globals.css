@@ -722,10 +722,13 @@ h1 {
   z-index: 1100;
   padding: 1rem;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .image-overlay {
   width: min(560px, 100%);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
   background: #ffffff;
   border-radius: 12px;
   padding: 1rem;
@@ -1050,6 +1053,8 @@ h1 {
 
 .book-overlay {
   width: min(960px, 100%);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
   background: #ffffff;
   border-radius: 12px;
   padding: 1rem;
