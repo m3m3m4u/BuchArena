@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 type DiscoverBook = {
@@ -25,6 +25,14 @@ type DiscoverBook = {
 };
 
 export default function BuecherPage() {
+  return (
+    <Suspense>
+      <BuecherContent />
+    </Suspense>
+  );
+}
+
+function BuecherContent() {
   const [books, setBooks] = useState<DiscoverBook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
