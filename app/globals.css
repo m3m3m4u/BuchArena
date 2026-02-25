@@ -141,6 +141,7 @@ h1 { margin: 0; }
   z-index: 1100;
   padding: 1rem;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 /* ── Form input base ── */
