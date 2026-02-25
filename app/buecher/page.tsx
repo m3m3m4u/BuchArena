@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type DiscoverBook = {
   id: string;
   ownerUsername: string;
+  authorDisplayName: string;
   coverImageUrl: string;
   title: string;
   publicationYear: number;
@@ -25,7 +27,8 @@ type DiscoverBook = {
 export default function BuecherPage() {
   const [books, setBooks] = useState<DiscoverBook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [genreFilter, setGenreFilter] = useState("");
+  const searchParams = useSearchParams();
+  const [genreFilter, setGenreFilter] = useState(searchParams.get("genre") ?? "");
   const [ageFilter, setAgeFilter] = useState("");
   const [message, setMessage] = useState("");
 
@@ -33,17 +36,10 @@ export default function BuecherPage() {
     async function loadBooks() {
       setIsLoading(true);
       setMessage("");
-
       try {
-        const response = await fetch("/api/books/discover", {
-          method: "GET",
-        });
-
+        const response = await fetch("/api/books/discover", { method: "GET" });
         const data = (await response.json()) as { books?: DiscoverBook[]; message?: string };
-        if (!response.ok) {
-          throw new Error(data.message ?? "Bücher konnten nicht geladen werden.");
-        }
-
+        if (!response.ok) throw new Error(data.message ?? "Bücher konnten nicht geladen werden.");
         setBooks(data.books ?? []);
       } catch {
         setMessage("Bücher konnten nicht geladen werden.");
@@ -51,23 +47,17 @@ export default function BuecherPage() {
         setIsLoading(false);
       }
     }
-
     void loadBooks();
   }, []);
 
   const genres = useMemo(() => {
-    const unique = new Set(
-      books
-        .map((book) => book.genre?.trim())
-        .filter((genre): genre is string => Boolean(genre))
-    );
+    const unique = new Set(books.map((b) => b.genre?.trim()).filter((g): g is string => Boolean(g)));
     return [...unique].sort((a, b) => a.localeCompare(b, "de"));
   }, [books]);
 
   const filteredBooks = useMemo(() => {
     const age = Number(ageFilter);
     const hasAge = Number.isFinite(age) && ageFilter.trim() !== "";
-
     return books.filter((book) => {
       const matchesGenre = !genreFilter || book.genre === genreFilter;
       const matchesAge = !hasAge || (book.ageFrom <= age && age <= book.ageTo);
@@ -77,69 +67,56 @@ export default function BuecherPage() {
 
   return (
     <main className="top-centered-main">
-      <section className="profile-card">
+      <section className="card">
         <h1>Bücher entdecken</h1>
 
-        <div className="books-filter-row">
-          <label>
+        <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-[900px]:grid-cols-1">
+          <label className="grid gap-1 text-[0.95rem]">
             Genre
-            <select value={genreFilter} onChange={(event) => setGenreFilter(event.target.value)}>
+            <select className="input-base" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}>
               <option value="">Alle</option>
-              {genres.map((genre) => (
-                <option key={genre} value={genre}>
-                  {genre}
-                </option>
-              ))}
+              {genres.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
           </label>
-
-          <label>
+          <label className="grid gap-1 text-[0.95rem]">
             Alter
-            <input
-              type="number"
-              min={0}
-              value={ageFilter}
-              onChange={(event) => setAgeFilter(event.target.value)}
-              placeholder="z. B. 10"
-            />
+            <input className="input-base" type="number" min={0} value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)} placeholder="z. B. 10" />
           </label>
         </div>
 
-        {message && <p className="message error">{message}</p>}
+        {message && <p className="text-red-700">{message}</p>}
 
         {isLoading ? (
           <p>Lade Bücher ...</p>
         ) : filteredBooks.length === 0 ? (
           <p>Keine Bücher für den gewählten Filter gefunden.</p>
         ) : (
-          <div className="books-list">
+          <div className="grid gap-3 min-[1200px]:grid-cols-2">
             {filteredBooks.map((book, index) => (
               <Link
                 href={`/buch/${book.id}`}
-                className="book-item-link"
+                className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md"
                 key={`${book.title}-${book.ownerUsername}-${book.createdAt}-${index}`}
               >
-                <article className="book-item">
-                  <div className="book-item-layout">
-                    <div className="book-list-cover">
+                <article className="rounded-lg border border-arena-border p-3 hover:border-gray-500">
+                  <div className="grid grid-cols-[120px_1fr] items-start gap-3.5 max-[900px]:grid-cols-1">
+                    <div className="grid h-auto w-[120px] place-items-center overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-xs text-arena-muted max-[900px]:w-[140px]" style={{ aspectRatio: "3/4" }}>
                       {book.coverImageUrl ? (
-                        <img src={book.coverImageUrl} alt={`Cover von ${book.title}`} />
+                        <img src={book.coverImageUrl} alt={`Cover von ${book.title}`} className="h-full w-full object-contain" />
                       ) : (
                         <span>Kein Cover</span>
                       )}
                     </div>
-
-                    <div className="book-item-content">
-                      <h3>{book.title}</h3>
-                      <p>Autor: {book.ownerUsername}</p>
-                      <p>Genre: {book.genre}</p>
-                      <p>Alter: {book.ageFrom} bis {book.ageTo}</p>
-                      <p>Erscheinungsjahr: {book.publicationYear}</p>
-                      {book.publisher && <p>Verlag: {book.publisher}</p>}
-                      {book.isbn && <p>ISBN: {book.isbn}</p>}
-                      {book.pageCount > 0 && <p>Seitenanzahl: {book.pageCount}</p>}
-                      {book.language && <p>Sprache: {book.language}</p>}
-                      {book.description && <p>{book.description}</p>}
+                    <div className="min-w-0">
+                      <h3 className="mb-1.5 mt-0">{book.title}</h3>
+                      <p className="my-0.5">Autor: {book.authorDisplayName}</p>
+                      <p className="my-0.5">Genre: {book.genre}</p>
+                      {(book.ageFrom > 0 || book.ageTo > 0) && <p className="my-0.5">Alter: {book.ageFrom} bis {book.ageTo}</p>}
+                      <p className="my-0.5">Erscheinungsjahr: {book.publicationYear}</p>
+                      {book.publisher && <p className="my-0.5">Verlag: {book.publisher}</p>}
+                      {book.isbn && <p className="my-0.5">ISBN: {book.isbn}</p>}
+                      {book.pageCount > 0 && <p className="my-0.5">Seitenanzahl: {book.pageCount}</p>}
+                      {book.language && <p className="my-0.5">Sprache: {book.language}</p>}
                     </div>
                   </div>
                 </article>

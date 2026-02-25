@@ -4,9 +4,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import SiteHeader from "./site-header";
 
-type LayoutChromeProps = {
-  children: ReactNode;
-};
+type LayoutChromeProps = { children: ReactNode };
 
 export default function LayoutChrome({ children }: LayoutChromeProps) {
   const pathname = usePathname();

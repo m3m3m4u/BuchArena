@@ -20,45 +20,24 @@ export default function SiteHeader() {
   }, []);
 
   return (
-    <header className="site-header">
-      <div className="site-shell">
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>
-          <Image src="/logo.png" alt="BuchArena" width={32} height={32} style={{ borderRadius: '50%' }} />
+    <header className="sticky top-0 z-50 border-b border-arena-border bg-white">
+      <div className="site-shell flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2 no-underline text-inherit">
+          <Image src="/logo.png" alt="BuchArena" width={32} height={32} className="rounded-full" />
           <strong>BuchArena</strong>
         </Link>
-        <nav>
-          <Link href="/" className="footer-button">
-            Startseite
-          </Link>
-          {loggedIn && (
-            <Link href="/meine-buecher" className="footer-button">
-              Meine Bücher
-            </Link>
-          )}
-          <Link href="/buecher" className="footer-button">
-            Bücher
-          </Link>
-          <Link href="/autoren" className="footer-button">
-            Autoren
-          </Link>
-          {loggedIn && (
-            <Link href="/diskussionen" className="footer-button">
-              Diskussionen
-            </Link>
-          )}
-          {loggedIn && (
-            <Link href="/support" className="footer-button">
-              Support
-            </Link>
-          )}
+        <nav className="flex gap-3.5">
+          <Link href="/" className="btn">Startseite</Link>
+          {loggedIn && <Link href="/meine-buecher" className="btn">Meine Bücher</Link>}
+          <Link href="/buecher" className="btn">Bücher</Link>
+          <Link href="/autoren" className="btn">Autoren</Link>
+          {loggedIn && <Link href="/diskussionen" className="btn">Diskussionen</Link>}
+          {loggedIn && <Link href="/social-media" className="btn">Social Media</Link>}
+          {loggedIn && <Link href="/support" className="btn">Support</Link>}
           {loggedIn ? (
-            <Link href="/profil" className="footer-button">
-              Profil
-            </Link>
+            <Link href="/profil" className="btn">Profil</Link>
           ) : (
-            <Link href="/auth" className="footer-button">
-              Anmelden
-            </Link>
+            <Link href="/auth" className="btn">Anmelden</Link>
           )}
         </nav>
       </div>

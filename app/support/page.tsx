@@ -175,41 +175,41 @@ export default function SupportPage() {
 
   return (
     <main className="top-centered-main">
-      <section className="profile-card">
-        <div className="support-header-row">
+      <section className="card">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <h1>Support</h1>
           {username && (
-            <button className="footer-button" onClick={openNew}>
+            <button className="btn" onClick={openNew}>
               Neuer Beitrag
             </button>
           )}
         </div>
 
-        {message && <p className="message error">{message}</p>}
+        {message && <p className="text-red-700">{message}</p>}
 
         {isLoading ? (
           <p>Lade Beiträge ...</p>
         ) : posts.length === 0 ? (
           <p>Noch keine Support-Beiträge vorhanden.</p>
         ) : (
-          <div className="support-list">
+          <div className="grid gap-3.5">
             {posts.map((post) => (
-              <article key={post.id} className="support-post">
-                <div className="support-post-header">
+              <article key={post.id} className="rounded-lg border border-arena-border p-3.5">
+                <div className="flex items-start justify-between gap-3 mb-2">
                   <strong>{post.authorUsername}</strong>
-                  <span className="support-post-time">{timeAgo(post.createdAt)}</span>
+                  <span className="text-xs text-arena-muted">{timeAgo(post.createdAt)}</span>
                 </div>
                 <h3>{post.title}</h3>
                 <div
-                  className="support-post-body"
+                  className="mt-1 text-[0.95rem] leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: formatBody(post.body) }}
                 />
                 {post.authorUsername === username && (
-                  <div className="support-post-actions">
-                    <button className="footer-button small" onClick={() => openEdit(post)}>
+                  <div className="flex gap-2 mt-3">
+                    <button className="btn btn-sm" onClick={() => openEdit(post)}>
                       Bearbeiten
                     </button>
-                    <button className="footer-button small danger" onClick={() => handleDelete(post.id)}>
+                    <button className="btn btn-sm btn-danger" onClick={() => handleDelete(post.id)}>
                       Löschen
                     </button>
                   </div>
@@ -222,12 +222,13 @@ export default function SupportPage() {
 
       {showOverlay && (
         <div className="overlay-backdrop" onClick={() => setShowOverlay(false)}>
-          <div className="support-overlay" onClick={(e) => e.stopPropagation()}>
+          <div className="w-[min(660px,100%)] bg-white rounded-xl p-4 box-border grid gap-3.5" onClick={(e) => e.stopPropagation()}>
             <h2>{editingId ? "Beitrag bearbeiten" : "Neuer Support-Beitrag"}</h2>
 
-            <label>
+            <label className="grid gap-1 text-[0.95rem]">
               Titel
               <input
+                className="input-base"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -236,12 +237,13 @@ export default function SupportPage() {
               />
             </label>
 
-            <label>
+            <label className="grid gap-1 text-[0.95rem]">
               Text
-              <p className="support-hint">
+              <p className="text-xs text-arena-muted">
                 Formatierung: **fett**, *kursiv*, [Linktext](URL) und direkte URLs werden erkannt.
               </p>
               <textarea
+                className="input-base"
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 maxLength={5000}
@@ -250,15 +252,15 @@ export default function SupportPage() {
               />
             </label>
 
-            <div className="support-overlay-actions">
+            <div className="flex gap-2 justify-end">
               <button
-                className="footer-button"
+                className="btn"
                 onClick={handleCreate}
                 disabled={isSaving || !title.trim() || !body.trim()}
               >
                 {isSaving ? "Wird gespeichert ..." : editingId ? "Speichern" : "Absenden"}
               </button>
-              <button className="footer-button" onClick={() => setShowOverlay(false)}>
+              <button className="btn" onClick={() => setShowOverlay(false)}>
                 Abbrechen
               </button>
             </div>

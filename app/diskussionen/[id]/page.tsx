@@ -251,7 +251,7 @@ export default function DiskussionDetailPage() {
   if (!username) {
     return (
       <main className="top-centered-main">
-        <section className="profile-card">
+        <section className="card">
           <h1>Diskussion</h1>
           <p>
             Bitte <Link href="/auth">melde dich an</Link>, um an Diskussionen
@@ -264,12 +264,12 @@ export default function DiskussionDetailPage() {
 
   return (
     <main className="top-centered-main">
-      <section className="profile-card">
-        <Link href="/diskussionen" className="footer-button small" style={{ marginBottom: "1rem", display: "inline-block" }}>
+      <section className="card">
+        <Link href="/diskussionen" className="btn btn-sm inline-block mb-4">
           ← Zurück zur Übersicht
         </Link>
 
-        {message && <p className="message error">{message}</p>}
+        {message && <p className="text-red-700">{message}</p>}
 
         {isLoading ? (
           <p>Lade Diskussion ...</p>
@@ -278,36 +278,36 @@ export default function DiskussionDetailPage() {
         ) : (
           <>
             {/* Discussion topic */}
-            <article className="discussion-topic">
-              <div className="discussion-topic-header">
+            <article className="grid gap-3">
+              <div className="grid gap-1">
                 <h1>{discussion.title}</h1>
-                <div className="discussion-card-info">
+                <div className="flex items-center justify-between gap-2 text-sm text-arena-muted">
                   <span>
                     von <strong>{discussion.authorUsername}</strong>
                   </span>
-                  <span className="discussion-meta">
+                  <span className="text-xs text-arena-muted">
                     {timeAgo(discussion.createdAt)}
                   </span>
                 </div>
               </div>
 
               <div
-                className="support-post-body"
+                className="mt-1 text-[0.95rem] leading-relaxed"
                 dangerouslySetInnerHTML={{
                   __html: formatBody(discussion.body),
                 }}
               />
 
               {discussion.authorUsername === username && (
-                <div className="support-post-actions">
+                <div className="flex gap-2 mt-3">
                   <button
-                    className="footer-button small"
+                    className="btn btn-sm"
                     onClick={openEditDiscussion}
                   >
                     Bearbeiten
                   </button>
                   <button
-                    className="footer-button small danger"
+                    className="btn btn-sm btn-danger"
                     onClick={handleDeleteDiscussion}
                   >
                     Löschen
@@ -317,36 +317,36 @@ export default function DiskussionDetailPage() {
             </article>
 
             {/* Replies */}
-            <div className="discussion-replies-section">
+            <div className="grid gap-3 mt-4">
               <h2>
                 {discussion.replies.length}{" "}
                 {discussion.replies.length === 1 ? "Antwort" : "Antworten"}
               </h2>
 
               {discussion.replies.length === 0 ? (
-                <p className="discussion-no-replies">
+                <p className="text-arena-muted">
                   Noch keine Antworten. Sei der Erste!
                 </p>
               ) : (
-                <div className="discussion-replies">
+                <div className="grid gap-3">
                   {discussion.replies.map((reply) => (
-                    <article key={reply.id} className="discussion-reply">
-                      <div className="support-post-header">
+                    <article key={reply.id} className="rounded-lg border border-arena-border-light p-3 ml-6">
+                      <div className="flex items-center justify-between gap-2 mb-2">
                         <strong>{reply.authorUsername}</strong>
-                        <span className="support-post-time">
+                        <span className="text-xs text-arena-muted">
                           {timeAgo(reply.createdAt)}
                         </span>
                       </div>
                       <div
-                        className="support-post-body"
+                        className="mt-1 text-[0.95rem] leading-relaxed"
                         dangerouslySetInnerHTML={{
                           __html: formatBody(reply.body),
                         }}
                       />
                       {reply.authorUsername === username && (
-                        <div className="support-post-actions">
+                        <div className="flex gap-2 mt-3">
                           <button
-                            className="footer-button small danger"
+                            className="btn btn-sm btn-danger"
                             onClick={() => handleDeleteReply(reply.id)}
                           >
                             Löschen
@@ -359,13 +359,14 @@ export default function DiskussionDetailPage() {
               )}
 
               {/* Reply form */}
-              <div className="discussion-reply-form">
+              <div className="grid gap-2 mt-4">
                 <h3>Antworten</h3>
-                <p className="support-hint">
+                <p className="text-xs text-arena-muted">
                   Formatierung: **fett**, *kursiv*, [Linktext](URL) und direkte
                   URLs werden erkannt.
                 </p>
                 <textarea
+                  className="input-base"
                   value={replyBody}
                   onChange={(e) => setReplyBody(e.target.value)}
                   maxLength={3000}
@@ -373,7 +374,7 @@ export default function DiskussionDetailPage() {
                   placeholder="Deine Antwort ..."
                 />
                 <button
-                  className="footer-button"
+                  className="btn"
                   onClick={handleReply}
                   disabled={isSending || !replyBody.trim()}
                 >
@@ -392,14 +393,15 @@ export default function DiskussionDetailPage() {
           onClick={() => setIsEditingDiscussion(false)}
         >
           <div
-            className="support-overlay"
+            className="w-[min(660px,100%)] bg-white rounded-xl p-4 box-border grid gap-3.5"
             onClick={(e) => e.stopPropagation()}
           >
             <h2>Diskussion bearbeiten</h2>
 
-            <label>
+            <label className="grid gap-1 text-[0.95rem]">
               Titel
               <input
+                className="input-base"
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
@@ -407,9 +409,10 @@ export default function DiskussionDetailPage() {
               />
             </label>
 
-            <label>
+            <label className="grid gap-1 text-[0.95rem]">
               Beschreibung
               <textarea
+                className="input-base"
                 value={editBody}
                 onChange={(e) => setEditBody(e.target.value)}
                 maxLength={5000}
@@ -417,9 +420,9 @@ export default function DiskussionDetailPage() {
               />
             </label>
 
-            <div className="support-overlay-actions">
+            <div className="flex gap-2 justify-end">
               <button
-                className="footer-button"
+                className="btn"
                 onClick={handleUpdateDiscussion}
                 disabled={
                   isUpdating || !editTitle.trim() || !editBody.trim()
@@ -428,7 +431,7 @@ export default function DiskussionDetailPage() {
                 {isUpdating ? "Wird gespeichert ..." : "Speichern"}
               </button>
               <button
-                className="footer-button"
+                className="btn"
                 onClick={() => setIsEditingDiscussion(false)}
               >
                 Abbrechen

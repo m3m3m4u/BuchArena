@@ -136,10 +136,10 @@ export default function AdminPage() {
   if (!account) {
     return (
       <main className="centered-main">
-        <section className="profile-card">
+        <section className="card">
           <h1>User-Übersicht</h1>
           <p>Bitte zuerst anmelden.</p>
-          <Link href="/auth" className="footer-button">
+          <Link href="/auth" className="btn">
             Zur Anmeldung
           </Link>
         </section>
@@ -149,22 +149,22 @@ export default function AdminPage() {
 
   return (
     <main className="centered-main">
-      <section className="profile-card">
+      <section className="card">
         <h1>User-Übersicht</h1>
 
         {isLoading ? (
           <p>Lade Benutzer ...</p>
         ) : account.role !== "SUPERADMIN" ? (
-          <p className="message error">Nur der SuperAdmin darf diese Seite sehen.</p>
+          <p className="text-red-700">Nur der SuperAdmin darf diese Seite sehen.</p>
         ) : (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-[0.95rem]">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>E-Mail</th>
-                  <th>Status</th>
-                  <th>Aktionen</th>
+                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Name</th>
+                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">E-Mail</th>
+                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Status</th>
+                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Aktionen</th>
                 </tr>
               </thead>
               <tbody>
@@ -174,54 +174,56 @@ export default function AdminPage() {
                   const isBusy = busyUser === user.username;
 
                   return (
-                    <tr key={user.username} className={isDeactivated ? "row-deactivated" : ""}>
-                      <td>{user.username}</td>
-                      <td>{user.email}</td>
-                      <td>
+                    <tr key={user.username} className={`hover:bg-[#f5f5f5] ${isDeactivated ? "opacity-50" : ""}`}>
+                      <td className="p-2 border-b border-arena-border-light">{user.username}</td>
+                      <td className="p-2 border-b border-arena-border-light">{user.email}</td>
+                      <td className="p-2 border-b border-arena-border-light">
                         {isSuperAdmin
                           ? "Admin"
                           : isDeactivated
                           ? "Deaktiviert"
                           : "Aktiv"}
                       </td>
-                      <td className="admin-actions">
-                        <Link
-                          href={`/profil?user=${encodeURIComponent(user.username)}`}
-                          className="footer-button small"
-                        >
-                          Profil
-                        </Link>
-                        {!isSuperAdmin && (
-                          <>
-                            {isDeactivated ? (
+                      <td className="p-2 border-b border-arena-border-light">
+                        <div className="flex gap-1 flex-wrap">
+                          <Link
+                            href={`/profil?user=${encodeURIComponent(user.username)}`}
+                            className="btn btn-sm"
+                          >
+                            Profil
+                          </Link>
+                          {!isSuperAdmin && (
+                            <>
+                              {isDeactivated ? (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm"
+                                  disabled={isBusy}
+                                  onClick={() => changeUserStatus(user.username, "activate")}
+                                >
+                                  Aktivieren
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-danger"
+                                  disabled={isBusy}
+                                  onClick={() => changeUserStatus(user.username, "deactivate")}
+                                >
+                                  Deaktivieren
+                                </button>
+                              )}
                               <button
                                 type="button"
-                                className="footer-button small"
+                                className="btn btn-sm btn-danger"
                                 disabled={isBusy}
-                                onClick={() => changeUserStatus(user.username, "activate")}
+                                onClick={() => changeUserStatus(user.username, "delete")}
                               >
-                                Aktivieren
+                                Löschen
                               </button>
-                            ) : (
-                              <button
-                                type="button"
-                                className="footer-button small danger"
-                                disabled={isBusy}
-                                onClick={() => changeUserStatus(user.username, "deactivate")}
-                              >
-                                Deaktivieren
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              className="footer-button small danger"
-                              disabled={isBusy}
-                              onClick={() => changeUserStatus(user.username, "delete")}
-                            >
-                              Löschen
-                            </button>
-                          </>
-                        )}
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -231,7 +233,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {message && <p className="message error">{message}</p>}
+        {message && <p className="text-red-700">{message}</p>}
       </section>
     </main>
   );

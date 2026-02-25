@@ -251,10 +251,10 @@ export default function ProfilPage() {
   if (!account) {
     return (
       <main className="centered-main">
-        <section className="profile-card">
+        <section className="card">
           <h1>Profil</h1>
           <p>Bitte zuerst anmelden, um dein Profil auszufüllen.</p>
-          <Link href="/auth" className="footer-button">
+          <Link href="/auth" className="btn">
             Zur Anmeldung
           </Link>
         </section>
@@ -265,7 +265,7 @@ export default function ProfilPage() {
   if (isLoading) {
     return (
       <main className="centered-main">
-        <section className="profile-card">
+        <section className="card">
           <p>Profil wird geladen ...</p>
         </section>
       </main>
@@ -274,7 +274,7 @@ export default function ProfilPage() {
 
   return (
     <main className="centered-main">
-      <section className="profile-card">
+      <section className="card">
         <h1>Profil ausfüllen</h1>
         {account.role === "SUPERADMIN" && requestedUser && (
           <p>
@@ -282,13 +282,13 @@ export default function ProfilPage() {
           </p>
         )}
 
-        <div className="image-crop-wrap">
+        <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
           <button
             type="button"
-            className="profile-image-button"
+            className="border-0 bg-transparent p-0 m-0 cursor-pointer"
             onClick={() => setIsImageOverlayOpen(true)}
           >
-            <div className="profile-image-preview" style={imagePreviewStyle}>
+            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border" style={imagePreviewStyle}>
               {!profile.profileImage.value && <span>Kein Bild gewählt</span>}
             </div>
           </button>
@@ -452,63 +452,63 @@ export default function ProfilPage() {
           onVisibilityChange={(visibility) => updateVisibility("socialReddit", visibility)}
         />
 
-        <div className="social-preview">
+        <div className="flex gap-2 flex-wrap">
           {profile.socialInstagram.value && (
-            <a className="footer-button" href={profile.socialInstagram.value} target="_blank" rel="noreferrer">
+            <a className="btn" href={profile.socialInstagram.value} target="_blank" rel="noreferrer">
               Instagram
             </a>
           )}
           {profile.socialFacebook.value && (
-            <a className="footer-button" href={profile.socialFacebook.value} target="_blank" rel="noreferrer">
+            <a className="btn" href={profile.socialFacebook.value} target="_blank" rel="noreferrer">
               Facebook
             </a>
           )}
           {profile.socialLinkedin.value && (
-            <a className="footer-button" href={profile.socialLinkedin.value} target="_blank" rel="noreferrer">
+            <a className="btn" href={profile.socialLinkedin.value} target="_blank" rel="noreferrer">
               LinkedIn
             </a>
           )}
           {profile.socialTiktok.value && (
-            <a className="footer-button" href={profile.socialTiktok.value} target="_blank" rel="noreferrer">
+            <a className="btn" href={profile.socialTiktok.value} target="_blank" rel="noreferrer">
               TikTok
             </a>
           )}
           {profile.socialYoutube.value && (
-            <a className="footer-button" href={profile.socialYoutube.value} target="_blank" rel="noreferrer">
+            <a className="btn" href={profile.socialYoutube.value} target="_blank" rel="noreferrer">
               YouTube
             </a>
           )}
           {profile.socialPinterest.value && (
-            <a className="footer-button" href={profile.socialPinterest.value} target="_blank" rel="noreferrer">
+            <a className="btn" href={profile.socialPinterest.value} target="_blank" rel="noreferrer">
               Pinterest
             </a>
           )}
           {profile.socialReddit.value && (
-            <a className="footer-button" href={profile.socialReddit.value} target="_blank" rel="noreferrer">
+            <a className="btn" href={profile.socialReddit.value} target="_blank" rel="noreferrer">
               Reddit
             </a>
           )}
         </div>
 
-        <button type="button" className="footer-button" onClick={saveProfile} disabled={isSaving}>
+        <button type="button" className="btn" onClick={saveProfile} disabled={isSaving}>
           {isSaving ? "Speichern ..." : "Profil speichern"}
         </button>
 
-        <p className={isError ? "message error" : "message"}>{message}</p>
+        <p className={isError ? "min-h-[1.3rem] mt-3.5 text-red-700" : "min-h-[1.3rem] mt-3.5"}>{message}</p>
 
         {/* Konto deaktivieren – nur für den eigenen Account (nicht als Admin für andere) */}
         {account && (!requestedUser || requestedUser === account.username) && account.role !== "SUPERADMIN" && (
-          <div className="deactivate-section">
+          <div className="mt-6">
             <hr />
             <h2>Konto deaktivieren</h2>
-            <p className="deactivate-hint">
+            <p className="text-sm text-arena-muted mb-3">
               Wenn du dein Konto deaktivierst, werden dein Profil und deine Bücher
               nicht mehr öffentlich angezeigt. Du kannst dich nicht mehr einloggen,
               bis ein Admin dein Konto wieder aktiviert.
             </p>
             <button
               type="button"
-              className="footer-button danger"
+              className="btn btn-danger"
               disabled={isDeactivating}
               onClick={async () => {
                 if (!confirm("Möchtest du dein Konto wirklich deaktivieren?")) {
@@ -547,7 +547,7 @@ export default function ProfilPage() {
 
       {isImageOverlayOpen && (
         <div className="overlay-backdrop" onClick={() => setIsImageOverlayOpen(false)}>
-          <section className="image-overlay" onClick={(event) => event.stopPropagation()}>
+          <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
             <h2>Bildeinstellungen</h2>
 
             <label>
@@ -563,11 +563,11 @@ export default function ProfilPage() {
                   event.currentTarget.value = "";
                 }}
               />
-              {isUploadingImage && <span className="input-help">Bild wird hochgeladen ...</span>}
+              {isUploadingImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
             </label>
 
             <div>
-              <span className="visibility-label">Sichtbarkeit</span>
+              <span className="block text-xs mb-1">Sichtbarkeit</span>
               <VisibilityToggle
                 value={profile.profileImage.visibility}
                 onChange={(visibility) => updateVisibility("profileImage", visibility)}
@@ -575,7 +575,7 @@ export default function ProfilPage() {
             </div>
 
             <div
-              className="profile-image-preview draggable"
+              className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab"
               style={imagePreviewStyle}
               onPointerDown={onImagePointerDown}
               onPointerMove={onImagePointerMove}
@@ -585,7 +585,7 @@ export default function ProfilPage() {
               {!profile.profileImage.value && <span>Kein Bild gewählt</span>}
             </div>
 
-            <div className="crop-controls">
+            <div className="grid gap-2.5">
               <label>
                 Zoom
                 <input
@@ -612,7 +612,7 @@ export default function ProfilPage() {
 
             <button
               type="button"
-              className="footer-button"
+              className="btn"
               onClick={() => setIsImageOverlayOpen(false)}
             >
               Fertig
@@ -640,14 +640,14 @@ function FieldWithVisibility({
   onVisibilityChange,
 }: FieldWithVisibilityProps) {
   return (
-    <div className="profile-row">
-      <label>
+    <div className="grid grid-cols-[2fr_1fr] gap-3 max-[780px]:grid-cols-1">
+      <label className="grid gap-1 text-[0.95rem]">
         {label}
-        <input value={value} onChange={(event) => onValueChange(event.target.value)} />
+        <input className="input-base" value={value} onChange={(event) => onValueChange(event.target.value)} />
       </label>
 
       <div>
-        <span className="visibility-label">Sichtbarkeit</span>
+        <span className="block text-xs mb-1">Sichtbarkeit</span>
         <VisibilityToggle value={visibility} onChange={onVisibilityChange} />
       </div>
     </div>
@@ -661,12 +661,12 @@ type VisibilityToggleProps = {
 
 function VisibilityToggle({ value, onChange }: VisibilityToggleProps) {
   return (
-    <div className="visibility-toggle" role="group" aria-label="Sichtbarkeit auswählen">
+    <div className="flex gap-1 flex-wrap" role="group" aria-label="Sichtbarkeit auswählen">
       {visibilityOptions.map((option) => (
         <button
           key={option.value}
           type="button"
-          className={option.value === value ? "visibility-pill active" : "visibility-pill"}
+          className={option.value === value ? "border border-arena-border rounded-full bg-gray-200 text-gray-600 px-2 py-1 text-xs cursor-pointer" : "border border-arena-border rounded-full bg-white px-2 py-1 text-xs cursor-pointer"}
           onClick={() => onChange(option.value)}
         >
           {option.label}

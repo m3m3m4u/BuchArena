@@ -115,7 +115,7 @@ export default function DiskussionenPage() {
   if (!username) {
     return (
       <main className="top-centered-main">
-        <section className="profile-card">
+        <section className="card">
           <h1>Diskussionen</h1>
           <p>
             Bitte <Link href="/auth">melde dich an</Link>, um an Diskussionen
@@ -128,37 +128,37 @@ export default function DiskussionenPage() {
 
   return (
     <main className="top-centered-main">
-      <section className="profile-card">
-        <div className="support-header-row">
+      <section className="card">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <h1>Diskussionen</h1>
-          <button className="footer-button" onClick={() => setShowOverlay(true)}>
+          <button className="btn" onClick={() => setShowOverlay(true)}>
             Neues Thema
           </button>
         </div>
 
-        {message && <p className="message error">{message}</p>}
+        {message && <p className="text-red-700">{message}</p>}
 
         {isLoading ? (
           <p>Lade Diskussionen ...</p>
         ) : discussions.length === 0 ? (
           <p>Noch keine Diskussionen vorhanden. Starte das erste Thema!</p>
         ) : (
-          <div className="discussion-list">
+          <div className="grid gap-3">
             {discussions.map((d) => (
               <Link
                 key={d.id}
                 href={`/diskussionen/${d.id}`}
-                className="discussion-card"
+                className="rounded-lg border border-arena-border p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit"
               >
-                <div className="discussion-card-header">
+                <div className="flex items-start justify-between gap-3">
                   <strong>{d.title}</strong>
-                  <span className="discussion-meta">
+                  <span className="text-xs text-arena-muted">
                     {d.replyCount} {d.replyCount === 1 ? "Antwort" : "Antworten"}
                   </span>
                 </div>
-                <div className="discussion-card-info">
+                <div className="flex items-center justify-between gap-2 text-sm text-arena-muted mt-1">
                   <span>von {d.authorUsername}</span>
-                  <span className="discussion-meta">
+                  <span className="text-xs text-arena-muted">
                     Letzte Aktivität: {timeAgo(d.lastActivityAt)}
                   </span>
                 </div>
@@ -170,12 +170,13 @@ export default function DiskussionenPage() {
 
       {showOverlay && (
         <div className="overlay-backdrop" onClick={() => setShowOverlay(false)}>
-          <div className="support-overlay" onClick={(e) => e.stopPropagation()}>
+          <div className="w-[min(660px,100%)] bg-white rounded-xl p-4 box-border grid gap-3.5" onClick={(e) => e.stopPropagation()}>
             <h2>Neues Diskussionsthema</h2>
 
-            <label>
+            <label className="grid gap-1 text-[0.95rem]">
               Titel
               <input
+                className="input-base"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -184,13 +185,14 @@ export default function DiskussionenPage() {
               />
             </label>
 
-            <label>
+            <label className="grid gap-1 text-[0.95rem]">
               Beschreibung
-              <p className="support-hint">
+              <p className="text-xs text-arena-muted">
                 Formatierung: **fett**, *kursiv*, [Linktext](URL) und direkte URLs
                 werden erkannt.
               </p>
               <textarea
+                className="input-base"
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 maxLength={5000}
@@ -199,16 +201,16 @@ export default function DiskussionenPage() {
               />
             </label>
 
-            <div className="support-overlay-actions">
+            <div className="flex gap-2 justify-end">
               <button
-                className="footer-button"
+                className="btn"
                 onClick={handleCreate}
                 disabled={isSaving || !title.trim() || !body.trim()}
               >
                 {isSaving ? "Wird erstellt ..." : "Thema erstellen"}
               </button>
               <button
-                className="footer-button"
+                className="btn"
                 onClick={() => setShowOverlay(false)}
               >
                 Abbrechen

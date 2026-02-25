@@ -409,10 +409,10 @@ export default function MeineBuecherPage() {
   if (!account) {
     return (
       <main className="centered-main">
-        <section className="profile-card">
+        <section className="card">
           <h1>Meine Bücher</h1>
           <p>Bitte zuerst anmelden.</p>
-          <Link href="/auth" className="footer-button">
+          <Link href="/auth" className="btn">
             Zur Anmeldung
           </Link>
         </section>
@@ -422,14 +422,14 @@ export default function MeineBuecherPage() {
 
   return (
     <main className="centered-main">
-      <section className="profile-card">
+      <section className="card">
         <h1>Meine Bücher</h1>
 
-        <button type="button" className="footer-button" onClick={openCreateOverlay}>
+        <button type="button" className="btn" onClick={openCreateOverlay}>
           Neues Buch anlegen
         </button>
 
-        <p className={isError ? "message error" : "message"}>{message}</p>
+        <p className={isError ? "text-red-700" : ""}>{message}</p>
 
         <h2>Meine angelegten Bücher</h2>
         {isLoading ? (
@@ -437,11 +437,14 @@ export default function MeineBuecherPage() {
         ) : books.length === 0 ? (
           <p>Noch keine Bücher angelegt.</p>
         ) : (
-          <div className="books-list">
+          <div className="grid gap-3 min-[1200px]:grid-cols-2">
             {books.map((book, index) => (
-              <article className="book-item" key={`${book.title}-${book.createdAt}-${index}`}>
-                <div className="book-item-layout">
-                  <div className="book-list-cover">
+              <article className="border border-arena-border rounded-lg p-3" key={`${book.title}-${book.createdAt}-${index}`}>
+                <div className="grid grid-cols-[120px_1fr] gap-3.5 items-start max-[900px]:grid-cols-1">
+                  <div
+                    className="w-[120px] border border-arena-border rounded-lg overflow-hidden bg-arena-bg grid place-items-center text-xs text-arena-muted max-[900px]:w-[140px]"
+                    style={{ aspectRatio: "3/4" }}
+                  >
                     {book.coverImageUrl ? (
                       <img src={book.coverImageUrl} alt={`Cover von ${book.title}`} />
                     ) : (
@@ -449,24 +452,26 @@ export default function MeineBuecherPage() {
                     )}
                   </div>
 
-                  <div className="book-item-content">
+                  <div className="min-w-0">
                     <h3>Titel: {book.title}</h3>
                     <p>
                       Erscheinungsjahr: {book.publicationYear}
                     </p>
                     <p>Genre: {book.genre}</p>
-                    <p>
-                      Alter: {book.ageFrom} bis {book.ageTo}
-                    </p>
+                    {(book.ageFrom > 0 || book.ageTo > 0) && (
+                      <p>
+                        Alter: {book.ageFrom} bis {book.ageTo}
+                      </p>
+                    )}
                     {book.publisher && <p>Verlag: {book.publisher}</p>}
                     {book.isbn && <p>ISBN: {book.isbn}</p>}
                     {book.pageCount !== undefined && book.pageCount > 0 && <p>Seitenanzahl: {book.pageCount}</p>}
                     {book.language && <p>Sprache: {book.language}</p>}
                     {book.description && <p>Beschreibung: {book.description}</p>}
                     {book.buyLinks.length > 0 && (
-                      <div className="book-meta-row">
+                      <div className="mt-1.5 grid grid-cols-[120px_1fr] gap-2 items-start">
                         <strong>Kauf-Links:</strong>
-                        <div className="book-meta-value book-links-inline">
+                        <div className="min-w-0 break-all grid gap-1">
                           {book.buyLinks.map((link) => (
                             <a key={link} href={link} target="_blank" rel="noreferrer">
                               {link}
@@ -476,9 +481,9 @@ export default function MeineBuecherPage() {
                       </div>
                     )}
                     {book.presentationVideoUrl && (
-                      <div className="book-meta-row">
+                      <div className="mt-1.5 grid grid-cols-[120px_1fr] gap-2 items-start">
                         <strong>YouTube-Link:</strong>
-                        <div className="book-meta-value">
+                        <div className="min-w-0">
                           <Link
                             href={`/video?url=${encodeURIComponent(book.presentationVideoUrl)}&title=${encodeURIComponent(book.title)}`}
                           >
@@ -488,13 +493,13 @@ export default function MeineBuecherPage() {
                       </div>
                     )}
 
-                    <div className="social-preview">
-                      <button type="button" className="footer-button" onClick={() => onEditBook(book)}>
+                    <div className="flex gap-2 flex-wrap">
+                      <button type="button" className="btn" onClick={() => onEditBook(book)}>
                         Bearbeiten
                       </button>
                       <button
                         type="button"
-                        className="footer-button"
+                        className="btn"
                         onClick={() => onDeleteBook(book.id)}
                       >
                         Löschen
@@ -510,42 +515,45 @@ export default function MeineBuecherPage() {
 
       {isBookOverlayOpen && (
         <div className="overlay-backdrop" onClick={resetForm}>
-          <section className="book-overlay" onClick={(event) => event.stopPropagation()}>
+          <section className="w-[min(760px,100%)] bg-white rounded-xl p-4 box-border grid gap-3.5" onClick={(event) => event.stopPropagation()}>
             <h2>{editingBookId ? "Buch bearbeiten" : "Neues Buch"}</h2>
 
-            <div className="book-overlay-layout">
-              <div className="books-grid">
-                <label>
+            <div className="grid grid-cols-[2fr_1fr] gap-4 items-start max-[900px]:grid-cols-1">
+              <div className="grid gap-3">
+                <label className="grid gap-1 text-[0.95rem]">
                   Titel
-                  <input value={title} onChange={(event) => setTitle(event.target.value)} />
+                  <input className="input-base" value={title} onChange={(event) => setTitle(event.target.value)} />
                 </label>
 
-                <label>
+                <label className="grid gap-1 text-[0.95rem]">
                   Erscheinungsjahr
                   <input
+                    className="input-base"
                     type="number"
                     value={publicationYear}
                     onChange={(event) => setPublicationYear(event.target.value)}
                   />
                 </label>
 
-                <label>
+                <label className="grid gap-1 text-[0.95rem]">
                   Genre
-                  <input value={genre} onChange={(event) => setGenre(event.target.value)} />
+                  <input className="input-base" value={genre} onChange={(event) => setGenre(event.target.value)} />
                 </label>
 
-                <div className="books-age-row">
-                  <label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="grid gap-1 text-[0.95rem]">
                     Alter von
                     <input
+                      className="input-base"
                       type="number"
                       value={ageFrom}
                       onChange={(event) => setAgeFrom(event.target.value)}
                     />
                   </label>
-                  <label>
+                  <label className="grid gap-1 text-[0.95rem]">
                     Alter bis
                     <input
+                      className="input-base"
                       type="number"
                       value={ageTo}
                       onChange={(event) => setAgeTo(event.target.value)}
@@ -553,19 +561,20 @@ export default function MeineBuecherPage() {
                   </label>
                 </div>
 
-                <label>
+                <label className="grid gap-1 text-[0.95rem]">
                   Verlag
-                  <input value={publisher} onChange={(event) => setPublisher(event.target.value)} />
+                  <input className="input-base" value={publisher} onChange={(event) => setPublisher(event.target.value)} />
                 </label>
 
-                <label>
+                <label className="grid gap-1 text-[0.95rem]">
                   ISBN
-                  <input value={isbn} onChange={(event) => setIsbn(event.target.value)} />
+                  <input className="input-base" value={isbn} onChange={(event) => setIsbn(event.target.value)} />
                 </label>
 
-                <label>
+                <label className="grid gap-1 text-[0.95rem]">
                   Seitenanzahl
                   <input
+                    className="input-base"
                     type="number"
                     min={0}
                     value={pageCount}
@@ -573,40 +582,46 @@ export default function MeineBuecherPage() {
                   />
                 </label>
 
-                <label>
+                <label className="grid gap-1 text-[0.95rem]">
                   Sprache
-                  <input value={language} onChange={(event) => setLanguage(event.target.value)} />
+                  <input className="input-base" value={language} onChange={(event) => setLanguage(event.target.value)} />
                 </label>
 
-                <label>
+                <label className="grid gap-1 text-[0.95rem]">
                   Beschreibung
                   <textarea
+                    className="input-base"
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     rows={4}
                   />
                 </label>
 
-                <label>
+                <label className="grid gap-1 text-[0.95rem]">
                   Links zum Buch kaufen (ein Link pro Zeile)
                   <textarea
+                    className="input-base"
                     value={buyLinksText}
                     onChange={(event) => setBuyLinksText(event.target.value)}
                     rows={3}
                   />
                 </label>
 
-                <label>
+                <label className="grid gap-1 text-[0.95rem]">
                   Link zum Vorstellungsvideo (YouTube-Verlinkung)
                   <input
+                    className="input-base"
                     value={presentationVideoUrl}
                     onChange={(event) => setPresentationVideoUrl(event.target.value)}
                   />
                 </label>
               </div>
 
-              <div className="book-cover-column">
-                <div className="book-cover-preview">
+              <div className="grid gap-2.5">
+                <div
+                  className="w-full border border-arena-border rounded-lg overflow-hidden grid place-items-center bg-arena-bg"
+                  style={{ aspectRatio: "3/4" }}
+                >
                   {coverImageUrl ? (
                     <img src={coverImageUrl} alt="Buchcover" />
                   ) : (
@@ -614,7 +629,7 @@ export default function MeineBuecherPage() {
                   )}
                 </div>
 
-                <label>
+                <label className="grid gap-1 text-[0.95rem]">
                   Cover hochladen
                   <input
                     type="file"
@@ -629,24 +644,24 @@ export default function MeineBuecherPage() {
                   />
                 </label>
 
-                {isUploadingCover && <span className="input-help">Cover wird hochgeladen ...</span>}
+                {isUploadingCover && <span className="text-xs text-arena-muted">Cover wird hochgeladen ...</span>}
 
                 {/* ── Textausschnitte ── */}
                 {editingBookId && (
-                  <div className="excerpt-section">
+                  <div className="mt-5 pt-4 border-t border-arena-border-light">
                     <h3>Textausschnitte</h3>
 
                     {currentBookExcerpts.length > 0 && (
-                      <div className="excerpt-list">
+                      <div className="flex flex-col gap-2 mb-4">
                         {currentBookExcerpts.map((ex) => (
-                          <div key={ex.id} className="excerpt-item">
-                            <div className="excerpt-item-info">
+                          <div key={ex.id} className="flex items-center justify-between gap-2.5 px-3 py-2 bg-[#f9f9f9] border border-arena-border-light rounded-md">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
                               <strong>{ex.title}</strong>
-                              <span className="excerpt-badge">{ex.type === "mp3" ? "MP3" : "Text"}</span>
+                              <span className="badge">{ex.type === "mp3" ? "MP3" : "Text"}</span>
                             </div>
                             <button
                               type="button"
-                              className="footer-button small"
+                              className="btn btn-sm"
                               onClick={() => onDeleteExcerpt(ex.id)}
                             >
                               Entfernen
@@ -656,18 +671,19 @@ export default function MeineBuecherPage() {
                       </div>
                     )}
 
-                    <div className="excerpt-form">
-                      <label>
+                    <div className="flex flex-col gap-2.5">
+                      <label className="grid gap-1 text-[0.95rem]">
                         Titel des Ausschnitts
                         <input
+                          className="input-base"
                           value={excerptTitle}
                           onChange={(event) => setExcerptTitle(event.target.value)}
                           placeholder="z.B. Kapitel 1 – Leseprobe"
                         />
                       </label>
 
-                      <div className="excerpt-type-row">
-                        <label>
+                      <div className="flex gap-5 items-center">
+                        <label className="flex items-center gap-1 cursor-pointer font-normal">
                           <input
                             type="radio"
                             name="excerptType"
@@ -677,7 +693,7 @@ export default function MeineBuecherPage() {
                           />
                           Text
                         </label>
-                        <label>
+                        <label className="flex items-center gap-1 cursor-pointer font-normal">
                           <input
                             type="radio"
                             name="excerptType"
@@ -690,9 +706,10 @@ export default function MeineBuecherPage() {
                       </div>
 
                       {excerptType === "text" ? (
-                        <label>
+                        <label className="grid gap-1 text-[0.95rem]">
                           Textinhalt
                           <textarea
+                            className="input-base"
                             value={excerptContent}
                             onChange={(event) => setExcerptContent(event.target.value)}
                             rows={5}
@@ -700,7 +717,7 @@ export default function MeineBuecherPage() {
                           />
                         </label>
                       ) : (
-                        <label>
+                        <label className="grid gap-1 text-[0.95rem]">
                           MP3-Datei hochladen
                           <input
                             type="file"
@@ -712,14 +729,14 @@ export default function MeineBuecherPage() {
                             }}
                           />
                           {excerptFile && (
-                            <span className="input-help">{excerptFile.name}</span>
+                            <span className="text-xs text-arena-muted">{excerptFile.name}</span>
                           )}
                         </label>
                       )}
 
                       <button
                         type="button"
-                        className="footer-button"
+                        className="btn"
                         onClick={onUploadExcerpt}
                         disabled={isUploadingExcerpt}
                       >
@@ -731,16 +748,16 @@ export default function MeineBuecherPage() {
               </div>
             </div>
 
-            <div className="social-preview">
+            <div className="flex gap-2 flex-wrap">
               <button
                 type="button"
-                className="footer-button"
+                className="btn"
                 onClick={onSaveBook}
                 disabled={isSaving}
               >
                 {isSaving ? "Speichern ..." : editingBookId ? "Buch speichern" : "Buch anlegen"}
               </button>
-              <button type="button" className="footer-button" onClick={resetForm}>
+              <button type="button" className="btn" onClick={resetForm}>
                 Abbrechen
               </button>
             </div>

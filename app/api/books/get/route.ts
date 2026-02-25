@@ -34,6 +34,8 @@ export async function GET(request: Request) {
     const profile = user?.profile ?? createDefaultProfile();
     const authorImageUrl =
       profile.profileImage?.visibility === "public" ? profile.profileImage.value : "";
+    const authorName =
+      profile.name?.visibility === "public" ? profile.name.value : "";
 
     return NextResponse.json({
       book: {
@@ -58,6 +60,7 @@ export async function GET(request: Request) {
       },
       author: {
         username: book.ownerUsername,
+        name: authorName,
         imageUrl: authorImageUrl,
       },
     });
