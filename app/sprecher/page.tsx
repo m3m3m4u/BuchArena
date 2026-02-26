@@ -202,7 +202,7 @@ export default function SprecherTextePage() {
         {/* Filter */}
         <div className="flex flex-wrap gap-1.5 justify-center">
           {(["alle", "offen", "gebucht", "erledigt"] as const).map(f => (
-            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-lg text-[0.85rem] font-medium cursor-pointer border-none ${filter === f ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}>
+            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-lg text-[0.85rem] font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 ${filter === f ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}>
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
@@ -263,9 +263,9 @@ export default function SprecherTextePage() {
                       <div className="mt-2.5 grid gap-1">
                         <p className="text-[0.85rem] font-medium">Hochgeladene MP3s:</p>
                         {text.mp3Files.map((mp3, idx) => (
-                          <div key={idx} className="flex items-center gap-1.5 text-[0.82rem] bg-gray-100 px-2.5 py-1.5 rounded-md">
-                            <MusicalNoteIcon className="w-3.5 h-3.5 text-green-600" />
-                            <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{mp3.fileName}</span>
+                          <div key={idx} className="flex items-center gap-1.5 text-[0.82rem] bg-gray-100 px-2.5 py-1.5 rounded-md flex-wrap">
+                            <MusicalNoteIcon className="w-3.5 h-3.5 text-green-600 shrink-0" />
+                            <span className="flex-1 min-w-0 break-all">{mp3.fileName}</span>
                             {mp3.uploadedBy && <span className="text-gray-400">von {mp3.uploadedBy}</span>}
                             <a href={mp3.url} download={mp3.fileName} className="text-indigo-600" title="Herunterladen"><ArrowDownTrayIcon className="w-3.5 h-3.5" /></a>
                             {isAdmin && <button onClick={() => handleDeleteMp3(text._id, idx)} className="text-red-600 bg-transparent border-none cursor-pointer" title="Löschen"><TrashIcon className="w-3.5 h-3.5" /></button>}
@@ -276,7 +276,7 @@ export default function SprecherTextePage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-wrap gap-1 shrink-0">
+                  <div className="flex flex-wrap gap-1 shrink-0 max-[500px]:w-full">
                     <a href={text.pdfUrl} download={text.pdfFileName} className="btn btn-sm flex items-center gap-1" title="PDF herunterladen">
                       <ArrowDownTrayIcon className="w-3.5 h-3.5" />PDF
                     </a>

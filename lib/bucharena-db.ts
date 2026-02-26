@@ -93,6 +93,7 @@ export type BucharenaSubmissionDoc = {
   contact: string;
   contactType: "email" | "instagram";
   instagram?: string;
+  submittedBy?: string;
   status: "pending" | "approved" | "rejected" | "done";
   reviewNotes?: string;
   reviewedBy?: string;

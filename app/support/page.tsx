@@ -201,7 +201,7 @@ export default function SupportPage() {
                 </div>
                 <h3>{post.title}</h3>
                 <div
-                  className="mt-1 text-[0.95rem] leading-relaxed"
+                  className="mt-1 text-[0.95rem] leading-relaxed [overflow-wrap:break-word]" style={{ wordBreak: "break-word" }}
                   dangerouslySetInnerHTML={{ __html: formatBody(post.body) }}
                 />
                 {post.authorUsername === username && (

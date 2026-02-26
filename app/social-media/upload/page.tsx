@@ -323,7 +323,7 @@ export default function UploadPage() {
                 onDragOver={onDragOver}
                 onDragLeave={onDragLeave}
                 onClick={() => inputRef.current?.click()}
-                className={`grid cursor-pointer place-items-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+                className={`grid cursor-pointer place-items-center gap-2 rounded-lg border-2 border-dashed p-8 max-sm:p-4 text-center transition-colors ${
                   dragActive
                     ? "border-arena-link bg-blue-50"
                     : "border-arena-border hover:border-gray-400"

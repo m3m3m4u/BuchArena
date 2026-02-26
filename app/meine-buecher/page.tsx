@@ -440,9 +440,9 @@ export default function MeineBuecherPage() {
           <div className="grid gap-3 min-[1200px]:grid-cols-2">
             {books.map((book, index) => (
               <article className="border border-arena-border rounded-lg p-3" key={`${book.title}-${book.createdAt}-${index}`}>
-                <div className="grid grid-cols-[120px_1fr] gap-3.5 items-start max-[900px]:grid-cols-1">
+                <div className="grid grid-cols-[120px_1fr] gap-3.5 items-start max-[600px]:grid-cols-1">
                   <div
-                    className="w-[120px] border border-arena-border rounded-lg overflow-hidden bg-arena-bg grid place-items-center text-xs text-arena-muted max-[900px]:w-[140px]"
+                    className="w-[120px] border border-arena-border rounded-lg overflow-hidden bg-arena-bg grid place-items-center text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[180px]"
                     style={{ aspectRatio: "3/4" }}
                   >
                     {book.coverImageUrl ? (
@@ -466,10 +466,9 @@ export default function MeineBuecherPage() {
                     {book.publisher && <p>Verlag: {book.publisher}</p>}
                     {book.isbn && <p>ISBN: {book.isbn}</p>}
                     {book.pageCount !== undefined && book.pageCount > 0 && <p>Seitenanzahl: {book.pageCount}</p>}
-                    {book.language && <p>Sprache: {book.language}</p>}
                     {book.description && <p>Beschreibung: {book.description}</p>}
                     {book.buyLinks.length > 0 && (
-                      <div className="mt-1.5 grid grid-cols-[120px_1fr] gap-2 items-start">
+                      <div className="mt-1.5 grid grid-cols-[120px_1fr] gap-2 items-start max-[600px]:grid-cols-1">
                         <strong>Kauf-Links:</strong>
                         <div className="min-w-0 break-all grid gap-1">
                           {book.buyLinks.map((link) => (
@@ -481,7 +480,7 @@ export default function MeineBuecherPage() {
                       </div>
                     )}
                     {book.presentationVideoUrl && (
-                      <div className="mt-1.5 grid grid-cols-[120px_1fr] gap-2 items-start">
+                      <div className="mt-1.5 grid grid-cols-[120px_1fr] gap-2 items-start max-[600px]:grid-cols-1">
                         <strong>YouTube-Link:</strong>
                         <div className="min-w-0">
                           <Link
@@ -515,32 +514,33 @@ export default function MeineBuecherPage() {
 
       {isBookOverlayOpen && (
         <div className="overlay-backdrop" onClick={resetForm}>
-          <section className="w-[min(760px,100%)] bg-white rounded-xl p-4 box-border grid gap-3.5" onClick={(event) => event.stopPropagation()}>
+          <section className="w-[min(760px,100%)] bg-white rounded-xl p-4 box-border grid gap-2.5" onClick={(event) => event.stopPropagation()}>
             <h2>{editingBookId ? "Buch bearbeiten" : "Neues Buch"}</h2>
 
             <div className="grid grid-cols-[2fr_1fr] gap-4 items-start max-[900px]:grid-cols-1">
-              <div className="grid gap-3">
+              <div className="grid gap-2">
                 <label className="grid gap-1 text-[0.95rem]">
                   Titel
                   <input className="input-base" value={title} onChange={(event) => setTitle(event.target.value)} />
                 </label>
 
-                <label className="grid gap-1 text-[0.95rem]">
-                  Erscheinungsjahr
-                  <input
-                    className="input-base"
-                    type="number"
-                    value={publicationYear}
-                    onChange={(event) => setPublicationYear(event.target.value)}
-                  />
-                </label>
+                <div className="grid grid-cols-2 max-[400px]:grid-cols-1 gap-2">
+                  <label className="grid gap-1 text-[0.95rem]">
+                    Erscheinungsjahr
+                    <input
+                      className="input-base"
+                      type="number"
+                      value={publicationYear}
+                      onChange={(event) => setPublicationYear(event.target.value)}
+                    />
+                  </label>
+                  <label className="grid gap-1 text-[0.95rem]">
+                    Genre
+                    <input className="input-base" value={genre} onChange={(event) => setGenre(event.target.value)} />
+                  </label>
+                </div>
 
-                <label className="grid gap-1 text-[0.95rem]">
-                  Genre
-                  <input className="input-base" value={genre} onChange={(event) => setGenre(event.target.value)} />
-                </label>
-
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 max-[400px]:grid-cols-1 gap-2">
                   <label className="grid gap-1 text-[0.95rem]">
                     Alter von
                     <input
@@ -561,15 +561,16 @@ export default function MeineBuecherPage() {
                   </label>
                 </div>
 
-                <label className="grid gap-1 text-[0.95rem]">
-                  Verlag
-                  <input className="input-base" value={publisher} onChange={(event) => setPublisher(event.target.value)} />
-                </label>
-
-                <label className="grid gap-1 text-[0.95rem]">
-                  ISBN
-                  <input className="input-base" value={isbn} onChange={(event) => setIsbn(event.target.value)} />
-                </label>
+                <div className="grid grid-cols-2 max-[400px]:grid-cols-1 gap-2">
+                  <label className="grid gap-1 text-[0.95rem]">
+                    Verlag
+                    <input className="input-base" value={publisher} onChange={(event) => setPublisher(event.target.value)} />
+                  </label>
+                  <label className="grid gap-1 text-[0.95rem]">
+                    ISBN
+                    <input className="input-base" value={isbn} onChange={(event) => setIsbn(event.target.value)} />
+                  </label>
+                </div>
 
                 <label className="grid gap-1 text-[0.95rem]">
                   Seitenanzahl
@@ -583,17 +584,12 @@ export default function MeineBuecherPage() {
                 </label>
 
                 <label className="grid gap-1 text-[0.95rem]">
-                  Sprache
-                  <input className="input-base" value={language} onChange={(event) => setLanguage(event.target.value)} />
-                </label>
-
-                <label className="grid gap-1 text-[0.95rem]">
                   Beschreibung
                   <textarea
                     className="input-base"
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
-                    rows={4}
+                    rows={3}
                   />
                 </label>
 
@@ -603,12 +599,12 @@ export default function MeineBuecherPage() {
                     className="input-base"
                     value={buyLinksText}
                     onChange={(event) => setBuyLinksText(event.target.value)}
-                    rows={3}
+                    rows={2}
                   />
                 </label>
 
                 <label className="grid gap-1 text-[0.95rem]">
-                  Link zum Vorstellungsvideo (YouTube-Verlinkung)
+                  Link zum Vorstellungsvideo (YouTube)
                   <input
                     className="input-base"
                     value={presentationVideoUrl}

@@ -4,6 +4,7 @@ import type { BookDocument } from "@/lib/books";
 import type { ProfileData } from "@/lib/profile";
 import type { SupportPost } from "@/lib/support";
 import type { DiscussionDocument } from "@/lib/discussions";
+import type { MessageDocument } from "@/lib/messages";
 
 export type UserRole = "USER" | "SUPERADMIN";
 
@@ -67,6 +68,10 @@ async function initializeDatabase(db: Db) {
   await discussions.createIndex({ lastActivityAt: -1 });
   await discussions.createIndex({ authorUsername: 1 });
 
+  const messages = db.collection<MessageDocument>("messages");
+  await messages.createIndex({ recipientUsername: 1, createdAt: -1 });
+  await messages.createIndex({ senderUsername: 1, createdAt: -1 });
+
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
     { projection: { _id: 1 } }
@@ -120,6 +125,11 @@ export async function getSupportCollection(): Promise<Collection<SupportPost>> {
 export async function getDiscussionsCollection(): Promise<Collection<DiscussionDocument>> {
   const db = await getDatabase();
   return db.collection<DiscussionDocument>("discussions");
+}
+
+export async function getMessagesCollection(): Promise<Collection<MessageDocument>> {
+  const db = await getDatabase();
+  return db.collection<MessageDocument>("messages");
 }
 
 export function isDuplicateKeyError(error: unknown) {

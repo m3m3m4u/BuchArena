@@ -292,7 +292,7 @@ export default function DiskussionDetailPage() {
               </div>
 
               <div
-                className="mt-1 text-[0.95rem] leading-relaxed"
+                className="mt-1 text-[0.95rem] leading-relaxed [overflow-wrap:break-word]" style={{ wordBreak: "break-word" }}
                 dangerouslySetInnerHTML={{
                   __html: formatBody(discussion.body),
                 }}
@@ -330,7 +330,7 @@ export default function DiskussionDetailPage() {
               ) : (
                 <div className="grid gap-3">
                   {discussion.replies.map((reply) => (
-                    <article key={reply.id} className="rounded-lg border border-arena-border-light p-3 ml-6">
+                    <article key={reply.id} className="rounded-lg border border-arena-border-light p-3 ml-3 sm:ml-6">
                       <div className="flex items-center justify-between gap-2 mb-2">
                         <strong>{reply.authorUsername}</strong>
                         <span className="text-xs text-arena-muted">
@@ -338,7 +338,7 @@ export default function DiskussionDetailPage() {
                         </span>
                       </div>
                       <div
-                        className="mt-1 text-[0.95rem] leading-relaxed"
+                        className="mt-1 text-[0.95rem] leading-relaxed [overflow-wrap:break-word]" style={{ wordBreak: "break-word" }}
                         dangerouslySetInnerHTML={{
                           __html: formatBody(reply.body),
                         }}

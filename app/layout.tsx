@@ -1,8 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import CookieBanner from "./components/cookie-banner";
 import LayoutChrome from "./components/layout-chrome";
 import SiteFooter from "./components/site-footer";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "BuchArena",

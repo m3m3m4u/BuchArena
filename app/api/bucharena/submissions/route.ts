@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getBucharenaSubmissionsCollection } from "@/lib/bucharena-db";
 import { davPut } from "@/lib/bucharena-webdav";
+import { getServerAccount } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
 
     const col = await getBucharenaSubmissionsCollection();
     const now = new Date();
+    const account = await getServerAccount();
     const result = await col.insertOne({
       bookTitle: bookTitle.trim(),
       author: author.trim(),
@@ -70,6 +72,7 @@ export async function POST(request: Request) {
       contact: contact.trim(),
       contactType: (contactType as "email" | "instagram") || "email",
       instagram: instagram?.trim() || undefined,
+      submittedBy: account?.username || undefined,
       status: "pending",
       createdAt: now,
       updatedAt: now,

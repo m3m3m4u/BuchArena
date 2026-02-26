@@ -29,7 +29,7 @@ export default function CookieBanner() {
     <>
       {showBanner && (
         <div
-          className="fixed right-4 bottom-4 z-[1000] w-[calc(100%-2rem)] max-w-[420px] rounded-xl border border-arena-border bg-white p-3.5"
+          className="fixed right-4 bottom-4 z-[1000] w-[calc(100%-2rem)] max-w-[420px] rounded-xl border border-arena-border bg-white p-3.5 max-sm:right-2 max-sm:bottom-2 max-sm:w-[calc(100%-1rem)]"
           role="dialog"
           aria-label="Cookie-Einwilligung"
         >

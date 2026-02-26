@@ -157,7 +157,7 @@ export default function BucharenaAdminSubmissions() {
 
   const filterBtn = (f: string) => {
     const active = filter === f;
-    return `px-3 py-1 rounded-lg text-[0.82rem] font-medium cursor-pointer border-none ${active ? "bg-arena-link text-white" : "bg-[#f3f4f6] text-arena-text"}`;
+    return `px-3 py-1.5 rounded-lg text-[0.82rem] font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 ${active ? "bg-arena-link text-white" : "bg-[#f3f4f6] text-arena-text"}`;
   };
 
   return (
@@ -196,7 +196,7 @@ export default function BucharenaAdminSubmissions() {
                   </div>
                   {statusBadge(sub.status)}
                 </div>
-                <div className="grid grid-cols-2 gap-1 text-[0.82rem] mb-2">
+                <div className="grid grid-cols-2 gap-1 text-[0.82rem] mb-2 max-[500px]:grid-cols-1">
                   <div><span className="text-[#888]">Genre:</span> {sub.genre || "-"}</div>
                   <div><span className="text-[#888]">Alter:</span> {sub.ageRange || "-"}</div>
                   <div className="col-span-full"><span className="text-[#888]">Datei:</span> {sub.fileName} ({fmtSize(sub.fileSize)})</div>
@@ -231,7 +231,7 @@ export default function BucharenaAdminSubmissions() {
             <div className="grid gap-3">
               <label className="grid gap-1 text-[0.95rem]">Buchtitel<input className="input-base" value={editingSubmission.bookTitle} onChange={e => setEditingSubmission({ ...editingSubmission, bookTitle: e.target.value })} /></label>
               <label className="grid gap-1 text-[0.95rem]">Autor<input className="input-base" value={editingSubmission.author} onChange={e => setEditingSubmission({ ...editingSubmission, author: e.target.value })} /></label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 max-[500px]:grid-cols-1">
                 <label className="grid gap-1 text-[0.95rem]">Genre
                   <select className="input-base" value={editingSubmission.genre || ""} onChange={e => setEditingSubmission({ ...editingSubmission, genre: e.target.value })}>
                     <option value="">Bitte wählen...</option>
@@ -246,7 +246,7 @@ export default function BucharenaAdminSubmissions() {
                 </label>
               </div>
               <label className="grid gap-1 text-[0.95rem]">Anmerkungen (vom Autor)<textarea className="input-base resize-y" rows={3} value={editingSubmission.notes || ""} onChange={e => setEditingSubmission({ ...editingSubmission, notes: e.target.value })} /></label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 max-[500px]:grid-cols-1">
                 <label className="grid gap-1 text-[0.95rem]">Kontaktart
                   <select className="input-base" value={editingSubmission.contactType} onChange={e => setEditingSubmission({ ...editingSubmission, contactType: e.target.value as "email" | "instagram" })}>
                     <option value="email">E-Mail</option>

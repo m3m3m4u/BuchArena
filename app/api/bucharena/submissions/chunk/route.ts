@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getBucharenaSubmissionsCollection } from "@/lib/bucharena-db";
 import { davPut, davGet, davDelete, davList } from "@/lib/bucharena-webdav";
+import { getServerAccount } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
@@ -25,6 +26,7 @@ export async function POST(request: Request) {
     const notes = formData.get("notes") as string;
     const contact = formData.get("contact") as string;
     const contactType = formData.get("contactType") as string;
+    const instagram = formData.get("instagram") as string;
     const fileName = formData.get("fileName") as string;
     const fileSize = parseInt(formData.get("fileSize") as string) || 0;
 
@@ -37,8 +39,9 @@ export async function POST(request: Request) {
     await davPut(chunkKey, new Uint8Array(chunkBytes));
 
     if (chunkIndex === 0) {
+      const account = await getServerAccount();
       const metaKey = `bucharena-temp/${uploadId}/metadata.json`;
-      const metaData = JSON.stringify({ bookTitle, author, genre, ageRange, notes, contact, contactType, fileName, fileSize, totalChunks });
+      const metaData = JSON.stringify({ bookTitle, author, genre, ageRange, notes, contact, contactType, instagram, fileName, fileSize, totalChunks, submittedBy: account?.username });
       await davPut(metaKey, new TextEncoder().encode(metaData), "application/json");
     }
 
@@ -129,6 +132,8 @@ async function finalizeUpload(uploadId: string, totalChunks: number) {
       notes: meta.notes?.trim() || undefined,
       contact: meta.contact.trim(),
       contactType: meta.contactType,
+      instagram: meta.instagram?.trim() || undefined,
+      submittedBy: meta.submittedBy || undefined,
       status: "pending",
       createdAt: now,
       updatedAt: now,

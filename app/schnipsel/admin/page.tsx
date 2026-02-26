@@ -113,7 +113,7 @@ export default function SnippetsAdminPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 gap-2.5 max-[500px]:grid-cols-1">
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="text-2xl font-bold">{snippets.length}</div>
             <div className="text-sm text-[#888]">Gesamt</div>
@@ -163,9 +163,9 @@ export default function SnippetsAdminPage() {
                     </div>
 
                     {snippet.audioFileName && (
-                      <div className="flex items-center gap-1.5 text-sm">
-                        <MusicalNoteIcon className="w-4 h-4 text-arena-link" />
-                        <strong>{snippet.audioFileName}</strong>
+                      <div className="flex items-center gap-1.5 text-sm flex-wrap">
+                        <MusicalNoteIcon className="w-4 h-4 text-arena-link shrink-0" />
+                        <strong className="break-all">{snippet.audioFileName}</strong>
                         <span className="text-[#888]">({((snippet.audioFileSize || 0) / 1024 / 1024).toFixed(2)} MB)</span>
                         <button onClick={() => handleDownloadAudio(snippet.id)} className="btn btn-ghost text-sm p-0">Herunterladen</button>
                       </div>
@@ -179,17 +179,17 @@ export default function SnippetsAdminPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-1.5 w-[180px] shrink-0">
+                  <div className="flex sm:flex-col gap-1.5 sm:w-[180px] shrink-0 flex-wrap">
                     {snippet.status === "pending" ? (
-                      <button onClick={() => handleStatusUpdate(snippet.id, "processed")} disabled={actionLoading === snippet.id} className="btn flex items-center gap-1 text-[0.8rem] bg-green-50 text-green-800">
+                      <button onClick={() => handleStatusUpdate(snippet.id, "processed")} disabled={actionLoading === snippet.id} className="btn btn-sm flex items-center gap-1 text-[0.8rem] bg-green-50 text-green-800">
                         <CheckCircleIcon className="w-3.5 h-3.5" />Als bearbeitet markieren
                       </button>
                     ) : (
-                      <button onClick={() => handleStatusUpdate(snippet.id, "pending")} disabled={actionLoading === snippet.id} className="btn flex items-center gap-1 text-[0.8rem]">
+                      <button onClick={() => handleStatusUpdate(snippet.id, "pending")} disabled={actionLoading === snippet.id} className="btn btn-sm flex items-center gap-1 text-[0.8rem]">
                         <ArrowPathIcon className="w-3.5 h-3.5" />Zurück zu ausstehend
                       </button>
                     )}
-                    <button onClick={() => handleDelete(snippet.id, snippet.bookTitle)} disabled={actionLoading === snippet.id} className="btn btn-danger flex items-center gap-1 text-[0.8rem]">
+                    <button onClick={() => handleDelete(snippet.id, snippet.bookTitle)} disabled={actionLoading === snippet.id} className="btn btn-sm btn-danger flex items-center gap-1 text-[0.8rem]">
                       <TrashIcon className="w-3.5 h-3.5" />Löschen
                     </button>
                   </div>

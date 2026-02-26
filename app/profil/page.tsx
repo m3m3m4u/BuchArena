@@ -666,7 +666,7 @@ function VisibilityToggle({ value, onChange }: VisibilityToggleProps) {
         <button
           key={option.value}
           type="button"
-          className={option.value === value ? "border border-arena-border rounded-full bg-gray-200 text-gray-600 px-2 py-1 text-xs cursor-pointer" : "border border-arena-border rounded-full bg-white px-2 py-1 text-xs cursor-pointer"}
+          className={option.value === value ? "border border-arena-border rounded-full bg-gray-200 text-gray-600 px-3 py-2 sm:px-2 sm:py-1 text-xs cursor-pointer min-h-[44px] sm:min-h-0" : "border border-arena-border rounded-full bg-white px-3 py-2 sm:px-2 sm:py-1 text-xs cursor-pointer min-h-[44px] sm:min-h-0"}
           onClick={() => onChange(option.value)}
         >
           {option.label}

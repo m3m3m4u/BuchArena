@@ -108,7 +108,7 @@ export default function ReviewsAdminPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 gap-2.5 max-[500px]:grid-cols-1">
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="text-2xl font-bold">{reviews.length}</div>
             <div className="text-[0.85rem] text-[#888]">Gesamt</div>
@@ -129,7 +129,7 @@ export default function ReviewsAdminPage() {
             <button
               key={key}
               onClick={() => setFilter(key)}
-              className={`px-3 py-1.5 rounded-lg border border-arena-border text-[0.85rem] cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg border border-arena-border text-[0.85rem] cursor-pointer min-h-[44px] sm:min-h-0 ${
                 filter === key
                   ? "bg-arena-yellow text-arena-blue font-semibold"
                   : "bg-white"
@@ -168,7 +168,7 @@ export default function ReviewsAdminPage() {
                       {review.processedAt && <div><strong>Bearbeitet am:</strong> {new Date(review.processedAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</div>}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1.5 w-[180px] shrink-0">
+                  <div className="flex sm:flex-col gap-1.5 sm:w-[180px] shrink-0 flex-wrap">
                     {review.status === "pending" ? (
                       <button onClick={() => handleStatusUpdate(review.id, "processed")} disabled={actionLoading === review.id} className="btn btn-sm flex items-center gap-1 text-[0.8rem] bg-green-50 text-green-800">
                         <CheckCircleIcon className="w-3.5 h-3.5" />Als bearbeitet markieren

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 type AuthorBook = { title: string; genre: string; ageFrom: number; ageTo: number };
-type DiscoverAuthor = { username: string; profileImageUrl: string; books: AuthorBook[] };
+type DiscoverAuthor = { username: string; displayName: string; profileImageUrl: string; books: AuthorBook[] };
 
 export default function AutorenPage() {
   const [authors, setAuthors] = useState<DiscoverAuthor[]>([]);
@@ -88,13 +88,13 @@ export default function AutorenPage() {
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
                     <div className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted">
                       {author.profileImageUrl ? (
-                        <img src={author.profileImageUrl} alt={`Profilbild von ${author.username}`} className="h-full w-full object-cover" />
+                        <img src={author.profileImageUrl} alt={`Profilbild von ${author.displayName}`} className="h-full w-full object-cover" />
                       ) : (
                         <span>Kein Bild</span>
                       )}
                     </div>
                     <div>
-                      <h2 className="m-0 text-[1.05rem]">{author.username}</h2>
+                      <h2 className="m-0 text-[1.05rem]">{author.displayName}</h2>
                       <p className="mt-0.5 text-sm font-semibold">
                         {author.books.length} passende{author.books.length === 1 ? "s Buch" : " Bücher"}
                       </p>

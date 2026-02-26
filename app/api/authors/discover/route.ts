@@ -3,6 +3,7 @@ import { getBooksCollection, getUsersCollection } from "@/lib/mongodb";
 
 type AuthorDiscoverItem = {
   username: string;
+  displayName: string;
   profileImageUrl: string;
   books: Array<{
     title: string;
@@ -31,9 +32,12 @@ export async function GET() {
     const activeUsernames = new Set(users.map((u) => u.username));
 
     const profileByUser = new Map<string, string>();
+    const nameByUser = new Map<string, string>();
     for (const user of users) {
       const profileImageUrl = user.profile?.profileImage?.value ?? "";
       profileByUser.set(user.username, profileImageUrl);
+      const name = (user.profile?.name?.visibility === "public" && user.profile?.name?.value) ? user.profile.name.value : "";
+      nameByUser.set(user.username, name);
     }
 
     const grouped = new Map<string, AuthorDiscoverItem>();
@@ -45,6 +49,7 @@ export async function GET() {
       if (!grouped.has(key)) {
         grouped.set(key, {
           username: key,
+          displayName: nameByUser.get(key) || key,
           profileImageUrl: profileByUser.get(key) ?? "",
           books: [],
         });

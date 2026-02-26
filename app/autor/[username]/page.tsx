@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { getStoredAccount } from "@/lib/client-account";
 import { createDefaultProfile, type ProfileData } from "@/lib/profile";
 
 const socialIcons: Record<string, React.ReactNode> = {
@@ -18,12 +19,54 @@ type AuthorBook = { id: string; title: string; genre: string; ageFrom: number; a
 type AuthorProfilePayload = { author: { username: string; profile: ProfileData; books: AuthorBook[] } };
 type PageProps = { params: Promise<{ username: string }> };
 
+/** Wandelt Social-Media-Handles/-Werte in vollständige URLs um. */
+function toSocialUrl(platform: string, raw: string): string {
+  const v = raw.trim();
+  // Bereits eine vollständige URL → direkt verwenden
+  if (/^https?:\/\//i.test(v)) return v;
+
+  // Handle ohne @ normalisieren
+  const handle = v.replace(/^@/, "");
+
+  switch (platform) {
+    case "Instagram":
+      return `https://www.instagram.com/${encodeURIComponent(handle)}`;
+    case "Facebook":
+      return `https://www.facebook.com/${encodeURIComponent(handle)}`;
+    case "TikTok":
+      return `https://www.tiktok.com/@${encodeURIComponent(handle)}`;
+    case "YouTube":
+      return `https://www.youtube.com/@${encodeURIComponent(handle)}`;
+    case "LinkedIn":
+      return `https://www.linkedin.com/in/${encodeURIComponent(handle)}`;
+    case "Pinterest":
+      return `https://www.pinterest.com/${encodeURIComponent(handle)}`;
+    case "Reddit":
+      return `https://www.reddit.com/user/${encodeURIComponent(handle)}`;
+    default:
+      return v;
+  }
+}
+
 export default function AuthorProfilePage({ params }: PageProps) {
   const [username, setUsername] = useState("");
   const [profile, setProfile] = useState<ProfileData>(createDefaultProfile());
   const [books, setBooks] = useState<AuthorBook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [loggedInUsername, setLoggedInUsername] = useState("");
+
+  // Compose message state
+  const [showCompose, setShowCompose] = useState(false);
+  const [msgSubject, setMsgSubject] = useState("");
+  const [msgBody, setMsgBody] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [composeMsg, setComposeMsg] = useState("");
+
+  useEffect(() => {
+    const account = getStoredAccount();
+    if (account) setLoggedInUsername(account.username);
+  }, []);
 
   useEffect(() => { params.then((r) => setUsername(r.username)); }, [params]);
 
@@ -70,6 +113,28 @@ export default function AuthorProfilePage({ params }: PageProps) {
 
   const profileImageUrl = profile.profileImage.visibility === "public" ? profile.profileImage.value : "";
 
+  async function handleSendMessage() {
+    setIsSending(true);
+    setComposeMsg("");
+    try {
+      const res = await fetch("/api/messages/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipientUsername: username, subject: msgSubject, body: msgBody }),
+      });
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Senden fehlgeschlagen.");
+      setComposeMsg("Nachricht gesendet!");
+      setMsgSubject("");
+      setMsgBody("");
+      setTimeout(() => { setShowCompose(false); setComposeMsg(""); }, 1200);
+    } catch (err) {
+      setComposeMsg(err instanceof Error ? err.message : "Fehler beim Senden.");
+    } finally {
+      setIsSending(false);
+    }
+  }
+
   return (
     <main className="top-centered-main">
       <section className="card">
@@ -79,12 +144,12 @@ export default function AuthorProfilePage({ params }: PageProps) {
           <p className="text-red-700">{message}</p>
         ) : (
           <>
-            <div className="grid grid-cols-[96px_1fr] items-center gap-3">
+            <div className="grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
               <div className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted">
                 {profileImageUrl ? <img src={profileImageUrl} alt={`Profilbild von ${visibleName}`} className="h-full w-full object-cover" /> : <span>Kein Bild</span>}
               </div>
               <div>
-                <h1>{visibleName}</h1>
+                <h1 className="text-xl sm:text-2xl">{visibleName}</h1>
                 {visibleBeruf && <p className="mt-0.5 text-sm">{visibleBeruf}</p>}
                 {visibleCityCountry && <p className="mt-0.5">{visibleCityCountry}</p>}
                 {visibleMotto && <p className="mt-0.5 italic">„{visibleMotto}"</p>}
@@ -94,11 +159,62 @@ export default function AuthorProfilePage({ params }: PageProps) {
             {socialLinks.length > 0 && (
               <div className="my-3 flex flex-wrap gap-3">
                 {socialLinks.map((entry) => (
-                  <a key={entry.label} className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3.5 py-2 text-sm font-medium no-underline text-arena-text transition-colors hover:bg-gray-200" href={entry.field.value} target="_blank" rel="noreferrer" title={entry.label}>
+                  <a key={entry.label} className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3.5 py-2 text-sm font-medium no-underline text-arena-text transition-colors hover:bg-gray-200" href={toSocialUrl(entry.label, entry.field.value)} target="_blank" rel="noreferrer" title={entry.label}>
                     {socialIcons[entry.label]}
                     <span>{entry.label}</span>
                   </a>
                 ))}
+              </div>
+            )}
+
+            {loggedInUsername && loggedInUsername !== username && (
+              <div className="my-3">
+                <button className="btn" onClick={() => { setShowCompose(true); setComposeMsg(""); }}>
+                  Nachricht senden
+                </button>
+              </div>
+            )}
+
+            {showCompose && (
+              <div className="overlay-backdrop" onClick={() => setShowCompose(false)}>
+                <div className="card" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg m-0">Nachricht an {visibleName}</h2>
+                    <button className="btn btn-sm" onClick={() => setShowCompose(false)}>✕</button>
+                  </div>
+                  <label className="block mt-2">
+                    <span className="text-sm font-semibold">Betreff</span>
+                    <input
+                      className="input-base w-full mt-1"
+                      value={msgSubject}
+                      onChange={(e) => setMsgSubject(e.target.value)}
+                      placeholder="Betreff eingeben"
+                      maxLength={200}
+                    />
+                  </label>
+                  <label className="block mt-2">
+                    <span className="text-sm font-semibold">Nachricht</span>
+                    <textarea
+                      className="input-base w-full mt-1"
+                      rows={6}
+                      value={msgBody}
+                      onChange={(e) => setMsgBody(e.target.value)}
+                      placeholder="Deine Nachricht ..."
+                      maxLength={5000}
+                    />
+                  </label>
+                  {composeMsg && (
+                    <p className={`text-sm mt-1 ${composeMsg.includes("gesendet") ? "text-green-700" : "text-red-700"}`}>
+                      {composeMsg}
+                    </p>
+                  )}
+                  <div className="flex gap-2 mt-3">
+                    <button className="btn btn-primary" disabled={isSending} onClick={handleSendMessage}>
+                      {isSending ? "Wird gesendet ..." : "Senden"}
+                    </button>
+                    <button className="btn" onClick={() => setShowCompose(false)}>Abbrechen</button>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -110,8 +226,8 @@ export default function AuthorProfilePage({ params }: PageProps) {
                 {books.map((book, index) => (
                   <Link href={`/buch/${book.id}`} className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md" key={`${book.title}-${index}`}>
                     <article className="rounded-lg border border-arena-border p-3 hover:border-gray-500">
-                      <div className="grid grid-cols-[120px_1fr] items-start gap-3.5 max-[900px]:grid-cols-1">
-                        <div className="grid h-auto w-[120px] place-items-center overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-xs text-arena-muted max-[900px]:w-[140px]" style={{ aspectRatio: "3/4" }}>
+                      <div className="grid grid-cols-[120px_1fr] items-start gap-3.5 max-[600px]:grid-cols-1">
+                        <div className="grid h-auto w-[120px] place-items-center overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[180px]" style={{ aspectRatio: "3/4" }}>
                           {book.coverImageUrl ? <img src={book.coverImageUrl} alt={`Cover von ${book.title}`} className="h-full w-full object-contain" /> : <span>Kein Cover</span>}
                         </div>
                         <div className="min-w-0">

@@ -158,7 +158,8 @@ export default function AdminPage() {
           <p className="text-red-700">Nur der SuperAdmin darf diese Seite sehen.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-[0.95rem]">
+            {/* Desktop-Tabelle */}
+            <table className="hidden sm:table w-full border-collapse text-[0.95rem]">
               <thead>
                 <tr>
                   <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Name</th>
@@ -230,6 +231,70 @@ export default function AdminPage() {
                 })}
               </tbody>
             </table>
+
+            {/* Mobile Card-Liste */}
+            <div className="sm:hidden grid gap-2.5">
+              {users.map((user) => {
+                const isDeactivated = user.status === "deactivated";
+                const isSuperAdmin = user.role === "SUPERADMIN";
+                const isBusy = busyUser === user.username;
+
+                return (
+                  <div key={user.username} className={`rounded-lg border border-arena-border p-3 ${isDeactivated ? "opacity-50" : ""}`}>
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <strong className="text-[0.95rem]">{user.username}</strong>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        isSuperAdmin ? "bg-blue-100 text-blue-800"
+                        : isDeactivated ? "bg-red-100 text-red-700"
+                        : "bg-green-100 text-green-800"
+                      }`}>
+                        {isSuperAdmin ? "Admin" : isDeactivated ? "Deaktiviert" : "Aktiv"}
+                      </span>
+                    </div>
+                    <p className="text-sm text-arena-muted mb-2 break-all">{user.email}</p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      <Link
+                        href={`/profil?user=${encodeURIComponent(user.username)}`}
+                        className="btn btn-sm"
+                      >
+                        Profil
+                      </Link>
+                      {!isSuperAdmin && (
+                        <>
+                          {isDeactivated ? (
+                            <button
+                              type="button"
+                              className="btn btn-sm"
+                              disabled={isBusy}
+                              onClick={() => changeUserStatus(user.username, "activate")}
+                            >
+                              Aktivieren
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-danger"
+                              disabled={isBusy}
+                              onClick={() => changeUserStatus(user.username, "deactivate")}
+                            >
+                              Deaktivieren
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-danger"
+                            disabled={isBusy}
+                            onClick={() => changeUserStatus(user.username, "delete")}
+                          >
+                            Löschen
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 

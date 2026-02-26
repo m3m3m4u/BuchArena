@@ -74,8 +74,8 @@ export default function BookDetailPage({ params }: PageProps) {
           <p className="text-red-700">{message}</p>
         ) : book ? (
           <>
-            <div className="mb-6 grid grid-cols-[200px_1fr] items-start gap-6 max-sm:grid-cols-1">
-              <div className="grid w-[200px] place-items-center overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-sm text-arena-muted max-sm:w-[160px]" style={{ aspectRatio: "3/4" }}>
+            <div className="mb-6 grid grid-cols-[200px_1fr] items-start gap-6 max-[600px]:grid-cols-1 max-[600px]:gap-4">
+              <div className="grid w-[200px] place-items-center overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-sm text-arena-muted max-[600px]:mx-auto max-[600px]:w-[160px]" style={{ aspectRatio: "3/4" }}>
                 {book.coverImageUrl ? (
                   <img src={book.coverImageUrl} alt={`Cover von ${book.title}`} className="h-full w-full object-contain" />
                 ) : (
@@ -98,7 +98,6 @@ export default function BookDetailPage({ params }: PageProps) {
                   {book.publisher && <p className="my-1"><strong>Verlag:</strong> {book.publisher}</p>}
                   {book.isbn && <p className="my-1"><strong>ISBN:</strong> {book.isbn}</p>}
                   {book.pageCount > 0 && <p className="my-1"><strong>Seitenanzahl:</strong> {book.pageCount}</p>}
-                  {book.language && <p className="my-1"><strong>Sprache:</strong> {book.language}</p>}
                 </div>
               </div>
             </div>
@@ -106,7 +105,7 @@ export default function BookDetailPage({ params }: PageProps) {
             {book.description && (
               <div className="mb-5">
                 <h2 className="mb-2 text-lg">Beschreibung</h2>
-                <p>{book.description}</p>
+                <p className="[overflow-wrap:break-word]">{book.description}</p>
               </div>
             )}
 
@@ -149,14 +148,16 @@ export default function BookDetailPage({ params }: PageProps) {
             )}
 
             {book.presentationVideoUrl && (
-              <div className="mb-4 text-center">
+              <div className="mb-4">
                 <h2 className="mb-2 text-lg">Vorstellungsvideo</h2>
-                <Link
-                  href={`/video?url=${encodeURIComponent(book.presentationVideoUrl)}&title=${encodeURIComponent(book.title)}`}
-                  className="btn"
-                >
-                  Video ansehen
-                </Link>
+                <div className="flex justify-center">
+                  <Link
+                    href={`/video?url=${encodeURIComponent(book.presentationVideoUrl)}&title=${encodeURIComponent(book.title)}`}
+                    className="btn"
+                  >
+                    Video ansehen
+                  </Link>
+                </div>
               </div>
             )}
           </>
