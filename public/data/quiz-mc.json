@@ -1,0 +1,2697 @@
+[
+  {
+    "question": "Welchem Haus gehören Harry Potter, Ron Weasley und Hermine Granger in Hogwarts an?",
+    "answers": [
+      "Gryffindor",
+      "Slytherin",
+      "Hufflepuff",
+      "Ravenclaw"
+    ],
+    "correct": "Gryffindor",
+    "explanation": "Gryffindor ist das Haus der Tapferen, gegründet von Godric Gryffindor."
+  },
+  {
+    "question": "Wie heißt der Hobbit, der den Einen Ring im Schicksalsberg vernichten soll?",
+    "answers": [
+      "Frodo Beutlin",
+      "Bilbo Beutlin",
+      "Samweis Gamdschie",
+      "Peregrin Tuk"
+    ],
+    "correct": "Frodo Beutlin",
+    "explanation": "Frodo erbt den Ring von seinem Onkel Bilbo und trägt die Last bis nach Mordor."
+  },
+  {
+    "question": "In welchem Horror-Roman von Stephen King terrorisiert ein Clown namens Pennywise die Kinder?",
+    "answers": [
+      "Es (It)",
+      "Friedhof der Kuscheltiere",
+      "Shining",
+      "Carrie"
+    ],
+    "correct": "Es (It)",
+    "explanation": "Das Wesen tritt meistens als Clown auf, ist aber eigentlich eine uralte, böse Entität."
+  },
+  {
+    "question": "Wer schrieb den weltberühmten Kriminalroman „Mord im Orient-Express“?",
+    "answers": [
+      "Agatha Christie",
+      "Arthur Conan Doyle",
+      "Edgar Wallace",
+      "Georges Simenon"
+    ],
+    "correct": "Agatha Christie",
+    "explanation": "Agatha Christie gilt als „Queen of Crime“; ihr Detektiv hier ist Hercule Poirot."
+  },
+  {
+    "question": "Wie heißt der Glücksdrache in Michael Endes „Die unendliche Geschichte“?",
+    "answers": [
+      "Fuchur",
+      "Smaug",
+      "Drogon",
+      "Ohnezahn"
+    ],
+    "correct": "Fuchur",
+    "explanation": "Fuchur rettet den Jungen Atreju und hilft ihm bei der Suche nach einem Namen für die Kindliche Kaiserin."
+  },
+  {
+    "question": "Welches Zitat stammt aus „Der Kleine Prinz“ von Antoine de Saint-Exupéry?",
+    "answers": [
+      "„Man sieht nur mit dem Herzen gut.“",
+      "„Sein oder Nichtsein.“",
+      "„Ich denke, also bin ich.“",
+      "„Der Rest ist Schweigen.“"
+    ],
+    "correct": "„Man sieht nur mit dem Herzen gut.“",
+    "explanation": "Der Satz ist das zentrale philosophische Motiv des Buches: Das Wesentliche ist für die Augen unsichtbar."
+  },
+  {
+    "question": "Welcher deutsche Thriller-Autor ist für Bücher wie „Die Therapie“ oder „Das Paket“ bekannt?",
+    "answers": [
+      "Sebastian Fitzek",
+      "Frank Schätzing",
+      "Nele Neuhaus",
+      "Charlotte Link"
+    ],
+    "correct": "Sebastian Fitzek",
+    "explanation": "Fitzek ist einer der erfolgreichsten deutschen Autoren für Psychothriller."
+  },
+  {
+    "question": "Auf welcher Buchreihe basiert die TV-Serie „Game of Thrones“?",
+    "answers": [
+      "Das Lied von Eis und Feuer",
+      "Das Rad der Zeit",
+      "Die Chroniken von Narnia",
+      "Der Dunkle Turm"
+    ],
+    "correct": "Das Lied von Eis und Feuer",
+    "explanation": "Die Reihe stammt von George R.R. Martin; der erste Band heißt auf Englisch „A Game of Thrones“."
+  },
+  {
+    "question": "Wer ist im Roman „Frankenstein“ von Mary Shelley eigentlich „Frankenstein“?",
+    "answers": [
+      "Der Wissenschaftler (Schöpfer)",
+      "Das Monster",
+      "Der Gehilfe (Igor)",
+      "Das Schloss"
+    ],
+    "correct": "Der Wissenschaftler (Schöpfer)",
+    "explanation": "Ein häufiger Irrtum: Das Monster hat keinen Namen, Victor Frankenstein ist der Erbauer."
+  },
+  {
+    "question": "Welcher Symbologe ist die Hauptfigur in Dan Browns Bestseller „Sakrileg“ (The Da Vinci Code)?",
+    "answers": [
+      "Robert Langdon",
+      "Sherlock Holmes",
+      "Indiana Jones",
+      "Hercule Poirot"
+    ],
+    "correct": "Robert Langdon",
+    "explanation": "Langdon ist Professor für religiöse Ikonologie und Symbologie an der Harvard University."
+  },
+  {
+    "question": "Wie nennt Robinson Crusoe den Einheimischen, den er auf der Insel rettet?",
+    "answers": [
+      "Freitag",
+      "Montag",
+      "Dienstag",
+      "Sonntag"
+    ],
+    "correct": "Freitag",
+    "explanation": "Er nennt ihn nach dem Wochentag, an dem er ihn vor Kannibalen gerettet hat."
+  },
+  {
+    "question": "Welches Tier ist „Moby Dick“ im gleichnamigen Roman?",
+    "answers": [
+      "Ein weißer Pottwal",
+      "Ein Riesenkalmar",
+      "Ein weißer Hai",
+      "Ein Schwertwal (Orca)"
+    ],
+    "correct": "Ein weißer Pottwal",
+    "explanation": "Der Roman handelt von der obsessiven Jagd des Kapitäns Ahab auf diesen speziellen Wal."
+  },
+  {
+    "question": "In welchem Roman von George R.R. Martin sterben viele Hauptfiguren bei der „Roten Hochzeit“?",
+    "answers": [
+      "Das Lied von Eis und Feuer (Sturm der Schwerter)",
+      "Der Herr der Ringe",
+      "Eragon",
+      "Die Hexer-Saga"
+    ],
+    "correct": "Das Lied von Eis und Feuer (Sturm der Schwerter)",
+    "explanation": "Die Rote Hochzeit ist eines der schockierendsten Ereignisse in der modernen Fantasy-Literatur."
+  },
+  {
+    "question": "Wie heißt der Vampir, in den sich Bella Swan in der „Twilight“-Saga verliebt?",
+    "answers": [
+      "Edward Cullen",
+      "Jacob Black",
+      "Stefan Salvatore",
+      "Dracula"
+    ],
+    "correct": "Edward Cullen",
+    "explanation": "Die Bis(s)-Reihe von Stephenie Meyer löste einen massiven Vampir-Hype aus."
+  },
+  {
+    "question": "Welches Tier zieht in den „Känguru-Chroniken“ von Marc-Uwe Kling beim Erzähler ein?",
+    "answers": [
+      "Ein kommunistisches Känguru",
+      "Ein depressives Lama",
+      "Ein singender Hund",
+      "Ein cholerischer Koala"
+    ],
+    "correct": "Ein kommunistisches Känguru",
+    "explanation": "Das Känguru liebt Schnapspralinen und diskutiert gerne über politische Systeme."
+  },
+  {
+    "question": "Wer ist der Autor von „Sherlock Holmes“?",
+    "answers": [
+      "Arthur Conan Doyle",
+      "Charles Dickens",
+      "Jules Verne",
+      "H.G. Wells"
+    ],
+    "correct": "Arthur Conan Doyle",
+    "explanation": "Doyle schuf den berühmtesten Detektiv der Literaturgeschichte, der in der Baker Street 221b wohnt."
+  },
+  {
+    "question": "Welcher Roman von Bernhard Schlink wurde erfolgreich mit Kate Winslet verfilmt?",
+    "answers": [
+      "Der Vorleser",
+      "Die Blechtrommel",
+      "Parfum",
+      "Nirgendwo in Afrika"
+    ],
+    "correct": "Der Vorleser",
+    "explanation": "Der Roman thematisiert die Liebe eines Schülers zu einer ehemaligen KZ-Aufseherin und Analphabetin."
+  },
+  {
+    "question": "Wie viele Geister besuchen Ebenezer Scrooge in Dickens' „Eine Weihnachtsgeschichte“?",
+    "answers": [
+      "Vier (Marley + 3 Weihnachtsgeister)",
+      "Drei",
+      "Einer",
+      "Sieben"
+    ],
+    "correct": "Vier (Marley + 3 Weihnachtsgeister)",
+    "explanation": "Zuerst kommt sein verstorbener Partner Marley, dann die Geister der vergangenen, gegenwärtigen und zukünftigen Weihnacht."
+  },
+  {
+    "question": "Welches Mädchenbuch schrieb Johanna Spyri?",
+    "answers": [
+      "Heidi",
+      "Pippi Langstrumpf",
+      "Die kleine Hexe",
+      "Hanni und Nanni"
+    ],
+    "correct": "Heidi",
+    "explanation": "„Heidi“ ist einer der bekanntesten Schweizer Romane und wurde weltweit übersetzt."
+  },
+  {
+    "question": "Was ist „Panem“ in der Trilogie „Die Tribute von Panem“?",
+    "answers": [
+      "Ein diktatorischer Staat in Nordamerika",
+      "Ein fremder Planet",
+      "Eine Insel im Pazifik",
+      "Ein Raumschiff"
+    ],
+    "correct": "Ein diktatorischer Staat in Nordamerika",
+    "explanation": "Panem (vom lateinischen „panem et circenses“ – Brot und Spiele) besteht aus dem Kapitol und 12 Distrikten."
+  },
+  {
+    "question": "Welcher Debütroman von Christian Kracht (1995) gilt als Initialzündung der deutschen Pop-Literatur?",
+    "answers": [
+      "Faserland",
+      "Soloalbum",
+      "Generation Golf",
+      "Fleisch ist mein Gemüse"
+    ],
+    "correct": "Faserland",
+    "explanation": "Der Roman schildert eine markenfixierte Reise eines namenlosen Ich-Erzählers von Sylt bis Zürich."
+  },
+  {
+    "question": "In Michel Houellebecqs Roman „Unterwerfung“ (2015) gewinnt ein muslimischer Kandidat die Wahl in welchem Jahr?",
+    "answers": [
+      "2022",
+      "2030",
+      "2019",
+      "2048"
+    ],
+    "correct": "2022",
+    "explanation": "Der Roman spielt in einer nahen Zukunft Frankreichs und thematisiert die politische und gesellschaftliche Neuordnung."
+  },
+  {
+    "question": "Welches zentrale Motiv verbindet die Handlung in Haruki Murakamis „1Q84“?",
+    "answers": [
+      "Zwei Monde am Himmel",
+      "Ein blauer Tiger",
+      "Ein endloser Regen",
+      "Eine sprechende Katze"
+    ],
+    "correct": "Zwei Monde am Himmel",
+    "explanation": "Die Protagonistin Aomame bemerkt, dass sie in eine Parallelwelt geraten ist, als sie zwei Monde sieht."
+  },
+  {
+    "question": "Wie heißt der fiktive Staat im Roman „Der Report der Magd“ (The Handmaid's Tale) von Margaret Atwood?",
+    "answers": [
+      "Gilead",
+      "Panem",
+      "Ozeanien",
+      "Zion"
+    ],
+    "correct": "Gilead",
+    "explanation": "Gilead ist eine theokratische Militärdiktatur auf dem Boden der ehemaligen USA."
+  },
+  {
+    "question": "Welcher norwegische Autor löste mit seinem sechsbändigen, extrem autobiografischen Werk „Min Kamp“ (Sterben, Lieben, etc.) eine ethische Debatte aus?",
+    "answers": [
+      "Karl Ove Knausgård",
+      "Jo Nesbø",
+      "Jostein Gaarder",
+      "Jon Fosse"
+    ],
+    "correct": "Karl Ove Knausgård",
+    "explanation": "Knausgård beschrieb sein privates Umfeld so rücksichtslos detailliert, dass es zum literarischen Skandal und Welterfolg wurde."
+  },
+  {
+    "question": "In welchem Auto brechen die Protagonisten Maik und Tschick in Wolfgang Herrndorfs Roman „Tschick“ auf?",
+    "answers": [
+      "Lada Niva",
+      "VW Golf",
+      "Trabant 601",
+      "Opel Corsa"
+    ],
+    "correct": "Lada Niva",
+    "explanation": "Der gestohlene, hellblaue Lada ist das zentrale Fortbewegungsmittel in diesem modernen Roadmovie-Roman."
+  },
+  {
+    "question": "Für welchen Roman erhielt Kazuo Ishiguro den Booker Prize (nicht den Nobelpreis)?",
+    "answers": [
+      "Was vom Tage übrig blieb",
+      "Alles, was wir geben mussten",
+      "Der begrabene Riese",
+      "Klara und die Sonne"
+    ],
+    "correct": "Was vom Tage übrig blieb",
+    "explanation": "Der Roman (The Remains of the Day) über einen perfekten Butler wurde 1989 ausgezeichnet; den Nobelpreis erhielt er erst 2017."
+  },
+  {
+    "question": "Welches Stilmittel ist charakteristisch für Annie Ernaux' Buch „Die Jahre“?",
+    "answers": [
+      "Die unpersönliche Form („man“, „wir“)",
+      "Der Briefroman-Stil",
+      "Die zweite Person („Du“)",
+      "Reiner Dialog ohne Erzähler"
+    ],
+    "correct": "Die unpersönliche Form („man“, „wir“)",
+    "explanation": "Ernaux schreibt eine „kollektive Autobiografie“ und verzichtet auf das individuelle „Ich“, um eine ganze Epoche zu erfassen."
+  },
+  {
+    "question": "Wie heißt die neapolitanische Freundin der Erzählerin Elena in Elena Ferrantes Tetralogie („Meine geniale Freundin“)?",
+    "answers": [
+      "Lila (Raffaella) Cerullo",
+      "Maria Rossi",
+      "Sofia Loren",
+      "Giovanna Vitale"
+    ],
+    "correct": "Lila (Raffaella) Cerullo",
+    "explanation": "Die komplexe Freundschaft zwischen der intellektuellen Elena und der wilden, brillanten Lila steht im Zentrum."
+  },
+  {
+    "question": "In David Foster Wallaces „Unendlicher Spaß“ spielt ein Film eine zentrale Rolle. Was bewirkt er?",
+    "answers": [
+      "Er ist so unterhaltsam, dass Zuschauer verhungern",
+      "Er löst sofortige Amnesie aus",
+      "Er sagt die Zukunft voraus",
+      "Er zeigt jedem Zuschauer seinen eigenen Tod"
+    ],
+    "correct": "Er ist so unterhaltsam, dass Zuschauer verhungern",
+    "explanation": "\"The Entertainment\" (das Samisdat-Tape) ist so fesselnd, dass man aufhört zu essen und zu schlafen, bis man stirbt."
+  },
+  {
+    "question": "Welcher Roman von Roberto Bolaño dreht sich um eine Mordserie an Frauen in der fiktiven mexikanischen Stadt Santa Teresa?",
+    "answers": [
+      "2666",
+      "Die wilden Detektive",
+      "Lumpenroman",
+      "Stern in der Ferne"
+    ],
+    "correct": "2666",
+    "explanation": "Das posthume Magnum Opus des Chilenen spiegelt die realen Frauenmorde von Ciudad Juárez wider."
+  },
+  {
+    "question": "Wer schrieb den Roman „Die Klavierspielerin“, der die sadomasochistische Beziehung zwischen Mutter und Tochter thematisiert?",
+    "answers": [
+      "Elfriede Jelinek",
+      "Ingeborg Bachmann",
+      "Herta Müller",
+      "Christa Wolf"
+    ],
+    "correct": "Elfriede Jelinek",
+    "explanation": "Die österreichische Nobelpreisträgerin analysiert darin Machtstrukturen und sexuelle Repression."
+  },
+  {
+    "question": "Welches ungewöhnliche Erzählform wählt Italo Calvino in „Wenn ein Reisender in einer Winternacht“?",
+    "answers": [
+      "Der Leser wird als „Du“ direkt angesprochen",
+      "Rückwärts erzählte Chronologie",
+      "Ein Roman nur aus Fußnoten",
+      "Erzählung aus Sicht eines Gegenstandes"
+    ],
+    "correct": "Der Leser wird als „Du“ direkt angesprochen",
+    "explanation": "Der Protagonist ist der Leser selbst („Du“), der versucht, den Roman zu lesen, aber ständig unterbrochen wird."
+  },
+  {
+    "question": "In Albert Camus' „Der Fremde“ tötet Meursault einen Araber. Was gibt er als Grund an?",
+    "answers": [
+      "Die Sonne hat ihn geblendet",
+      "Er wollte sein Geld",
+      "Es war Notwehr",
+      "Er handelte im Auftrag"
+    ],
+    "correct": "Die Sonne hat ihn geblendet",
+    "explanation": "Diese absurde Begründung unterstreicht die Sinnlosigkeit und Zufälligkeit der Existenz im Existentialismus."
+  },
+  {
+    "question": "Welches Tier steht im Titel eines Romans von Marlen Haushofer, der eine Frau durch eine unsichtbare Wand von der Welt trennt?",
+    "answers": [
+      "Die Wand (kein Tier im Titel)",
+      "Die Katze",
+      "Der Hund",
+      "Die Kuh"
+    ],
+    "correct": "Die Wand (kein Tier im Titel)",
+    "explanation": "Fangfrage/Test: Der Roman heißt nur „Die Wand“. (Wenn eine Antwort gewählt werden muss, ist die Frage hier irreführend, aber ein gutes Quiz-Element: „Wie heißt der Roman?“ -> „Die Wand“). Alternative Frage s.u."
+  },
+  {
+    "question": "Welches Buch von Saša Stanišić gewann 2019 den Deutschen Buchpreis?",
+    "answers": [
+      "Herkunft",
+      "Vor dem Fest",
+      "Wie der Soldat das Grammofon repariert",
+      "Fallensteller"
+    ],
+    "correct": "Herkunft",
+    "explanation": "Das Buch vermischt Autobiografie und Fiktion und thematisiert seine Flucht aus Jugoslawien."
+  },
+  {
+    "question": "In welchem dystopischen Roman von Cormac McCarthy wandern ein Vater und sein Sohn durch ein verbranntes Amerika?",
+    "answers": [
+      "Die Straße (The Road)",
+      "Kein Land für alte Männer",
+      "Die Abendröte im Westen",
+      "All die schönen Pferde"
+    ],
+    "correct": "Die Straße (The Road)",
+    "explanation": "Der Roman ist bekannt für seinen extrem reduzierten Stil und die trostlose, aschgraue Welt ohne Hoffnung."
+  },
+  {
+    "question": "Welcher Autor thematisierte in „Faserland“ (s.o.) später in „Imperium“ einen Nudisten auf einer Kokosnuss-Insel?",
+    "answers": [
+      "Christian Kracht",
+      "Benjamin von Stuckrad-Barre",
+      "Maxim Biller",
+      "Rainald Goetz"
+    ],
+    "correct": "Christian Kracht",
+    "explanation": "„Imperium“ erzählt die bizarr-wahre Geschichte von August Engelhardt in Deutsch-Neuguinea."
+  },
+  {
+    "question": "Wofür stehen die Initialen in W.G. Sebalds Namen, der für Werke wie „Austerlitz“ bekannt ist?",
+    "answers": [
+      "Winfried Georg",
+      "Walter Gerhard",
+      "William George",
+      "Wolfgang Günter"
+    ],
+    "correct": "Winfried Georg",
+    "explanation": "Sebald ist international einer der rezipiertesten deutschen Autoren der Moderne, bekannt für die Vermischung von Fakten, Fiktion und Fotos."
+  },
+  {
+    "question": "Welches Werk von James Joyce gilt aufgrund seiner experimentellen Sprache („Finneganisch“) als eines der schwersten Bücher überhaupt?",
+    "answers": [
+      "Finnegans Wake",
+      "Ulysses",
+      "Dubliners",
+      "Ein Porträt des Künstlers"
+    ],
+    "correct": "Finnegans Wake",
+    "explanation": "Anders als „Ulysses“ löst sich „Finnegans Wake“ fast vollständig von herkömmlicher Syntax und Semantik (Traumsprache)."
+  },
+  {
+    "question": "Wie heißt das Haus, in dem Pippi Langstrumpf wohnt?",
+    "answers": [
+      "Villa Kunterbunt",
+      "Villa Sonnenschein",
+      "Fuchsbau",
+      "Villa Riebmann"
+    ],
+    "correct": "Villa Kunterbunt",
+    "explanation": "Pippi lebt dort allein mit ihrem Pferd und ihrem Affen."
+  },
+  {
+    "question": "Welcher Autor erschuf die „Drei ???“ (Justus, Peter und Bob)?",
+    "answers": [
+      "Robert Arthur",
+      "Enid Blyton",
+      "Stefan Wolf",
+      "Thomas Brezina"
+    ],
+    "correct": "Robert Arthur",
+    "explanation": "Die Serie wurde ursprünglich in den USA erfunden, ist aber in Deutschland Kult geworden."
+  },
+  {
+    "question": "Welches Tier ist Balu im „Dschungelbuch“?",
+    "answers": [
+      "Ein Bär",
+      "Ein Tiger",
+      "Ein Panther",
+      "Ein Wolf"
+    ],
+    "correct": "Ein Bär",
+    "explanation": "Balu der Bär lehrt Mogli die „Gemütlichkeit“."
+  },
+  {
+    "question": "Was stiehlt der Räuber Hotzenplotz der Großmutter?",
+    "answers": [
+      "Eine Kaffeemühle",
+      "Eine Perlenkette",
+      "Ein Kochbuch",
+      "Eine goldene Uhr"
+    ],
+    "correct": "Eine Kaffeemühle",
+    "explanation": "Die Kaffeemühle spielte das Lieblingslied der Großmutter: „Alles neu macht der Mai“."
+  },
+  {
+    "question": "Wie heißt der Lokomotivführer, der beste Freund von Jim Knopf?",
+    "answers": [
+      "Lukas",
+      "Thomas",
+      "Peter",
+      "Michael"
+    ],
+    "correct": "Lukas",
+    "explanation": "Lukas der Lokomotivführer fährt die Lokomotive Emma."
+  },
+  {
+    "question": "Welche Farbe haben die Herren, die in Michael Endes „Momo“ die Zeit stehlen?",
+    "answers": [
+      "Grau",
+      "Schwarz",
+      "Weiß",
+      "Rot"
+    ],
+    "correct": "Grau",
+    "explanation": "Die „Grauen Herren“ rauchen Zigarren aus getrockneter Zeit."
+  },
+  {
+    "question": "Mit welchem Gegenstand wird Schneewittchen von der bösen Stiefmutter vergiftet?",
+    "answers": [
+      "Ein Apfel",
+      "Ein Kamm",
+      "Ein Gürtel",
+      "Ein Wein"
+    ],
+    "correct": "Ein Apfel",
+    "explanation": "Zuvor versuchte sie es bereits mit einem Schnürriemen und einem Kamm."
+  },
+  {
+    "question": "Wie heißt der berühmte Indianerhäuptling in den Büchern von Karl May?",
+    "answers": [
+      "Winnetou",
+      "Abahachi",
+      "Sitting Bull",
+      "Geronimo"
+    ],
+    "correct": "Winnetou",
+    "explanation": "Winnetou ist der Blutsbruder von Old Shatterhand."
+  },
+  {
+    "question": "Welcher Druide braut den Zaubertrank in den „Asterix“-Comics?",
+    "answers": [
+      "Miraculix",
+      "Majestix",
+      "Troubadix",
+      "Verleihnix"
+    ],
+    "correct": "Miraculix",
+    "explanation": "Miraculix ist der Einzige, der das Geheimnis des Tranks kennt."
+  },
+  {
+    "question": "Wie heißt der Hund von Tim in den Comics „Tim und Struppi“?",
+    "answers": [
+      "Struppi (im Original Milou)",
+      "Idefix",
+      "Pluto",
+      "Snoopy"
+    ],
+    "correct": "Struppi (im Original Milou)",
+    "explanation": "Struppi ist ein weißer Drahthaar-Foxterrier."
+  },
+  {
+    "question": "Durch welches Möbelstück gelangen die Kinder in „Die Chroniken von Narnia“ in die Zauberwelt?",
+    "answers": [
+      "Ein Kleiderschrank",
+      "Eine Kommode",
+      "Ein Bett",
+      "Ein Spiegel"
+    ],
+    "correct": "Ein Kleiderschrank",
+    "explanation": "Im ersten Band „Der König von Narnia“ entdecken sie den Durchgang im Schrank."
+  },
+  {
+    "question": "Welches Fabelwesen ist Saphira im Roman „Eragon“?",
+    "answers": [
+      "Ein Drache",
+      "Ein Einhorn",
+      "Ein Greif",
+      "Ein Phönix"
+    ],
+    "correct": "Ein Drache",
+    "explanation": "Eragon findet ihr blaues Ei und wird zum Drachenreiter."
+  },
+  {
+    "question": "Wer ist der göttliche Vater von Percy Jackson in der gleichnamigen Buchreihe?",
+    "answers": [
+      "b",
+      "Zeus",
+      "Hades",
+      "Ares"
+    ],
+    "correct": "b",
+    "explanation": "Percy ist ein Halbgott und Sohn des Meeresgottes."
+  },
+  {
+    "question": "Aus welchem Distrikt stammen Katniss und Peeta in „Die Tribute von Panem“?",
+    "answers": [
+      "Distrikt 12",
+      "Distrikt 1",
+      "Distrikt 9",
+      "Distrikt 13"
+    ],
+    "correct": "Distrikt 12",
+    "explanation": "Distrikt 12 ist für den Kohlebergbau zuständig."
+  },
+  {
+    "question": "Wer schrieb den Erotik-Bestseller „Fifty Shades of Grey“?",
+    "answers": [
+      "E. L. James",
+      "Anna Todd",
+      "Sylvia Day",
+      "Jojo Moyes"
+    ],
+    "correct": "E. L. James",
+    "explanation": "Die Trilogie begann ursprünglich als Fan-Fiction zu „Twilight“."
+  },
+  {
+    "question": "In welchem Land spielt der Roman „Drachenläufer“ von Khaled Hosseini größtenteils?",
+    "answers": [
+      "Afghanistan",
+      "Iran",
+      "Indien",
+      "Syrien"
+    ],
+    "correct": "Afghanistan",
+    "explanation": "Der Roman erzählt die Geschichte zweier Jungen in Kabul vor und während der Konflikte."
+  },
+  {
+    "question": "Welches historische Bauwerk steht im Mittelpunkt von Ken Folletts „Die Säulen der Erde“?",
+    "answers": [
+      "Eine Kathedrale",
+      "Eine Burg",
+      "Eine Stadtmauer",
+      "Eine Brücke"
+    ],
+    "correct": "Eine Kathedrale",
+    "explanation": "Der Roman beschreibt den Bau der Kathedrale von Kingsbridge im England des 12. Jahrhunderts."
+  },
+  {
+    "question": "Wie heißt die FBI-Agentin im Thriller „Das Schweigen der Lämmer“?",
+    "answers": [
+      "Clarice Starling",
+      "Sarah Connor",
+      "Ellen Ripley",
+      "Dana Scully"
+    ],
+    "correct": "Clarice Starling",
+    "explanation": "Sie muss den Kannibalen Hannibal Lecter befragen, um einen anderen Mörder zu fangen."
+  },
+  {
+    "question": "Wer ist die hackerbegabte Protagonistin in Stieg Larssons „Millennium“-Trilogie (Verblendung)?",
+    "answers": [
+      "Lisbeth Salander",
+      "Mikael Blomkvist",
+      "Annika Giannini",
+      "Erika Berger"
+    ],
+    "correct": "Lisbeth Salander",
+    "explanation": "Lisbeth ist eine geniale, aber sozial isolierte Hackerin mit fotografischem Gedächtnis."
+  },
+  {
+    "question": "Wer ist der Autor von „Der Pate“ (The Godfather)?",
+    "answers": [
+      "Mario Puzo",
+      "Francis Ford Coppola",
+      "Martin Scorsese",
+      "James Ellroy"
+    ],
+    "correct": "Mario Puzo",
+    "explanation": "Puzos Roman von 1969 ist die Vorlage für den berühmten Mafia-Film."
+  },
+  {
+    "question": "Was wird im „Jurassic Park“ von Michael Crichton geklont?",
+    "answers": [
+      "Dinosaurier",
+      "Mammuts",
+      "Säbelzahntiger",
+      "Neandertaler"
+    ],
+    "correct": "Dinosaurier",
+    "explanation": "Wissenschaftler extrahieren Dino-DNA aus in Bernstein eingeschlossenen Mücken."
+  },
+  {
+    "question": "Was baut Mark Watney in „Der Marsianer“ an, um zu überleben?",
+    "answers": [
+      "Kartoffeln",
+      "Weizen",
+      "Mais",
+      "Tomaten"
+    ],
+    "correct": "Kartoffeln",
+    "explanation": "Er nutzt seinen eigenen Kot als Dünger, um auf dem Mars Nahrung anzubauen."
+  },
+  {
+    "question": "In welchem Jahrzehnt spielt „Der große Gatsby“ von F. Scott Fitzgerald?",
+    "answers": [
+      "1920er Jahre",
+      "1950er Jahre",
+      "1890er Jahre",
+      "1970er Jahre"
+    ],
+    "correct": "1920er Jahre",
+    "explanation": "Der Roman ist das Porträt der „Roaring Twenties“ (Goldene Zwanziger) und des Jazz Age."
+  },
+  {
+    "question": "Wie lautet der Name des Protagonisten in George Orwells „1984“?",
+    "answers": [
+      "Winston Smith",
+      "Big Brother",
+      "Emmanuel Goldstein",
+      "O'Brien"
+    ],
+    "correct": "Winston Smith",
+    "explanation": "Winston arbeitet im Ministerium für Wahrheit und beginnt, am System zu zweifeln."
+  },
+  {
+    "question": "Welches Gebot steht am Ende an der Scheune in „Farm der Tiere“?",
+    "answers": [
+      "Alle Tiere sind gleich, aber manche sind gleicher.",
+      "Alle Menschen sind Feinde.",
+      "Kein Tier darf Alkohol trinken.",
+      "Vier Beine gut, zwei Beine schlecht."
+    ],
+    "correct": "Alle Tiere sind gleich, aber manche sind gleicher.",
+    "explanation": "Die Schweine ändern die ursprünglichen Gebote zu ihren Gunsten ab."
+  },
+  {
+    "question": "Wer schrieb die Dystopie „Schöne neue Welt“?",
+    "answers": [
+      "Aldous Huxley",
+      "George Orwell",
+      "Ray Bradbury",
+      "H.G. Wells"
+    ],
+    "correct": "Aldous Huxley",
+    "explanation": "Der Roman beschreibt eine Gesellschaft, die durch Drogen (Soma) und Konditionierung kontrolliert wird."
+  },
+  {
+    "question": "Wer schrieb „Der Graf von Monte Christo“?",
+    "answers": [
+      "Alexandre Dumas",
+      "Victor Hugo",
+      "Jules Verne",
+      "Gustave Flaubert"
+    ],
+    "correct": "Alexandre Dumas",
+    "explanation": "Dumas schrieb auch „Die drei Musketiere“."
+  },
+  {
+    "question": "Wie lautet das Motto der „Drei Musketiere“?",
+    "answers": [
+      "Einer für alle, alle für einen",
+      "Angriff ist die beste Verteidigung",
+      "Gott und mein Recht",
+      "Ehre wem Ehre gebührt"
+    ],
+    "correct": "Einer für alle, alle für einen",
+    "explanation": "D'Artagnan und seine Freunde schwören sich damit ewige Treue."
+  },
+  {
+    "question": "Wer wettet, dass er in „In 80 Tagen um die Welt“ reisen kann?",
+    "answers": [
+      "Phileas Fogg",
+      "Passepartout",
+      "Kapitän Nemo",
+      "Lemuel Gulliver"
+    ],
+    "correct": "Phileas Fogg",
+    "explanation": "Der englische Gentleman Fogg setzt sein Vermögen auf diese Wette."
+  },
+  {
+    "question": "Wie heißt das U-Boot von Kapitän Nemo in „20.000 Meilen unter dem Meer“?",
+    "answers": [
+      "Nautilus",
+      "Poseidon",
+      "Titanic",
+      "Black Pearl"
+    ],
+    "correct": "Nautilus",
+    "explanation": "Jules Verne beschrieb das U-Boot lange vor der realen technischen Verbreitung."
+  },
+  {
+    "question": "Wer ist der beste Freund von Tom Sawyer?",
+    "answers": [
+      "Huckleberry Finn",
+      "Joe Harper",
+      "Sid",
+      "Becky Thatcher"
+    ],
+    "correct": "Huckleberry Finn",
+    "explanation": "Huck Finn ist der abenteuerlustige Junge, der in einer Tonne schläft."
+  },
+  {
+    "question": "Was verlangt Oliver Twist im Waisenhaus, was für einen Skandal sorgt?",
+    "answers": [
+      "Mehr Essen („Please, sir, I want some more.“)",
+      "Ein Bett",
+      "Geld",
+      "Seine Eltern"
+    ],
+    "correct": "Mehr Essen („Please, sir, I want some more.“)",
+    "explanation": "Dass ein Waisenkind einen Nachschlag verlangt, war zu dieser Zeit undenkbar."
+  },
+  {
+    "question": "In welcher Stadt spielt die Handlung von „Romeo und Julia“ hauptsächlich?",
+    "answers": [
+      "Verona",
+      "Venedig",
+      "Rom",
+      "Florenz"
+    ],
+    "correct": "Verona",
+    "explanation": "Das Stück beginnt mit dem Streit der Häuser Capulet und Montague im „schönen Verona“."
+  },
+  {
+    "question": "Welches Tier ist „Kassiopeia“ in Michael Endes „Momo“?",
+    "answers": [
+      "Schildkröte",
+      "Eule",
+      "Katze",
+      "Rabe"
+    ],
+    "correct": "Schildkröte",
+    "explanation": "Die Schildkröte kann etwas in die Zukunft sehen, aber immer nur eine halbe Stunde."
+  },
+  {
+    "question": "Wer schrieb die „Fünf Freunde“-Bücher?",
+    "answers": [
+      "Enid Blyton",
+      "Astrid Lindgren",
+      "Erich Kästner",
+      "J.K. Rowling"
+    ],
+    "correct": "Enid Blyton",
+    "explanation": "Blyton ist eine der produktivsten Kinderbuchautorinnen der Geschichte."
+  },
+  {
+    "question": "Wie heißt der Vampirjäger in Bram Stokers „Dracula“?",
+    "answers": [
+      "Abraham Van Helsing",
+      "Jonathan Harker",
+      "Renfield",
+      "Arthur Holmwood"
+    ],
+    "correct": "Abraham Van Helsing",
+    "explanation": "Van Helsing ist der Wissenschaftler, der weiß, wie man Vampire bekämpft."
+  },
+  {
+    "question": "Welches Wort fehlt im Titel: „Der Fänger im ...“?",
+    "answers": [
+      "Roggen",
+      "Weizen",
+      "Hafer",
+      "Mais"
+    ],
+    "correct": "Roggen",
+    "explanation": "Der Titel bezieht sich auf einen Traum des Protagonisten, Kinder vor dem Abgrund zu retten."
+  },
+  {
+    "question": "Wer verfasste „Max und Moritz“?",
+    "answers": [
+      "Wilhelm Busch",
+      "Brüder Grimm",
+      "Hans Christian Andersen",
+      "Heinrich Hoffmann"
+    ],
+    "correct": "Wilhelm Busch",
+    "explanation": "Die Bildergeschichte in Reimen gilt als Vorläufer des modernen Comics."
+  },
+  {
+    "question": "Welches schwedische Kinderbuch handelt von einer Reise auf dem Rücken einer Gans?",
+    "answers": [
+      "Die wunderbare Reise des kleinen Nils Holgersson",
+      "Michel aus Lönneberga",
+      "Ronja Räubertochter",
+      "Madita"
+    ],
+    "correct": "Die wunderbare Reise des kleinen Nils Holgersson",
+    "explanation": "Nils wird zur Strafe in einen Wichtel verwandelt und fliegt mit den Wildgänsen durch Schweden."
+  },
+  {
+    "question": "Welches Tier ist I-Aah in „Pu der Bär“ (Winnie Puuh)?",
+    "answers": [
+      "Ein Esel",
+      "Ein Ferkel",
+      "Ein Tiger",
+      "Ein Kaninchen"
+    ],
+    "correct": "Ein Esel",
+    "explanation": "I-Aah (Eeyore) ist bekannt für seine depressive, melancholische Stimmung."
+  },
+  {
+    "question": "Gegen was kämpft Don Quijote in dem berühmten spanischen Roman?",
+    "answers": [
+      "Gegen Windmühlen",
+      "Gegen Drachen",
+      "Gegen Riesen",
+      "Gegen eine Armee"
+    ],
+    "correct": "Gegen Windmühlen",
+    "explanation": "Der verwirrte Ritter hält die Windmühlen für böse Riesen; daher kommt die Redewendung „gegen Windmühlen kämpfen“."
+  },
+  {
+    "question": "Welche Zahl ist laut „Per Anhalter durch die Galaxis“ die Antwort auf alles?",
+    "answers": [
+      "42",
+      "23",
+      "99",
+      "101"
+    ],
+    "correct": "42",
+    "explanation": "Der Supercomputer „Deep Thought“ errechnet diese Antwort auf die „endgültige Frage nach dem Leben, dem Universum und dem ganzen Rest“."
+  },
+  {
+    "question": "Welchem weißen Tier folgt Alice ins Wunderland?",
+    "answers": [
+      "Einem Kaninchen",
+      "Einer Maus",
+      "Einer Katze",
+      "Einem Schwan"
+    ],
+    "correct": "Einem Kaninchen",
+    "explanation": "Das weiße Kaninchen schaut auf seine Uhr und murmelt: „Oh weh! Ich werde zu spät kommen!“"
+  },
+  {
+    "question": "Wer schrieb das Drama „Hamlet“?",
+    "answers": [
+      "William Shakespeare",
+      "Christopher Marlowe",
+      "Oscar Wilde",
+      "Charles Dickens"
+    ],
+    "correct": "William Shakespeare",
+    "explanation": "„Hamlet“ enthält das berühmteste Zitat der Theatergeschichte: „Sein oder Nichtsein, das ist hier die Frage.“"
+  },
+  {
+    "question": "Wie heißt der einbeinige Pirat in „Die Schatzinsel“?",
+    "answers": [
+      "Long John Silver",
+      "Captain Hook",
+      "Jack Sparrow",
+      "Blackbeard"
+    ],
+    "correct": "Long John Silver",
+    "explanation": "Er ist der Schiffskoch, der eine Meuterei anzettelt, um den Schatz von Captain Flint zu finden."
+  },
+  {
+    "question": "Welches Insekt wird aus der „Kleinen Raupe Nimmersatt“ am Ende?",
+    "answers": [
+      "Ein Schmetterling",
+      "Ein Käfer",
+      "Eine Motte",
+      "Eine Libelle"
+    ],
+    "correct": "Ein Schmetterling",
+    "explanation": "Der Kinderbuchklassiker von Eric Carle zeigt die Metamorphose auf sehr hungrige Weise."
+  },
+  {
+    "question": "In was bleibt Michel aus Lönneberga mit seinem Kopf stecken?",
+    "answers": [
+      "In einer Suppenschüssel",
+      "In einem Eimer",
+      "In einem Krug",
+      "In einem Topf"
+    ],
+    "correct": "In einer Suppenschüssel",
+    "explanation": "Er wollte den letzten Rest der Fleischsuppe ausschlecken."
+  },
+  {
+    "question": "Welches Buch liest Bastian Balthasar Bux in „Die unendliche Geschichte“?",
+    "answers": [
+      "Die unendliche Geschichte",
+      "Das magische Buch",
+      "Märchenmond",
+      "Tintenherz"
+    ],
+    "correct": "Die unendliche Geschichte",
+    "explanation": "Das Buch, das er liest, erzählt die Geschichte, in der er selbst zur Figur wird (Metafiktion)."
+  },
+  {
+    "question": "Wie heißt der Protagonist in Hermann Hesses „Der Steppenwolf“?",
+    "answers": [
+      "Harry Haller",
+      "Hans Castorp",
+      "Josef K.",
+      "Franz Biberkopf"
+    ],
+    "correct": "Harry Haller",
+    "explanation": "Harry Haller leidet an der Zerrissenheit zwischen seiner bürgerlichen und seiner „wölfischen“ Natur."
+  },
+  {
+    "question": "Wer schrieb die „Tintenwelt“-Trilogie (Tintenherz)?",
+    "answers": [
+      "Cornelia Funke",
+      "Kerstin Gier",
+      "Michael Ende",
+      "J.K. Rowling"
+    ],
+    "correct": "Cornelia Funke",
+    "explanation": "Funke ist eine der international erfolgreichsten deutschen Kinder- und Jugendbuchautorinnen."
+  },
+  {
+    "question": "Welches Tier ist der beste Freund von „Pettersson“?",
+    "answers": [
+      "Ein Kater (Findus)",
+      "Ein Hund",
+      "Ein Huhn",
+      "Ein Schwein"
+    ],
+    "correct": "Ein Kater (Findus)",
+    "explanation": "Findus ist ein sprechender Kater mit einer grünen Latzhose."
+  },
+  {
+    "question": "In welchem Hotel spielt Stephen Kings Horror-Roman „Shining“?",
+    "answers": [
+      "Overlook Hotel",
+      "Bates Motel",
+      "Hotel California",
+      "Grand Budapest Hotel"
+    ],
+    "correct": "Overlook Hotel",
+    "explanation": "Das Hotel liegt isoliert in den Bergen und beeinflusst den Vater Jack Torrance böswillig."
+  },
+  {
+    "question": "Welches Schulfach unterrichtet Severus Snape in den ersten Bänden von Harry Potter?",
+    "answers": [
+      "Zaubertränke",
+      "Verwandlung",
+      "Kräuterkunde",
+      "Besenflugstunden"
+    ],
+    "correct": "Zaubertränke",
+    "explanation": "Obwohl er eigentlich „Verteidigung gegen die dunklen Künste“ unterrichten will, ist er der Tranke-Lehrer."
+  },
+  {
+    "question": "Wer reitet „so spät durch Nacht und Wind“ in Goethes berühmter Ballade?",
+    "answers": [
+      "Der Vater mit seinem Kind",
+      "Der Erlkönig",
+      "Ein Ritter",
+      "Der Tod"
+    ],
+    "correct": "Der Vater mit seinem Kind",
+    "explanation": "Die Ballade „Erlkönig“ ist eines der bekanntesten deutschen Gedichte überhaupt."
+  },
+  {
+    "question": "Welches Tier wünscht sich der kleine Prinz vom Erzähler (der Pilot ist)?",
+    "answers": [
+      "Ein Schaf (Zeichnung)",
+      "Einen Hund",
+      "Einen Elefanten",
+      "Einen Fuchs"
+    ],
+    "correct": "Ein Schaf (Zeichnung)",
+    "explanation": "Der Erzähler zeichnet schließlich eine Kiste, in der das Schaf sein soll, was dem Prinzen gefällt."
+  },
+  {
+    "question": "Wie heißt die Hobby-Detektivin in vielen Romanen von Agatha Christie?",
+    "answers": [
+      "Miss Marple",
+      "Jessica Fletcher",
+      "Nancy Drew",
+      "Sherlock Holmes"
+    ],
+    "correct": "Miss Marple",
+    "explanation": "Jane Marple löst Fälle oft durch ihre genaue Beobachtung der menschlichen Natur in ihrem Dorf St. Mary Mead."
+  },
+  {
+    "question": "Welches moderne Jugendbuch handelt von zwei krebskranken Teenagern (Hazel und Gus)?",
+    "answers": [
+      "Das Schicksal ist ein mieser Verräter",
+      "Drei Schritte zu dir",
+      "Tote Mädchen lügen nicht",
+      "Wunder"
+    ],
+    "correct": "Das Schicksal ist ein mieser Verräter",
+    "explanation": "Der Bestseller von John Green (Original: The Fault in Our Stars) wurde erfolgreich verfilmt."
+  },
+  {
+    "question": "Wer schrieb den Abenteuerroman „Ruf der Wildnis“?",
+    "answers": [
+      "Jack London",
+      "Mark Twain",
+      "Herman Melville",
+      "Ernest Hemingway"
+    ],
+    "correct": "Jack London",
+    "explanation": "Der Roman erzählt die Geschichte des Hundes Buck, der im Klondike-Goldrausch zum Schlittenhund wird."
+  },
+  {
+    "question": "Wie heißt der Hexer in der Buchreihe von Andrzej Sapkowski (The Witcher)?",
+    "answers": [
+      "Geralt von Riva",
+      "Aragorn",
+      "Jon Schnee",
+      "Legolas"
+    ],
+    "correct": "Geralt von Riva",
+    "explanation": "Die polnische Fantasy-Reihe wurde durch Videospiele und die Netflix-Serie weltberühmt."
+  },
+  {
+    "question": "Welches Buch beginnt mit dem Satz: „Jemand musste Josef K. verleumdet haben...“?",
+    "answers": [
+      "Der Process (Kafka)",
+      "Das Urteil",
+      "Die Verwandlung",
+      "Das Schloss"
+    ],
+    "correct": "Der Process (Kafka)",
+    "explanation": "Josef K. wird verhaftet, ohne je zu erfahren, was ihm eigentlich zur Last gelegt wird."
+  },
+  {
+    "question": "Wie heißt der Rabe in Otfried Preußlers „Die kleine Hexe“?",
+    "answers": [
+      "Abraxas",
+      "Hugin",
+      "Munin",
+      "Krakkel"
+    ],
+    "correct": "Abraxas",
+    "explanation": "Der Rabe ist der weise Ratgeber der kleinen Hexe und sorgt dafür, dass sie eine „gute“ Hexe wird."
+  },
+  {
+    "question": "Welches Gewürz ist die wertvollste Substanz im Sci-Fi-Epos „Der Wüstenplanet“ (Dune)?",
+    "answers": [
+      "Das Spice (Melange)",
+      "Das Soma",
+      "Das Mana",
+      "Der Staub"
+    ],
+    "correct": "Das Spice (Melange)",
+    "explanation": "Ohne das „Spice“ ist keine Raumfahrt im Dune-Universum möglich."
+  },
+  {
+    "question": "Wer schrieb den Briefroman „Die Leiden des jungen Werther“?",
+    "answers": [
+      "Johann Wolfgang von Goethe",
+      "Friedrich Schiller",
+      "Heinrich Heine",
+      "Thomas Mann"
+    ],
+    "correct": "Johann Wolfgang von Goethe",
+    "explanation": "Der Roman löste 1774 eine regelrechte „Werther-Hysterie“ in Europa aus."
+  },
+  {
+    "question": "Welcher Anwalt verteidigt in „Wer die Nachtigall stört“ (To Kill a Mockingbird) einen unschuldigen Schwarzen?",
+    "answers": [
+      "Atticus Finch",
+      "Perry Mason",
+      "Saul Goodman",
+      "Tom Robinson"
+    ],
+    "correct": "Atticus Finch",
+    "explanation": "Atticus Finch gilt als eine der moralischsten Figuren der amerikanischen Literaturgeschichte."
+  },
+  {
+    "question": "Wie heißt der Tiger, mit dem der Protagonist in „Schiffbruch mit Tiger“ (Life of Pi) auf einem Boot überlebt?",
+    "answers": [
+      "Richard Parker",
+      "Shere Khan",
+      "Tigger",
+      "Diego"
+    ],
+    "correct": "Richard Parker",
+    "explanation": "Der Tiger erhielt seinen Namen durch einen bürokratischen Fehler bei der Einfuhr."
+  },
+  {
+    "question": "Welcher schwedische Autor schrieb die Krimis um Kommissar Kurt Wallander?",
+    "answers": [
+      "Henning Mankell",
+      "Stieg Larsson",
+      "Jo Nesbø",
+      "Håkan Nesser"
+    ],
+    "correct": "Henning Mankell",
+    "explanation": "Mankell prägte den „Schwedenkrimi“ mit seinem melancholischen Ermittler aus Ystad."
+  },
+  {
+    "question": "In welchem dystopischen Roman sprechen die Jugendlichen die Slang-Sprache „Nadsat“?",
+    "answers": [
+      "Uhrwerk Orange (A Clockwork Orange)",
+      "1984",
+      "Schöne neue Welt",
+      "Herr der Fliegen"
+    ],
+    "correct": "Uhrwerk Orange (A Clockwork Orange)",
+    "explanation": "Anthony Burgess erfand für den Roman eine Mischung aus Englisch und Russisch."
+  },
+  {
+    "question": "Wer ist der Autor des satirischen Hitler-Romans „Er ist wieder da“?",
+    "answers": [
+      "Timur Vermes",
+      "Marc-Uwe Kling",
+      "Walter Moers",
+      "Heinz Strunk"
+    ],
+    "correct": "Timur Vermes",
+    "explanation": "Der Roman beschreibt das Erwachen Hitlers im Berlin der Gegenwart."
+  },
+  {
+    "question": "Wie heißt die Hauptfigur in Victor Hugos „Der Glöckner von Notre-Dame“?",
+    "answers": [
+      "Quasimodo",
+      "Frollo",
+      "Phoebus",
+      "Gringoire"
+    ],
+    "correct": "Quasimodo",
+    "explanation": "Quasimodo ist der deformierte Glöckner, der sich in die Tänzerin Esmeralda verliebt."
+  },
+  {
+    "question": "Welches berühmte Gedicht von Rainer Maria Rilke beschreibt ein Tier im Jardin des Plantes in Paris?",
+    "answers": [
+      "Der Panther",
+      "Der Tiger",
+      "Der Löwe",
+      "Der Adler"
+    ],
+    "correct": "Der Panther",
+    "explanation": "Das Gedicht ist das bekannteste Beispiel für ein „Dinggedicht“."
+  },
+  {
+    "question": "Wer schrieb die Vorlage zu „Jurassic Park“?",
+    "answers": [
+      "Michael Crichton",
+      "Steven Spielberg",
+      "Stephen King",
+      "John Grisham"
+    ],
+    "correct": "Michael Crichton",
+    "explanation": "Crichton war bekannt für seine gut recherchierten Techno-Thriller."
+  },
+  {
+    "question": "Welcher französische Kommissar ermittelt in Paris und liebt seine Pfeife (Erfindung von Georges Simenon)?",
+    "answers": [
+      "Maigret",
+      "Poirot",
+      "Holmes",
+      "Lupin"
+    ],
+    "correct": "Maigret",
+    "explanation": "Kommissar Maigret ist der Protagonist in 75 Romanen von Simenon."
+  },
+  {
+    "question": "In welchem Buch von Walter Moers erkundet der Held Zamonien?",
+    "answers": [
+      "Die 13½ Leben des Käpt’n Blaubär",
+      "Die unendliche Geschichte",
+      "Momo",
+      "Jim Knopf"
+    ],
+    "correct": "Die 13½ Leben des Käpt’n Blaubär",
+    "explanation": "Der Roman ist ein humorvolles Fantasy-Epos voller skurriler Kreaturen wie dem Stollentroll."
+  },
+  {
+    "question": "Welches Pseudonym nutzte J.K. Rowling für ihren Krimi „Der Ruf des Kuckucks“?",
+    "answers": [
+      "Robert Galbraith",
+      "Richard Bachman",
+      "Mary Westmacott",
+      "Currer Bell"
+    ],
+    "correct": "Robert Galbraith",
+    "explanation": "Sie wollte das Buch ohne den Hype um ihren Namen veröffentlichen, wurde aber enttarnt."
+  },
+  {
+    "question": "Wer schrieb das feministische Essay „Ein eigenes Zimmer“ (A Room of One's Own)?",
+    "answers": [
+      "Virginia Woolf",
+      "Simone de Beauvoir",
+      "Jane Austen",
+      "Sylvia Plath"
+    ],
+    "correct": "Virginia Woolf",
+    "explanation": "Woolf argumentiert, dass Frauen Geld und einen eigenen Raum brauchen, um Dichterinnen zu werden."
+  },
+  {
+    "question": "Wie heißt der Hund der „Fünf Freunde“ (Enid Blyton)?",
+    "answers": [
+      "Timmy",
+      "Struppi",
+      "Bello",
+      "Strolch"
+    ],
+    "correct": "Timmy",
+    "explanation": "Timmy gehört George und ist fester Bestandteil der Abenteurergruppe."
+  },
+  {
+    "question": "Welches Tier ist „Aslan“ in den Chroniken von Narnia?",
+    "answers": [
+      "Ein Löwe",
+      "Ein Bär",
+      "Ein Wolf",
+      "Ein Hirsch"
+    ],
+    "correct": "Ein Löwe",
+    "explanation": "Aslan ist der Schöpfer von Narnia und eine christliche Allegorie."
+  },
+  {
+    "question": "In welchem Roman geht es um den Walfangschiff-Kapitän Wolf Larsen?",
+    "answers": [
+      "Der Seewolf",
+      "Moby Dick",
+      "Die Schatzinsel",
+      "20.000 Meilen unter dem Meer"
+    ],
+    "correct": "Der Seewolf",
+    "explanation": "Jack London beschreibt darin den brutalen Überlebenskampf auf See."
+  },
+  {
+    "question": "Wer schrieb „Die Blechtrommel“?",
+    "answers": [
+      "Günter Grass",
+      "Heinrich Böll",
+      "Martin Walser",
+      "Siegfried Lenz"
+    ],
+    "correct": "Günter Grass",
+    "explanation": "Oskar Matzerath beschließt an seinem dritten Geburtstag, nicht mehr zu wachsen."
+  },
+  {
+    "question": "Welches Buch von Jonas Jonasson wurde ein weltweiter Überraschungserfolg?",
+    "answers": [
+      "Der Hundertjährige, der aus dem Fenster stieg...",
+      "Ein Mann namens Ove",
+      "Die Analphabetin, die rechnen konnte",
+      "Mörder anders"
+    ],
+    "correct": "Der Hundertjährige, der aus dem Fenster stieg...",
+    "explanation": "Der Roman erzählt die absurde Lebensgeschichte von Allan Karlsson, der aus dem Altersheim flieht."
+  },
+  {
+    "question": "Wie heißt das Pferd von Don Quijote?",
+    "answers": [
+      "Rosinante",
+      "Marengo",
+      "Jolly Jumper",
+      "Kleiner Onkel"
+    ],
+    "correct": "Rosinante",
+    "explanation": "Der Name bedeutet „vorher ein gewöhnlicher Gaul“."
+  },
+  {
+    "question": "Welcher russische Autor schrieb „Schuld und Sühne“ (Verbrechen und Strafe)?",
+    "answers": [
+      "Fjodor Dostojewski",
+      "Leo Tolstoi",
+      "Anton Tschechow",
+      "Alexander Puschkin"
+    ],
+    "correct": "Fjodor Dostojewski",
+    "explanation": "Der Roman behandelt die psychologischen Qualen des Mörders Raskolnikow."
+  },
+  {
+    "question": "Welches Tier ist „Black Beauty“?",
+    "answers": [
+      "Ein Pferd",
+      "Ein Hund",
+      "Eine Katze",
+      "Ein Rabe"
+    ],
+    "correct": "Ein Pferd",
+    "explanation": "Der Roman von Anna Sewell ist eine Autobiografie aus Sicht eines Pferdes."
+  },
+  {
+    "question": "In welchem dystopischen Roman gibt es das „Neusprech“?",
+    "answers": [
+      "1984",
+      "Schöne neue Welt",
+      "Fahrenheit 451",
+      "Die Tribute von Panem"
+    ],
+    "correct": "1984",
+    "explanation": "Die Sprache wird verringert, um das Denken einzuschränken."
+  },
+  {
+    "question": "Wer schrieb „Die unerträgliche Leichtigkeit des Seins“?",
+    "answers": [
+      "Milan Kundera",
+      "Franz Kafka",
+      "Bohumil Hrabal",
+      "Václav Havel"
+    ],
+    "correct": "Milan Kundera",
+    "explanation": "Der Roman spielt vor dem Hintergrund des Prager Frühlings."
+  },
+  {
+    "question": "Wie heißt der Kapitän des Schiffs in „Moby Dick“?",
+    "answers": [
+      "Ahab",
+      "Nemo",
+      "Hook",
+      "Sparrow"
+    ],
+    "correct": "Ahab",
+    "explanation": "Er führt die „Pequod“ in den Untergang."
+  },
+  {
+    "question": "Welches Pseudonym verwendete Erich Kästner für einige seiner Werke?",
+    "answers": [
+      "Berthold Bürger",
+      "Peter Panter",
+      "Theobald Tiger",
+      "Ignaz Wrobel"
+    ],
+    "correct": "Berthold Bürger",
+    "explanation": "Kästner schrieb unter Berufsverbot im Dritten Reich teilweise unter Pseudonym."
+  },
+  {
+    "question": "Welcher Roman beginnt mit „Nennt mich Ismael“?",
+    "answers": [
+      "Moby Dick",
+      "Der alte Mann und das Meer",
+      "Robinson Crusoe",
+      "Die Schatzinsel"
+    ],
+    "correct": "Moby Dick",
+    "explanation": "Einer der berühmtesten Romananfänge der Weltliteratur."
+  },
+  {
+    "question": "Wer ist der Autor von „Der Steppenwolf“?",
+    "answers": [
+      "Hermann Hesse",
+      "Thomas Mann",
+      "Günter Grass",
+      "Max Frisch"
+    ],
+    "correct": "Hermann Hesse",
+    "explanation": "Hesse erhielt 1946 den Nobelpreis für Literatur."
+  },
+  {
+    "question": "Wie heißt der Zauberer in „Der Herr der Ringe“?",
+    "answers": [
+      "Gandalf",
+      "Dumbledore",
+      "Merlin",
+      "Saruman"
+    ],
+    "correct": "Gandalf",
+    "explanation": "Gandalf der Graue (später der Weiße) ist der Führer der Gefährten."
+  },
+  {
+    "question": "Welches Tier ist „Paddington“?",
+    "answers": [
+      "Ein Bär",
+      "Ein Hund",
+      "Ein Hase",
+      "Ein Fuchs"
+    ],
+    "correct": "Ein Bär",
+    "explanation": "Er kommt aus dem „finstersten Peru“ nach London."
+  },
+  {
+    "question": "In welchem Land spielt „Stolz und Vorurteil“?",
+    "answers": [
+      "Berthold Bürger",
+      "Frankreich",
+      "USA",
+      "Deutschland"
+    ],
+    "correct": "Berthold Bürger",
+    "explanation": "Der Roman porträtiert den englischen Landadel (Gentry)."
+  },
+  {
+    "question": "Wer schrieb das Tagebuch der Anne Frank?",
+    "answers": [
+      "Anne Frank",
+      "Sophie Scholl",
+      "Astrid Lindgren",
+      "Etty Hillesum"
+    ],
+    "correct": "Anne Frank",
+    "explanation": "Es ist eines der wichtigsten Dokumente des Holocaust."
+  },
+  {
+    "question": "Wie heißt der Riese in „Harry Potter“?",
+    "answers": [
+      "Hagrid",
+      "Grawp",
+      "Hodor",
+      "Lurch"
+    ],
+    "correct": "Hagrid",
+    "explanation": "Rubeus Hagrid ist der Wildhüter von Hogwarts."
+  },
+  {
+    "question": "Welcher Dichter schrieb „Die Glocke“?",
+    "answers": [
+      "Friedrich Schiller",
+      "Johann Wolfgang von Goethe",
+      "Heinrich Heine",
+      "Theodor Fontane"
+    ],
+    "correct": "Friedrich Schiller",
+    "explanation": "„Fest gemauert in der Erden...“ ist ein geflügeltes Wort."
+  },
+  {
+    "question": "Wer verfasste „Des Mörders Wiederkehr“ (Tarzan)?",
+    "answers": [
+      "Edgar Rice Burroughs",
+      "Rudyard Kipling",
+      "H. Rider Haggard",
+      "Jules Verne"
+    ],
+    "correct": "Edgar Rice Burroughs",
+    "explanation": "Burroughs ist der Schöpfer der Tarzan-Geschichten."
+  },
+  {
+    "question": "Wie heißt das Schiff in „Dracula“, das den Vampir nach England bringt?",
+    "answers": [
+      "Demeter",
+      "Titanic",
+      "Santa Maria",
+      "Hispaniola"
+    ],
+    "correct": "Demeter",
+    "explanation": "Das Schiff kommt als Geisterschiff in Whitby an."
+  },
+  {
+    "question": "Welches Werk machte Remarque weltberühmt?",
+    "answers": [
+      "Im Westen nichts Neues",
+      "Arc de Triomphe",
+      "Der schwarze Obelisk",
+      "Drei Kameraden"
+    ],
+    "correct": "Im Westen nichts Neues",
+    "explanation": "Ein Antikriegsroman über den Ersten Weltkrieg."
+  },
+  {
+    "question": "Wer schrieb „Pippi Langstrumpf“?",
+    "answers": [
+      "Astrid Lindgren",
+      "Selma Lagerlöf",
+      "Tove Jansson",
+      "Enid Blyton"
+    ],
+    "correct": "Astrid Lindgren",
+    "explanation": "Lindgren erfand die Geschichte ursprünglich für ihre kranke Tochter."
+  },
+  {
+    "question": "Wie heißt der Protagonist in „Der Fänger im Roggen“?",
+    "answers": [
+      "Holden Caulfield",
+      "Tom Sawyer",
+      "Huckleberry Finn",
+      "Oliver Twist"
+    ],
+    "correct": "Holden Caulfield",
+    "explanation": "Er ist das Symbol der jugendlichen Rebellion."
+  },
+  {
+    "question": "Welches Tier spielt die Hauptrolle in „Watership Down“?",
+    "answers": [
+      "Kaninchen",
+      "Maulwurf",
+      "Dachs",
+      "Fuchs"
+    ],
+    "correct": "Kaninchen",
+    "explanation": "Die Kaninchen suchen eine neue Heimat."
+  },
+  {
+    "question": "Wer schrieb „Die Verwandlung“?",
+    "answers": [
+      "Franz Kafka",
+      "Max Brod",
+      "Robert Musil",
+      "Arthur Schnitzler"
+    ],
+    "correct": "Franz Kafka",
+    "explanation": "Gregor Samsa wacht eines Morgens als Ungeziefer auf."
+  },
+  {
+    "question": "In welchem Werk kommen die „Morlocks“ vor?",
+    "answers": [
+      "Die Zeitmaschine",
+      "Krieg der Welten",
+      "Der Unsichtbare",
+      "Die Insel des Dr. Moreau"
+    ],
+    "correct": "Die Zeitmaschine",
+    "explanation": "H.G. Wells beschreibt sie als unterirdische Arbeiterklasse der Zukunft."
+  },
+  {
+    "question": "Welches Buch schrieb Mary Shelley?",
+    "answers": [
+      "Frankenstein",
+      "Dracula",
+      "Der seltsame Fall des Dr. Jekyll",
+      "Das Bildnis des Dorian Gray"
+    ],
+    "correct": "Frankenstein",
+    "explanation": "Sie schrieb es im Rahmen eines Wettbewerbs unter Freunden."
+  },
+  {
+    "question": "Wie heißt der Detektiv von Arthur Conan Doyle?",
+    "answers": [
+      "Sherlock Holmes",
+      "Hercule Poirot",
+      "Miss Marple",
+      "Philip Marlowe"
+    ],
+    "correct": "Sherlock Holmes",
+    "explanation": "Er wohnt in der Baker Street 221b."
+  },
+  {
+    "question": "Wer schrieb „Der Name der Rose“?",
+    "answers": [
+      "Umberto Eco",
+      "Dan Brown",
+      "Ken Follett",
+      "Italo Calvino"
+    ],
+    "correct": "Umberto Eco",
+    "explanation": "Ein Mittelalter-Krimi in einer Abtei."
+  },
+  {
+    "question": "Welches Tier ist „Babe“?",
+    "answers": [
+      "Ein Schwein",
+      "Ein Schaf",
+      "Ein Hund",
+      "Eine Kuh"
+    ],
+    "correct": "Ein Schwein",
+    "explanation": "Das Schwein, das ein Schäferhund sein wollte (Buchvorlage von Dick King-Smith)."
+  },
+  {
+    "question": "Wer ist der Autor von „Sofies Welt“?",
+    "answers": [
+      "Jostein Gaarder",
+      "Michael Ende",
+      "Cornelia Funke",
+      "Isabel Allende"
+    ],
+    "correct": "Jostein Gaarder",
+    "explanation": "Eine Einführung in die Geschichte der Philosophie als Roman."
+  },
+  {
+    "question": "In welchem Roman spielt „Big Brother“ eine Rolle?",
+    "answers": [
+      "1984",
+      "Farm der Tiere",
+      "Schöne neue Welt",
+      "Fahrenheit 451"
+    ],
+    "correct": "1984",
+    "explanation": "Das Gesicht der totalitären Partei."
+  },
+  {
+    "question": "Wie heißt die Heldin in „Die Tribute von Panem“?",
+    "answers": [
+      "Katniss Everdeen",
+      "Bella Swan",
+      "Tris Prior",
+      "Hermine Granger"
+    ],
+    "correct": "Katniss Everdeen",
+    "explanation": "Sie meldet sich freiwillig für ihre Schwester Prim."
+  },
+  {
+    "question": "Wer schrieb „Faust“?",
+    "answers": [
+      "Johann Wolfgang von Goethe",
+      "Friedrich Schiller",
+      "Gotthold Ephraim Lessing",
+      "Heinrich von Kleist"
+    ],
+    "correct": "Johann Wolfgang von Goethe",
+    "explanation": "Das Lebenswerk Goethes."
+  },
+  {
+    "question": "Welches Tier ist „Snoopy“?",
+    "answers": [
+      "Ein Beagle (Hund)",
+      "Ein Pudel",
+      "Ein Dalmatiner",
+      "Ein Terrier"
+    ],
+    "correct": "Ein Beagle (Hund)",
+    "explanation": "Der Hund von Charlie Brown in den Peanuts-Comics."
+  },
+  {
+    "question": "Wer schrieb „Die drei Musketiere“?",
+    "answers": [
+      "Alexandre Dumas",
+      "Victor Hugo",
+      "Gustave Flaubert",
+      "Molière"
+    ],
+    "correct": "Alexandre Dumas",
+    "explanation": "Einer für alle, alle für einen."
+  },
+  {
+    "question": "Wie heißt der Protagonist in „Robinson Crusoe“?",
+    "answers": [
+      "Robinson",
+      "Freitag",
+      "Gulliver",
+      "Sindbad"
+    ],
+    "correct": "Robinson",
+    "explanation": "Er strandet allein auf einer Insel."
+  },
+  {
+    "question": "Welches Buch handelt von einem Jungen, der nicht erwachsen werden will?",
+    "answers": [
+      "Peter Pan",
+      "Oliver Twist",
+      "Tom Sawyer",
+      "David Copperfield"
+    ],
+    "correct": "Peter Pan",
+    "explanation": "Er lebt im Nimmerland."
+  },
+  {
+    "question": "Wer schrieb „Alice im Wunderland“?",
+    "answers": [
+      "Lewis Carroll",
+      "C.S. Lewis",
+      "J.R.R. Tolkien",
+      "Roald Dahl"
+    ],
+    "correct": "Lewis Carroll",
+    "explanation": "Ein Klassiker der Nonsens-Literatur."
+  },
+  {
+    "question": "Wie heißt der Vampir in „Twilight“?",
+    "answers": [
+      "Edward Cullen",
+      "Jacob Black",
+      "Emmett Cullen",
+      "Carlisle Cullen"
+    ],
+    "correct": "Edward Cullen",
+    "explanation": "Er glitzert in der Sonne."
+  },
+  {
+    "question": "In welchem Buch geht es um den Jungen Charlie und eine Fabrik?",
+    "answers": [
+      "Charlie und die Schokoladenfabrik",
+      "Matilda",
+      "Hexen hexen",
+      "Sophiechen und der Riese"
+    ],
+    "correct": "Charlie und die Schokoladenfabrik",
+    "explanation": "Willy Wonka lädt Kinder in seine Fabrik ein."
+  },
+  {
+    "question": "Wer schrieb „Der kleine Prinz“?",
+    "answers": [
+      "Antoine de Saint-Exupéry",
+      "Jean-Paul Sartre",
+      "Albert Camus",
+      "Voltaire"
+    ],
+    "correct": "Antoine de Saint-Exupéry",
+    "explanation": "„Man sieht nur mit dem Herzen gut.“"
+  },
+  {
+    "question": "Wie heißt der Wal in „Moby Dick“?",
+    "answers": [
+      "Moby Dick",
+      "Willy",
+      "Keiko",
+      "Flipper"
+    ],
+    "correct": "Moby Dick",
+    "explanation": "Der weiße Pottwal."
+  },
+  {
+    "question": "Wer schrieb „Krieg und Frieden“?",
+    "answers": [
+      "Leo Tolstoi",
+      "Fjodor Dostojewski",
+      "Iwan Turgenew",
+      "Nikolai Gogol"
+    ],
+    "correct": "Leo Tolstoi",
+    "explanation": "Ein monumentaler historischer Roman über die napoleonischen Kriege."
+  },
+  {
+    "question": "Welcher Autor erfand „James Bond“?",
+    "answers": [
+      "Ian Fleming",
+      "John le Carré",
+      "Tom Clancy",
+      "Robert Ludlum"
+    ],
+    "correct": "Ian Fleming",
+    "explanation": "Fleming war selbst beim Geheimdienst."
+  },
+  {
+    "question": "Wie heißt die Puppe aus Holz, die lebendig wird?",
+    "answers": [
+      "Pinocchio",
+      "Kasperl",
+      "Seppel",
+      "Urmel"
+    ],
+    "correct": "Pinocchio",
+    "explanation": "Wenn er lügt, wächst seine Nase."
+  },
+  {
+    "question": "Wer schrieb „Die unendliche Geschichte“?",
+    "answers": [
+      "Michael Ende",
+      "Otfried Preußler",
+      "Erich Kästner",
+      "James Krüss"
+    ],
+    "correct": "Michael Ende",
+    "explanation": "Bastian reist nach Phantásien."
+  },
+  {
+    "question": "Welches Tier ist „Idefix“?",
+    "answers": [
+      "Ein Hund",
+      "Ein Kater",
+      "Ein Eber",
+      "Ein Hahn"
+    ],
+    "correct": "Ein Hund",
+    "explanation": "Der Hund von Obelix."
+  },
+  {
+    "question": "Wer schrieb „Effi Briest“?",
+    "answers": [
+      "Theodor Fontane",
+      "Thomas Mann",
+      "Gerhart Hauptmann",
+      "Theodor Storm"
+    ],
+    "correct": "Theodor Fontane",
+    "explanation": "Ein Gesellschaftsroman über Ehebruch im 19. Jahrhundert."
+  },
+  {
+    "question": "Wie heißt der Glöckner von Notre-Dame?",
+    "answers": [
+      "Quasimodo",
+      "Esmeralda",
+      "Frollo",
+      "Phoebus"
+    ],
+    "correct": "Quasimodo",
+    "explanation": "Er ist taub und verwachsen."
+  },
+  {
+    "question": "Wer schrieb „Das Parfum“?",
+    "answers": [
+      "Patrick Süskind",
+      "Martin Walser",
+      "Günter Grass",
+      "Bernhard Schlink"
+    ],
+    "correct": "Patrick Süskind",
+    "explanation": "Grenouille mordet für den perfekten Duft."
+  },
+  {
+    "question": "In welchem Buch kommt „Gollum“ vor?",
+    "answers": [
+      "Der Hobbit / Herr der Ringe",
+      "Eragon",
+      "Narnia",
+      "Harry Potter"
+    ],
+    "correct": "Der Hobbit / Herr der Ringe",
+    "explanation": "Er sucht seinen „Schatz“."
+  },
+  {
+    "question": "Wer schrieb „Der Prozess“?",
+    "answers": [
+      "Franz Kafka",
+      "Max Frisch",
+      "Friedrich Dürrenmatt",
+      "Bertolt Brecht"
+    ],
+    "correct": "Franz Kafka",
+    "explanation": "Josef K. wird verhaftet und weiß nicht warum."
+  },
+  {
+    "question": "Wie heißt die Ratte in „Ratatouille“ (streng genommen Film, aber oft adaptiert)?",
+    "answers": [
+      "Remy",
+      "Emil",
+      "Stuart",
+      "Ratty"
+    ],
+    "correct": "Remy",
+    "explanation": "Remy hat den absoluten Geschmackssinn."
+  },
+  {
+    "question": "Wer schrieb „Romeo und Julia“?",
+    "answers": [
+      "William Shakespeare",
+      "Christopher Marlowe",
+      "Ben Jonson",
+      "Oscar Wilde"
+    ],
+    "correct": "William Shakespeare",
+    "explanation": "Die berühmteste Liebestragödie der Welt."
+  },
+  {
+    "question": "Welches Tier ist „Kaa“ im Dschungelbuch?",
+    "answers": [
+      "Eine Schlange (Python)",
+      "Ein Tiger",
+      "Ein Bär",
+      "Ein Wolf"
+    ],
+    "correct": "Eine Schlange (Python)",
+    "explanation": "Sie hypnotisiert ihre Beute."
+  },
+  {
+    "question": "Wer schrieb „Struwwelpeter“?",
+    "answers": [
+      "Heinrich Hoffmann",
+      "Wilhelm Busch",
+      "Brüder Grimm",
+      "Hans Christian Andersen"
+    ],
+    "correct": "Heinrich Hoffmann",
+    "explanation": "Erziehungsbuch mit drastischen Geschichten."
+  },
+  {
+    "question": "Wie heißt der Protagonist in „Per Anhalter durch die Galaxis“?",
+    "answers": [
+      "Arthur Dent",
+      "Ford Prefect",
+      "Zaphod Beeblebrox",
+      "Marvin"
+    ],
+    "correct": "Arthur Dent",
+    "explanation": "Er reist im Bademantel durchs All."
+  },
+  {
+    "question": "Welches Buch beginnt mit „Es war die beste der Zeiten, es war die schlimmste der Zeiten“?",
+    "answers": [
+      "Eine Geschichte aus zwei Städten",
+      "Oliver Twist",
+      "David Copperfield",
+      "Große Erwartungen"
+    ],
+    "correct": "Eine Geschichte aus zwei Städten",
+    "explanation": "Dickens vergleicht London und Paris zur Zeit der Revolution."
+  },
+  {
+    "question": "Wer schrieb „Der Schimmelreiter“?",
+    "answers": [
+      "Theodor Storm",
+      "Gottfried Keller",
+      "Adalbert Stifter",
+      "Wilhelm Raabe"
+    ],
+    "correct": "Theodor Storm",
+    "explanation": "Hauke Haien baut einen neuen Deich."
+  },
+  {
+    "question": "Wie heißt der Zauberlehrling bei Goethe?",
+    "answers": [
+      "Er hat keinen Namen",
+      "Harry",
+      "Wilhelm",
+      "Faust"
+    ],
+    "correct": "Er hat keinen Namen",
+    "explanation": "Im Gedicht wird er nur als „der Knecht“ oder „Ich“ bezeichnet."
+  },
+  {
+    "question": "Wer schrieb „Die Leiden des jungen Werther“?",
+    "answers": [
+      "Johann Wolfgang von Goethe",
+      "Friedrich Schiller",
+      "Gotthold Ephraim Lessing",
+      "Heinrich Heine"
+    ],
+    "correct": "Johann Wolfgang von Goethe",
+    "explanation": "Ein Briefroman des Sturm und Drang."
+  },
+  {
+    "question": "Welches Tier ist „Hedwig“ bei Harry Potter?",
+    "answers": [
+      "Eine Schneeeule",
+      "Eine Katze",
+      "Eine Ratte",
+      "Eine Kröte"
+    ],
+    "correct": "Eine Schneeeule",
+    "explanation": "Harrys treue Postbotin."
+  },
+  {
+    "question": "Wer schrieb „Die Blechtrommel“?",
+    "answers": [
+      "Günter Grass",
+      "Heinrich Böll",
+      "Siegfried Lenz",
+      "Martin Walser"
+    ],
+    "correct": "Günter Grass",
+    "explanation": "Teil der Danziger Trilogie."
+  },
+  {
+    "question": "Wie heißt die Hauptfigur in „Vom Winde verweht“?",
+    "answers": [
+      "Scarlett O'Hara",
+      "Rhett Butler",
+      "Melanie Wilkes",
+      "Ashley Wilkes"
+    ],
+    "correct": "Scarlett O'Hara",
+    "explanation": "Sie lebt auf der Plantage Tara."
+  },
+  {
+    "question": "Wer schrieb „Der Zauberberg“?",
+    "answers": [
+      "Thomas Mann",
+      "Hermann Hesse",
+      "Franz Kafka",
+      "Robert Musil"
+    ],
+    "correct": "Thomas Mann",
+    "explanation": "Hans Castorp besucht seinen Cousin im Sanatorium."
+  },
+  {
+    "question": "Welches Tier ist „Bambi“ im Originalbuch (Felix Salten)?",
+    "answers": [
+      "Ein Reh",
+      "Ein Hirsch",
+      "Ein Elch",
+      "Ein Rentier"
+    ],
+    "correct": "Ein Reh",
+    "explanation": "Im Disney-Film ist er ein Weißwedelhirsch, im Buch ein Reh."
+  },
+  {
+    "question": "Wer schrieb „Brave New World“ (Schöne neue Welt)?",
+    "answers": [
+      "Aldous Huxley",
+      "George Orwell",
+      "Ray Bradbury",
+      "Philip K. Dick"
+    ],
+    "correct": "Aldous Huxley",
+    "explanation": "Eine Dystopie über Gentechnik und Konditionierung."
+  },
+  {
+    "question": "Wie heißt der Kapitän in „Die Schatzinsel“?",
+    "answers": [
+      "Captain Smollett (Nicht der Pirat!)",
+      "Flint",
+      "Silver",
+      "Bones"
+    ],
+    "correct": "Captain Smollett (Nicht der Pirat!)",
+    "explanation": "Smollett ist der reguläre Kapitän der Hispaniola, Silver der Koch/Pirat."
+  },
+  {
+    "question": "Wer schrieb „Emil und die Detektive“?",
+    "answers": [
+      "Erich Kästner",
+      "Otfried Preußler",
+      "Michael Ende",
+      "James Krüss"
+    ],
+    "correct": "Erich Kästner",
+    "explanation": "Emil wird im Zug bestohlen und verfolgt den Dieb in Berlin."
+  },
+  {
+    "question": "Welches Pseudonym nutzte Agatha Christie für Liebesromane?",
+    "answers": [
+      "Mary Westmacott",
+      "Barbara Vine",
+      "Robert Galbraith",
+      "Ellis Bell"
+    ],
+    "correct": "Mary Westmacott",
+    "explanation": "Sie wollte das Genre vom Krimi trennen."
+  },
+  {
+    "question": "Wer schrieb „Warten auf Godot“?",
+    "answers": [
+      "Samuel Beckett",
+      "Bertolt Brecht",
+      "Eugène Ionesco",
+      "Harold Pinter"
+    ],
+    "correct": "Samuel Beckett",
+    "explanation": "Ein Hauptwerk des absurden Theaters."
+  },
+  {
+    "question": "Wie heißt der Hund von Tim (Tim und Struppi)?",
+    "answers": [
+      "Struppi",
+      "Idefix",
+      "Pluto",
+      "Snoopy"
+    ],
+    "correct": "Struppi",
+    "explanation": "Ein Foxterrier."
+  },
+  {
+    "question": "Wer schrieb „Die Säulen der Erde“?",
+    "answers": [
+      "Ken Follett",
+      "Dan Brown",
+      "Noah Gordon",
+      "Rebecca Gablé"
+    ],
+    "correct": "Ken Follett",
+    "explanation": "Historischer Roman über Kathedralenbau."
+  },
+  {
+    "question": "Welches Tier ist „Fuchur“?",
+    "answers": [
+      "Ein Glücksdrache",
+      "Ein Wolf",
+      "Ein Löwe",
+      "Ein Adler"
+    ],
+    "correct": "Ein Glücksdrache",
+    "explanation": "Aus der Unendlichen Geschichte."
+  },
+  {
+    "question": "Wer schrieb „Der Richter und sein Henker“?",
+    "answers": [
+      "Friedrich Dürrenmatt",
+      "Max Frisch",
+      "Heinrich Böll",
+      "Wolfgang Borchert"
+    ],
+    "correct": "Friedrich Dürrenmatt",
+    "explanation": "Kommissar Bärlach ermittelt."
+  },
+  {
+    "question": "Wie heißt die Protagonistin in „Pippi Langstrumpf“ mit vollem Namen (Kurzform)?",
+    "answers": [
+      "Pippilotta Viktualia Rollgardina...",
+      "Pippi Maria",
+      "Pippa Lotta",
+      "Penelope"
+    ],
+    "correct": "Pippilotta Viktualia Rollgardina...",
+    "explanation": "Ihr voller Name ist extrem lang."
+  },
+  {
+    "question": "Wer schrieb „Max und Moritz“?",
+    "answers": [
+      "Wilhelm Busch",
+      "Heinrich Hoffmann",
+      "Brüder Grimm",
+      "Ludwig Bechstein"
+    ],
+    "correct": "Wilhelm Busch",
+    "explanation": "Eine Bubengeschichte in sieben Streichen."
+  },
+  {
+    "question": "Welches Buch stammt von Stephen King?",
+    "answers": [
+      "Es",
+      "Harry Potter",
+      "Herr der Ringe",
+      "Twilight"
+    ],
+    "correct": "Es",
+    "explanation": "King ist der „King of Horror“."
+  },
+  {
+    "question": "Wer schrieb „Der Hund von Baskerville“?",
+    "answers": [
+      "Arthur Conan Doyle",
+      "Agatha Christie",
+      "Edgar Allan Poe",
+      "Wilkie Collins"
+    ],
+    "correct": "Arthur Conan Doyle",
+    "explanation": "Ein berühmter Sherlock-Holmes-Fall."
+  },
+  {
+    "question": "Wie heißt die Stadt in „Batman“ (Comics sind Literatur!)?",
+    "answers": [
+      "Gotham City",
+      "Metropolis",
+      "Star City",
+      "Central City"
+    ],
+    "correct": "Gotham City",
+    "explanation": "Eine düstere Version von New York/Chicago."
+  },
+  {
+    "question": "Wer schrieb „Narziss und Goldmund“?",
+    "answers": [
+      "Hermann Hesse",
+      "Thomas Mann",
+      "Stefan Zweig",
+      "Joseph Roth"
+    ],
+    "correct": "Hermann Hesse",
+    "explanation": "Geschichte einer Freundschaft im Mittelalter."
+  },
+  {
+    "question": "Welches Tier ist „Bagheera“ im Dschungelbuch?",
+    "answers": [
+      "Ein schwarzer Panther",
+      "Ein Tiger",
+      "Ein Bär",
+      "Ein Wolf"
+    ],
+    "correct": "Ein schwarzer Panther",
+    "explanation": "Der vernünftige Beschützer von Mogli."
+  },
+  {
+    "question": "Wer schrieb „Ein Sommernachtstraum“?",
+    "answers": [
+      "William Shakespeare",
+      "Johann Wolfgang von Goethe",
+      "Friedrich Schiller",
+      "Molière"
+    ],
+    "correct": "William Shakespeare",
+    "explanation": "Ein Verwirrspiel mit Elfen und Handwerkern."
+  },
+  {
+    "question": "Wie heißt der Protagonist in „Les Misérables“ (Die Elenden)?",
+    "answers": [
+      "Jean Valjean",
+      "Javert",
+      "Cosette",
+      "Marius"
+    ],
+    "correct": "Jean Valjean",
+    "explanation": "Er ist ein ehemaliger Sträfling, der sich bessern will."
+  },
+  {
+    "question": "Wer schrieb „Die Verwandlung“?",
+    "answers": [
+      "Franz Kafka",
+      "Georg Trakl",
+      "Gottfried Benn",
+      "Georg Heym"
+    ],
+    "correct": "Franz Kafka",
+    "explanation": "Ein Klassiker der Moderne."
+  },
+  {
+    "question": "Welches Tier ist „Saphira“ in Eragon?",
+    "answers": [
+      "Ein Drache",
+      "Ein Pferd",
+      "Ein Greif",
+      "Ein Wolf"
+    ],
+    "correct": "Ein Drache",
+    "explanation": "Sie ist blau und mental mit Eragon verbunden."
+  },
+  {
+    "question": "Wer schrieb „Buddenbrooks“?",
+    "answers": [
+      "Thomas Mann",
+      "Heinrich Mann",
+      "Klaus Mann",
+      "Golo Mann"
+    ],
+    "correct": "Thomas Mann",
+    "explanation": "Verfall einer Familie."
+  },
+  {
+    "question": "Wie heißt der Junge im Dschungelbuch?",
+    "answers": [
+      "Mogli",
+      "Tarzan",
+      "Simba",
+      "Kim"
+    ],
+    "correct": "Mogli",
+    "explanation": "Er wächst bei Wölfen auf."
+  },
+  {
+    "question": "Wer schrieb „Der Medicus“?",
+    "answers": [
+      "Noah Gordon",
+      "Ken Follett",
+      "Patrick Süskind",
+      "Umberto Eco"
+    ],
+    "correct": "Noah Gordon",
+    "explanation": "Rob Cole reist nach Persien, um Medizin zu studieren."
+  },
+  {
+    "question": "Welches Tier ist „Mecki“?",
+    "answers": [
+      "Ein Igel",
+      "Ein Hase",
+      "Ein Fuchs",
+      "Ein Dachs"
+    ],
+    "correct": "Ein Igel",
+    "explanation": "Maskottchen der Hörzu und Buchfigur."
+  },
+  {
+    "question": "Wer schrieb „Die Tribute von Panem“?",
+    "answers": [
+      "Suzanne Collins",
+      "Veronica Roth",
+      "Stephenie Meyer",
+      "J.K. Rowling"
+    ],
+    "correct": "Suzanne Collins",
+    "explanation": "Dystopische Jugendbuchreihe."
+  },
+  {
+    "question": "Wie heißt der Kapitän der Nautilus?",
+    "answers": [
+      "Nemo",
+      "Ahab",
+      "Hook",
+      "Sparrow"
+    ],
+    "correct": "Nemo",
+    "explanation": "Er kämpft gegen die Unterdrückung."
+  },
+  {
+    "question": "Wer schrieb „Also sprach Zarathustra“?",
+    "answers": [
+      "Friedrich Nietzsche",
+      "Arthur Schopenhauer",
+      "Immanuel Kant",
+      "Georg Wilhelm Friedrich Hegel"
+    ],
+    "correct": "Friedrich Nietzsche",
+    "explanation": "Ein philosophisches Dichtwerk."
+  },
+  {
+    "question": "Welches Tier ist „Klopfer“ in Bambi?",
+    "answers": [
+      "Ein Kaninchen",
+      "Ein Stinktier",
+      "Ein Reh",
+      "Ein Vogel"
+    ],
+    "correct": "Ein Kaninchen",
+    "explanation": "Er klopft mit dem Hinterlauf auf den Boden."
+  },
+  {
+    "question": "Wer schrieb „Das Geisterhaus“?",
+    "answers": [
+      "Isabel Allende",
+      "Gabriel García Márquez",
+      "Pablo Neruda",
+      "Jorge Luis Borges"
+    ],
+    "correct": "Isabel Allende",
+    "explanation": "Familiensaga aus Chile."
+  },
+  {
+    "question": "Wie heißt der Bruder von Sherlock Holmes?",
+    "answers": [
+      "Mycroft",
+      "John",
+      "James",
+      "Moriarty"
+    ],
+    "correct": "Mycroft",
+    "explanation": "Er ist noch intelligenter, aber fauler als Sherlock."
+  },
+  {
+    "question": "Wer schrieb „Gullivers Reisen“?",
+    "answers": [
+      "Jonathan Swift",
+      "Daniel Defoe",
+      "Robert Louis Stevenson",
+      "Charles Dickens"
+    ],
+    "correct": "Jonathan Swift",
+    "explanation": "Satire auf die Reiseberichte der damaligen Zeit."
+  },
+  {
+    "question": "In welchem Buch kommt „Pennywise“ vor?",
+    "answers": [
+      "Es (It)",
+      "Friedhof der Kuscheltiere",
+      "Shining",
+      "Misery"
+    ],
+    "correct": "Es (It)",
+    "explanation": "Der tanzende Clown."
+  },
+  {
+    "question": "Wer schrieb „Der Vorleser“?",
+    "answers": [
+      "Bernhard Schlink",
+      "Patrick Süskind",
+      "Günter Grass",
+      "Martin Walser"
+    ],
+    "correct": "Bernhard Schlink",
+    "explanation": "Thematisiert die NS-Vergangenheit."
+  },
+  {
+    "question": "Wie heißt die Freundin von Ron Weasley (später Frau)?",
+    "answers": [
+      "Hermine Granger",
+      "Lavender Brown",
+      "Luna Lovegood",
+      "Ginny Weasley"
+    ],
+    "correct": "Hermine Granger",
+    "explanation": "Die beiden heiraten am Ende."
+  },
+  {
+    "question": "Wer schrieb „Draußen vor der Tür“?",
+    "answers": [
+      "Wolfgang Borchert",
+      "Bertolt Brecht",
+      "Heinrich Böll",
+      "Erich Maria Remarque"
+    ],
+    "correct": "Wolfgang Borchert",
+    "explanation": "Ein Heimkehrer-Drama."
+  },
+  {
+    "question": "Wie viele Bände hat die Harry-Potter-Hauptreihe?",
+    "answers": [
+      "7",
+      "6",
+      "8",
+      "5"
+    ],
+    "correct": "7",
+    "explanation": "Stein der Weisen bis Heiligtümer des Todes."
+  },
+  {
+    "question": "Welches Spiel spielt die Hauptfigur in Stefan Zweigs „Schachnovelle“ gegen sich selbst?",
+    "answers": [
+      "Schach",
+      "Poker",
+      "Bridge",
+      "Go"
+    ],
+    "correct": "Schach",
+    "explanation": "Dr. B. lernt Schach aus einem gestohlenen Buch, um in Isolationshaft nicht wahnsinnig zu werden."
+  },
+  {
+    "question": "Welcher deutsche Autor landete mit dem Ökothriller „Der Schwarm“ einen Welterfolg?",
+    "answers": [
+      "Frank Schätzing",
+      "Sebastian Fitzek",
+      "Andreas Eschbach",
+      "Wolfgang Hohlbein"
+    ],
+    "correct": "Frank Schätzing",
+    "explanation": "In dem Roman wehrt sich das Meer gegen die Menschheit."
+  },
+  {
+    "question": "Wie heißt der Freund von Ronja Räubertochter im gleichnamigen Buch?",
+    "answers": [
+      "Birk Borkason",
+      "Kalle Blomquist",
+      "Michel Svensson",
+      "Lasse"
+    ],
+    "correct": "Birk Borkason",
+    "explanation": "Birk gehört zur verfeindeten Sippe der Borka-Räuber."
+  },
+  {
+    "question": "Welches berühmte Lied singt die Figur „Mackie Messer“ in der „Dreigroschenoper“?",
+    "answers": [
+      "Die Moritat von Mackie Messer",
+      "Alabama Song",
+      "Seeräuber-Jenny",
+      "Surabaya-Johnny"
+    ],
+    "correct": "Die Moritat von Mackie Messer",
+    "explanation": "Das Stück stammt von Bertolt Brecht (Musik: Kurt Weill)."
+  },
+  {
+    "question": "Wer schrieb den Weltbestseller „Der Alchimist“?",
+    "answers": [
+      "Paulo Coelho",
+      "Gabriel García Márquez",
+      "Isabel Allende",
+      "Carlos Ruiz Zafón"
+    ],
+    "correct": "Paulo Coelho",
+    "explanation": "Der andalusische Hirte Santiago sucht einen Schatz bei den Pyramiden."
+  },
+  {
+    "question": "Welches Bildnis altert im Roman von Oscar Wilde, während der Besitzer jung bleibt?",
+    "answers": [
+      "Das Bildnis des Dorian Gray",
+      "Das Bildnis der Mona Lisa",
+      "Das Bildnis des jungen Mannes",
+      "Das Bildnis des Narren"
+    ],
+    "correct": "Das Bildnis des Dorian Gray",
+    "explanation": "Dorian wünscht sich ewige Jugend und verkauft dafür seine Seele."
+  },
+  {
+    "question": "Wie heißt das Ungeheuer, das H.P. Lovecraft erschuf (ein „Großer Alter“)?",
+    "answers": [
+      "Cthulhu",
+      "Kraken",
+      "Godzilla",
+      "Demogorgon"
+    ],
+    "correct": "Cthulhu",
+    "explanation": "Cthulhu schläft in der versunkenen Stadt R'lyeh."
+  },
+  {
+    "question": "Wer bürgt für seinen Freund in Friedrich Schillers Ballade „Die Bürgschaft“?",
+    "answers": [
+      "Damon (oder Möros)",
+      "Dionys",
+      "Pythias",
+      "Sokrates"
+    ],
+    "correct": "Damon (oder Möros)",
+    "explanation": "Er lässt sich anstelle seines Freundes beim Tyrannen gefangen nehmen."
+  },
+  {
+    "question": "Welcher Schweizer Autor schrieb den Roman „Homo faber“?",
+    "answers": [
+      "Max Frisch",
+      "Friedrich Dürrenmatt",
+      "Urs Widmer",
+      "Martin Suter"
+    ],
+    "correct": "Max Frisch",
+    "explanation": "Der Protagonist Walter Faber glaubt nur an Technik und Statistik, bis das Schicksal zuschlägt."
+  },
+  {
+    "question": "Wie heißt das Schwert von König Artus?",
+    "answers": [
+      "Excalibur",
+      "Narsil",
+      "Stich",
+      "Glamdring"
+    ],
+    "correct": "Excalibur",
+    "explanation": "Artus erhält das Schwert von der Herrin vom See (oder zieht es aus dem Stein, je nach Legende)."
+  },
+  {
+    "question": "Welches Symbol trägt Katniss Everdeen als Brosche in „Die Tribute von Panem“?",
+    "answers": [
+      "Einen Spotttölpel (Mockingjay)",
+      "Einen Adler",
+      "Einen Pfeil",
+      "Eine Rose"
+    ],
+    "correct": "Einen Spotttölpel (Mockingjay)",
+    "explanation": "Der Vogel wird zum Zeichen des Widerstands gegen das Kapitol."
+  },
+  {
+    "question": "Wer schrieb den Roman „Der Name der Rose“?",
+    "answers": [
+      "Umberto Eco",
+      "Italo Calvino",
+      "Dario Fo",
+      "Alessandro Manzoni"
+    ],
+    "correct": "Umberto Eco",
+    "explanation": "William von Baskerville ermittelt in einer mittelalterlichen Abtei."
+  },
+  {
+    "question": "Wie heißt die Tante von Tom Sawyer, bei der er lebt?",
+    "answers": [
+      "Tante Polly",
+      "Tante Petunia",
+      "Tante Sally",
+      "Tante May"
+    ],
+    "correct": "Tante Polly",
+    "explanation": "Sie versucht ständig, den Lausbuben Tom zu erziehen."
+  },
+  {
+    "question": "Welcher Roman von John Steinbeck spielt während der Großen Depression und handelt von George und Lennie?",
+    "answers": [
+      "Von Mäusen und Menschen",
+      "Früchte des Zorns",
+      "Jenseits von Eden",
+      "Die Straße der Ölsardinen"
+    ],
+    "correct": "Von Mäusen und Menschen",
+    "explanation": "Lennie ist geistig zurückgeblieben und liebt weiche Dinge, was zur Tragödie führt."
+  },
+  {
+    "question": "Wie heißt das fiktive Dorf, in dem Miss Marple lebt?",
+    "answers": [
+      "St. Mary Mead",
+      "Midsomer Worthy",
+      "Cabot Cove",
+      "Baker Street"
+    ],
+    "correct": "St. Mary Mead",
+    "explanation": "Das englische Dorf scheint harmlos, hat aber eine extrem hohe Mordrate."
+  },
+  {
+    "question": "Welcher deutsche Dichter schrieb das Lied von der „Loreley“ („Ich weiß nicht, was soll es bedeuten...“)?",
+    "answers": [
+      "Heinrich Heine",
+      "Clemens Brentano",
+      "Joseph von Eichendorff",
+      "Eduard Mörike"
+    ],
+    "correct": "Heinrich Heine",
+    "explanation": "Das Gedicht machte den Felsen am Rhein weltberühmt."
+  },
+  {
+    "question": "Wie heißt der Riese, der in Roald Dahls Buch Sophiechen entführt?",
+    "answers": [
+      "BFG (Big Friendly Giant) / GuRie",
+      "Hagrid",
+      "Goliath",
+      "Grawp"
+    ],
+    "correct": "BFG (Big Friendly Giant) / GuRie",
+    "explanation": "Der „Gute Riese“ bläst den Menschen schöne Träume ins Schlafzimmer."
+  },
+  {
+    "question": "Welches Tier ist „Sultan“ in den Fabeln (und bei Disney „Aladdin“)?",
+    "answers": [
+      "(Trickfrage: In der Fabel kein Tier, im Märchen oft Hund/Pferd) Aber in „Aladdin“ der Vater. Besser: Welches Tier ist „Iago“?",
+      "Ein Papagei",
+      "Ein Affe",
+      "Ein Tiger"
+    ],
+    "correct": "(Trickfrage: In der Fabel kein Tier, im Märchen oft Hund/Pferd) Aber in „Aladdin“ der Vater. Besser: Welches Tier ist „Iago“?",
+    "explanation": "Ein Löwe"
+  },
+  {
+    "question": "Wer schrieb den Roman „Stolz und Vorurteil“?",
+    "answers": [
+      "Jane Austen",
+      "Emily Brontë",
+      "Charlotte Brontë",
+      "George Eliot"
+    ],
+    "correct": "Jane Austen",
+    "explanation": "Die Geschichte von Elizabeth Bennet und Mr. Darcy."
+  },
+  {
+    "question": "Wie heißt der Gefängniswärter im Roman „The Green Mile“ von Stephen King?",
+    "answers": [
+      "Paul Edgecombe",
+      "Percy Wetmore",
+      "Brutus Howell",
+      "Hal Moores"
+    ],
+    "correct": "Paul Edgecombe",
+    "explanation": "Er erkennt, dass der Häftling John Coffey übernatürliche Gaben hat."
+  },
+  {
+    "question": "Welches Insekt spielt die Titelrolle in „Die Biene Maja“ (Waldemar Bonsels)?",
+    "answers": [
+      "Eine Biene",
+      "Eine Wespe",
+      "Eine Hummel",
+      "Eine Fliege"
+    ],
+    "correct": "Eine Biene",
+    "explanation": "Maja will die Welt erkunden und verlässt den Bienenstock."
+  },
+  {
+    "question": "In welchem Roman kämpfen die Häuser Atreides und Harkonnen gegeneinander?",
+    "answers": [
+      "Der Wüstenplanet (Dune)",
+      "Star Wars",
+      "Hyperion",
+      "Foundation"
+    ],
+    "correct": "Der Wüstenplanet (Dune)",
+    "explanation": "Frank Herberts Epos dreht sich um den Wüstenplaneten Arrakis."
+  },
+  {
+    "question": "Wer schrieb die „Chroniken der Unterwelt“ (City of Bones)?",
+    "answers": [
+      "Cassandra Clare",
+      "Kerstin Gier",
+      "Stephenie Meyer",
+      "Jennifer L. Armentrout"
+    ],
+    "correct": "Cassandra Clare",
+    "explanation": "Die Protagonistin Clary Fray entdeckt, dass sie eine Schattenjägerin ist."
+  },
+  {
+    "question": "Wie heißt der Hund von Charlie Brown in den „Peanuts“?",
+    "answers": [
+      "Snoopy",
+      "Pluto",
+      "Odie",
+      "Idefix"
+    ],
+    "correct": "Snoopy",
+    "explanation": "Snoopy liegt meist auf seiner Hundehütte und philosophiert oder schreibt Romane."
+  },
+  {
+    "question": "Welches Buch von Juli Zeh handelt von Konflikten in einem brandenburgischen Dorf?",
+    "answers": [
+      "Unterleuten",
+      "Spieltrieb",
+      "Leere Herzen",
+      "Über Menschen"
+    ],
+    "correct": "Unterleuten",
+    "explanation": "Der Gesellschaftsroman zeigt den Clash zwischen Alteingesessenen und Berliner Zugezogenen."
+  }
+]
