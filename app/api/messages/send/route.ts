@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { getUsersCollection, getMessagesCollection } from "@/lib/mongodb";
 import type { SendMessagePayload } from "@/lib/messages";
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
     const recipientUsername = (payload.recipientUsername ?? "").trim();
     const subject = (payload.subject ?? "").trim();
     const body = (payload.body ?? "").trim();
+    const rawThreadId = (payload.threadId ?? "").trim();
 
     if (!recipientUsername) {
       return NextResponse.json({ message: "Empfänger fehlt." }, { status: 400 });
@@ -46,16 +48,32 @@ export async function POST(request: Request) {
     }
 
     const messages = await getMessagesCollection();
-    await messages.insertOne({
+
+    // Thread-ID bestimmen: wenn Antwort, existierenden Thread nutzen
+    let threadId: ObjectId | undefined;
+    if (rawThreadId && ObjectId.isValid(rawThreadId)) {
+      threadId = new ObjectId(rawThreadId);
+    }
+
+    const insertResult = await messages.insertOne({
       senderUsername: account.username,
       recipientUsername,
       subject,
       body,
       read: false,
+      threadId,
       deletedBySender: false,
       deletedByRecipient: false,
       createdAt: new Date(),
     });
+
+    // Wenn neue Nachricht (kein Thread), setze _id als threadId
+    if (!threadId) {
+      await messages.updateOne(
+        { _id: insertResult.insertedId },
+        { $set: { threadId: insertResult.insertedId } },
+      );
+    }
 
     return NextResponse.json({ message: "Nachricht gesendet." });
   } catch (err) {

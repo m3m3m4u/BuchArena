@@ -9,6 +9,7 @@ import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
 export default function SiteHeader() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -21,6 +22,19 @@ export default function SiteHeader() {
       window.removeEventListener("storage", sync);
     };
   }, []);
+
+  // Unread count polling
+  useEffect(() => {
+    if (!loggedIn) { setUnreadCount(0); return; }
+    const fetchCount = () =>
+      fetch("/api/messages/unread-count")
+        .then((r) => r.json())
+        .then((d: { count: number }) => setUnreadCount(d.count))
+        .catch(() => {});
+    fetchCount();
+    const interval = setInterval(fetchCount, 30_000);
+    return () => clearInterval(interval);
+  }, [loggedIn]);
 
   // Menü bei Seitenwechsel schließen
   useEffect(() => {
@@ -41,6 +55,16 @@ export default function SiteHeader() {
       <Link href="/autoren" className="btn w-full sm:w-auto">Autoren</Link>
       <Link href="/sprecher" className="btn w-full sm:w-auto">Sprecher</Link>
       {loggedIn && <Link href="/diskussionen" className="btn w-full sm:w-auto">Diskussionen</Link>}
+      {loggedIn && (
+        <Link href="/nachrichten" className="btn w-full sm:w-auto relative">
+          Nachrichten
+          {unreadCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-red-600 text-white text-[10px] font-bold px-1 leading-none">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </Link>
+      )}
       {loggedIn && <Link href="/social-media" className="btn w-full sm:w-auto">Social Media</Link>}
       {loggedIn ? (
         <Link href="/profil" className="btn w-full sm:w-auto">Profil</Link>

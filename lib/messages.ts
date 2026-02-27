@@ -7,6 +7,8 @@ export type MessageDocument = {
   subject: string;
   body: string;
   read: boolean;
+  readAt?: Date;
+  threadId?: ObjectId;
   deletedBySender: boolean;
   deletedByRecipient: boolean;
   createdAt: Date;
@@ -16,4 +18,5 @@ export type SendMessagePayload = {
   recipientUsername?: string;
   subject?: string;
   body?: string;
+  threadId?: string;
 };

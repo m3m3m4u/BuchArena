@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const messages = await getMessagesCollection();
     const result = await messages.updateOne(
       { _id: new ObjectId(id), recipientUsername: account.username },
-      { $set: { read: true } }
+      { $set: { read: true, readAt: new Date() } }
     );
 
     if (result.matchedCount === 0) {
