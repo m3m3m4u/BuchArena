@@ -403,7 +403,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                   style={{ aspectRatio: "3/4" }}
                 >
                   {book.coverImageUrl ? (
-                    <img src={book.coverImageUrl} alt={`Cover von ${book.title}`} className="h-full w-full object-contain" />
+                    <img src={`${book.coverImageUrl}${book.coverImageUrl.includes('?') ? '&' : '?'}w=240`} alt={`Cover von ${book.title}`} className="h-full w-full object-contain" loading="lazy" />
                   ) : (
                     <span>Kein Cover</span>
                   )}

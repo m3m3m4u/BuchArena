@@ -91,7 +91,7 @@ export default function AutorenPage() {
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
                     <div className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted">
                       {author.profileImageUrl ? (
-                        <img src={author.profileImageUrl} alt={`Profilbild von ${author.displayName}`} className="h-full w-full object-cover" />
+                        <img src={`${author.profileImageUrl}${author.profileImageUrl.includes('?') ? '&' : '?'}w=200`} alt={`Profilbild von ${author.displayName}`} className="h-full w-full object-cover" loading="lazy" />
                       ) : (
                         <span>Kein Bild</span>
                       )}

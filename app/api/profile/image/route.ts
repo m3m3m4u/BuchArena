@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import {
   getWebdavClient,
   isAllowedRemotePath,
@@ -37,13 +38,32 @@ export async function GET(request: Request) {
     const content = (await client.getFileContents(remotePath, {
       format: "binary",
     })) as Buffer;
-    const bytes = new Uint8Array(content);
 
-    return new NextResponse(bytes, {
+    // Optional: resize wenn w-Parameter angegeben
+    const widthParam = searchParams.get("w");
+    const maxWidth = widthParam ? Math.min(Math.max(parseInt(widthParam, 10), 32), 1200) : 0;
+
+    let outputBytes: Uint8Array;
+    let outputMime: string;
+
+    if (maxWidth > 0 && !Number.isNaN(maxWidth)) {
+      // Bild verkleinern und als WebP ausgeben
+      const resized = await sharp(content)
+        .resize({ width: maxWidth, withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+      outputBytes = new Uint8Array(resized);
+      outputMime = "image/webp";
+    } else {
+      outputBytes = new Uint8Array(content);
+      outputMime = mimeTypeFromPath(remotePath);
+    }
+
+    return new NextResponse(outputBytes as unknown as BodyInit, {
       status: 200,
       headers: {
-        "Content-Type": mimeTypeFromPath(remotePath),
-        "Cache-Control": "public, max-age=3600",
+        "Content-Type": outputMime,
+        "Cache-Control": "public, max-age=86400, immutable",
       },
     });
   } catch {

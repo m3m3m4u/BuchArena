@@ -28,8 +28,10 @@ export function toPublicImageUrl(remotePath: string) {
   return `${base}${remotePath}`;
 }
 
-export function toInternalImageUrl(remotePath: string) {
-  return `/api/profile/image?path=${encodeURIComponent(remotePath)}`;
+export function toInternalImageUrl(remotePath: string, width?: number) {
+  let url = `/api/profile/image?path=${encodeURIComponent(remotePath)}`;
+  if (width) url += `&w=${width}`;
+  return url;
 }
 
 export function isAllowedRemotePath(remotePath: string) {
