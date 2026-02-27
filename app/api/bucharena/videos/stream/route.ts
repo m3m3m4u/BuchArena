@@ -14,11 +14,6 @@ export const runtime = "nodejs";
  */
 export async function GET(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
-    if (!admin) {
-      return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
-    }
-
     const { searchParams } = new URL(request.url);
     const fileName = searchParams.get("file")?.trim() ?? "";
 

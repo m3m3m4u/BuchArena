@@ -55,6 +55,14 @@ export async function POST(request: Request) {
       overwrite: true,
     });
 
+    // Originalen Dateinamen als Metadaten speichern
+    const metaPath = `${remoteFilePath}.meta.json`;
+    await client.putFileContents(
+      metaPath,
+      JSON.stringify({ originalName: file.name }),
+      { overwrite: true },
+    );
+
     return NextResponse.json({
       message: "Video hochgeladen.",
       video: {

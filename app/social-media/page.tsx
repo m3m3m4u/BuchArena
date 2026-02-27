@@ -208,15 +208,13 @@ export default function SocialMediaPage() {
         </p>
 
         {/* Video-Links */}
-        {account?.role === "SUPERADMIN" && (
-          <Link
-            href="/social-media/videos"
-            className="flex items-center gap-2 rounded-lg border border-arena-border-light bg-[#fffbe6] p-3 text-[0.95rem] no-underline text-inherit hover:border-arena-yellow transition-colors"
-          >
-            📹 <span className="font-medium">Videos zur Kontrolle</span>
-            <span className="text-xs text-arena-muted ml-auto">Upload & Ansehen</span>
-          </Link>
-        )}
+        <Link
+          href="/social-media/videos"
+          className="flex items-center gap-2 rounded-lg border border-arena-border-light bg-[#fffbe6] p-3 text-[0.95rem] no-underline text-inherit hover:border-arena-yellow transition-colors"
+        >
+          📹 <span className="font-medium">Videos zur Kontrolle</span>
+          <span className="text-xs text-arena-muted ml-auto">Ansehen</span>
+        </Link>
 
         {/* Sections */}
         <div className="grid gap-2.5">

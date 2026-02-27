@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpTrayIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
   PlayIcon,
   TrashIcon,
   XMarkIcon,
@@ -16,8 +18,18 @@ import {
 
 type ReviewVideo = {
   fileName: string;
+  originalName?: string;
+  reviewStatus?: "pending" | "approved" | "rejected";
+  reviewNote?: string;
+  reviewedAt?: string;
   size: number;
   uploadedAt: string;
+};
+
+const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
+  pending: { label: "Offen", cls: "bg-yellow-100 text-yellow-800" },
+  approved: { label: "OK", cls: "bg-green-100 text-green-800" },
+  rejected: { label: "Fehler", cls: "bg-red-100 text-red-800" },
 };
 
 function formatSize(bytes: number) {
@@ -50,6 +62,9 @@ export default function ReviewVideosPage() {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [feedbackTarget, setFeedbackTarget] = useState<ReviewVideo | null>(null);
+  const [feedbackNote, setFeedbackNote] = useState("");
+  const [reviewBusy, setReviewBusy] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -80,9 +95,10 @@ export default function ReviewVideosPage() {
   }, []);
 
   useEffect(() => {
-    if (account?.role === "SUPERADMIN") void loadVideos();
-    else setLoading(false);
-  }, [account, loadVideos]);
+    if (accountLoaded) void loadVideos();
+  }, [accountLoaded, loadVideos]);
+
+  const isAdmin = account?.role === "SUPERADMIN";
 
   async function uploadSingleFile(file: File): Promise<string | null> {
     return new Promise((resolve) => {
@@ -180,6 +196,47 @@ export default function ReviewVideosPage() {
     }
   }
 
+  async function handleReview(fileName: string, status: "approved" | "rejected", note?: string) {
+    setReviewBusy(fileName);
+    setMessage("");
+    try {
+      const res = await fetch("/api/bucharena/videos", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileName, status, note }),
+      });
+      const data = (await res.json()) as {
+        message?: string;
+        reviewStatus?: string;
+        reviewNote?: string;
+        reviewedAt?: string;
+      };
+      if (!res.ok) throw new Error(data.message ?? "Aktion fehlgeschlagen.");
+
+      setMessage(data.message ?? "Gespeichert.");
+      setIsError(false);
+      setVideos((prev) =>
+        prev.map((v) =>
+          v.fileName === fileName
+            ? {
+                ...v,
+                reviewStatus: data.reviewStatus as ReviewVideo["reviewStatus"],
+                reviewNote: data.reviewNote,
+                reviewedAt: data.reviewedAt,
+              }
+            : v,
+        ),
+      );
+      setFeedbackTarget(null);
+      setFeedbackNote("");
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Aktion fehlgeschlagen.");
+      setIsError(true);
+    } finally {
+      setReviewBusy(null);
+    }
+  }
+
   if (!accountLoaded) {
     return (
       <main className="centered-main">
@@ -188,28 +245,16 @@ export default function ReviewVideosPage() {
     );
   }
 
-  if (account?.role !== "SUPERADMIN") {
-    return (
-      <main className="centered-main">
-        <section className="card">
-          <h1>Videokontrolle</h1>
-          <p className="text-red-700">Nur der Admin kann diese Seite sehen.</p>
-          <Link href="/social-media" className="btn">Zurück</Link>
-        </section>
-      </main>
-    );
-  }
-
   return (
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1>Videokontrolle</h1>
+          <h1>Videos zur Kontrolle</h1>
           <Link href="/social-media" className="btn btn-sm">← Zurück</Link>
         </div>
 
-        {/* Upload-Bereich */}
-        <div className="mt-4 p-4 border border-dashed border-arena-border rounded-xl text-center">
+        {/* Upload-Bereich – nur für Admin */}
+        {isAdmin && <div className="mt-4 p-4 border border-dashed border-arena-border rounded-xl text-center">
           <input
             ref={inputRef}
             type="file"
@@ -244,7 +289,7 @@ export default function ReviewVideosPage() {
             </button>
           )}
           <p className="text-xs text-arena-muted mt-2">Max. 500 MB · MP4, WebM, MOV etc.</p>
-        </div>
+        </div>}
 
         {/* Status-Nachricht */}
         {message && (
@@ -261,7 +306,7 @@ export default function ReviewVideosPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between px-4 py-2 bg-arena-blue text-white">
-                <span className="text-sm truncate">{activeVideo}</span>
+                <span className="text-sm truncate">{videos.find((v) => v.fileName === activeVideo)?.originalName ?? activeVideo}</span>
                 <button
                   type="button"
                   className="text-white bg-transparent border-none cursor-pointer p-1"
@@ -327,40 +372,129 @@ export default function ReviewVideosPage() {
             <p className="text-sm text-arena-muted">Noch keine Videos hochgeladen.</p>
           ) : (
             <div className="grid gap-2">
-              {videos.map((v) => (
+              {videos.map((v) => {
+                const badge = STATUS_BADGE[v.reviewStatus ?? "pending"] ?? STATUS_BADGE.pending;
+                const isBusy = reviewBusy === v.fileName;
+
+                return (
                 <div
                   key={v.fileName}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-arena-border hover:border-gray-400 transition-colors"
+                  className="rounded-lg border border-arena-border hover:border-gray-400 transition-colors"
                 >
-                  <PlayIcon className="w-6 h-6 text-arena-blue shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{v.fileName}</p>
-                    <p className="text-xs text-arena-muted">
-                      {formatSize(v.size)} · {formatDate(v.uploadedAt)}
-                    </p>
+                  <div className="flex items-center gap-3 p-3">
+                    <PlayIcon className="w-6 h-6 text-arena-blue shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-medium truncate">{v.originalName ?? v.fileName}</p>
+                        <span className={`inline-block text-[0.7rem] font-semibold px-1.5 py-0.5 rounded-full ${badge.cls}`}>
+                          {badge.label}
+                        </span>
+                      </div>
+                      <p className="text-xs text-arena-muted">
+                        {formatSize(v.size)} · {formatDate(v.uploadedAt)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                      <button
+                        type="button"
+                        className="btn btn-sm inline-flex items-center gap-1"
+                        onClick={() => setActiveVideo(v.fileName)}
+                      >
+                        <PlayIcon className="w-3.5 h-3.5" />
+                        Ansehen
+                      </button>
+                      {isAdmin && (
+                        <>
+                          <button
+                            type="button"
+                            className="btn btn-sm inline-flex items-center gap-1 !border-green-400 !text-green-700 hover:!bg-green-50"
+                            disabled={isBusy}
+                            onClick={() => void handleReview(v.fileName, "approved")}
+                            title="Alles passt"
+                          >
+                            <CheckCircleIcon className="w-3.5 h-3.5" />
+                            OK
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm inline-flex items-center gap-1 !border-orange-400 !text-orange-700 hover:!bg-orange-50"
+                            disabled={isBusy}
+                            onClick={() => { setFeedbackTarget(v); setFeedbackNote(v.reviewNote ?? ""); }}
+                            title="Fehler melden"
+                          >
+                            <ExclamationTriangleIcon className="w-3.5 h-3.5" />
+                            Fehler
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-danger inline-flex items-center gap-1"
+                            onClick={() => setDeleteTarget(v.fileName)}
+                          >
+                            <TrashIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      className="btn btn-sm inline-flex items-center gap-1"
-                      onClick={() => setActiveVideo(v.fileName)}
-                    >
-                      <PlayIcon className="w-3.5 h-3.5" />
-                      Ansehen
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-danger inline-flex items-center gap-1"
-                      onClick={() => setDeleteTarget(v.fileName)}
-                    >
-                      <TrashIcon className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  {/* Vorhandenes Feedback anzeigen */}
+                  {v.reviewNote && (
+                    <div className="px-3 pb-3 -mt-1">
+                      <p className="text-xs rounded-lg bg-orange-50 border border-orange-200 px-2.5 py-1.5 text-orange-800">
+                        <strong>Feedback:</strong> {v.reviewNote}
+                        {v.reviewedAt && (
+                          <span className="text-orange-500 ml-1">({formatDate(v.reviewedAt)})</span>
+                        )}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
+
+        {/* Feedback-Overlay */}
+        {feedbackTarget && (
+          <div className="overlay-backdrop" onClick={() => setFeedbackTarget(null)}>
+            <div
+              className="bg-white rounded-xl p-5 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-lg m-0 mb-1">Fehler melden</h2>
+              <p className="text-sm text-arena-muted mb-3 break-all">
+                {feedbackTarget.originalName ?? feedbackTarget.fileName}
+              </p>
+              <label className="block">
+                <span className="text-sm font-semibold">Was muss korrigiert werden?</span>
+                <textarea
+                  className="input-base w-full mt-1 min-h-[100px] resize-y"
+                  value={feedbackNote}
+                  onChange={(e) => setFeedbackNote(e.target.value)}
+                  placeholder="Beschreibe den Fehler möglichst genau …"
+                  autoFocus
+                />
+              </label>
+              <div className="flex gap-2 mt-4">
+                <button
+                  type="button"
+                  className="btn btn-primary flex-1"
+                  disabled={!feedbackNote.trim() || reviewBusy === feedbackTarget.fileName}
+                  onClick={() => void handleReview(feedbackTarget.fileName, "rejected", feedbackNote)}
+                >
+                  Feedback senden
+                </button>
+                <button
+                  type="button"
+                  className="btn flex-1"
+                  onClick={() => setFeedbackTarget(null)}
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );
