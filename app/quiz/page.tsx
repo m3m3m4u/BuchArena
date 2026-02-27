@@ -30,7 +30,7 @@ const DESCRIPTIONS: Record<QuizType, string> = {
   welchesBuch: "Du bekommst 4 kryptische Hinweise. Errate, welches Buch gemeint ist!",
   wasPasstNicht: "5 Bücher werden genannt – eines passt nicht dazu. Welches und warum?",
   buchstabensalat: "Die Buchstaben eines Buchtitels wurden durcheinander gewürfelt. Erkennst du ihn?",
-  multipleChoice: "10 zufällige Fragen mit je 4 Antwortmöglichkeiten. Wie viele schaffst du?",
+  multipleChoice: "Beantworte so viele Fragen wie du willst! Richtig = +1, Falsch = −3 Punkte.",
 };
 
 function pick<T>(arr: T[]): T {
@@ -46,8 +46,6 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-const MC_ROUND_SIZE = 10;
-
 export default function QuizPage() {
   const [data, setData] = useState<QuizData | null>(null);
   const [mcData, setMcData] = useState<MCQuestion[] | null>(null);
@@ -62,11 +60,12 @@ export default function QuizPage() {
   const [hintsShown, setHintsShown] = useState(1);
 
   // MC-Quiz State
-  const [mcQuestions, setMcQuestions] = useState<MCQuestion[]>([]);
-  const [mcIndex, setMcIndex] = useState(0);
+  const [mcPool, setMcPool] = useState<MCQuestion[]>([]);
+  const [mcCurrent, setMcCurrent] = useState<MCQuestion | null>(null);
   const [mcSelected, setMcSelected] = useState<string | null>(null);
   const [mcRevealed, setMcRevealed] = useState(false);
   const [mcScore, setMcScore] = useState(0);
+  const [mcCount, setMcCount] = useState(0);
   const [mcFinished, setMcFinished] = useState(false);
   const [mcShuffledAnswers, setMcShuffledAnswers] = useState<string[]>([]);
 
@@ -109,14 +108,15 @@ export default function QuizPage() {
       if (type === "buchstabensalat" && data) setCurrentBS(pick(data.buchstabensalat));
 
       if (type === "multipleChoice" && mcData) {
-        const round = shuffle(mcData).slice(0, MC_ROUND_SIZE);
-        setMcQuestions(round);
-        setMcIndex(0);
+        const pool = shuffle(mcData);
+        setMcPool(pool.slice(1));
+        setMcCurrent(pool[0]);
         setMcSelected(null);
         setMcRevealed(false);
         setMcScore(0);
+        setMcCount(0);
         setMcFinished(false);
-        setMcShuffledAnswers(shuffle(round[0].answers));
+        setMcShuffledAnswers(shuffle(pool[0].answers));
       }
     },
     [data, mcData],
@@ -133,23 +133,38 @@ export default function QuizPage() {
   }
 
   function mcReveal() {
-    if (!mcSelected) return;
+    if (!mcSelected || !mcCurrent) return;
     setMcRevealed(true);
-    const q = mcQuestions[mcIndex];
-    if (mcSelected === q.correct) setMcScore((s) => s + 1);
+    setMcCount((c) => c + 1);
+    if (mcSelected === mcCurrent.correct) {
+      setMcScore((s) => s + 1);
+    } else {
+      setMcScore((s) => s - 3);
+    }
   }
 
   function mcNext() {
-    const next = mcIndex + 1;
-    if (next >= mcQuestions.length) {
-      setMcFinished(true);
-      loadHighscores();
-      return;
+    if (mcPool.length === 0) {
+      // Alle Fragen durch – Pool neu mischen
+      if (mcData) {
+        const pool = shuffle(mcData);
+        setMcPool(pool.slice(1));
+        setMcCurrent(pool[0]);
+        setMcShuffledAnswers(shuffle(pool[0].answers));
+      }
+    } else {
+      const next = mcPool[0];
+      setMcPool((p) => p.slice(1));
+      setMcCurrent(next);
+      setMcShuffledAnswers(shuffle(next.answers));
     }
-    setMcIndex(next);
     setMcSelected(null);
     setMcRevealed(false);
-    setMcShuffledAnswers(shuffle(mcQuestions[next].answers));
+  }
+
+  function mcEnd() {
+    setMcFinished(true);
+    loadHighscores();
   }
 
   async function saveHighscore() {
@@ -158,7 +173,7 @@ export default function QuizPage() {
       const res = await fetch("/api/quiz/highscore", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ score: mcScore, total: MC_ROUND_SIZE }),
+        body: JSON.stringify({ score: mcScore, total: mcCount }),
       });
       if (res.ok) {
         setScoreSaved(true);
@@ -200,7 +215,7 @@ export default function QuizPage() {
 
   /* ======== Multiple Choice ======== */
   if (mode === "multipleChoice") {
-    const q = mcQuestions[mcIndex];
+    const q = mcCurrent;
 
     if (mcFinished) {
       return (
@@ -209,14 +224,17 @@ export default function QuizPage() {
             <h1 className="text-xl">Ergebnis</h1>
             <div className="rounded-lg bg-arena-bg border border-arena-border-light p-5 text-center mt-2">
               <p className="text-3xl font-bold m-0">
-                {mcScore} / {MC_ROUND_SIZE}
+                {mcScore} Punkte
               </p>
               <p className="text-arena-muted text-sm mt-1 m-0">
-                {mcScore === MC_ROUND_SIZE
-                  ? "Perfekt! 🎉"
-                  : mcScore >= 7
+                {mcCount} Fragen beantwortet
+              </p>
+              <p className="text-arena-muted text-sm mt-1 m-0">
+                {mcScore >= 20
+                  ? "Unglaublich! 🎉"
+                  : mcScore >= 10
                     ? "Sehr gut! 👏"
-                    : mcScore >= 4
+                    : mcScore >= 0
                       ? "Nicht schlecht!"
                       : "Übung macht den Meister! 📚"}
               </p>
@@ -258,7 +276,8 @@ export default function QuizPage() {
                             {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`}
                           </span>
                           <span className="flex-1 font-medium truncate">{hs.username}</span>
-                          <span className="font-bold text-arena-blue">{hs.score}/{hs.total}</span>
+                          <span className="font-bold text-arena-blue">{hs.score} Pkt.</span>
+                          <span className="text-xs text-arena-muted">({hs.total} Fragen)</span>
                           <span className="text-xs text-arena-muted flex-shrink-0">
                             {new Date(hs.date).toLocaleDateString("de-AT")}
                           </span>
@@ -283,13 +302,15 @@ export default function QuizPage() {
       );
     }
 
+    if (!q) return null;
+
     return (
       <main className="top-centered-main">
         <section className="card">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h1 className="text-xl m-0">Multiple Choice</h1>
             <span className="text-sm text-arena-muted">
-              Frage {mcIndex + 1} / {MC_ROUND_SIZE} · Punkte: {mcScore}
+              Frage {mcCount + 1} · Punkte: {mcScore}
             </span>
           </div>
 
@@ -334,11 +355,11 @@ export default function QuizPage() {
               </button>
             ) : (
               <button className="btn btn-primary" onClick={mcNext}>
-                {mcIndex + 1 < mcQuestions.length ? "Nächste Frage" : "Ergebnis anzeigen"}
+                Nächste Frage
               </button>
             )}
-            <button className="btn" onClick={() => setMode(null)}>
-              Abbrechen
+            <button className="btn" onClick={mcEnd}>
+              Beenden & Ergebnis
             </button>
           </div>
         </section>

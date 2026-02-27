@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     const score = body.score;
     const total = body.total;
 
-    if (typeof score !== "number" || typeof total !== "number" || score < 0 || total < 1 || score > total) {
+    if (typeof score !== "number" || typeof total !== "number" || total < 1) {
       return NextResponse.json({ message: "Ungültige Daten." }, { status: 400 });
     }
 
