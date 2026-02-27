@@ -49,7 +49,7 @@ export default function SiteFooter() {
   }
 
   return (
-    <footer className="sm:sticky sm:bottom-0 z-50 border-t border-arena-border bg-white">
+    <footer className="flex-shrink-0 z-50 border-t border-arena-border bg-white">
       <div className="site-shell flex flex-wrap items-center justify-between gap-2 sm:gap-4">
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-4 text-[0.82rem] sm:text-[0.95rem]">
           {account?.role === "SUPERADMIN" && (

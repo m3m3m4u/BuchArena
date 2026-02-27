@@ -29,7 +29,7 @@ type Book = {
   description: string;
   buyLinks: string[];
   presentationVideoUrl: string;
-  presentationVideoInternal: true;
+  presentationVideoInternal: boolean;
   excerpts: BookExcerpt[];
   createdAt: string;
 };

@@ -24,9 +24,10 @@ export async function POST(request: Request) {
         const { title, author, youtubeLangUrl, youtubeShortUrl, redditUrl, tiktokUrl, instareelUrl, publishDate } = bookData;
         if (!title || !author) { results.errors.push("Buch ohne Titel oder Autor übersprungen"); continue; }
 
+        const escRx = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const existingBook = await col.findOne({
-          title: { $regex: new RegExp(`^${title.trim()}$`, "i") },
-          author: { $regex: new RegExp(`^${author.trim()}$`, "i") },
+          title: { $regex: new RegExp(`^${escRx(title.trim())}$`, "i") },
+          author: { $regex: new RegExp(`^${escRx(author.trim())}$`, "i") },
         });
 
         const updateData = {

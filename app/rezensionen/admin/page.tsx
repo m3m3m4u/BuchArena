@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -49,7 +49,7 @@ export default function ReviewsAdminPage() {
     if (account !== null && account.role !== "SUPERADMIN") router.push("/social-media");
   }, [account, router]);
 
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     setLoading(true); setError(null);
     try {
       const res = await fetch("/api/bucharena/reviews/admin");
@@ -58,9 +58,9 @@ export default function ReviewsAdminPage() {
       else setError(data.error || "Fehler beim Laden");
     } catch { setError("Netzwerkfehler"); }
     finally { setLoading(false); }
-  };
+  }, []);
 
-  useEffect(() => { if (account?.role === "SUPERADMIN") loadReviews(); }, [account]);
+  useEffect(() => { if (account?.role === "SUPERADMIN") loadReviews(); }, [account, loadReviews]);
 
   const handleStatusUpdate = async (id: string, newStatus: "pending" | "processed") => {
     setActionLoading(id);
@@ -168,7 +168,7 @@ export default function ReviewsAdminPage() {
                       {review.processedAt && <div><strong>Bearbeitet am:</strong> {new Date(review.processedAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</div>}
                     </div>
                   </div>
-                  <div className="flex sm:flex-col gap-1.5 sm:w-[180px] shrink-0 flex-wrap">
+                  <div className="flex sm:flex-col gap-1.5 sm:w-[180px] shrink-0 flex-wrap max-[500px]:w-full">
                     {review.status === "pending" ? (
                       <button onClick={() => handleStatusUpdate(review.id, "processed")} disabled={actionLoading === review.id} className="btn btn-sm flex items-center gap-1 text-[0.8rem] bg-green-50 text-green-800">
                         <CheckCircleIcon className="w-3.5 h-3.5" />Als bearbeitet markieren

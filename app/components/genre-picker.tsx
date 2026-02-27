@@ -103,7 +103,7 @@ export default function GenrePicker({
           >
             {g}
             <XMarkIcon
-              className="size-3.5 cursor-pointer hover:text-arena-yellow"
+              className="size-4 cursor-pointer hover:text-arena-yellow p-0.5"
               onClick={(e) => {
                 e.stopPropagation();
                 remove(g);
@@ -135,7 +135,7 @@ export default function GenrePicker({
               <button
                 key={g}
                 type="button"
-                className="flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm rounded hover:bg-arena-bg cursor-pointer border-none bg-transparent font-medium text-arena-blue"
+                className="flex items-center gap-2 w-full text-left px-3 py-2.5 sm:py-1.5 text-sm rounded hover:bg-arena-bg cursor-pointer border-none bg-transparent font-medium text-arena-blue"
                 onClick={() => toggle(g)}
               >
                 <span className="size-4 shrink-0 text-center">✓</span>
@@ -152,7 +152,7 @@ export default function GenrePicker({
               <button
                 key={g}
                 type="button"
-                className="flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm rounded hover:bg-arena-bg cursor-pointer border-none bg-transparent"
+                className="flex items-center gap-2 w-full text-left px-3 py-2.5 sm:py-1.5 text-sm rounded hover:bg-arena-bg cursor-pointer border-none bg-transparent"
                 onClick={() => toggle(g)}
               >
                 <span className="size-4 shrink-0" />

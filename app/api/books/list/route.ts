@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getBooksCollection } from "@/lib/mongodb";
+import { getServerAccount } from "@/lib/server-auth";
 
 type ListBooksPayload = {
   ownerUsername?: string;
@@ -7,15 +8,12 @@ type ListBooksPayload = {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as ListBooksPayload;
-    const ownerUsername = body.ownerUsername?.trim();
-
-    if (!ownerUsername) {
-      return NextResponse.json(
-        { message: "Benutzername fehlt." },
-        { status: 400 }
-      );
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
     }
+
+    const ownerUsername = account.username;
 
     const books = await getBooksCollection();
     const list = await books

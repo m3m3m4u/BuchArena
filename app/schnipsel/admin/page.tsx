@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -53,7 +53,7 @@ export default function SnippetsAdminPage() {
     if (account !== null && account.role !== "SUPERADMIN") router.push("/social-media");
   }, [account, router]);
 
-  const loadSnippets = async () => {
+  const loadSnippets = useCallback(async () => {
     setLoading(true); setError(null);
     try {
       const res = await fetch("/api/bucharena/snippets/admin");
@@ -62,9 +62,9 @@ export default function SnippetsAdminPage() {
       else setError(data.error || "Fehler beim Laden");
     } catch { setError("Netzwerkfehler"); }
     finally { setLoading(false); }
-  };
+  }, []);
 
-  useEffect(() => { if (account?.role === "SUPERADMIN") loadSnippets(); }, [account]);
+  useEffect(() => { if (account?.role === "SUPERADMIN") loadSnippets(); }, [account, loadSnippets]);
 
   const handleStatusUpdate = async (id: string, newStatus: "pending" | "processed") => {
     setActionLoading(id);
@@ -179,7 +179,7 @@ export default function SnippetsAdminPage() {
                     </div>
                   </div>
 
-                  <div className="flex sm:flex-col gap-1.5 sm:w-[180px] shrink-0 flex-wrap">
+                  <div className="flex sm:flex-col gap-1.5 sm:w-[180px] shrink-0 flex-wrap max-[500px]:w-full">
                     {snippet.status === "pending" ? (
                       <button onClick={() => handleStatusUpdate(snippet.id, "processed")} disabled={actionLoading === snippet.id} className="btn btn-sm flex items-center gap-1 text-[0.8rem] bg-green-50 text-green-800">
                         <CheckCircleIcon className="w-3.5 h-3.5" />Als bearbeitet markieren

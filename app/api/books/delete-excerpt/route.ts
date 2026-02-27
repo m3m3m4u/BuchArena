@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { getBooksCollection } from "@/lib/mongodb";
+import { getServerAccount } from "@/lib/server-auth";
 
 type DeleteExcerptPayload = {
   bookId?: string;
@@ -10,15 +11,20 @@ type DeleteExcerptPayload = {
 
 export async function POST(request: Request) {
   try {
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
     const body = (await request.json()) as DeleteExcerptPayload;
 
     const bookId = body.bookId?.trim();
-    const ownerUsername = body.ownerUsername?.trim();
+    const ownerUsername = account.username;
     const excerptId = body.excerptId?.trim();
 
-    if (!bookId || !ownerUsername || !excerptId) {
+    if (!bookId || !excerptId) {
       return NextResponse.json(
-        { message: "Buch-ID, Benutzername und Ausschnitt-ID sind erforderlich." },
+        { message: "Buch-ID und Ausschnitt-ID sind erforderlich." },
         { status: 400 }
       );
     }

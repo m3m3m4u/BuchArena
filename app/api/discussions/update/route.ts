@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDiscussionsCollection } from "@/lib/mongodb";
+import { getServerAccount } from "@/lib/server-auth";
 
 export async function POST(request: Request) {
   try {
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
     const body = (await request.json()) as {
       id?: string;
       authorUsername?: string;
@@ -12,7 +18,7 @@ export async function POST(request: Request) {
     };
 
     const id = body.id?.trim();
-    const authorUsername = body.authorUsername?.trim();
+    const authorUsername = account.username;
     const title = body.title?.trim();
     const postBody = body.body?.trim();
 

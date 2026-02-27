@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { normalizeGenre } from "@/lib/genres";
 
 type AuthorBook = { title: string; genre: string; ageFrom: number; ageTo: number };
 type DiscoverAuthor = { username: string; displayName: string; profileImageUrl: string; books: AuthorBook[] };
@@ -33,7 +34,7 @@ export default function AutorenPage() {
 
   const genres = useMemo(() => {
     const unique = new Set(
-      authors.flatMap((a) => a.books).flatMap((b) => (b.genre ?? "").split(",").map((g) => g.trim()).filter(Boolean)),
+      authors.flatMap((a) => a.books).flatMap((b) => (b.genre ?? "").split(",").map((g) => normalizeGenre(g.trim())).filter(Boolean)),
     );
     return [...unique].sort((a, b) => a.localeCompare(b, "de"));
   }, [authors]);
@@ -45,7 +46,7 @@ export default function AutorenPage() {
       .map((a) => ({
         ...a,
         books: a.books.filter((b) => {
-          const genreList = (b.genre ?? "").split(",").map((g) => g.trim());
+          const genreList = (b.genre ?? "").split(",").map((g) => normalizeGenre(g.trim()));
           const matchesGenre = !genreFilter || genreList.includes(genreFilter);
           const matchesAge = !hasAge || (b.ageFrom <= age && age <= b.ageTo);
           return matchesGenre && matchesAge;
@@ -87,8 +88,8 @@ export default function AutorenPage() {
                 href={`/autor/${encodeURIComponent(author.username)}`}
                 className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md"
               >
-                <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500">
-                  <div className="grid grid-cols-[72px_1fr] items-center gap-3">
+                <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">
+                  <div className="grid grid-cols-[72px_1fr] items-start gap-3">
                     <div className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted">
                       {author.profileImageUrl ? (
                         <img src={`${author.profileImageUrl}${author.profileImageUrl.includes('?') ? '&' : '?'}w=200`} alt={`Profilbild von ${author.displayName}`} className="h-full w-full object-cover" loading="lazy" />
@@ -96,18 +97,23 @@ export default function AutorenPage() {
                         <span>Kein Bild</span>
                       )}
                     </div>
-                    <div>
-                      <h2 className="m-0 text-[1.05rem]">{author.displayName}</h2>
+                    <div className="min-w-0">
+                      <h2 className="m-0 text-[1.05rem] truncate">{author.displayName}</h2>
                       <p className="mt-0.5 text-sm font-semibold">
                         {author.books.length} passende{author.books.length === 1 ? "s Buch" : " Bücher"}
                       </p>
                       <ul className="m-0 mt-1.5 grid gap-1 p-0" style={{ listStyle: "none" }}>
-                        {author.books.map((book) => (
-                          <li key={`${author.username}-${book.title}`} className="text-sm leading-snug">
+                        {author.books.slice(0, 2).map((book) => (
+                          <li key={`${author.username}-${book.title}`} className="text-sm leading-snug truncate">
                             {book.title}
-                            <span className="block text-xs text-gray-500">{book.genre}{(book.ageFrom > 0 || book.ageTo > 0) ? ` · ${book.ageFrom}–${book.ageTo} J.` : ""}</span>
+                            <span className="block text-xs text-gray-500 truncate">{book.genre}{(book.ageFrom > 0 || book.ageTo > 0) ? ` · ${book.ageFrom}–${book.ageTo} J.` : ""}</span>
                           </li>
                         ))}
+                        {author.books.length > 2 && (
+                          <li className="text-xs text-arena-muted mt-0.5">
+                            + {author.books.length - 2} weitere{author.books.length - 2 === 1 ? "s Buch" : " Bücher"} →
+                          </li>
+                        )}
                       </ul>
                     </div>
                   </div>

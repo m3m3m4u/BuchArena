@@ -1,21 +1,28 @@
 import { NextResponse } from "next/server";
 import { getUsersCollection, getBooksCollection, getSupportCollection } from "@/lib/mongodb";
 import type { UserStatus } from "@/lib/mongodb";
+import { requireSuperAdmin } from "@/lib/server-auth";
 
 type StatusPayload = {
-  requesterUsername?: string;
   targetUsername?: string;
   action?: "activate" | "deactivate" | "delete";
 };
 
 export async function POST(request: Request) {
   try {
+    const admin = await requireSuperAdmin();
+    if (!admin) {
+      return NextResponse.json(
+        { message: "Kein Zugriff." },
+        { status: 403 }
+      );
+    }
+
     const body = (await request.json()) as StatusPayload;
-    const requesterUsername = body.requesterUsername?.trim();
     const targetUsername = body.targetUsername?.trim();
     const action = body.action;
 
-    if (!requesterUsername || !targetUsername || !action) {
+    if (!targetUsername || !action) {
       return NextResponse.json(
         { message: "Fehlende Parameter." },
         { status: 400 }
@@ -23,18 +30,6 @@ export async function POST(request: Request) {
     }
 
     const users = await getUsersCollection();
-
-    const requester = await users.findOne(
-      { username: requesterUsername },
-      { projection: { role: 1 } }
-    );
-
-    if (!requester || requester.role !== "SUPERADMIN") {
-      return NextResponse.json(
-        { message: "Kein Zugriff." },
-        { status: 403 }
-      );
-    }
 
     const target = await users.findOne(
       { username: targetUsername },

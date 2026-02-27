@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
+import { createAuthToken } from "@/lib/server-auth";
 
 type LoginPayload = {
   identifier?: string;
@@ -58,7 +59,14 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({
+    // Signiertes JWT erzeugen und als HttpOnly-Cookie setzen
+    const token = await createAuthToken({
+      username: user.username,
+      email: user.email,
+      role: user.role,
+    });
+
+    const res = NextResponse.json({
       message: `Willkommen ${user.username}!`,
       user: {
         username: user.username,
@@ -66,6 +74,16 @@ export async function POST(request: Request) {
         role: user.role,
       },
     });
+
+    res.cookies.set("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 Tage
+    });
+
+    return res;
   } catch {
     return NextResponse.json(
       { message: "Login fehlgeschlagen." },

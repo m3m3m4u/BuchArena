@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import type { CreateBookPayload } from "@/lib/books";
 import { getBooksCollection } from "@/lib/mongodb";
+import { getServerAccount } from "@/lib/server-auth";
 
 type UpdateBookPayload = CreateBookPayload & {
   bookId?: string;
@@ -14,9 +15,14 @@ function toNumber(value: unknown, fallback: number) {
 
 export async function POST(request: Request) {
   try {
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
     const body = (await request.json()) as UpdateBookPayload;
 
-    const ownerUsername = body.ownerUsername?.trim();
+    const ownerUsername = account.username;
     const bookId = body.bookId?.trim();
     const coverImageUrl = body.coverImageUrl?.trim() ?? "";
     const title = body.title?.trim();

@@ -27,7 +27,7 @@ export type BookDocument = {
   description: string;
   buyLinks: string[];
   presentationVideoUrl: string;
-  presentationVideoInternal: true;
+  presentationVideoInternal: boolean;
   excerpts: BookExcerpt[];
   createdAt: Date;
 };

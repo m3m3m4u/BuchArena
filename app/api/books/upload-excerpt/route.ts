@@ -8,6 +8,7 @@ import {
   getWebdavUploadDir,
   toInternalImageUrl,
 } from "@/lib/webdav-storage";
+import { getServerAccount } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
@@ -17,15 +18,19 @@ function sanitizeUsername(input: string) {
 
 export async function POST(request: Request) {
   try {
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const bookId = formData.get("bookId");
-    const username = formData.get("username");
+    const username = account.username;
     const excerptTitle = formData.get("title");
     const excerptType = formData.get("type"); // "text" | "mp3"
 
     if (
       typeof bookId !== "string" ||
-      typeof username !== "string" ||
       typeof excerptTitle !== "string" ||
       typeof excerptType !== "string"
     ) {

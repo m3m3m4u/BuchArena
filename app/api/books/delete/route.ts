@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { getBooksCollection } from "@/lib/mongodb";
+import { getServerAccount } from "@/lib/server-auth";
 
 type DeleteBookPayload = {
   ownerUsername?: string;
@@ -9,13 +10,18 @@ type DeleteBookPayload = {
 
 export async function POST(request: Request) {
   try {
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
     const body = (await request.json()) as DeleteBookPayload;
-    const ownerUsername = body.ownerUsername?.trim();
+    const ownerUsername = account.username;
     const bookId = body.bookId?.trim();
 
-    if (!ownerUsername || !bookId) {
+    if (!bookId) {
       return NextResponse.json(
-        { message: "Benutzername oder Buch-ID fehlt." },
+        { message: "Buch-ID fehlt." },
         { status: 400 }
       );
     }

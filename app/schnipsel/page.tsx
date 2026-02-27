@@ -42,28 +42,21 @@ export default function BucharenaSnippetsPage() {
       let audioFilePath: string | undefined;
       let audioFileSize: number | undefined;
 
-      // Large files: upload to WebDAV directly
+      // Large files: upload via server proxy (no credentials on client)
       if (audioFile && audioFile.size > 4 * 1024 * 1024) {
-        const urlRes = await fetch("/api/bucharena/snippets/upload-url", {
+        const uploadForm = new FormData();
+        uploadForm.append("bookTitle", bookTitle.trim());
+        uploadForm.append("file", audioFile);
+
+        const uploadRes = await fetch("/api/bucharena/snippets/upload-url", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fileName: audioFile.name, bookTitle: bookTitle.trim() }),
+          body: uploadForm,
         });
-        const urlData = await urlRes.json();
-        if (!urlData.success) throw new Error(urlData.error || "Fehler beim Generieren der Upload-URL");
+        const uploadData = await uploadRes.json();
+        if (!uploadData.success) throw new Error(uploadData.error || "Fehler beim Hochladen der Audio-Datei");
 
-        const uploadRes = await fetch(urlData.uploadUrl, {
-          method: "PUT",
-          headers: {
-            Authorization: "Basic " + btoa(`${urlData.credentials.username}:${urlData.credentials.password}`),
-            "Content-Type": "audio/mpeg",
-          },
-          body: audioFile,
-        });
-        if (!uploadRes.ok) throw new Error("Fehler beim Hochladen der Audio-Datei");
-
-        audioFileName = urlData.fileName;
-        audioFilePath = urlData.filePath;
+        audioFileName = uploadData.fileName;
+        audioFilePath = uploadData.filePath;
         audioFileSize = audioFile.size;
       }
 

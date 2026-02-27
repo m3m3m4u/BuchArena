@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
+import { getServerAccount } from "@/lib/server-auth";
 
 type DeactivatePayload = {
   username?: string;
@@ -7,15 +8,12 @@ type DeactivatePayload = {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as DeactivatePayload;
-    const username = body.username?.trim();
-
-    if (!username) {
-      return NextResponse.json(
-        { message: "Benutzername fehlt." },
-        { status: 400 }
-      );
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
     }
+
+    const username = account.username;
 
     const users = await getUsersCollection();
     const user = await users.findOne(

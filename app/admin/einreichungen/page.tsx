@@ -192,9 +192,9 @@ export default function BucharenaAdminSubmissions() {
                   <div><span className="text-[#888]">Genre:</span> {sub.genre || "-"}</div>
                   <div><span className="text-[#888]">Alter:</span> {sub.ageRange || "-"}</div>
                   <div className="col-span-full"><span className="text-[#888]">Datei:</span> {sub.fileName} ({fmtSize(sub.fileSize)})</div>
-                  <div className="col-span-full flex items-center gap-1">
-                    {sub.contactType === "email" ? <EnvelopeIcon className="w-3.5 h-3.5 text-[#888]" /> : <SvgIg />}
-                    <span>{sub.contact}</span>
+                  <div className="col-span-full flex items-center gap-1 min-w-0">
+                    {sub.contactType === "email" ? <EnvelopeIcon className="w-3.5 h-3.5 text-[#888] shrink-0" /> : <SvgIg />}
+                    <span className="break-all">{sub.contact}</span>
                   </div>
                   {sub.notes && <div className="col-span-full text-[#555]">Notiz: {sub.notes}</div>}
                   {sub.reviewNotes && <div className="col-span-full text-[#555]">Admin: {sub.reviewNotes}</div>}

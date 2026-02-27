@@ -13,7 +13,7 @@ export default function LayoutChrome({ children }: LayoutChromeProps) {
   return (
     <>
       {showHeader && <SiteHeader />}
-      <div className="site-main pb-2 sm:pb-14">{children}</div>
+      <div className="site-main">{children}</div>
     </>
   );
 }

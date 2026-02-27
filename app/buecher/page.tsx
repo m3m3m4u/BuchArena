@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { normalizeGenre } from "@/lib/genres";
 
 type DiscoverBook = {
   id: string;
@@ -36,7 +37,7 @@ function BuecherContent() {
   const [books, setBooks] = useState<DiscoverBook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
-  const [genreFilter, setGenreFilter] = useState(searchParams.get("genre") ?? "");
+  const [genreFilter, setGenreFilter] = useState(normalizeGenre(searchParams.get("genre") ?? ""));
   const [ageFilter, setAgeFilter] = useState("");
   const [message, setMessage] = useState("");
 
@@ -57,12 +58,6 @@ function BuecherContent() {
     }
     void loadBooks();
   }, []);
-
-  /** Normalize genre aliases so e.g. "High-Fantasy" and "High Fantasy" are treated as one. */
-  const normalizeGenre = (g: string) => {
-    const map: Record<string, string> = { "high-fantasy": "High Fantasy" };
-    return map[g.toLowerCase()] ?? g;
-  };
 
   const genres = useMemo(() => {
     const unique = new Set(

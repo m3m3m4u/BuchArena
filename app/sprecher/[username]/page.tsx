@@ -132,7 +132,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
                   href={visibleWebseite.startsWith("http") ? visibleWebseite : `https://${visibleWebseite}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-arena-link hover:underline"
+                  className="text-arena-link hover:underline break-all"
                 >
                   🌐 {visibleWebseite}
                 </a>

@@ -267,8 +267,8 @@ export default function SprecherTextePage() {
                             <MusicalNoteIcon className="w-3.5 h-3.5 text-green-600 shrink-0" />
                             <span className="flex-1 min-w-0 break-all">{mp3.fileName}</span>
                             {mp3.uploadedBy && <span className="text-gray-400">von {mp3.uploadedBy}</span>}
-                            <a href={mp3.url} download={mp3.fileName} className="text-indigo-600" title="Herunterladen"><ArrowDownTrayIcon className="w-3.5 h-3.5" /></a>
-                            {isAdmin && <button onClick={() => handleDeleteMp3(text._id, idx)} className="text-red-600 bg-transparent border-none cursor-pointer" title="Löschen"><TrashIcon className="w-3.5 h-3.5" /></button>}
+                            <a href={mp3.url} download={mp3.fileName} className="text-indigo-600 p-1.5 -m-1 inline-flex" title="Herunterladen"><ArrowDownTrayIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" /></a>
+                            {isAdmin && <button onClick={() => handleDeleteMp3(text._id, idx)} className="text-red-600 bg-transparent border-none cursor-pointer p-1.5 -m-1" title="Löschen"><TrashIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" /></button>}
                           </div>
                         ))}
                       </div>
@@ -301,8 +301,8 @@ export default function SprecherTextePage() {
                 {/* Name eintragen */}
                 {text.status !== "erledigt" && editingId !== text._id && !text.sprecherName && (
                   <div className="mt-2.5 pt-2.5 border-t border-arena-border-light">
-                    <button onClick={() => { setEditingId(text._id); setEditName(""); }} className="text-[0.85rem] text-indigo-600 bg-transparent border-none cursor-pointer flex items-center gap-1">
-                      <UserIcon className="w-3.5 h-3.5" />Meinen Namen eintragen
+                    <button onClick={() => { setEditingId(text._id); setEditName(""); }} className="text-[0.85rem] text-indigo-600 bg-transparent border-none cursor-pointer flex items-center gap-1 min-h-[44px] sm:min-h-0 py-2 sm:py-0">
+                      <UserIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />Meinen Namen eintragen
                     </button>
                   </div>
                 )}

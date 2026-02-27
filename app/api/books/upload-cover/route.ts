@@ -5,6 +5,7 @@ import {
   getWebdavUploadDir,
   toInternalImageUrl,
 } from "@/lib/webdav-storage";
+import { getServerAccount } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
@@ -33,13 +34,17 @@ function inferExtension(fileName: string, mimeType: string) {
 
 export async function POST(request: Request) {
   try {
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file");
-    const usernameValue = formData.get("username");
 
-    if (!(file instanceof File) || typeof usernameValue !== "string") {
+    if (!(file instanceof File)) {
       return NextResponse.json(
-        { message: "Datei oder Benutzername fehlt." },
+        { message: "Datei fehlt." },
         { status: 400 }
       );
     }
@@ -51,13 +56,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const username = sanitizeUsername(usernameValue.trim());
-    if (!username) {
-      return NextResponse.json(
-        { message: "Ungültiger Benutzername." },
-        { status: 400 }
-      );
-    }
+    const username = sanitizeUsername(account.username);
 
     const extension = inferExtension(file.name, file.type);
     const fileName = `${Date.now()}-${randomUUID()}.${extension}`;

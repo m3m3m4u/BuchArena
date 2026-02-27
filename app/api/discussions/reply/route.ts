@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDiscussionsCollection } from "@/lib/mongodb";
+import { getServerAccount } from "@/lib/server-auth";
 
 export async function POST(request: Request) {
   try {
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
     const body = (await request.json()) as {
       discussionId?: string;
       authorUsername?: string;
@@ -11,12 +17,12 @@ export async function POST(request: Request) {
     };
 
     const discussionId = body.discussionId?.trim();
-    const authorUsername = body.authorUsername?.trim();
+    const authorUsername = account.username;
     const replyBody = body.body?.trim();
 
-    if (!discussionId || !ObjectId.isValid(discussionId) || !authorUsername || !replyBody) {
+    if (!discussionId || !ObjectId.isValid(discussionId) || !replyBody) {
       return NextResponse.json(
-        { message: "Diskussions-ID, Benutzername und Text sind erforderlich." },
+        { message: "Diskussions-ID und Text sind erforderlich." },
         { status: 400 }
       );
     }

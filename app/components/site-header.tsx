@@ -76,7 +76,7 @@ export default function SiteHeader() {
   );
 
   return (
-    <header className="sticky top-0 z-50 border-b border-arena-border bg-white">
+    <header className="flex-shrink-0 z-50 border-b border-arena-border bg-white">
       <div className="site-shell flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 no-underline text-inherit">
           <Image src="/logo.png" alt="BuchArena" width={32} height={32} className="rounded-full" />

@@ -8,6 +8,8 @@ import { getStoredAccount } from "@/lib/client-account";
 type ConversationItem = {
   id: string;
   partner: string;
+  displayName: string;
+  profileImage: string;
   subject: string;
   body: string;
   unreadCount: number;
@@ -67,6 +69,8 @@ export default function NachrichtenPage() {
 
   // Aktiver Chat
   const [activePartner, setActivePartner] = useState<string | null>(null);
+  const [activePartnerDisplayName, setActivePartnerDisplayName] = useState<string>("");
+  const [activePartnerImage, setActivePartnerImage] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
 
@@ -78,6 +82,13 @@ export default function NachrichtenPage() {
   const [showNewChat, setShowNewChat] = useState(false);
   const [newRecipient, setNewRecipient] = useState("");
   const [newSubject, setNewSubject] = useState("");
+
+  // Benutzer-Suche (Autocomplete)
+  const [userSuggestions, setUserSuggestions] = useState<
+    { username: string; displayName: string; profileImage: string }[]
+  >([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Mobile: Chat-Ansicht anzeigen
   const [mobileShowChat, setMobileShowChat] = useState(false);
@@ -110,8 +121,10 @@ export default function NachrichtenPage() {
 
   /* ── Chat mit Partner laden ── */
   const openChat = useCallback(
-    async (partner: string) => {
+    async (partner: string, displayName?: string, profileImage?: string) => {
       setActivePartner(partner);
+      setActivePartnerDisplayName(displayName ?? "");
+      setActivePartnerImage(profileImage ?? "");
       setMobileShowChat(true);
       setChatLoading(true);
       setInputText("");
@@ -188,16 +201,48 @@ export default function NachrichtenPage() {
     }
   }
 
+  /* ── Benutzer suchen (Autocomplete) ── */
+  function handleRecipientChange(value: string) {
+    setNewRecipient(value);
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    if (value.trim().length < 1) {
+      setUserSuggestions([]);
+      return;
+    }
+    setSuggestionsLoading(true);
+    searchTimeout.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/messages/search-users?q=${encodeURIComponent(value.trim())}`,
+        );
+        const data = (await res.json()) as {
+          users?: { username: string; displayName: string; profileImage: string }[];
+        };
+        setUserSuggestions(data.users ?? []);
+      } catch {
+        setUserSuggestions([]);
+      } finally {
+        setSuggestionsLoading(false);
+      }
+    }, 250);
+  }
+
+  function selectSuggestion(uname: string) {
+    setNewRecipient(uname);
+    setUserSuggestions([]);
+  }
+
   /* ── Neuen Chat starten ── */
   async function handleStartNewChat() {
     if (!newRecipient.trim()) return;
     setShowNewChat(false);
+    setUserSuggestions([]);
     // Prüfe ob schon eine Konversation existiert
     const existing = conversations.find(
       (c) => c.partner.toLowerCase() === newRecipient.trim().toLowerCase(),
     );
     if (existing) {
-      await openChat(existing.partner);
+      await openChat(existing.partner, existing.displayName, existing.profileImage);
       return;
     }
     // Neuen Partner setzen (Chat ist leer, bis erste Nachricht gesendet wird)
@@ -303,9 +348,9 @@ export default function NachrichtenPage() {
   }
 
   return (
-    <main className="top-centered-main">
-      <section className="card !p-0 overflow-hidden" style={{ maxWidth: 900 }}>
-        <div className="grid grid-cols-[280px_1fr] max-[700px]:grid-cols-1 h-[75vh] min-h-[400px]">
+    <main className="flex-1 flex flex-col overflow-hidden">
+      <section className="flex-1 !p-0 overflow-hidden w-full mx-auto" style={{ maxWidth: 1100 }}>
+        <div className="grid grid-cols-[300px_1fr] max-[700px]:grid-cols-1 h-full">
           {/* ══ Linke Seite: Konversationsliste ══ */}
           <div
             className={`border-r border-arena-border flex flex-col ${
@@ -344,21 +389,32 @@ export default function NachrichtenPage() {
                         ? "bg-blue-50"
                         : "bg-white hover:bg-gray-50"
                     }`}
-                    onClick={() => openChat(conv.partner)}
+                    onClick={() => openChat(conv.partner, conv.displayName, conv.profileImage)}
                   >
                     {/* Avatar-Kreis */}
-                    <div className="w-10 h-10 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold flex-shrink-0 uppercase">
-                      {conv.partner.charAt(0)}
+                    <div className="w-10 h-10 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold flex-shrink-0 uppercase overflow-hidden">
+                      {conv.profileImage ? (
+                        <img src={conv.profileImage} alt={conv.partner} className="w-full h-full object-cover" />
+                      ) : (
+                        conv.partner.charAt(0)
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span
-                          className={`text-sm truncate ${
-                            conv.unreadCount > 0 ? "font-bold" : ""
-                          }`}
-                        >
-                          {conv.partner}
-                        </span>
+                        <div className="truncate">
+                          <span
+                            className={`text-sm truncate ${
+                              conv.unreadCount > 0 ? "font-bold" : ""
+                            }`}
+                          >
+                            {conv.partner}
+                          </span>
+                          {conv.displayName && conv.displayName !== conv.partner && (
+                            <span className="text-xs text-arena-muted ml-1.5">
+                              ({conv.displayName})
+                            </span>
+                          )}
+                        </div>
                         <span className="text-[10px] text-arena-muted flex-shrink-0 ml-2">
                           {timeAgo(conv.createdAt)}
                         </span>
@@ -398,15 +454,26 @@ export default function NachrichtenPage() {
                   >
                     ←
                   </button>
-                  <div className="w-9 h-9 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold uppercase">
-                    {activePartner.charAt(0)}
+                  <div className="w-9 h-9 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold uppercase overflow-hidden">
+                    {activePartnerImage ? (
+                      <img src={activePartnerImage} alt={activePartner} className="w-full h-full object-cover" />
+                    ) : (
+                      activePartner.charAt(0)
+                    )}
                   </div>
-                  <Link
-                    href={`/autor/${activePartner}`}
-                    className="font-semibold text-sm no-underline text-inherit hover:underline"
-                  >
-                    {activePartner}
-                  </Link>
+                  <div className="flex flex-col">
+                    <Link
+                      href={`/autor/${activePartner}`}
+                      className="font-semibold text-sm no-underline text-inherit hover:underline"
+                    >
+                      {activePartner}
+                    </Link>
+                    {activePartnerDisplayName && activePartnerDisplayName !== activePartner && (
+                      <span className="text-xs text-arena-muted leading-tight">
+                        {activePartnerDisplayName}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Nachrichten-Bereich */}
@@ -473,16 +540,63 @@ export default function NachrichtenPage() {
               <h2 className="text-lg m-0 mb-3">Neuer Chat</h2>
               <label className="block">
                 <span className="text-sm font-semibold">Empfänger (Benutzername)</span>
-                <input
-                  className="input-base w-full mt-1"
-                  value={newRecipient}
-                  onChange={(e) => setNewRecipient(e.target.value)}
-                  placeholder="Benutzername eingeben"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") void handleStartNewChat();
-                  }}
-                />
+                <div className="relative">
+                  <input
+                    className="input-base w-full mt-1"
+                    value={newRecipient}
+                    onChange={(e) => handleRecipientChange(e.target.value)}
+                    placeholder="Benutzername eingeben"
+                    autoFocus
+                    autoComplete="off"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setUserSuggestions([]);
+                        void handleStartNewChat();
+                      }
+                    }}
+                  />
+                  {/* Autocomplete Dropdown */}
+                  {(userSuggestions.length > 0 || suggestionsLoading) && newRecipient.trim().length >= 1 && (
+                    <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-arena-border rounded-lg shadow-lg max-h-52 overflow-y-auto">
+                      {suggestionsLoading && userSuggestions.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-arena-muted">Suche …</div>
+                      ) : userSuggestions.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-arena-muted">
+                          Kein Benutzer gefunden.
+                        </div>
+                      ) : (
+                        userSuggestions.map((u) => (
+                          <button
+                            key={u.username}
+                            type="button"
+                            className="w-full text-left px-3 py-2 flex items-center gap-2.5 hover:bg-blue-50 transition-colors cursor-pointer border-none bg-transparent"
+                            onClick={() => selectSuggestion(u.username)}
+                          >
+                            <div className="w-8 h-8 rounded-full bg-arena-blue text-white flex items-center justify-center text-xs font-bold flex-shrink-0 uppercase overflow-hidden">
+                              {u.profileImage ? (
+                                <img
+                                  src={u.profileImage}
+                                  alt={u.username}
+                                  className="w-full h-full object-cover rounded-full"
+                                />
+                              ) : (
+                                u.username.charAt(0)
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate">{u.username}</div>
+                              {u.displayName !== u.username && (
+                                <div className="text-xs text-arena-muted truncate">
+                                  {u.displayName}
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
               </label>
               <label className="block mt-2">
                 <span className="text-sm font-semibold">Betreff (optional)</span>

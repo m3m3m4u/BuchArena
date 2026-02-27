@@ -41,7 +41,7 @@ export default function CookieBanner() {
             Details im <Link href="/impressum" className="text-arena-link hover:underline">Impressum</Link> und in der{" "}
             <Link href="/datenschutz" className="text-arena-link hover:underline">Datenschutzerklärung</Link>.
           </p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-3 grid grid-cols-2 max-[340px]:grid-cols-1 gap-2">
             <button type="button" className="btn" onClick={() => onChoose("essential")}>
               Nur notwendige
             </button>

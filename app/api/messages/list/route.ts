@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import { getMessagesCollection } from "@/lib/mongodb";
+import { getMessagesCollection, getUsersCollection } from "@/lib/mongodb";
 
 export async function GET(request: Request) {
   try {
@@ -99,11 +99,36 @@ export async function GET(request: Request) {
       }
     }
 
+    const partnerUsernames = [...partnerMap.keys()];
+    const usersCol = await getUsersCollection();
+    const userDocs = await usersCol
+      .find(
+        { username: { $in: partnerUsernames } },
+        { projection: { username: 1, profile: 1 } },
+      )
+      .toArray();
+    const displayNameMap = new Map<string, string>();
+    const profileImageMap = new Map<string, string>();
+    for (const u of userDocs) {
+      const name =
+        u.profile?.name?.visibility === "public" && u.profile?.name?.value
+          ? u.profile.name.value
+          : "";
+      displayNameMap.set(u.username, name);
+      profileImageMap.set(u.username, u.profile?.profileImage?.value ?? "");
+    }
+
     const items = [...partnerMap.values()].map((d) => ({
       id: d._id!.toHexString(),
       senderUsername: d.senderUsername,
       recipientUsername: d.recipientUsername,
       partner: d.senderUsername === account.username ? d.recipientUsername : d.senderUsername,
+      displayName: displayNameMap.get(
+        d.senderUsername === account.username ? d.recipientUsername : d.senderUsername,
+      ) ?? "",
+      profileImage: profileImageMap.get(
+        d.senderUsername === account.username ? d.recipientUsername : d.senderUsername,
+      ) ?? "",
       subject: d.subject,
       body: d.body,
       read: d.read,

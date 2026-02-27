@@ -6,6 +6,7 @@ import {
   type ProfileField,
   type Visibility,
 } from "@/lib/profile";
+import { getServerAccount } from "@/lib/server-auth";
 
 type SaveSpeakerProfilePayload = {
   username?: string;
@@ -61,15 +62,13 @@ function sanitizeSpeakerProfile(
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as SaveSpeakerProfilePayload;
-    const username = body.username?.trim();
-
-    if (!username) {
-      return NextResponse.json(
-        { message: "Benutzername fehlt." },
-        { status: 400 }
-      );
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
     }
+
+    const body = (await request.json()) as SaveSpeakerProfilePayload;
+    const username = account.username;
 
     const sanitized = sanitizeSpeakerProfile(body.speakerProfile);
     const users = await getUsersCollection();
