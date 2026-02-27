@@ -24,6 +24,7 @@ html, body {
   background: var(--color-arena-bg);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  overflow-x: hidden;
 }
 
 body {

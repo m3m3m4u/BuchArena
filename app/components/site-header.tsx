@@ -37,7 +37,6 @@ export default function SiteHeader() {
 
   const links = (
     <>
-      {loggedIn && <Link href="/meine-buecher" className="btn w-full sm:w-auto">Meine Bücher</Link>}
       <Link href="/buecher" className="btn w-full sm:w-auto">Bücher</Link>
       <Link href="/autoren" className="btn w-full sm:w-auto">Autoren</Link>
       <Link href="/sprecher" className="btn w-full sm:w-auto">Sprecher</Link>

@@ -150,14 +150,12 @@ export default function BookDetailPage({ params }: PageProps) {
             {book.presentationVideoUrl && (
               <div className="mb-4">
                 <h2 className="mb-2 text-lg">Vorstellungsvideo</h2>
-                <div className="flex justify-center">
-                  <Link
-                    href={`/video?url=${encodeURIComponent(book.presentationVideoUrl)}&title=${encodeURIComponent(book.title)}`}
-                    className="btn"
-                  >
-                    Video ansehen
-                  </Link>
-                </div>
+                <Link
+                  href={`/video?url=${encodeURIComponent(book.presentationVideoUrl)}&title=${encodeURIComponent(book.title)}`}
+                  className="btn"
+                >
+                  Video ansehen
+                </Link>
               </div>
             )}
           </>

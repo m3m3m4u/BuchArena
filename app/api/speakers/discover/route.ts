@@ -38,10 +38,16 @@ export async function GET() {
           ? sp.name.value
           : user.username;
 
-      const profileImageUrl =
-        user.profile?.profileImage?.visibility === "public"
-          ? user.profile.profileImage.value ?? ""
-          : "";
+      // Prefer speaker-specific image; fall back to general profile image
+      let profileImageUrl = "";
+      if (sp.profileImage?.visibility === "public" && sp.profileImage.value) {
+        profileImageUrl = sp.profileImage.value;
+      } else if (
+        user.profile?.profileImage?.visibility === "public" &&
+        user.profile.profileImage.value
+      ) {
+        profileImageUrl = user.profile.profileImage.value;
+      }
 
       const ort =
         sp.ort.visibility === "public" ? sp.ort.value : "";

@@ -80,25 +80,6 @@ export default function SpeakerProfilePage({ params }: PageProps) {
 
   const sprechproben: Sprechprobe[] = speakerProfile.sprechproben ?? [];
 
-  function toEmbedUrl(url: string): string | null {
-    try {
-      const u = new URL(url);
-      // YouTube
-      if (u.hostname.includes("youtube.com") && u.searchParams.get("v")) {
-        return `https://www.youtube.com/embed/${u.searchParams.get("v")}`;
-      }
-      if (u.hostname === "youtu.be") {
-        return `https://www.youtube.com/embed${u.pathname}`;
-      }
-      // Vimeo
-      const vimeoMatch = u.pathname.match(/^\/(\d+)/);
-      if (u.hostname.includes("vimeo.com") && vimeoMatch) {
-        return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-      }
-    } catch { /* ignore */ }
-    return null;
-  }
-
   async function handleSendMessage() {
     setIsSending(true);
     setComposeMsg("");
@@ -161,26 +142,12 @@ export default function SpeakerProfilePage({ params }: PageProps) {
             {visibleInfovideo && (
               <div className="my-3">
                 <h2 className="text-lg">Infovideo</h2>
-                {(() => {
-                  const embedUrl = toEmbedUrl(visibleInfovideo);
-                  if (embedUrl) {
-                    return (
-                      <div className="aspect-video w-full max-w-[560px] rounded-lg overflow-hidden border border-arena-border">
-                        <iframe
-                          src={embedUrl}
-                          className="w-full h-full"
-                          allowFullScreen
-                          title="Infovideo"
-                        />
-                      </div>
-                    );
-                  }
-                  return (
-                    <a href={visibleInfovideo} target="_blank" rel="noreferrer" className="text-arena-link hover:underline">
-                      🎬 Infovideo ansehen
-                    </a>
-                  );
-                })()}
+                <Link
+                  href={`/video?url=${encodeURIComponent(visibleInfovideo)}&title=${encodeURIComponent(`Infovideo – ${visibleName}`)}`}
+                  className="btn"
+                >
+                  Video ansehen
+                </Link>
               </div>
             )}
 

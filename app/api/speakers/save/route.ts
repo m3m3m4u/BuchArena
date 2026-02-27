@@ -38,7 +38,18 @@ function sanitizeSpeakerProfile(
   const base = createDefaultSpeakerProfile();
   const source = input ?? base;
 
+  const profileImage = source.profileImage ?? base.profileImage;
+
   return {
+    profileImage: {
+      value: (profileImage.value ?? "").trim().slice(0, 1000),
+      visibility: sanitizeVisibility(profileImage.visibility, base.profileImage.visibility),
+      crop: {
+        x: typeof profileImage.crop?.x === "number" ? Math.max(0, Math.min(100, profileImage.crop.x)) : 50,
+        y: typeof profileImage.crop?.y === "number" ? Math.max(0, Math.min(100, profileImage.crop.y)) : 50,
+        zoom: typeof profileImage.crop?.zoom === "number" ? Math.max(1, Math.min(3, profileImage.crop.zoom)) : 1,
+      },
+    },
     name: sanitizeField(source.name, base.name, 120),
     ort: sanitizeField(source.ort, base.ort, 120),
     motto: sanitizeField(source.motto, base.motto, 300),

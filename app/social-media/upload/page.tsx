@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowUpTrayIcon,
@@ -8,6 +8,11 @@ import {
   XMarkIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
+import {
+  ACCOUNT_CHANGED_EVENT,
+  getStoredAccount,
+  type LoggedInAccount,
+} from "@/lib/client-account";
 
 const GENRE_OPTIONS = [
   "Fantasy",
@@ -56,6 +61,8 @@ function formatFileSize(bytes: number): string {
 }
 
 export default function UploadPage() {
+  const [account, setAccount] = useState<LoggedInAccount | null>(null);
+  const [accountLoaded, setAccountLoaded] = useState(false);
   const [bookTitle, setBookTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [genre, setGenre] = useState("");
@@ -70,6 +77,20 @@ export default function UploadPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function sync() {
+      setAccount(getStoredAccount());
+      setAccountLoaded(true);
+    }
+    sync();
+    window.addEventListener(ACCOUNT_CHANGED_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(ACCOUNT_CHANGED_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
 
   const handleFile = useCallback((f: File) => {
     const name = f.name.toLowerCase();
@@ -186,6 +207,40 @@ export default function UploadPage() {
 
       setProgress(Math.round(((i + 1) / totalChunks) * 100));
     }
+  }
+
+  // Warten auf Account-Laden
+  if (!accountLoaded) {
+    return (
+      <main className="top-centered-main">
+        <section className="card">
+          <p className="text-arena-muted text-center">Lade …</p>
+        </section>
+      </main>
+    );
+  }
+
+  // Gäste können nicht hochladen
+  if (!account) {
+    return (
+      <main className="top-centered-main">
+        <section className="card">
+          <h1 className="text-xl font-bold">Anmeldung erforderlich</h1>
+          <p className="text-arena-muted text-[0.95rem]">
+            Um eine Buchvorstellung einzureichen, musst du eingeloggt sein.
+            Gäste können keine Dateien hochladen.
+          </p>
+          <div className="flex gap-3 pt-2">
+            <Link href="/auth" className="btn btn-primary">
+              Jetzt einloggen
+            </Link>
+            <Link href="/social-media" className="btn">
+              ← Zurück
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
   }
 
   if (success) {

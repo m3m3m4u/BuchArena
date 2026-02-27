@@ -10,8 +10,9 @@ import {
   type LoggedInAccount,
 } from "@/lib/client-account";
 import { createDefaultProfile, createDefaultSpeakerProfile, type ProfileData, type SpeakerProfileData, type Visibility } from "@/lib/profile";
+import MeineBuecherTab from "@/app/components/meine-buecher-tab";
 
-type ProfileTab = "autor" | "sprecher";
+type ProfileTab = "autor" | "sprecher" | "buecher";
 
 type GetProfileResponse = {
   profile: ProfileData;
@@ -37,10 +38,19 @@ export default function ProfilPage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isUploadingSample, setIsUploadingSample] = useState(false);
   const [isImageOverlayOpen, setIsImageOverlayOpen] = useState(false);
+  const [isSpeakerImageOverlayOpen, setIsSpeakerImageOverlayOpen] = useState(false);
+  const [isUploadingSpeakerImage, setIsUploadingSpeakerImage] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [isDeactivating, setIsDeactivating] = useState(false);
   const dragStateRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startCropX: number;
+    startCropY: number;
+  } | null>(null);
+  const speakerDragStateRef = useRef<{
     pointerId: number;
     startX: number;
     startY: number;
@@ -59,6 +69,11 @@ export default function ProfilPage() {
     const params = new URLSearchParams(window.location.search);
     const user = params.get("user")?.trim() ?? "";
     setRequestedUser(user);
+
+    const tab = params.get("tab")?.trim();
+    if (tab === "buecher" || tab === "sprecher" || tab === "autor") {
+      setActiveTab(tab);
+    }
   }, []);
 
   useEffect(() => {
@@ -275,6 +290,44 @@ export default function ProfilPage() {
     }
   }
 
+  async function uploadSpeakerImage(file: File) {
+    if (!targetUsername) return;
+
+    setIsUploadingSpeakerImage(true);
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("username", targetUsername);
+
+      const response = await fetch("/api/profile/upload-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = (await response.json()) as { message?: string; imageUrl?: string };
+      if (!response.ok || !data.imageUrl) {
+        throw new Error(data.message ?? "Upload fehlgeschlagen.");
+      }
+
+      setSpeakerProfile((current) => ({
+        ...current,
+        profileImage: {
+          ...current.profileImage,
+          value: data.imageUrl as string,
+        },
+      }));
+      setMessage("Sprecher-Bild erfolgreich hochgeladen.");
+    } catch {
+      setIsError(true);
+      setMessage("Sprecher-Bild-Upload fehlgeschlagen.");
+    } finally {
+      setIsUploadingSpeakerImage(false);
+    }
+  }
+
   const imagePreviewStyle = useMemo(() => {
     const imageUrl = profile.profileImage.value;
     if (!imageUrl) {
@@ -288,6 +341,18 @@ export default function ProfilPage() {
       backgroundRepeat: "no-repeat",
     };
   }, [profile.profileImage]);
+
+  const speakerImagePreviewStyle = useMemo(() => {
+    const imageUrl = speakerProfile.profileImage?.value;
+    if (!imageUrl) return undefined;
+
+    return {
+      backgroundImage: `url(${imageUrl})`,
+      backgroundPosition: `${speakerProfile.profileImage.crop.x}% ${speakerProfile.profileImage.crop.y}%`,
+      backgroundSize: `${speakerProfile.profileImage.crop.zoom * 100}%`,
+      backgroundRepeat: "no-repeat",
+    };
+  }, [speakerProfile.profileImage]);
 
   function updateVisibility(field: keyof ProfileData, visibility: Visibility) {
     setProfile((current) => ({
@@ -346,6 +411,47 @@ export default function ProfilPage() {
     }
   }
 
+  function onSpeakerImagePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    speakerDragStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startCropX: speakerProfile.profileImage.crop.x,
+      startCropY: speakerProfile.profileImage.crop.y,
+    };
+  }
+
+  function onSpeakerImagePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const dragState = speakerDragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+    const previewSize = event.currentTarget.clientWidth || 160;
+    const zoom = speakerProfile.profileImage.crop.zoom || 1;
+    const factor = (100 / previewSize) / zoom;
+    const deltaX = (event.clientX - dragState.startX) * factor;
+    const deltaY = (event.clientY - dragState.startY) * factor;
+
+    setSpeakerProfile((current) => ({
+      ...current,
+      profileImage: {
+        ...current.profileImage,
+        crop: {
+          ...current.profileImage.crop,
+          x: clampPercent(dragState.startCropX - deltaX),
+          y: clampPercent(dragState.startCropY - deltaY),
+        },
+      },
+    }));
+  }
+
+  function onSpeakerImagePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (speakerDragStateRef.current?.pointerId === event.pointerId) {
+      speakerDragStateRef.current = null;
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
   if (!account) {
     return (
       <main className="centered-main">
@@ -396,10 +502,22 @@ export default function ProfilPage() {
           >
             Sprecherprofil
           </button>
+          <button
+            type="button"
+            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 ${activeTab === "buecher" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            onClick={() => { setActiveTab("buecher"); setMessage(""); }}
+          >
+            Meine Bücher
+          </button>
         </div>
 
         {activeTab === "autor" && (
         <>
+        <h2 className="text-lg mt-0">Autorenprofil</h2>
+        <p className="text-arena-muted text-[0.95rem]">
+          Fülle dein Autorenprofil aus. Öffentlich sichtbare Felder werden auf deiner Autorenseite angezeigt.
+        </p>
+
         <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
           <button
             type="button"
@@ -621,6 +739,18 @@ export default function ProfilPage() {
           Fülle dein Profil als Hörbuchsprecher aus. Öffentlich sichtbare Felder werden auf deiner Sprecherseite angezeigt.
         </p>
 
+        <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
+          <button
+            type="button"
+            className="border-0 bg-transparent p-0 m-0 cursor-pointer"
+            onClick={() => setIsSpeakerImageOverlayOpen(true)}
+          >
+            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border" style={speakerImagePreviewStyle}>
+              {!speakerProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            </div>
+          </button>
+        </div>
+
         <FieldWithVisibility
           label="Name"
           value={speakerProfile.name.value}
@@ -725,6 +855,16 @@ export default function ProfilPage() {
           {isSavingSpeaker ? "Speichern ..." : "Sprecherprofil speichern"}
         </button>
         </>
+        )}
+
+        {activeTab === "buecher" && (
+          <>
+          <h2 className="text-lg mt-0">Meine Bücher</h2>
+          <p className="text-arena-muted text-[0.95rem]">
+            Lege hier deine Bücher an und verwalte sie. Die Bücher werden auf deiner Autorenseite und in der Bücherübersicht angezeigt.
+          </p>
+          <MeineBuecherTab username={targetUsername} />
+          </>
         )}
 
         <p className={isError ? "min-h-[1.3rem] mt-3.5 text-red-700" : "min-h-[1.3rem] mt-3.5"}>{message}</p>
@@ -847,6 +987,87 @@ export default function ProfilPage() {
               type="button"
               className="btn"
               onClick={() => setIsImageOverlayOpen(false)}
+            >
+              Fertig
+            </button>
+          </section>
+        </div>
+      )}
+
+      {isSpeakerImageOverlayOpen && (
+        <div className="overlay-backdrop" onClick={() => setIsSpeakerImageOverlayOpen(false)}>
+          <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
+            <h2>Sprecher-Bildeinstellungen</h2>
+
+            <label>
+              Datei auswählen
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) => {
+                  const selectedFile = event.target.files?.[0];
+                  if (selectedFile) {
+                    void uploadSpeakerImage(selectedFile);
+                  }
+                  event.currentTarget.value = "";
+                }}
+              />
+              {isUploadingSpeakerImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
+            </label>
+
+            <div>
+              <span className="block text-xs mb-1">Sichtbarkeit</span>
+              <VisibilityToggle
+                value={speakerProfile.profileImage.visibility}
+                onChange={(visibility) =>
+                  setSpeakerProfile((current) => ({
+                    ...current,
+                    profileImage: { ...current.profileImage, visibility },
+                  }))
+                }
+              />
+            </div>
+
+            <div
+              className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab"
+              style={speakerImagePreviewStyle}
+              onPointerDown={onSpeakerImagePointerDown}
+              onPointerMove={onSpeakerImagePointerMove}
+              onPointerUp={onSpeakerImagePointerUp}
+              onPointerCancel={onSpeakerImagePointerUp}
+            >
+              {!speakerProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            </div>
+
+            <div className="grid gap-2.5">
+              <label>
+                Zoom
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={speakerProfile.profileImage.crop.zoom}
+                  onChange={(event) =>
+                    setSpeakerProfile((current) => ({
+                      ...current,
+                      profileImage: {
+                        ...current.profileImage,
+                        crop: {
+                          ...current.profileImage.crop,
+                          zoom: Number(event.target.value),
+                        },
+                      },
+                    }))
+                  }
+                />
+              </label>
+            </div>
+
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setIsSpeakerImageOverlayOpen(false)}
             >
               Fertig
             </button>

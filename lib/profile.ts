@@ -39,6 +39,11 @@ export type Sprechprobe = {
 };
 
 export type SpeakerProfileData = {
+  profileImage: {
+    value: string;
+    visibility: Visibility;
+    crop: ProfileImageCrop;
+  };
   name: ProfileField;
   ort: ProfileField;
   motto: ProfileField;
@@ -111,6 +116,11 @@ export function createDefaultProfile(): ProfileData {
 
 export function createDefaultSpeakerProfile(): SpeakerProfileData {
   return {
+    profileImage: {
+      value: "",
+      visibility: "hidden",
+      crop: { x: 50, y: 50, zoom: 1 },
+    },
     name: { value: "", visibility: "internal" },
     ort: { value: "", visibility: "internal" },
     motto: { value: "", visibility: "internal" },

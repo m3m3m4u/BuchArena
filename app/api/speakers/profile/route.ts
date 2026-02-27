@@ -29,10 +29,17 @@ export async function GET(request: Request) {
     }
 
     const speakerProfile = user.speakerProfile ?? createDefaultSpeakerProfile();
-    const profileImageUrl =
-      user.profile?.profileImage?.visibility === "public"
-        ? user.profile.profileImage.value ?? ""
-        : "";
+
+    // Prefer speaker-specific image; fall back to general profile image
+    let profileImageUrl = "";
+    if (speakerProfile.profileImage?.visibility === "public" && speakerProfile.profileImage.value) {
+      profileImageUrl = speakerProfile.profileImage.value;
+    } else if (
+      user.profile?.profileImage?.visibility === "public" &&
+      user.profile.profileImage.value
+    ) {
+      profileImageUrl = user.profile.profileImage.value;
+    }
 
     return NextResponse.json({
       speaker: {
