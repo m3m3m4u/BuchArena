@@ -308,7 +308,7 @@ export default function NachrichtenPage() {
               className={`relative max-w-[75%] rounded-2xl px-3.5 py-2 text-[0.95rem] ${
                 isMine
                   ? "bg-arena-blue text-white rounded-br-md"
-                  : "bg-gray-100 text-gray-900 rounded-bl-md"
+                  : "bg-white border border-gray-200 text-gray-900 rounded-bl-md"
               }`}
             >
               <p className="whitespace-pre-wrap m-0" style={{ lineHeight: 1.5 }}>
