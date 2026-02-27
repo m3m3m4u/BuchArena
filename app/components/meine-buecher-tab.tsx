@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { GENRE_OPTIONS } from "@/lib/genres";
+import GenrePicker, { parseGenres } from "@/app/components/genre-picker";
 
 type BookExcerpt = {
   id: string;
@@ -412,7 +412,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                 <div className="min-w-0">
                   <h3>Titel: {book.title}</h3>
                   <p>Erscheinungsjahr: {book.publicationYear}</p>
-                  <p>Genre: {book.genre}</p>
+                  <p>Genre: {parseGenres(book.genre).join(", ") || book.genre}</p>
                   {(book.ageFrom > 0 || book.ageTo > 0) && (
                     <p>Alter: {book.ageFrom} bis {book.ageTo}</p>
                   )}
@@ -486,13 +486,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                       onChange={(event) => setPublicationYear(event.target.value)}
                     />
                   </label>
-                  <label className="grid gap-1 text-[0.95rem]">
-                    Genre
-                    <select className="input-base" value={genre} onChange={(event) => setGenre(event.target.value)}>
-                      <option value="">– Genre wählen –</option>
-                      {GENRE_OPTIONS.map((g) => <option key={g} value={g}>{g}</option>)}
-                    </select>
-                  </label>
+                  <GenrePicker label="Genre" value={genre} onChange={setGenre} />
                 </div>
 
                 <div className="grid grid-cols-2 max-[400px]:grid-cols-1 gap-2">

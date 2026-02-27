@@ -13,7 +13,7 @@ import {
   getStoredAccount,
   type LoggedInAccount,
 } from "@/lib/client-account";
-import { GENRE_OPTIONS } from "@/lib/genres";
+import GenrePicker from "@/app/components/genre-picker";
 
 const AGE_RANGE_OPTIONS = [
   "ab 2 Jahren",
@@ -302,25 +302,7 @@ export default function UploadPage() {
           </label>
 
           {/* Genre */}
-          <label className="grid gap-1 text-[0.95rem]">
-            <span className="font-medium">
-              Genre <span className="text-red-500">*</span>
-            </span>
-            <select
-              className="input-base"
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-              disabled={uploading}
-              required
-            >
-              <option value="">– bitte wählen –</option>
-              {GENRE_OPTIONS.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </select>
-          </label>
+          <GenrePicker value={genre} onChange={setGenre} required />
 
           {/* Altersempfehlung */}
           <label className="grid gap-1 text-[0.95rem]">

@@ -92,7 +92,7 @@ export default function BookDetailPage({ params }: PageProps) {
                       </Link>
                     </p>
                   )}
-                  {book.genre && <p className="my-1"><strong>Genre:</strong> <Link href={`/buecher?genre=${encodeURIComponent(book.genre)}`} className="no-underline text-inherit hover:underline">{book.genre}</Link></p>}
+                  {book.genre && <p className="my-1"><strong>Genre:</strong> {book.genre.split(",").map((g) => g.trim()).filter(Boolean).map((g, i) => (<span key={g}>{i > 0 && ", "}<Link href={`/buecher?genre=${encodeURIComponent(g)}`} className="no-underline text-inherit hover:underline">{g}</Link></span>))}</p>}
                   {(book.ageFrom > 0 || book.ageTo > 0) && <p className="my-1"><strong>Alter:</strong> {book.ageFrom} bis {book.ageTo}</p>}
                   {book.publicationYear > 0 && <p className="my-1"><strong>Erscheinungsjahr:</strong> {book.publicationYear}</p>}
                   {book.publisher && <p className="my-1"><strong>Verlag:</strong> {book.publisher}</p>}

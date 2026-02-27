@@ -32,7 +32,9 @@ export default function AutorenPage() {
   }, []);
 
   const genres = useMemo(() => {
-    const unique = new Set(authors.flatMap((a) => a.books).map((b) => b.genre?.trim()).filter((g): g is string => Boolean(g)));
+    const unique = new Set(
+      authors.flatMap((a) => a.books).flatMap((b) => (b.genre ?? "").split(",").map((g) => g.trim()).filter(Boolean)),
+    );
     return [...unique].sort((a, b) => a.localeCompare(b, "de"));
   }, [authors]);
 
@@ -43,7 +45,8 @@ export default function AutorenPage() {
       .map((a) => ({
         ...a,
         books: a.books.filter((b) => {
-          const matchesGenre = !genreFilter || b.genre === genreFilter;
+          const genreList = (b.genre ?? "").split(",").map((g) => g.trim());
+          const matchesGenre = !genreFilter || genreList.includes(genreFilter);
           const matchesAge = !hasAge || (b.ageFrom <= age && age <= b.ageTo);
           return matchesGenre && matchesAge;
         }),

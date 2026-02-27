@@ -20,7 +20,7 @@ import {
   DocumentTextIcon,
   EnvelopeIcon,
 } from "@heroicons/react/24/outline";
-import { GENRE_OPTIONS } from "@/lib/genres";
+import GenrePicker from "@/app/components/genre-picker";
 const AGE_RANGE_OPTIONS = [
   "ab 2 Jahren", "ab 4 Jahren", "ab 6 Jahren", "ab 8 Jahren",
   "ab 10 Jahren", "ab 12 Jahren", "ab 14 Jahren", "ab 16 Jahren",
@@ -224,12 +224,7 @@ export default function BucharenaAdminSubmissions() {
               <label className="grid gap-1 text-[0.95rem]">Buchtitel<input className="input-base" value={editingSubmission.bookTitle} onChange={e => setEditingSubmission({ ...editingSubmission, bookTitle: e.target.value })} /></label>
               <label className="grid gap-1 text-[0.95rem]">Autor<input className="input-base" value={editingSubmission.author} onChange={e => setEditingSubmission({ ...editingSubmission, author: e.target.value })} /></label>
               <div className="grid grid-cols-2 gap-3 max-[500px]:grid-cols-1">
-                <label className="grid gap-1 text-[0.95rem]">Genre
-                  <select className="input-base" value={editingSubmission.genre || ""} onChange={e => setEditingSubmission({ ...editingSubmission, genre: e.target.value })}>
-                    <option value="">Bitte wählen...</option>
-                    {GENRE_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}
-                  </select>
-                </label>
+                <GenrePicker compact value={editingSubmission.genre || ""} onChange={(v) => setEditingSubmission({ ...editingSubmission, genre: v })} />
                 <label className="grid gap-1 text-[0.95rem]">Altersempfehlung
                   <select className="input-base" value={editingSubmission.ageRange || ""} onChange={e => setEditingSubmission({ ...editingSubmission, ageRange: e.target.value })}>
                     <option value="">Bitte wählen...</option>

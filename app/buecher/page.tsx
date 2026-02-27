@@ -59,7 +59,9 @@ function BuecherContent() {
   }, []);
 
   const genres = useMemo(() => {
-    const unique = new Set(books.map((b) => b.genre?.trim()).filter((g): g is string => Boolean(g)));
+    const unique = new Set(
+      books.flatMap((b) => (b.genre ?? "").split(",").map((g) => g.trim()).filter(Boolean)),
+    );
     return [...unique].sort((a, b) => a.localeCompare(b, "de"));
   }, [books]);
 
@@ -67,7 +69,8 @@ function BuecherContent() {
     const age = Number(ageFilter);
     const hasAge = Number.isFinite(age) && ageFilter.trim() !== "";
     return books.filter((book) => {
-      const matchesGenre = !genreFilter || book.genre === genreFilter;
+      const genreList = (book.genre ?? "").split(",").map((g) => g.trim());
+      const matchesGenre = !genreFilter || genreList.includes(genreFilter);
       const matchesAge = !hasAge || (book.ageFrom <= age && age <= book.ageTo);
       return matchesGenre && matchesAge;
     });
