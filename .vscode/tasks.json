@@ -11,6 +11,13 @@
 			],
 			"isBackground": true,
 			"group": "build"
+		},
+		{
+			"label": "dev",
+			"type": "shell",
+			"command": "npm run dev",
+			"isBackground": true,
+			"group": "build"
 		}
 	]
 }
