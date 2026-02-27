@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   ACCOUNT_CHANGED_EVENT,
   clearStoredAccount,
@@ -13,6 +13,8 @@ import { openCookieSettings } from "@/lib/cookie-consent";
 export default function SiteFooter() {
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const fetchUnread = useCallback(async () => {
     try {
@@ -44,6 +46,18 @@ export default function SiteFooter() {
     return () => clearInterval(interval);
   }, [account, fetchUnread]);
 
+  /* Close menu on outside click */
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpen]);
+
   function onLogout() {
     clearStoredAccount();
   }
@@ -74,28 +88,75 @@ export default function SiteFooter() {
             </a>
           </div>
 
-          {account?.role === "SUPERADMIN" && (
-            <Link href="/admin" className="btn btn-sm sm:btn">User-Übersicht</Link>
-          )}
-          {account && (
-            <Link href="/nachrichten" className="btn btn-sm sm:btn relative">
-              Nachrichten
-              {unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-arena-danger text-white text-[0.65rem] font-bold px-1 leading-none">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              )}
-            </Link>
-          )}
-          <Link href="/info" className="btn btn-sm sm:btn">Info</Link>
-          <Link href="/impressum" className="btn btn-sm sm:btn">Impressum &amp; Datenschutz</Link>
-          <button type="button" className="btn btn-sm sm:btn" onClick={openCookieSettings}>Cookies</button>
+          {/* Desktop: text links inline */}
+          <div className="hidden sm:contents">
+            {account?.role === "SUPERADMIN" && (
+              <Link href="/admin" className="btn">User-Übersicht</Link>
+            )}
+            {account && (
+              <Link href="/nachrichten" className="btn relative">
+                Nachrichten
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-arena-danger text-white text-[0.65rem] font-bold px-1 leading-none">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
+            <Link href="/info" className="btn">Info</Link>
+            <Link href="/impressum" className="btn">Impressum &amp; Datenschutz</Link>
+            <button type="button" className="btn" onClick={openCookieSettings}>Cookies</button>
+          </div>
+
+          {/* Mobile: 3-dot menu */}
+          <div className="relative sm:hidden" ref={menuRef}>
+            <button
+              type="button"
+              className="btn btn-sm flex items-center gap-1"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Menü"
+              aria-expanded={menuOpen}
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><circle cx="4" cy="10" r="2"/><circle cx="10" cy="10" r="2"/><circle cx="16" cy="10" r="2"/></svg>
+            </button>
+            {menuOpen && (
+              <div className="absolute bottom-full left-0 mb-2 min-w-[200px] rounded-xl border border-arena-border-light bg-white shadow-lg py-1.5 z-50">
+                {account?.role === "SUPERADMIN" && (
+                  <Link href="/admin" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>User-Übersicht</Link>
+                )}
+                {account && (
+                  <Link href="/nachrichten" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>
+                    Nachrichten
+                    {unreadCount > 0 && (
+                      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-arena-danger text-white text-[0.6rem] font-bold px-1 leading-none">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                )}
+                <Link href="/info" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Info</Link>
+                <Link href="/impressum" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Impressum &amp; Datenschutz</Link>
+                <button type="button" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50" onClick={() => { openCookieSettings(); setMenuOpen(false); }}>Cookies</button>
+                {account && (
+                  <>
+                    <div className="my-1 border-t border-gray-100" />
+                    <div className="px-4 py-1.5 text-xs text-gray-400"><strong>{account.username}</strong></div>
+                    <button type="button" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50" onClick={() => { onLogout(); setMenuOpen(false); }}>Ausloggen</button>
+                  </>
+                )}
+                {!account && (
+                  <div className="px-4 py-1.5 text-xs text-gray-400">Nicht eingeloggt</div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2.5 text-xs sm:text-sm">
+
+        {/* Desktop: account status */}
+        <div className="hidden sm:flex items-center gap-2.5 text-sm">
           {account ? (
             <>
-              <span className="hidden sm:inline">Online als: <strong>{account.username}</strong></span>
-              <span className="sm:hidden"><strong>{account.username}</strong></span>
+              <span>Online als: <strong>{account.username}</strong></span>
               <button type="button" className="btn btn-sm" onClick={onLogout}>Ausloggen</button>
             </>
           ) : (
