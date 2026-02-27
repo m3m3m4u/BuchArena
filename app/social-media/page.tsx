@@ -20,6 +20,7 @@ import {
   XMarkIcon,
   CheckIcon,
   DocumentIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 
 type Submission = {
@@ -187,6 +188,13 @@ export default function SocialMediaPage() {
         "Du möchtest die Community um Support für dein neues Buch oder sonst einen Beitrag bitten? Hier ist der passende Platz dafür.",
       icon: LifebuoyIcon,
       href: "/support",
+    },
+    {
+      title: "Kurz gefragt",
+      description:
+        "Beantworte kurze Fragen zu dir und deinem Schreibstil – wir machen daraus Social-Media-Beiträge.",
+      icon: ChatBubbleLeftRightIcon,
+      href: "/social-media/kurz-gefragt",
     },
   ];
 
