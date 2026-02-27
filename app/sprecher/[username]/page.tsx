@@ -34,7 +34,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
     if (account) setLoggedInUsername(account.username);
   }, []);
 
-  useEffect(() => { params.then((r) => setUsername(r.username)); }, [params]);
+  useEffect(() => { params.then((r) => setUsername(decodeURIComponent(r.username))); }, [params]);
 
   useEffect(() => {
     async function loadSpeakerProfile() {

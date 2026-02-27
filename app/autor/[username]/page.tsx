@@ -68,7 +68,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
     if (account) setLoggedInUsername(account.username);
   }, []);
 
-  useEffect(() => { params.then((r) => setUsername(r.username)); }, [params]);
+  useEffect(() => { params.then((r) => setUsername(decodeURIComponent(r.username))); }, [params]);
 
   useEffect(() => {
     async function loadAuthorProfile() {
