@@ -67,7 +67,10 @@ h1 { margin: 0; }
   display: grid;
   align-content: start;
   justify-items: center;
+  width: min(1100px, 100%);
+  margin: 0 auto;
   padding: 1rem;
+  box-sizing: border-box;
   min-width: 0;
 }
 
@@ -79,7 +82,10 @@ h1 { margin: 0; }
   flex: 1;
   display: grid;
   place-items: center;
+  width: min(1100px, 100%);
+  margin: 0 auto;
   padding: 1rem;
+  box-sizing: border-box;
   min-width: 0;
 }
 
@@ -92,7 +98,10 @@ h1 { margin: 0; }
   display: grid;
   align-content: start;
   justify-items: center;
+  width: min(1100px, 100%);
+  margin: 0 auto;
   padding: 1rem;
+  box-sizing: border-box;
   min-width: 0;
 }
 

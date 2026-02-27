@@ -98,13 +98,15 @@ export default function HomePage() {
       {/* CTA for guests */}
       {!loggedIn && (
         <section className="bg-arena-blue px-4 py-12 text-center text-white">
-          <h2 className="mb-2.5 text-2xl">Bereit, deine Geschichte zu erzählen?</h2>
-          <p className="mb-6 text-lg opacity-85">
-            Erstelle ein kostenloses Konto und werde Teil der BuchArena-Community.
-          </p>
-          <Link href="/auth" className="btn btn-primary rounded-lg px-5 py-2.5 text-base">
-            Jetzt loslegen
-          </Link>
+          <div className="mx-auto max-w-[1100px]">
+            <h2 className="mb-2.5 text-2xl">Bereit, deine Geschichte zu erzählen?</h2>
+            <p className="mb-6 text-lg opacity-85">
+              Erstelle ein kostenloses Konto und werde Teil der BuchArena-Community.
+            </p>
+            <Link href="/auth" className="btn btn-primary rounded-lg px-5 py-2.5 text-base">
+              Jetzt loslegen
+            </Link>
+          </div>
         </section>
       )}
 
