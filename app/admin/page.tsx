@@ -22,6 +22,14 @@ export default function AdminPage() {
   const [message, setMessage] = useState("");
   const [busyUser, setBusyUser] = useState<string | null>(null);
 
+  /* ── Benutzername ändern ── */
+  const [renameTarget, setRenameTarget] = useState<string | null>(null);
+  const [newUsername, setNewUsername] = useState("");
+
+  /* ── Passwort zurücksetzen ── */
+  const [pwResetTarget, setPwResetTarget] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+
   useEffect(() => {
     function syncAccount() {
       setAccount(getStoredAccount());
@@ -133,6 +141,63 @@ export default function AdminPage() {
     }
   }
 
+  /* ── Benutzername ändern ── */
+  async function handleRename() {
+    if (!renameTarget || !newUsername.trim()) return;
+    setBusyUser(renameTarget);
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/admin/users/rename", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ oldUsername: renameTarget, newUsername: newUsername.trim() }),
+      });
+
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Umbenennung fehlgeschlagen.");
+
+      setMessage(data.message ?? "Erfolgreich.");
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.username === renameTarget ? { ...u, username: newUsername.trim() } : u,
+        ),
+      );
+      setRenameTarget(null);
+      setNewUsername("");
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Umbenennung fehlgeschlagen.");
+    } finally {
+      setBusyUser(null);
+    }
+  }
+
+  /* ── Passwort zurücksetzen ── */
+  async function handleResetPassword() {
+    if (!pwResetTarget || !newPassword.trim()) return;
+    setBusyUser(pwResetTarget);
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/admin/users/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUsername: pwResetTarget, newPassword: newPassword.trim() }),
+      });
+
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Passwort-Reset fehlgeschlagen.");
+
+      setMessage(data.message ?? "Erfolgreich.");
+      setPwResetTarget(null);
+      setNewPassword("");
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Passwort-Reset fehlgeschlagen.");
+    } finally {
+      setBusyUser(null);
+    }
+  }
+
   if (!account) {
     return (
       <main className="centered-main">
@@ -195,6 +260,22 @@ export default function AdminPage() {
                           </Link>
                           {!isSuperAdmin && (
                             <>
+                              <button
+                                type="button"
+                                className="btn btn-sm"
+                                disabled={isBusy}
+                                onClick={() => { setRenameTarget(user.username); setNewUsername(user.username); }}
+                              >
+                                Umbenennen
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-sm"
+                                disabled={isBusy}
+                                onClick={() => { setPwResetTarget(user.username); setNewPassword(""); }}
+                              >
+                                Passwort
+                              </button>
                               {isDeactivated ? (
                                 <button
                                   type="button"
@@ -261,6 +342,22 @@ export default function AdminPage() {
                       </Link>
                       {!isSuperAdmin && (
                         <>
+                          <button
+                            type="button"
+                            className="btn btn-sm"
+                            disabled={isBusy}
+                            onClick={() => { setRenameTarget(user.username); setNewUsername(user.username); }}
+                          >
+                            Umbenennen
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm"
+                            disabled={isBusy}
+                            onClick={() => { setPwResetTarget(user.username); setNewPassword(""); }}
+                          >
+                            Passwort
+                          </button>
                           {isDeactivated ? (
                             <button
                               type="button"
@@ -299,6 +396,69 @@ export default function AdminPage() {
         )}
 
         {message && <p className="text-red-700">{message}</p>}
+
+        {/* ══ Overlay: Benutzername ändern ══ */}
+        {renameTarget && (
+          <div className="overlay-backdrop" onClick={() => setRenameTarget(null)}>
+            <div className="bg-white rounded-xl p-5 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-lg m-0 mb-3">Benutzername ändern</h2>
+              <p className="text-sm text-arena-muted mb-2">
+                Aktuell: <strong>{renameTarget}</strong>
+              </p>
+              <label className="block">
+                <span className="text-sm font-semibold">Neuer Benutzername</span>
+                <input
+                  className="input-base w-full mt-1"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  placeholder="Neuer Benutzername"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === "Enter") void handleRename(); }}
+                />
+              </label>
+              <div className="flex gap-2 mt-4">
+                <button type="button" className="btn btn-primary flex-1" disabled={!newUsername.trim() || busyUser === renameTarget} onClick={() => void handleRename()}>
+                  Umbenennen
+                </button>
+                <button type="button" className="btn flex-1" onClick={() => setRenameTarget(null)}>
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══ Overlay: Passwort zurücksetzen ══ */}
+        {pwResetTarget && (
+          <div className="overlay-backdrop" onClick={() => setPwResetTarget(null)}>
+            <div className="bg-white rounded-xl p-5 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-lg m-0 mb-3">Passwort zurücksetzen</h2>
+              <p className="text-sm text-arena-muted mb-2">
+                Benutzer: <strong>{pwResetTarget}</strong>
+              </p>
+              <label className="block">
+                <span className="text-sm font-semibold">Neues Passwort</span>
+                <input
+                  type="password"
+                  className="input-base w-full mt-1"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Min. 6 Zeichen"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === "Enter") void handleResetPassword(); }}
+                />
+              </label>
+              <div className="flex gap-2 mt-4">
+                <button type="button" className="btn btn-primary flex-1" disabled={newPassword.trim().length < 6 || busyUser === pwResetTarget} onClick={() => void handleResetPassword()}>
+                  Zurücksetzen
+                </button>
+                <button type="button" className="btn flex-1" onClick={() => setPwResetTarget(null)}>
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );

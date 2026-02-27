@@ -207,18 +207,16 @@ export default function SocialMediaPage() {
           Social-Media-Links ansehen.
         </p>
 
-        {/* Video-Link */}
-        <div className="rounded-lg border border-arena-border-light bg-[#fffbe6] p-3 text-[0.95rem]">
-          📹{" "}
-          <a
-            href="https://schuleamsee1-my.sharepoint.com/:f:/g/personal/matthias_gmeiner_schuleamsee_at/IgD_ZzlIgo3HSqK1F90s3ybJAeekYfUhNvBv6qqhywVzqHY?e=F0nXCY"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-arena-link hover:underline"
+        {/* Video-Links */}
+        {account?.role === "SUPERADMIN" && (
+          <Link
+            href="/social-media/videos"
+            className="flex items-center gap-2 rounded-lg border border-arena-border-light bg-[#fffbe6] p-3 text-[0.95rem] no-underline text-inherit hover:border-arena-yellow transition-colors"
           >
-            Fertige Videos zur Kontrolle
-          </a>
-        </div>
+            📹 <span className="font-medium">Videos zur Kontrolle</span>
+            <span className="text-xs text-arena-muted ml-auto">Upload & Ansehen</span>
+          </Link>
+        )}
 
         {/* Sections */}
         <div className="grid gap-2.5">
