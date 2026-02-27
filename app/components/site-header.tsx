@@ -55,7 +55,7 @@ export default function SiteHeader() {
       <Link href="/autoren" className="btn w-full sm:w-auto">Autoren</Link>
       <Link href="/sprecher" className="btn w-full sm:w-auto">Sprecher</Link>
       <Link href="/quiz" className="btn w-full sm:w-auto">Quiz</Link>
-      {loggedIn && <Link href="/diskussionen" className="btn w-full sm:w-auto">Diskussionen</Link>}
+      {loggedIn && <Link href="/diskussionen" className="btn w-full sm:w-auto">Treffpunkt</Link>}
       {loggedIn && (
         <Link href="/nachrichten" className="btn w-full sm:w-auto relative">
           Nachrichten
