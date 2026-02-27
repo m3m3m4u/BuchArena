@@ -16,6 +16,10 @@
 
 /* ── Global resets ── */
 
+html {
+  scrollbar-gutter: stable;
+}
+
 html, body {
   margin: 0;
   padding: 0;

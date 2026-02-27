@@ -7,6 +7,7 @@ import {
   getStoredAccount,
   type LoggedInAccount,
 } from "@/lib/client-account";
+import { GENRE_OPTIONS } from "@/lib/genres";
 import {
   Cog6ToothIcon,
   BookOpenIcon,
@@ -360,13 +361,16 @@ export default function SocialMediaPage() {
                             </label>
                             <label className="grid gap-1">
                               <span className="text-sm font-medium">Genre</span>
-                              <input
+                              <select
                                 className="input-base"
                                 value={editForm.genre || ""}
                                 onChange={(e) =>
                                   setEditForm((f) => ({ ...f, genre: e.target.value }))
                                 }
-                              />
+                              >
+                                <option value="">– Genre wählen –</option>
+                                {GENRE_OPTIONS.map((g) => <option key={g} value={g}>{g}</option>)}
+                              </select>
                             </label>
                             <label className="grid gap-1">
                               <span className="text-sm font-medium">Altersempfehlung</span>

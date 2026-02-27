@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { GENRE_OPTIONS } from "@/lib/genres";
 
 type BookExcerpt = {
   id: string;
@@ -487,7 +488,10 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                   </label>
                   <label className="grid gap-1 text-[0.95rem]">
                     Genre
-                    <input className="input-base" value={genre} onChange={(event) => setGenre(event.target.value)} />
+                    <select className="input-base" value={genre} onChange={(event) => setGenre(event.target.value)}>
+                      <option value="">– Genre wählen –</option>
+                      {GENRE_OPTIONS.map((g) => <option key={g} value={g}>{g}</option>)}
+                    </select>
                   </label>
                 </div>
 

@@ -20,15 +20,7 @@ import {
   DocumentTextIcon,
   EnvelopeIcon,
 } from "@heroicons/react/24/outline";
-
-const GENRE_OPTIONS = [
-  "Fantasy", "Science-Fiction", "Krimi / Thriller", "Horror",
-  "Liebesroman / Romance", "Historischer Roman", "Abenteuer",
-  "Biografie / Autobiografie", "Sachbuch", "Kinderbuch", "Jugendbuch",
-  "Comic / Manga / Graphic Novel", "Klassiker", "Drama", "Humor / Satire",
-  "Dystopie", "Mystery", "Märchen / Sagen", "Gedichte / Lyrik",
-  "Kurzgeschichten", "Sonstiges",
-];
+import { GENRE_OPTIONS } from "@/lib/genres";
 const AGE_RANGE_OPTIONS = [
   "ab 2 Jahren", "ab 4 Jahren", "ab 6 Jahren", "ab 8 Jahren",
   "ab 10 Jahren", "ab 12 Jahren", "ab 14 Jahren", "ab 16 Jahren",
