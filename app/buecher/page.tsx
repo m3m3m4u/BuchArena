@@ -58,9 +58,15 @@ function BuecherContent() {
     void loadBooks();
   }, []);
 
+  /** Normalize genre aliases so e.g. "High-Fantasy" and "High Fantasy" are treated as one. */
+  const normalizeGenre = (g: string) => {
+    const map: Record<string, string> = { "high-fantasy": "High Fantasy" };
+    return map[g.toLowerCase()] ?? g;
+  };
+
   const genres = useMemo(() => {
     const unique = new Set(
-      books.flatMap((b) => (b.genre ?? "").split(",").map((g) => g.trim()).filter(Boolean)),
+      books.flatMap((b) => (b.genre ?? "").split(",").map((g) => normalizeGenre(g.trim())).filter(Boolean)),
     );
     return [...unique].sort((a, b) => a.localeCompare(b, "de"));
   }, [books]);
@@ -69,7 +75,7 @@ function BuecherContent() {
     const age = Number(ageFilter);
     const hasAge = Number.isFinite(age) && ageFilter.trim() !== "";
     return books.filter((book) => {
-      const genreList = (book.genre ?? "").split(",").map((g) => g.trim());
+      const genreList = (book.genre ?? "").split(",").map((g) => normalizeGenre(g.trim()));
       const matchesGenre = !genreFilter || genreList.includes(genreFilter);
       const matchesAge = !hasAge || (book.ageFrom <= age && age <= book.ageTo);
       return matchesGenre && matchesAge;
@@ -119,14 +125,20 @@ function BuecherContent() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="mb-1.5 mt-0">{book.title}</h3>
-                      <p className="my-0.5">Autor: {book.authorDisplayName}</p>
-                      <p className="my-0.5">Genre: {book.genre}</p>
-                      {(book.ageFrom > 0 || book.ageTo > 0) && <p className="my-0.5">Alter: {book.ageFrom} bis {book.ageTo}</p>}
-                      <p className="my-0.5">Erscheinungsjahr: {book.publicationYear}</p>
-                      {book.publisher && <p className="my-0.5">Verlag: {book.publisher}</p>}
-                      {book.isbn && <p className="my-0.5">ISBN: {book.isbn}</p>}
-                      {book.pageCount > 0 && <p className="my-0.5">Seitenanzahl: {book.pageCount}</p>}
+                      <h3 className="mb-1.5 mt-0 truncate">{book.title}</h3>
+                      {(() => {
+                        const lines: { label: string; value: string }[] = [];
+                        lines.push({ label: "Autor", value: book.authorDisplayName });
+                        if (book.genre) lines.push({ label: "Genre", value: book.genre });
+                        if (book.ageFrom > 0 || book.ageTo > 0) lines.push({ label: "Alter", value: `${book.ageFrom} bis ${book.ageTo}` });
+                        if (book.publicationYear) lines.push({ label: "Erscheinungsjahr", value: String(book.publicationYear) });
+                        if (book.publisher) lines.push({ label: "Verlag", value: book.publisher });
+                        if (book.isbn) lines.push({ label: "ISBN", value: book.isbn });
+                        if (book.pageCount > 0) lines.push({ label: "Seitenanzahl", value: String(book.pageCount) });
+                        return lines.slice(0, 5).map((l) => (
+                          <p key={l.label} className="my-0.5 truncate">{l.label}: {l.value}</p>
+                        ));
+                      })()}
                     </div>
                   </div>
                 </article>

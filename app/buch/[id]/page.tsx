@@ -75,11 +75,13 @@ export default function BookDetailPage({ params }: PageProps) {
         ) : book ? (
           <>
             <div className="mb-6 grid grid-cols-[200px_1fr] items-start gap-6 max-[600px]:grid-cols-1 max-[600px]:gap-4">
-              <div className="grid w-[200px] place-items-center overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-sm text-arena-muted max-[600px]:mx-auto max-[600px]:w-[160px]" style={{ aspectRatio: "3/4" }}>
+              <div className="w-[200px] overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-sm text-arena-muted max-[600px]:mx-auto max-[600px]:w-[160px]">
                 {book.coverImageUrl ? (
-                  <img src={book.coverImageUrl} alt={`Cover von ${book.title}`} className="h-full w-full object-contain" />
+                  <img src={book.coverImageUrl} alt={`Cover von ${book.title}`} className="w-full h-auto object-contain" />
                 ) : (
-                  <span>Kein Cover</span>
+                  <div className="grid place-items-center" style={{ aspectRatio: "3/4" }}>
+                    <span>Kein Cover</span>
+                  </div>
                 )}
               </div>
               <div>

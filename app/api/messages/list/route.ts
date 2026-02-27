@@ -13,10 +13,39 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const folder = searchParams.get("folder") ?? "inbox";
     const threadId = searchParams.get("threadId");
+    const partner = searchParams.get("partner");
 
     const messages = await getMessagesCollection();
 
-    // Thread-Modus: alle Nachrichten eines Threads laden
+    // ── Chat-Modus: alle Nachrichten mit einem bestimmten Partner ──
+    if (partner) {
+      const docs = await messages
+        .find({
+          $or: [
+            { senderUsername: account.username, recipientUsername: partner, deletedBySender: { $ne: true } },
+            { senderUsername: partner, recipientUsername: account.username, deletedByRecipient: { $ne: true } },
+          ],
+        })
+        .sort({ createdAt: 1 })
+        .limit(500)
+        .toArray();
+
+      const items = docs.map((d) => ({
+        id: d._id!.toHexString(),
+        senderUsername: d.senderUsername,
+        recipientUsername: d.recipientUsername,
+        subject: d.subject,
+        body: d.body,
+        read: d.read,
+        readAt: d.readAt?.toISOString() ?? null,
+        threadId: d.threadId?.toHexString() ?? null,
+        createdAt: d.createdAt.toISOString(),
+      }));
+
+      return NextResponse.json({ messages: items });
+    }
+
+    // ── Thread-Modus (legacy): alle Nachrichten eines Threads laden ──
     if (threadId && ObjectId.isValid(threadId)) {
       const docs = await messages
         .find({
@@ -45,57 +74,46 @@ export async function GET(request: Request) {
       return NextResponse.json({ messages: items });
     }
 
-    // Normale Liste (Posteingang / Gesendet)
-    let filter: Record<string, unknown>;
-    if (folder === "sent") {
-      filter = { senderUsername: account.username, deletedBySender: { $ne: true } };
-    } else {
-      filter = { recipientUsername: account.username, deletedByRecipient: { $ne: true } };
-    }
-
+    // ── Konversationsliste: alle Chats gruppiert nach Gesprächspartner ──
     const docs = await messages
-      .find(filter)
+      .find({
+        $or: [
+          { senderUsername: account.username, deletedBySender: { $ne: true } },
+          { recipientUsername: account.username, deletedByRecipient: { $ne: true } },
+        ],
+      })
       .sort({ createdAt: -1 })
-      .limit(200)
+      .limit(500)
       .toArray();
 
-    // Threads gruppieren: für jeden Thread nur die neueste Nachricht anzeigen
-    const threadMap = new Map<string, typeof docs[number]>();
+    // Nach Partner gruppieren – pro Partner nur die neueste Nachricht
+    const partnerMap = new Map<string, typeof docs[number] & { unread: number }>();
     for (const d of docs) {
-      const tid = d.threadId?.toHexString() ?? d._id!.toHexString();
-      if (!threadMap.has(tid)) {
-        threadMap.set(tid, d);
+      const p = d.senderUsername === account.username ? d.recipientUsername : d.senderUsername;
+      if (!partnerMap.has(p)) {
+        partnerMap.set(p, { ...d, unread: 0 });
+      }
+      // Ungelesene zählen (nur empfangene)
+      if (d.recipientUsername === account.username && !d.read) {
+        partnerMap.get(p)!.unread += 1;
       }
     }
 
-    // Für Inbox: ungelesene Anzahl pro Thread berechnen
-    const threadDocs = [...threadMap.values()];
-    const items = threadDocs.map((d) => {
-      const tid = d.threadId?.toHexString() ?? d._id!.toHexString();
-      // Zähle ungelesene Nachrichten in diesem Thread (nur für Inbox)
-      const unreadInThread = folder === "inbox"
-        ? docs.filter(
-            (m) =>
-              (m.threadId?.toHexString() ?? m._id!.toHexString()) === tid &&
-              !m.read,
-          ).length
-        : 0;
+    const items = [...partnerMap.values()].map((d) => ({
+      id: d._id!.toHexString(),
+      senderUsername: d.senderUsername,
+      recipientUsername: d.recipientUsername,
+      partner: d.senderUsername === account.username ? d.recipientUsername : d.senderUsername,
+      subject: d.subject,
+      body: d.body,
+      read: d.read,
+      readAt: d.readAt?.toISOString() ?? null,
+      threadId: d.threadId?.toHexString() ?? null,
+      unreadCount: d.unread,
+      createdAt: d.createdAt.toISOString(),
+    }));
 
-      return {
-        id: d._id!.toHexString(),
-        senderUsername: d.senderUsername,
-        recipientUsername: d.recipientUsername,
-        subject: d.subject,
-        body: d.body,
-        read: d.read,
-        readAt: d.readAt?.toISOString() ?? null,
-        threadId: tid,
-        unreadInThread,
-        createdAt: d.createdAt.toISOString(),
-      };
-    });
-
-    return NextResponse.json({ messages: items });
+    return NextResponse.json({ conversations: items });
   } catch (err) {
     console.error("GET /api/messages/list error:", err);
     return NextResponse.json({ message: "Interner Fehler." }, { status: 500 });
