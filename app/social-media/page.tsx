@@ -14,6 +14,7 @@ import {
   MusicalNoteIcon,
   MicrophoneIcon,
   ArrowUpTrayIcon,
+  LifebuoyIcon,
 } from "@heroicons/react/24/outline";
 
 export default function SocialMediaPage() {
@@ -40,7 +41,7 @@ export default function SocialMediaPage() {
       description:
         "Alle Informationen zur Buchvorstellung auf der Webseite von Martina.",
       icon: BookOpenIcon,
-      href: "https://www.kreativstudio.net/autorenpraesentation/",
+      href: "https://www.meridianbooks.at/autorenvorstellung/",
       external: true,
     },
     {
@@ -69,7 +70,14 @@ export default function SocialMediaPage() {
       description:
         "Texte für Sprecher: Wähle einen Text, trage deinen Namen ein und lade deine Aufnahme als MP3 hoch.",
       icon: MicrophoneIcon,
-      href: "/sprecher",
+      href: "/sprecher-texte",
+    },
+    {
+      title: "Support",
+      description:
+        "Brauchst du Hilfe oder hast eine Frage? Schreibe uns eine Nachricht über das Support-Formular.",
+      icon: LifebuoyIcon,
+      href: "/support",
     },
   ];
 

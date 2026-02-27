@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { MongoClient, type Collection, type Db, MongoServerError } from "mongodb";
 import type { BookDocument } from "@/lib/books";
-import type { ProfileData } from "@/lib/profile";
+import type { ProfileData, SpeakerProfileData } from "@/lib/profile";
 import type { SupportPost } from "@/lib/support";
 import type { DiscussionDocument } from "@/lib/discussions";
 import type { MessageDocument } from "@/lib/messages";
@@ -18,6 +18,7 @@ export type UserDocument = {
   status?: UserStatus;
   createdAt: Date;
   profile?: ProfileData;
+  speakerProfile?: SpeakerProfileData;
 };
 
 const dbName = process.env.MONGODB_DB_NAME ?? "bucharena";

@@ -37,13 +37,12 @@ export default function SiteHeader() {
 
   const links = (
     <>
-      <Link href="/" className="btn w-full sm:w-auto">Startseite</Link>
       {loggedIn && <Link href="/meine-buecher" className="btn w-full sm:w-auto">Meine Bücher</Link>}
       <Link href="/buecher" className="btn w-full sm:w-auto">Bücher</Link>
       <Link href="/autoren" className="btn w-full sm:w-auto">Autoren</Link>
+      <Link href="/sprecher" className="btn w-full sm:w-auto">Sprecher</Link>
       {loggedIn && <Link href="/diskussionen" className="btn w-full sm:w-auto">Diskussionen</Link>}
       {loggedIn && <Link href="/social-media" className="btn w-full sm:w-auto">Social Media</Link>}
-      {loggedIn && <Link href="/support" className="btn w-full sm:w-auto">Support</Link>}
       {loggedIn ? (
         <Link href="/profil" className="btn w-full sm:w-auto">Profil</Link>
       ) : (

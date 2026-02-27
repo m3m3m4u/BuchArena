@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
-import { createDefaultProfile } from "@/lib/profile";
+import { createDefaultProfile, createDefaultSpeakerProfile } from "@/lib/profile";
 
 type GetProfilePayload = {
   username?: string;
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const users = await getUsersCollection();
     const user = await users.findOne(
       { username },
-      { projection: { profile: 1 } }
+      { projection: { profile: 1, speakerProfile: 1 } }
     );
 
     if (!user) {
@@ -33,6 +33,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       profile: user.profile ?? createDefaultProfile(),
+      speakerProfile: user.speakerProfile ?? createDefaultSpeakerProfile(),
     });
   } catch {
     return NextResponse.json(

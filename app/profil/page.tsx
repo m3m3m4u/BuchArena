@@ -9,10 +9,14 @@ import {
   getStoredAccount,
   type LoggedInAccount,
 } from "@/lib/client-account";
-import { createDefaultProfile, type ProfileData, type Visibility } from "@/lib/profile";
+import { createDefaultProfile, createDefaultSpeakerProfile, type ProfileData, type SpeakerProfileData, type Visibility } from "@/lib/profile";
+
+type ProfileTab = "autor" | "sprecher";
 
 type GetProfileResponse = {
   profile: ProfileData;
+  speakerProfile?: SpeakerProfileData;
+
 };
 
 const visibilityOptions: Array<{ value: Visibility; label: string }> = [
@@ -24,10 +28,14 @@ const visibilityOptions: Array<{ value: Visibility; label: string }> = [
 export default function ProfilPage() {
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
   const [requestedUser, setRequestedUser] = useState("");
+  const [activeTab, setActiveTab] = useState<ProfileTab>("autor");
   const [profile, setProfile] = useState<ProfileData>(createDefaultProfile());
+  const [speakerProfile, setSpeakerProfile] = useState<SpeakerProfileData>(createDefaultSpeakerProfile());
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingSpeaker, setIsSavingSpeaker] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingSample, setIsUploadingSample] = useState(false);
   const [isImageOverlayOpen, setIsImageOverlayOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
@@ -93,6 +101,7 @@ export default function ProfilPage() {
         }
 
         setProfile(data.profile ?? createDefaultProfile());
+        setSpeakerProfile(data.speakerProfile ?? createDefaultSpeakerProfile());
       } catch {
         setIsError(true);
         setMessage("Profil konnte nicht geladen werden.");
@@ -134,6 +143,95 @@ export default function ProfilPage() {
       setMessage("Profil konnte nicht gespeichert werden.");
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function saveSpeakerProfile() {
+    if (!account || !targetUsername) return;
+
+    setIsSavingSpeaker(true);
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const response = await fetch("/api/speakers/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: targetUsername,
+          speakerProfile,
+        }),
+      });
+
+      const data = (await response.json()) as { message?: string };
+      if (!response.ok) {
+        throw new Error(data.message ?? "Sprecherprofil konnte nicht gespeichert werden.");
+      }
+
+      setMessage(data.message ?? "Sprecherprofil gespeichert.");
+    } catch {
+      setIsError(true);
+      setMessage("Sprecherprofil konnte nicht gespeichert werden.");
+    } finally {
+      setIsSavingSpeaker(false);
+    }
+  }
+
+  async function uploadSample(file: File) {
+    if (!targetUsername) return;
+
+    setIsUploadingSample(true);
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("username", targetUsername);
+
+      const response = await fetch("/api/speakers/upload-sample", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = (await response.json()) as { message?: string; sample?: { id: string; filename: string; url: string; uploadedAt: string } };
+      if (!response.ok || !data.sample) {
+        throw new Error(data.message ?? "Upload fehlgeschlagen.");
+      }
+
+      setSpeakerProfile((current) => ({
+        ...current,
+        sprechproben: [...current.sprechproben, data.sample!],
+      }));
+      setMessage("Sprechprobe hochgeladen.");
+    } catch {
+      setIsError(true);
+      setMessage("Upload fehlgeschlagen.");
+    } finally {
+      setIsUploadingSample(false);
+    }
+  }
+
+  async function deleteSample(sampleId: string) {
+    if (!targetUsername) return;
+
+    try {
+      const res = await fetch("/api/speakers/delete-sample", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: targetUsername, sampleId }),
+      });
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Löschen fehlgeschlagen.");
+
+      setSpeakerProfile((current) => ({
+        ...current,
+        sprechproben: current.sprechproben.filter((s) => s.id !== sampleId),
+      }));
+      setMessage("Sprechprobe gelöscht.");
+    } catch {
+      setIsError(true);
+      setMessage("Löschen fehlgeschlagen.");
     }
   }
 
@@ -282,6 +380,26 @@ export default function ProfilPage() {
           </p>
         )}
 
+        {/* Tab-Auswahl */}
+        <div className="flex gap-1.5 border-b border-arena-border pb-2">
+          <button
+            type="button"
+            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 ${activeTab === "autor" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            onClick={() => { setActiveTab("autor"); setMessage(""); }}
+          >
+            Autorenprofil
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 ${activeTab === "sprecher" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            onClick={() => { setActiveTab("sprecher"); setMessage(""); }}
+          >
+            Sprecherprofil
+          </button>
+        </div>
+
+        {activeTab === "autor" && (
+        <>
         <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
           <button
             type="button"
@@ -493,6 +611,121 @@ export default function ProfilPage() {
         <button type="button" className="btn" onClick={saveProfile} disabled={isSaving}>
           {isSaving ? "Speichern ..." : "Profil speichern"}
         </button>
+        </>
+        )}
+
+        {activeTab === "sprecher" && (
+        <>
+        <h2 className="text-lg mt-0">Sprecherprofil</h2>
+        <p className="text-arena-muted text-[0.95rem]">
+          Fülle dein Profil als Hörbuchsprecher aus. Öffentlich sichtbare Felder werden auf deiner Sprecherseite angezeigt.
+        </p>
+
+        <FieldWithVisibility
+          label="Name"
+          value={speakerProfile.name.value}
+          visibility={speakerProfile.name.visibility}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, name: { ...c.name, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, name: { ...c.name, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Ort"
+          value={speakerProfile.ort.value}
+          visibility={speakerProfile.ort.visibility}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, ort: { ...c.ort, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, ort: { ...c.ort, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Motto"
+          value={speakerProfile.motto.value}
+          visibility={speakerProfile.motto.visibility}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, motto: { ...c.motto, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, motto: { ...c.motto, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Webseite"
+          value={speakerProfile.webseite.value}
+          visibility={speakerProfile.webseite.visibility}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, webseite: { ...c.webseite, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, webseite: { ...c.webseite, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Infovideo (YouTube / Vimeo URL)"
+          value={speakerProfile.infovideo.value}
+          visibility={speakerProfile.infovideo.visibility}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, infovideo: { ...c.infovideo, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, infovideo: { ...c.infovideo, visibility } }))
+          }
+        />
+
+        <div className="mt-2">
+          <h3 className="text-[0.95rem] font-semibold mb-2">Sprechproben (MP3)</h3>
+
+          {speakerProfile.sprechproben.length > 0 && (
+            <div className="grid gap-2 mb-3">
+              {speakerProfile.sprechproben.map((sample) => (
+                <div key={sample.id} className="flex items-center gap-3 rounded-lg border border-arena-border p-2.5">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium break-all">{sample.filename}</p>
+                    <audio controls className="mt-1 w-full max-w-[350px]">
+                      <source src={sample.url} type="audio/mpeg" />
+                    </audio>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-danger"
+                    onClick={() => deleteSample(sample.id)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <label className="grid gap-1 text-[0.95rem]">
+            MP3-Datei hochladen
+            <input
+              type="file"
+              accept=".mp3,audio/mpeg"
+              onChange={(event) => {
+                const selectedFile = event.target.files?.[0];
+                if (selectedFile) void uploadSample(selectedFile);
+                event.currentTarget.value = "";
+              }}
+            />
+            {isUploadingSample && <span className="text-xs text-arena-muted">Wird hochgeladen ...</span>}
+          </label>
+        </div>
+
+        <button type="button" className="btn" onClick={saveSpeakerProfile} disabled={isSavingSpeaker}>
+          {isSavingSpeaker ? "Speichern ..." : "Sprecherprofil speichern"}
+        </button>
+        </>
+        )}
 
         <p className={isError ? "min-h-[1.3rem] mt-3.5 text-red-700" : "min-h-[1.3rem] mt-3.5"}>{message}</p>
 

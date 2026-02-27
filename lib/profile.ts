@@ -31,6 +31,22 @@ export type ProfileData = {
   socialReddit: ProfileField;
 };
 
+export type Sprechprobe = {
+  id: string;
+  filename: string;
+  url: string;
+  uploadedAt: string;
+};
+
+export type SpeakerProfileData = {
+  name: ProfileField;
+  ort: ProfileField;
+  motto: ProfileField;
+  webseite: ProfileField;
+  infovideo: ProfileField;
+  sprechproben: Sprechprobe[];
+};
+
 export function createDefaultProfile(): ProfileData {
   return {
     profileImage: {
@@ -90,5 +106,16 @@ export function createDefaultProfile(): ProfileData {
       value: "",
       visibility: "hidden",
     },
+  };
+}
+
+export function createDefaultSpeakerProfile(): SpeakerProfileData {
+  return {
+    name: { value: "", visibility: "internal" },
+    ort: { value: "", visibility: "internal" },
+    motto: { value: "", visibility: "internal" },
+    webseite: { value: "", visibility: "internal" },
+    infovideo: { value: "", visibility: "internal" },
+    sprechproben: [],
   };
 }
