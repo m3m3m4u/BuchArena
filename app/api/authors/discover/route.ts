@@ -26,7 +26,7 @@ export async function GET() {
     const users = await usersCollection
       .find(
         { $or: [{ status: { $exists: false } }, { status: "active" }], username: { $ne: "kopernikus" } },
-        { projection: { username: 1, profile: 1, lastOnline: 1 } }
+        { projection: { username: 1, profile: 1, lastOnline: 1, speakerProfile: 1 } }
       )
       .toArray();
 
@@ -34,6 +34,7 @@ export async function GET() {
     const profileByUser = new Map<string, string>();
     const nameByUser = new Map<string, string>();
     const lastOnlineByUser = new Map<string, string | null>();
+    const isSpeaker = new Set<string>();
 
     for (const user of users) {
       const profileImageUrl = user.profile?.profileImage?.value ?? "";
@@ -41,6 +42,7 @@ export async function GET() {
       const name = (user.profile?.name?.visibility === "public" && user.profile?.name?.value) ? user.profile.name.value : "";
       nameByUser.set(user.username, name);
       lastOnlineByUser.set(user.username, user.lastOnline ? new Date(user.lastOnline).toISOString() : null);
+      if (user.speakerProfile) isSpeaker.add(user.username);
     }
 
     /* Start with an entry for every active user (including those without books) */
@@ -67,7 +69,10 @@ export async function GET() {
       });
     }
 
-    const authors = [...grouped.values()];
+    /* Remove pure speakers (speakerProfile present but no books) */
+    const authors = [...grouped.values()].filter(
+      (a) => a.books.length > 0 || !isSpeaker.has(a.username)
+    );
 
     return NextResponse.json({ authors });
   } catch {
