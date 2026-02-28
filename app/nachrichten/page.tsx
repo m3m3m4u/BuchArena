@@ -348,9 +348,9 @@ export default function NachrichtenPage() {
   }
 
   return (
-    <main className="flex-1 flex flex-col overflow-hidden">
-      <section className="flex-1 !p-0 overflow-hidden w-full mx-auto" style={{ maxWidth: 1100 }}>
-        <div className="grid grid-cols-[300px_1fr] max-[700px]:grid-cols-1 h-full">
+    <main className="flex-1 flex flex-col overflow-hidden min-h-0">
+      <section className="flex-1 !p-0 overflow-hidden w-full mx-auto min-h-0" style={{ maxWidth: 1100 }}>
+        <div className="grid grid-cols-[300px_1fr] max-[700px]:grid-cols-1 h-full min-h-0">
           {/* ══ Linke Seite: Konversationsliste ══ */}
           <div
             className={`border-r border-arena-border flex flex-col ${
@@ -440,7 +440,7 @@ export default function NachrichtenPage() {
 
           {/* ══ Rechte Seite: Chat-Bereich ══ */}
           <div
-            className={`flex flex-col ${
+            className={`flex flex-col min-h-0 ${
               !mobileShowChat ? "max-[700px]:hidden" : ""
             }`}
           >

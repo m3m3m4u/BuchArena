@@ -48,6 +48,7 @@ interface Submission {
   reviewNotes?: string;
   reviewedBy?: string;
   reviewedAt?: string;
+  submittedBy?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -196,6 +197,12 @@ export default function BucharenaAdminSubmissions() {
                     {sub.contactType === "email" ? <EnvelopeIcon className="w-3.5 h-3.5 text-[#888] shrink-0" /> : <SvgIg />}
                     <span className="break-all">{sub.contact}</span>
                   </div>
+                  {sub.submittedBy && (
+                    <div className="col-span-full flex items-center gap-1">
+                      <span className="text-[#888]">Hochgeladen von:</span>
+                      <Link href={`/autor/${sub.submittedBy}`} className="text-arena-link no-underline hover:underline font-medium">{sub.submittedBy}</Link>
+                    </div>
+                  )}
                   {sub.notes && <div className="col-span-full text-[#555]">Notiz: {sub.notes}</div>}
                   {sub.reviewNotes && <div className="col-span-full text-[#555]">Admin: {sub.reviewNotes}</div>}
                 </div>
