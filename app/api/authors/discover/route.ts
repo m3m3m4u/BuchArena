@@ -5,6 +5,7 @@ type AuthorDiscoverItem = {
   username: string;
   displayName: string;
   profileImageUrl: string;
+  lastOnline: string | null;
   books: Array<{
     title: string;
     genre: string;
@@ -25,37 +26,40 @@ export async function GET() {
     const users = await usersCollection
       .find(
         { $or: [{ status: { $exists: false } }, { status: "active" }] },
-        { projection: { username: 1, profile: 1 } }
+        { projection: { username: 1, profile: 1, lastOnline: 1 } }
       )
       .toArray();
 
-    const activeUsernames = new Set(users.map((u) => u.username));
-
+    /* Build lookup maps for all active users */
     const profileByUser = new Map<string, string>();
     const nameByUser = new Map<string, string>();
+    const lastOnlineByUser = new Map<string, string | null>();
+
     for (const user of users) {
       const profileImageUrl = user.profile?.profileImage?.value ?? "";
       profileByUser.set(user.username, profileImageUrl);
       const name = (user.profile?.name?.visibility === "public" && user.profile?.name?.value) ? user.profile.name.value : "";
       nameByUser.set(user.username, name);
+      lastOnlineByUser.set(user.username, user.lastOnline ? new Date(user.lastOnline).toISOString() : null);
     }
 
+    /* Start with an entry for every active user (including those without books) */
     const grouped = new Map<string, AuthorDiscoverItem>();
-    for (const book of books) {
-      const key = book.ownerUsername;
-      if (!activeUsernames.has(key)) {
-        continue;
-      }
-      if (!grouped.has(key)) {
-        grouped.set(key, {
-          username: key,
-          displayName: nameByUser.get(key) || key,
-          profileImageUrl: profileByUser.get(key) ?? "",
-          books: [],
-        });
-      }
+    for (const user of users) {
+      grouped.set(user.username, {
+        username: user.username,
+        displayName: nameByUser.get(user.username) || user.username,
+        profileImageUrl: profileByUser.get(user.username) ?? "",
+        lastOnline: lastOnlineByUser.get(user.username) ?? null,
+        books: [],
+      });
+    }
 
-      grouped.get(key)?.books.push({
+    /* Attach books to their owners */
+    for (const book of books) {
+      const entry = grouped.get(book.ownerUsername);
+      if (!entry) continue;
+      entry.books.push({
         title: book.title,
         genre: book.genre,
         ageFrom: book.ageFrom,
@@ -63,9 +67,7 @@ export async function GET() {
       });
     }
 
-    const authors = [...grouped.values()].sort((a, b) =>
-      a.username.localeCompare(b.username, "de")
-    );
+    const authors = [...grouped.values()];
 
     return NextResponse.json({ authors });
   } catch {
