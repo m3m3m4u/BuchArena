@@ -72,7 +72,10 @@ export async function POST(request: Request) {
     }
 
     const body = (await request.json()) as SaveProfilePayload;
-    const username = account.username;
+    const username =
+      account.role === "SUPERADMIN" && body.username?.trim()
+        ? body.username.trim()
+        : account.username;
 
     const sanitizedProfile = sanitizeProfile(body.profile);
     const users = await getUsersCollection();

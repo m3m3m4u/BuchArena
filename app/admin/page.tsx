@@ -13,6 +13,9 @@ type UserListEntry = {
   email: string;
   role: string;
   status?: string;
+  hasProfile?: boolean;
+  hasSpeakerProfile?: boolean;
+  bookCount?: number;
 };
 
 export default function AdminPage() {
@@ -230,6 +233,7 @@ export default function AdminPage() {
                   <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Name</th>
                   <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">E-Mail</th>
                   <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Status</th>
+                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Profile / Bücher</th>
                   <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Aktionen</th>
                 </tr>
               </thead>
@@ -251,13 +255,44 @@ export default function AdminPage() {
                           : "Aktiv"}
                       </td>
                       <td className="p-2 border-b border-arena-border-light">
-                        <div className="flex gap-1 flex-wrap">
+                        <div className="flex gap-1.5 flex-wrap items-center">
                           <Link
                             href={`/profil?user=${encodeURIComponent(user.username)}`}
-                            className="btn btn-sm"
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                              user.hasProfile
+                                ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            }`}
+                            title={user.hasProfile ? "Autorenprofil ausgefüllt" : "Autorenprofil leer"}
                           >
-                            Profil
+                            ✍️ Autor {user.hasProfile ? "✓" : "✗"}
                           </Link>
+                          <Link
+                            href={`/profil?user=${encodeURIComponent(user.username)}&tab=sprecher`}
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                              user.hasSpeakerProfile
+                                ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            }`}
+                            title={user.hasSpeakerProfile ? "Sprecherprofil ausgefüllt" : "Sprecherprofil leer"}
+                          >
+                            🎙️ Sprecher {user.hasSpeakerProfile ? "✓" : "✗"}
+                          </Link>
+                          <Link
+                            href={`/profil?user=${encodeURIComponent(user.username)}&tab=buecher`}
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                              (user.bookCount ?? 0) > 0
+                                ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            }`}
+                            title={`${user.bookCount ?? 0} Bücher`}
+                          >
+                            📚 {user.bookCount ?? 0} Bücher
+                          </Link>
+                        </div>
+                      </td>
+                      <td className="p-2 border-b border-arena-border-light">
+                        <div className="flex gap-1 flex-wrap">
                           {!isSuperAdmin && (
                             <>
                               <button
@@ -333,13 +368,39 @@ export default function AdminPage() {
                       </span>
                     </div>
                     <p className="text-sm text-arena-muted mb-2 break-all">{user.email}</p>
-                    <div className="flex gap-1.5 flex-wrap">
+                    <div className="flex gap-1.5 flex-wrap items-center mb-2">
                       <Link
                         href={`/profil?user=${encodeURIComponent(user.username)}`}
-                        className="btn btn-sm"
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                          user.hasProfile
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
                       >
-                        Profil
+                        ✍️ Autor {user.hasProfile ? "✓" : "✗"}
                       </Link>
+                      <Link
+                        href={`/profil?user=${encodeURIComponent(user.username)}&tab=sprecher`}
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                          user.hasSpeakerProfile
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        🎙️ Sprecher {user.hasSpeakerProfile ? "✓" : "✗"}
+                      </Link>
+                      <Link
+                        href={`/profil?user=${encodeURIComponent(user.username)}&tab=buecher`}
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                          (user.bookCount ?? 0) > 0
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        📚 {user.bookCount ?? 0} Bücher
+                      </Link>
+                    </div>
+                    <div className="flex gap-1.5 flex-wrap">
                       {!isSuperAdmin && (
                         <>
                           <button
