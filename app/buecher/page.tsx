@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { normalizeGenre } from "@/lib/genres";
 
@@ -33,6 +33,8 @@ export default function BuecherPage() {
   );
 }
 
+const PAGE_SIZE = 20;
+
 function BuecherContent() {
   const [books, setBooks] = useState<DiscoverBook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +42,7 @@ function BuecherContent() {
   const [genreFilter, setGenreFilter] = useState(normalizeGenre(searchParams.get("genre") ?? ""));
   const [ageFilter, setAgeFilter] = useState("");
   const [message, setMessage] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     async function loadBooks() {
@@ -77,6 +80,17 @@ function BuecherContent() {
     });
   }, [books, genreFilter, ageFilter]);
 
+  // Reset page when filter changes
+  useEffect(() => { setPage(1); }, [genreFilter, ageFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredBooks.length / PAGE_SIZE));
+  const pagedBooks = filteredBooks.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const goTo = useCallback((p: number) => {
+    setPage(Math.max(1, Math.min(p, totalPages)));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [totalPages]);
+
   return (
     <main className="top-centered-main">
       <section className="card">
@@ -103,8 +117,9 @@ function BuecherContent() {
         ) : filteredBooks.length === 0 ? (
           <p>Keine Bücher für den gewählten Filter gefunden.</p>
         ) : (
+          <>
           <div className="grid gap-3 min-[1200px]:grid-cols-2">
-            {filteredBooks.map((book, index) => (
+            {pagedBooks.map((book, index) => (
               <Link
                 href={`/buch/${book.id}`}
                 className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md"
@@ -140,6 +155,24 @@ function BuecherContent() {
               </Link>
             ))}
           </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
+                <button className="btn-secondary text-sm px-3 py-1" disabled={page === 1} onClick={() => goTo(page - 1)}>← Zurück</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    className={`text-sm px-3 py-1 rounded ${p === page ? "btn-primary" : "btn-secondary"}`}
+                    onClick={() => goTo(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button className="btn-secondary text-sm px-3 py-1" disabled={page === totalPages} onClick={() => goTo(page + 1)}>Weiter →</button>
+              </div>
+            )}
+          </>
         )}
       </section>
     </main>
