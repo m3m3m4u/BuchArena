@@ -45,12 +45,14 @@ export async function GET() {
       if (user.speakerProfile) isSpeaker.add(user.username);
     }
 
-    /* Start with an entry for every active user (including those without books) */
+    /* Start with an entry for every active user that has a public display name */
     const grouped = new Map<string, AuthorDiscoverItem>();
     for (const user of users) {
+      const displayName = nameByUser.get(user.username) || "";
+      if (!displayName) continue; // skip users without a public author name
       grouped.set(user.username, {
         username: user.username,
-        displayName: nameByUser.get(user.username) || user.username,
+        displayName,
         profileImageUrl: profileByUser.get(user.username) ?? "",
         lastOnline: lastOnlineByUser.get(user.username) ?? null,
         books: [],
