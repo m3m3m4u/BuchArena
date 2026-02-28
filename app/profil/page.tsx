@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   ACCOUNT_CHANGED_EVENT,
   clearStoredAccount,
@@ -27,6 +28,15 @@ const visibilityOptions: Array<{ value: Visibility; label: string }> = [
 ];
 
 export default function ProfilPage() {
+  return (
+    <Suspense fallback={<main className="centered-main"><section className="card"><p>Lade Profil …</p></section></main>}>
+      <ProfilPageInner />
+    </Suspense>
+  );
+}
+
+function ProfilPageInner() {
+  const searchParams = useSearchParams();
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
   const [requestedUser, setRequestedUser] = useState("");
   const [activeTab, setActiveTab] = useState<ProfileTab>("autor");
@@ -62,19 +72,14 @@ export default function ProfilPage() {
     account?.role === "SUPERADMIN" && requestedUser ? requestedUser : account?.username ?? "";
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    const user = params.get("user")?.trim() ?? "";
+    const user = searchParams.get("user")?.trim() ?? "";
     setRequestedUser(user);
 
-    const tab = params.get("tab")?.trim();
+    const tab = searchParams.get("tab")?.trim();
     if (tab === "buecher" || tab === "sprecher" || tab === "autor") {
       setActiveTab(tab);
     }
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     function syncAccount() {
