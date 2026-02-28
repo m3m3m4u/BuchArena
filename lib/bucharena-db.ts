@@ -90,8 +90,8 @@ export type BucharenaSubmissionDoc = {
   fileSize: number;
   filePath: string;
   notes?: string;
-  contact: string;
-  contactType: "email" | "instagram";
+  contact?: string;
+  contactType?: "email" | "instagram";
   instagram?: string;
   submittedBy?: string;
   status: "pending" | "approved" | "rejected" | "done";
