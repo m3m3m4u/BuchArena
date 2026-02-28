@@ -59,6 +59,12 @@ export async function POST(request: Request) {
       );
     }
 
+    // "Zuletzt online" aktualisieren
+    await users.updateOne(
+      { username: user.username },
+      { $set: { lastOnline: new Date() } }
+    );
+
     // Signiertes JWT erzeugen und als HttpOnly-Cookie setzen
     const token = await createAuthToken({
       username: user.username,

@@ -27,7 +27,7 @@ export async function POST() {
     const users = await getUsersCollection();
 
     const list = await users
-      .find({}, { projection: { _id: 0, username: 1, email: 1, role: 1, status: 1, profile: 1, speakerProfile: 1 } })
+      .find({}, { projection: { _id: 0, username: 1, email: 1, role: 1, status: 1, createdAt: 1, lastOnline: 1, profile: 1, speakerProfile: 1 } })
       .sort({ username: 1 })
       .toArray();
 
@@ -43,6 +43,8 @@ export async function POST() {
       email: u.email,
       role: u.role,
       status: u.status,
+      createdAt: u.createdAt ?? null,
+      lastOnline: u.lastOnline ?? null,
       hasProfile: hasFilledProfile(u.profile as Record<string, unknown> | undefined),
       hasSpeakerProfile: hasFilledSpeakerProfile(u.speakerProfile as Record<string, unknown> | undefined),
       bookCount: bookCountMap.get(u.username) ?? 0,

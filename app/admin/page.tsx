@@ -16,7 +16,24 @@ type UserListEntry = {
   hasProfile?: boolean;
   hasSpeakerProfile?: boolean;
   bookCount?: number;
+  createdAt?: string | null;
+  lastOnline?: string | null;
 };
+
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "–";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "–";
+  return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function formatDateTime(iso: string | null | undefined): string {
+  if (!iso) return "–";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "–";
+  return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })
+    + " " + d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+}
 
 export default function AdminPage() {
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
@@ -225,16 +242,17 @@ export default function AdminPage() {
         ) : account.role !== "SUPERADMIN" ? (
           <p className="text-red-700">Nur der SuperAdmin darf diese Seite sehen.</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             {/* Desktop-Tabelle */}
-            <table className="hidden sm:table w-full border-collapse text-[0.95rem]">
+            <table className="hidden sm:table w-full border-collapse text-[0.85rem]" style={{ minWidth: "900px" }}>
               <thead>
                 <tr>
-                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Name</th>
-                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">E-Mail</th>
-                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Status</th>
-                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Profile / Bücher</th>
-                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.85rem] uppercase tracking-wider text-arena-muted">Aktionen</th>
+                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.8rem] uppercase tracking-wider text-arena-muted whitespace-nowrap">Name / E-Mail</th>
+                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.8rem] uppercase tracking-wider text-arena-muted whitespace-nowrap">Status</th>
+                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.8rem] uppercase tracking-wider text-arena-muted whitespace-nowrap">Registriert</th>
+                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.8rem] uppercase tracking-wider text-arena-muted whitespace-nowrap">Zuletzt online</th>
+                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.8rem] uppercase tracking-wider text-arena-muted whitespace-nowrap">Profile / Bücher</th>
+                  <th className="bg-arena-bg text-left p-2 border-b border-arena-border font-semibold text-[0.8rem] uppercase tracking-wider text-arena-muted whitespace-nowrap">Aktionen</th>
                 </tr>
               </thead>
               <tbody>
@@ -245,14 +263,22 @@ export default function AdminPage() {
 
                   return (
                     <tr key={user.username} className={`hover:bg-[#f5f5f5] ${isDeactivated ? "opacity-50" : ""}`}>
-                      <td className="p-2 border-b border-arena-border-light">{user.username}</td>
-                      <td className="p-2 border-b border-arena-border-light">{user.email}</td>
                       <td className="p-2 border-b border-arena-border-light">
+                        <div className="font-medium">{user.username}</div>
+                        <div className="text-xs text-arena-muted break-all">{user.email}</div>
+                      </td>
+                      <td className="p-2 border-b border-arena-border-light whitespace-nowrap">
                         {isSuperAdmin
                           ? "Admin"
                           : isDeactivated
                           ? "Deaktiviert"
                           : "Aktiv"}
+                      </td>
+                      <td className="p-2 border-b border-arena-border-light whitespace-nowrap text-xs text-arena-muted">
+                        {formatDate(user.createdAt)}
+                      </td>
+                      <td className="p-2 border-b border-arena-border-light whitespace-nowrap text-xs text-arena-muted">
+                        {formatDateTime(user.lastOnline)}
                       </td>
                       <td className="p-2 border-b border-arena-border-light">
                         <div className="flex gap-1.5 flex-wrap items-center">
@@ -367,7 +393,11 @@ export default function AdminPage() {
                         {isSuperAdmin ? "Admin" : isDeactivated ? "Deaktiviert" : "Aktiv"}
                       </span>
                     </div>
-                    <p className="text-sm text-arena-muted mb-2 break-all">{user.email}</p>
+                    <p className="text-sm text-arena-muted mb-1 break-all">{user.email}</p>
+                    <div className="flex gap-3 text-xs text-arena-muted mb-2">
+                      <span>📅 Reg. {formatDate(user.createdAt)}</span>
+                      <span>🕐 Online {formatDateTime(user.lastOnline)}</span>
+                    </div>
                     <div className="flex gap-1.5 flex-wrap items-center mb-2">
                       <Link
                         href={`/profil?user=${encodeURIComponent(user.username)}`}

@@ -17,6 +17,7 @@ export type UserDocument = {
   role: UserRole;
   status?: UserStatus;
   createdAt: Date;
+  lastOnline?: Date;
   profile?: ProfileData;
   speakerProfile?: SpeakerProfileData;
 };
