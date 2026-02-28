@@ -63,15 +63,15 @@ async function finalizeUpload(uploadId: string, totalChunks: number) {
     if (!metaBytes) return NextResponse.json({ success: false, error: "Metadaten nicht gefunden" }, { status: 400 });
 
     const meta = JSON.parse(new TextDecoder().decode(metaBytes));
-    if (!meta.bookTitle || !meta.author || !meta.genre || !meta.ageRange || !meta.contact || !meta.contactType) {
+    if (!meta.bookTitle || !meta.author || !meta.genre || !meta.ageRange) {
       await cleanupTempFiles(uploadId);
       return NextResponse.json({ success: false, error: "Fehlende Pflichtfelder" }, { status: 400 });
     }
-    if (meta.contactType !== "email" && meta.contactType !== "instagram") {
+    if (meta.contactType && meta.contactType !== "email" && meta.contactType !== "instagram") {
       await cleanupTempFiles(uploadId);
       return NextResponse.json({ success: false, error: "Ungültiger Kontakttyp" }, { status: 400 });
     }
-    if (meta.contactType === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(meta.contact)) {
+    if (meta.contact && meta.contactType === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(meta.contact)) {
       await cleanupTempFiles(uploadId);
       return NextResponse.json({ success: false, error: "Ungültige E-Mail-Adresse" }, { status: 400 });
     }
@@ -130,8 +130,8 @@ async function finalizeUpload(uploadId: string, totalChunks: number) {
       fileSize: fullFile.length,
       filePath: webdavKey,
       notes: meta.notes?.trim() || undefined,
-      contact: meta.contact.trim(),
-      contactType: meta.contactType,
+      contact: meta.contact?.trim() || undefined,
+      contactType: meta.contactType || undefined,
       instagram: meta.instagram?.trim() || undefined,
       submittedBy: meta.submittedBy || undefined,
       status: "pending",

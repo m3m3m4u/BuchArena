@@ -25,10 +25,10 @@ export async function POST(request: Request) {
     const instagram = formData.get("instagram") as string;
     const file = formData.get("file") as File;
 
-    if (!bookTitle || !author || !genre || !ageRange || !contact || !file) {
+    if (!bookTitle || !author || !genre || !ageRange || !file) {
       return NextResponse.json({ success: false, error: "Alle Pflichtfelder müssen ausgefüllt werden" }, { status: 400 });
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) {
+    if (contact && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) {
       return NextResponse.json({ success: false, error: "Ungültige E-Mail-Adresse" }, { status: 400 });
     }
 
@@ -69,8 +69,8 @@ export async function POST(request: Request) {
       fileSize: file.size,
       filePath: webdavKey,
       notes: notes?.trim() || undefined,
-      contact: contact.trim(),
-      contactType: (contactType as "email" | "instagram") || "email",
+      contact: contact?.trim() || undefined,
+      contactType: contact?.trim() ? ((contactType as "email" | "instagram") || "email") : undefined,
       instagram: instagram?.trim() || undefined,
       submittedBy: account?.username || undefined,
       status: "pending",

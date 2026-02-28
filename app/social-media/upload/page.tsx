@@ -103,12 +103,12 @@ export default function UploadPage() {
     e.preventDefault();
     setError("");
 
-    if (!bookTitle.trim() || !author.trim() || !genre || !ageRange || !email.trim() || !instagram.trim() || !file) {
+    if (!bookTitle.trim() || !author.trim() || !genre || !ageRange || !file) {
       setError("Bitte fülle alle Pflichtfelder aus und wähle eine Datei.");
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Bitte gib eine gültige E-Mail-Adresse ein.");
       return;
     }
@@ -277,7 +277,7 @@ export default function UploadPage() {
             <input
               type="text"
               className="input-base"
-              placeholder="z.\u00a0B. Harry Potter und der Stein der Weisen"
+              placeholder="z. B. Harry Potter und der Stein der Weisen"
               value={bookTitle}
               onChange={(e) => setBookTitle(e.target.value)}
               disabled={uploading}
@@ -293,7 +293,7 @@ export default function UploadPage() {
             <input
               type="text"
               className="input-base"
-              placeholder="z.\u00a0B. J. K. Rowling"
+              placeholder="z. B. J. K. Rowling"
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
               disabled={uploading}
@@ -402,9 +402,7 @@ export default function UploadPage() {
 
           {/* E-Mail */}
           <label className="grid gap-1 text-[0.95rem]">
-            <span className="font-medium">
-              E-Mail-Adresse <span className="text-red-500">*</span>
-            </span>
+            <span className="font-medium">E-Mail-Adresse (optional)</span>
             <input
               type="email"
               className="input-base"
@@ -412,15 +410,12 @@ export default function UploadPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={uploading}
-              required
             />
           </label>
 
           {/* Instagram */}
           <label className="grid gap-1 text-[0.95rem]">
-            <span className="font-medium">
-              Instagram <span className="text-red-500">*</span>
-            </span>
+            <span className="font-medium">Instagram (optional)</span>
             <input
               type="text"
               className="input-base"
@@ -428,7 +423,6 @@ export default function UploadPage() {
               value={instagram}
               onChange={(e) => setInstagram(e.target.value)}
               disabled={uploading}
-              required
             />
           </label>
 
