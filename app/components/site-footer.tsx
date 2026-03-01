@@ -166,7 +166,7 @@ export default function SiteFooter() {
               <button type="button" className="btn btn-sm" onClick={onLogout}>Ausloggen</button>
             </>
           ) : (
-            <Link href="/auth" className="btn bg-arena-accent text-white hover:opacity-90 no-underline px-4 py-1.5 rounded-lg text-sm font-semibold">
+            <Link href="/auth" className="inline-flex items-center justify-center bg-arena-accent text-white hover:opacity-90 no-underline px-4 py-1.5 rounded-lg text-sm font-semibold border border-arena-accent transition-opacity">
               Kostenlos registrieren
             </Link>
           )}

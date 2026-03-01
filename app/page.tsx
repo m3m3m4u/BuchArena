@@ -36,7 +36,7 @@ export default function HomePage() {
             Willkommen in der <span className="text-arena-yellow">BuchArena</span>
           </h1>
           {!loggedIn && (
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="mt-4 flex flex-wrap justify-center gap-3">
               <Link href="/auth" className="btn btn-primary rounded-lg px-5 py-2.5 text-base">
                 Kostenlos registrieren
               </Link>
