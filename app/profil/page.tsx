@@ -10,15 +10,16 @@ import {
   getStoredAccount,
   type LoggedInAccount,
 } from "@/lib/client-account";
-import { createDefaultProfile, createDefaultSpeakerProfile, type ProfileData, type SpeakerProfileData, type Visibility } from "@/lib/profile";
+import { createDefaultProfile, createDefaultSpeakerProfile, createDefaultBloggerProfile, type ProfileData, type SpeakerProfileData, type BloggerProfileData, type Visibility } from "@/lib/profile";
 import MeineBuecherTab from "@/app/components/meine-buecher-tab";
+import GenrePicker from "@/app/components/genre-picker";
 
-type ProfileTab = "autor" | "sprecher" | "buecher";
+type ProfileTab = "autor" | "sprecher" | "blogger" | "buecher";
 
 type GetProfileResponse = {
   profile: ProfileData;
   speakerProfile?: SpeakerProfileData;
-
+  bloggerProfile?: BloggerProfileData;
 };
 
 const visibilityOptions: Array<{ value: Visibility; label: string }> = [
@@ -45,6 +46,17 @@ function ProfilPageInner() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingSpeaker, setIsSavingSpeaker] = useState(false);
+  const [isSavingBlogger, setIsSavingBlogger] = useState(false);
+  const [bloggerProfile, setBloggerProfile] = useState<BloggerProfileData>(createDefaultBloggerProfile());
+  const [isBloggerImageOverlayOpen, setIsBloggerImageOverlayOpen] = useState(false);
+  const [isUploadingBloggerImage, setIsUploadingBloggerImage] = useState(false);
+  const bloggerDragStateRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startCropX: number;
+    startCropY: number;
+  } | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isUploadingSample, setIsUploadingSample] = useState(false);
   const [isImageOverlayOpen, setIsImageOverlayOpen] = useState(false);
@@ -76,7 +88,7 @@ function ProfilPageInner() {
     setRequestedUser(user);
 
     const tab = searchParams.get("tab")?.trim();
-    if (tab === "buecher" || tab === "sprecher" || tab === "autor") {
+    if (tab === "buecher" || tab === "sprecher" || tab === "autor" || tab === "blogger") {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -122,6 +134,7 @@ function ProfilPageInner() {
 
         setProfile(data.profile ?? createDefaultProfile());
         setSpeakerProfile(data.speakerProfile ?? createDefaultSpeakerProfile());
+        setBloggerProfile(data.bloggerProfile ?? createDefaultBloggerProfile());
       } catch {
         setIsError(true);
         setMessage("Profil konnte nicht geladen werden.");
@@ -194,6 +207,37 @@ function ProfilPageInner() {
       setMessage("Sprecherprofil konnte nicht gespeichert werden.");
     } finally {
       setIsSavingSpeaker(false);
+    }
+  }
+
+  async function saveBloggerProfile() {
+    if (!account || !targetUsername) return;
+
+    setIsSavingBlogger(true);
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const response = await fetch("/api/bloggers/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: targetUsername,
+          bloggerProfile,
+        }),
+      });
+
+      const data = (await response.json()) as { message?: string };
+      if (!response.ok) {
+        throw new Error(data.message ?? "Bloggerprofil konnte nicht gespeichert werden.");
+      }
+
+      setMessage(data.message ?? "Bloggerprofil gespeichert.");
+    } catch {
+      setIsError(true);
+      setMessage("Bloggerprofil konnte nicht gespeichert werden.");
+    } finally {
+      setIsSavingBlogger(false);
     }
   }
 
@@ -359,6 +403,97 @@ function ProfilPageInner() {
     };
   }, [speakerProfile.profileImage]);
 
+  const bloggerImagePreviewStyle = useMemo(() => {
+    const imageUrl = bloggerProfile.profileImage?.value;
+    if (!imageUrl) return undefined;
+
+    return {
+      backgroundImage: `url(${imageUrl})`,
+      backgroundPosition: `${bloggerProfile.profileImage.crop.x}% ${bloggerProfile.profileImage.crop.y}%`,
+      backgroundSize: `${bloggerProfile.profileImage.crop.zoom * 100}%`,
+      backgroundRepeat: "no-repeat",
+    };
+  }, [bloggerProfile.profileImage]);
+
+  async function uploadBloggerImage(file: File) {
+    if (!targetUsername) return;
+
+    setIsUploadingBloggerImage(true);
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("username", targetUsername);
+
+      const response = await fetch("/api/profile/upload-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = (await response.json()) as { message?: string; imageUrl?: string };
+      if (!response.ok || !data.imageUrl) {
+        throw new Error(data.message ?? "Upload fehlgeschlagen.");
+      }
+
+      setBloggerProfile((current) => ({
+        ...current,
+        profileImage: {
+          ...current.profileImage,
+          value: data.imageUrl as string,
+        },
+      }));
+      setMessage("Blogger-Bild erfolgreich hochgeladen.");
+    } catch {
+      setIsError(true);
+      setMessage("Blogger-Bild-Upload fehlgeschlagen.");
+    } finally {
+      setIsUploadingBloggerImage(false);
+    }
+  }
+
+  function onBloggerImagePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    bloggerDragStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startCropX: bloggerProfile.profileImage.crop.x,
+      startCropY: bloggerProfile.profileImage.crop.y,
+    };
+  }
+
+  function onBloggerImagePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const dragState = bloggerDragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+    const previewSize = event.currentTarget.clientWidth || 160;
+    const zoom = bloggerProfile.profileImage.crop.zoom || 1;
+    const factor = (100 / previewSize) / zoom;
+    const deltaX = (event.clientX - dragState.startX) * factor;
+    const deltaY = (event.clientY - dragState.startY) * factor;
+
+    setBloggerProfile((current) => ({
+      ...current,
+      profileImage: {
+        ...current.profileImage,
+        crop: {
+          ...current.profileImage.crop,
+          x: clampPercent(dragState.startCropX - deltaX),
+          y: clampPercent(dragState.startCropY - deltaY),
+        },
+      },
+    }));
+  }
+
+  function onBloggerImagePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (bloggerDragStateRef.current?.pointerId === event.pointerId) {
+      bloggerDragStateRef.current = null;
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
   function updateVisibility(field: keyof ProfileData, visibility: Visibility) {
     setProfile((current) => ({
       ...current,
@@ -506,6 +641,13 @@ function ProfilPageInner() {
             onClick={() => { setActiveTab("sprecher"); setMessage(""); }}
           >
             Sprecherprofil
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 ${activeTab === "blogger" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            onClick={() => { setActiveTab("blogger"); setMessage(""); }}
+          >
+            Bloggerprofil
           </button>
           <button
             type="button"
@@ -862,6 +1004,187 @@ function ProfilPageInner() {
         </>
         )}
 
+        {activeTab === "blogger" && (
+        <>
+        <h2 className="text-lg mt-0">Bloggerprofil</h2>
+        <p className="text-arena-muted text-[0.95rem]">
+          Fülle dein Profil als Buchblogger aus. Öffentlich sichtbare Felder werden auf deiner Bloggerseite angezeigt.
+        </p>
+
+        <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
+          <button
+            type="button"
+            className="border-0 bg-transparent p-0 m-0 cursor-pointer"
+            onClick={() => setIsBloggerImageOverlayOpen(true)}
+          >
+            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border" style={bloggerImagePreviewStyle}>
+              {!bloggerProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            </div>
+          </button>
+        </div>
+
+        <FieldWithVisibility
+          label="Name"
+          value={bloggerProfile.name.value}
+          visibility={bloggerProfile.name.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, name: { ...c.name, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, name: { ...c.name, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Motto"
+          value={bloggerProfile.motto.value}
+          visibility={bloggerProfile.motto.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, motto: { ...c.motto, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, motto: { ...c.motto, visibility } }))
+          }
+        />
+
+        <div className="grid grid-cols-[2fr_1fr] gap-3 max-[780px]:grid-cols-1">
+          <div className="grid gap-1">
+            <GenrePicker
+              label="Genres"
+              value={bloggerProfile.genres}
+              onChange={(value) => setBloggerProfile((c) => ({ ...c, genres: value }))}
+            />
+          </div>
+          <div />
+        </div>
+
+        <FieldWithVisibility
+          label="Lieblingsbuch"
+          value={bloggerProfile.lieblingsbuch.value}
+          visibility={bloggerProfile.lieblingsbuch.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, lieblingsbuch: { ...c.lieblingsbuch, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, lieblingsbuch: { ...c.lieblingsbuch, visibility } }))
+          }
+        />
+
+        <div className="grid grid-cols-[2fr_1fr] gap-3 max-[780px]:grid-cols-1">
+          <label className="grid gap-1 text-[0.95rem]">
+            Beschreibung
+            <textarea
+              className="input-base"
+              rows={4}
+              value={bloggerProfile.beschreibung.value}
+              onChange={(e) =>
+                setBloggerProfile((c) => ({ ...c, beschreibung: { ...c.beschreibung, value: e.target.value } }))
+              }
+              maxLength={2000}
+              placeholder="Erzähle etwas über dich und deinen Blog …"
+            />
+          </label>
+          <div>
+            <span className="block text-xs mb-1">Sichtbarkeit</span>
+            <VisibilityToggle
+              value={bloggerProfile.beschreibung.visibility}
+              onChange={(visibility) =>
+                setBloggerProfile((c) => ({ ...c, beschreibung: { ...c.beschreibung, visibility } }))
+              }
+            />
+          </div>
+        </div>
+
+        <FieldWithVisibility
+          label="Social Media: Instagram"
+          value={bloggerProfile.socialInstagram.value}
+          visibility={bloggerProfile.socialInstagram.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Social Media: Facebook"
+          value={bloggerProfile.socialFacebook.value}
+          visibility={bloggerProfile.socialFacebook.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Social Media: LinkedIn"
+          value={bloggerProfile.socialLinkedin.value}
+          visibility={bloggerProfile.socialLinkedin.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Social Media: TikTok"
+          value={bloggerProfile.socialTiktok.value}
+          visibility={bloggerProfile.socialTiktok.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialTiktok: { ...c.socialTiktok, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialTiktok: { ...c.socialTiktok, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Social Media: YouTube"
+          value={bloggerProfile.socialYoutube.value}
+          visibility={bloggerProfile.socialYoutube.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialYoutube: { ...c.socialYoutube, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialYoutube: { ...c.socialYoutube, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Social Media: Pinterest"
+          value={bloggerProfile.socialPinterest.value}
+          visibility={bloggerProfile.socialPinterest.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialPinterest: { ...c.socialPinterest, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialPinterest: { ...c.socialPinterest, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Social Media: Reddit"
+          value={bloggerProfile.socialReddit.value}
+          visibility={bloggerProfile.socialReddit.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, visibility } }))
+          }
+        />
+
+        <button type="button" className="btn" onClick={saveBloggerProfile} disabled={isSavingBlogger}>
+          {isSavingBlogger ? "Speichern ..." : "Bloggerprofil speichern"}
+        </button>
+        </>
+        )}
+
         {activeTab === "buecher" && (
           <>
           <h2 className="text-lg mt-0">Meine Bücher</h2>
@@ -1073,6 +1396,87 @@ function ProfilPageInner() {
               type="button"
               className="btn"
               onClick={() => setIsSpeakerImageOverlayOpen(false)}
+            >
+              Fertig
+            </button>
+          </section>
+        </div>
+      )}
+
+      {isBloggerImageOverlayOpen && (
+        <div className="overlay-backdrop" onClick={() => setIsBloggerImageOverlayOpen(false)}>
+          <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
+            <h2>Blogger-Bildeinstellungen</h2>
+
+            <label>
+              Datei auswählen
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) => {
+                  const selectedFile = event.target.files?.[0];
+                  if (selectedFile) {
+                    void uploadBloggerImage(selectedFile);
+                  }
+                  event.currentTarget.value = "";
+                }}
+              />
+              {isUploadingBloggerImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
+            </label>
+
+            <div>
+              <span className="block text-xs mb-1">Sichtbarkeit</span>
+              <VisibilityToggle
+                value={bloggerProfile.profileImage.visibility}
+                onChange={(visibility) =>
+                  setBloggerProfile((current) => ({
+                    ...current,
+                    profileImage: { ...current.profileImage, visibility },
+                  }))
+                }
+              />
+            </div>
+
+            <div
+              className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab"
+              style={bloggerImagePreviewStyle}
+              onPointerDown={onBloggerImagePointerDown}
+              onPointerMove={onBloggerImagePointerMove}
+              onPointerUp={onBloggerImagePointerUp}
+              onPointerCancel={onBloggerImagePointerUp}
+            >
+              {!bloggerProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            </div>
+
+            <div className="grid gap-2.5">
+              <label>
+                Zoom
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={bloggerProfile.profileImage.crop.zoom}
+                  onChange={(event) =>
+                    setBloggerProfile((current) => ({
+                      ...current,
+                      profileImage: {
+                        ...current.profileImage,
+                        crop: {
+                          ...current.profileImage.crop,
+                          zoom: Number(event.target.value),
+                        },
+                      },
+                    }))
+                  }
+                />
+              </label>
+            </div>
+
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setIsBloggerImageOverlayOpen(false)}
             >
               Fertig
             </button>

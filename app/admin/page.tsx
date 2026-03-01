@@ -15,6 +15,7 @@ type UserListEntry = {
   status?: string;
   hasProfile?: boolean;
   hasSpeakerProfile?: boolean;
+  hasBloggerProfile?: boolean;
   bookCount?: number;
   createdAt?: string | null;
   lastOnline?: string | null;
@@ -305,6 +306,17 @@ export default function AdminPage() {
                             🎙️ Sprecher {user.hasSpeakerProfile ? "✓" : "✗"}
                           </Link>
                           <Link
+                            href={`/profil?user=${encodeURIComponent(user.username)}&tab=blogger`}
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                              user.hasBloggerProfile
+                                ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            }`}
+                            title={user.hasBloggerProfile ? "Bloggerprofil ausgefüllt" : "Bloggerprofil leer"}
+                          >
+                            📝 Blogger {user.hasBloggerProfile ? "✓" : "✗"}
+                          </Link>
+                          <Link
                             href={`/profil?user=${encodeURIComponent(user.username)}&tab=buecher`}
                             className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
                               (user.bookCount ?? 0) > 0
@@ -418,6 +430,16 @@ export default function AdminPage() {
                         }`}
                       >
                         🎙️ Sprecher {user.hasSpeakerProfile ? "✓" : "✗"}
+                      </Link>
+                      <Link
+                        href={`/profil?user=${encodeURIComponent(user.username)}&tab=blogger`}
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                          user.hasBloggerProfile
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        📝 Blogger {user.hasBloggerProfile ? "✓" : "✗"}
                       </Link>
                       <Link
                         href={`/profil?user=${encodeURIComponent(user.username)}&tab=buecher`}

@@ -114,6 +114,26 @@ export function createDefaultProfile(): ProfileData {
   };
 }
 
+export type BloggerProfileData = {
+  profileImage: {
+    value: string;
+    visibility: Visibility;
+    crop: ProfileImageCrop;
+  };
+  name: ProfileField;
+  motto: ProfileField;
+  beschreibung: ProfileField;
+  lieblingsbuch: ProfileField;
+  genres: string; // kommasepariert
+  socialInstagram: ProfileField;
+  socialFacebook: ProfileField;
+  socialLinkedin: ProfileField;
+  socialTiktok: ProfileField;
+  socialYoutube: ProfileField;
+  socialPinterest: ProfileField;
+  socialReddit: ProfileField;
+};
+
 export function createDefaultSpeakerProfile(): SpeakerProfileData {
   return {
     profileImage: {
@@ -127,5 +147,27 @@ export function createDefaultSpeakerProfile(): SpeakerProfileData {
     webseite: { value: "", visibility: "internal" },
     infovideo: { value: "", visibility: "internal" },
     sprechproben: [],
+  };
+}
+
+export function createDefaultBloggerProfile(): BloggerProfileData {
+  return {
+    profileImage: {
+      value: "",
+      visibility: "hidden",
+      crop: { x: 50, y: 50, zoom: 1 },
+    },
+    name: { value: "", visibility: "internal" },
+    motto: { value: "", visibility: "internal" },
+    beschreibung: { value: "", visibility: "internal" },
+    lieblingsbuch: { value: "", visibility: "internal" },
+    genres: "",
+    socialInstagram: { value: "", visibility: "hidden" },
+    socialFacebook: { value: "", visibility: "hidden" },
+    socialLinkedin: { value: "", visibility: "hidden" },
+    socialTiktok: { value: "", visibility: "hidden" },
+    socialYoutube: { value: "", visibility: "hidden" },
+    socialPinterest: { value: "", visibility: "hidden" },
+    socialReddit: { value: "", visibility: "hidden" },
   };
 }
