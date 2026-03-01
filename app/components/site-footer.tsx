@@ -145,7 +145,13 @@ export default function SiteFooter() {
                   </>
                 )}
                 {!account && (
-                  <div className="px-4 py-1.5 text-xs text-gray-400">Nicht eingeloggt</div>
+                  <>
+                    <div className="my-1 border-t border-gray-100" />
+                    <Link href="/auth" className="block px-4 py-2 text-sm font-semibold text-arena-accent hover:bg-gray-50" onClick={() => setMenuOpen(false)}>
+                      Jetzt kostenlos registrieren
+                    </Link>
+                    <div className="px-4 pb-1.5 text-xs text-gray-400">oder <Link href="/auth" className="underline hover:text-arena-accent" onClick={() => setMenuOpen(false)}>einloggen</Link></div>
+                  </>
                 )}
               </div>
             )}
@@ -160,7 +166,9 @@ export default function SiteFooter() {
               <button type="button" className="btn btn-sm" onClick={onLogout}>Ausloggen</button>
             </>
           ) : (
-            <span>Nicht eingeloggt</span>
+            <Link href="/auth" className="btn bg-arena-accent text-white hover:opacity-90 no-underline px-4 py-1.5 rounded-lg text-sm font-semibold">
+              Kostenlos registrieren
+            </Link>
           )}
         </div>
       </div>

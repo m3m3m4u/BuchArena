@@ -33,7 +33,7 @@ export default function BuecherPage() {
   );
 }
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 function BuecherContent() {
   const [books, setBooks] = useState<DiscoverBook[]>([]);
