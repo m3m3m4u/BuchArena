@@ -32,24 +32,25 @@ export async function GET() {
 
     /* Build lookup maps for all active users */
     const profileByUser = new Map<string, string>();
-    const nameByUser = new Map<string, string>();
     const lastOnlineByUser = new Map<string, string | null>();
-    const isSpeaker = new Set<string>();
 
     for (const user of users) {
       const profileImageUrl = user.profile?.profileImage?.value ?? "";
       profileByUser.set(user.username, profileImageUrl);
-      const name = (user.profile?.name?.visibility === "public" && user.profile?.name?.value) ? user.profile.name.value : "";
-      nameByUser.set(user.username, name);
       lastOnlineByUser.set(user.username, user.lastOnline ? new Date(user.lastOnline).toISOString() : null);
-      if (user.speakerProfile) isSpeaker.add(user.username);
     }
 
-    /* Start with an entry for every active user that has a public display name */
+    /* Start with an entry for every active user that has a name filled in */
     const grouped = new Map<string, AuthorDiscoverItem>();
     for (const user of users) {
-      const displayName = nameByUser.get(user.username) || "";
-      if (!displayName) continue; // skip users without a public author name
+      // Solange der Name ausgefüllt ist, gilt das Profil als ausgefüllt
+      if (!user.profile?.name?.value) continue;
+
+      const displayName =
+        user.profile.name.visibility === "public" && user.profile.name.value
+          ? user.profile.name.value
+          : user.username;
+
       grouped.set(user.username, {
         username: user.username,
         displayName,
@@ -71,10 +72,7 @@ export async function GET() {
       });
     }
 
-    /* Remove pure speakers (speakerProfile present but no books) */
-    const authors = [...grouped.values()].filter(
-      (a) => a.books.length > 0 || !isSpeaker.has(a.username)
-    );
+    const authors = [...grouped.values()];
 
     return NextResponse.json({ authors });
   } catch {
