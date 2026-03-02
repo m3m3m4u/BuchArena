@@ -998,6 +998,85 @@ function ProfilPageInner() {
           </label>
         </div>
 
+        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Social Media</h3>
+        <FieldWithVisibility
+          label="Social Media: Instagram"
+          value={speakerProfile.socialInstagram?.value ?? ""}
+          visibility={speakerProfile.socialInstagram?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, visibility } }))
+          }
+        />
+        <FieldWithVisibility
+          label="Social Media: Facebook"
+          value={speakerProfile.socialFacebook?.value ?? ""}
+          visibility={speakerProfile.socialFacebook?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, visibility } }))
+          }
+        />
+        <FieldWithVisibility
+          label="Social Media: LinkedIn"
+          value={speakerProfile.socialLinkedin?.value ?? ""}
+          visibility={speakerProfile.socialLinkedin?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, visibility } }))
+          }
+        />
+        <FieldWithVisibility
+          label="Social Media: TikTok"
+          value={speakerProfile.socialTiktok?.value ?? ""}
+          visibility={speakerProfile.socialTiktok?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialTiktok: { ...c.socialTiktok, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialTiktok: { ...c.socialTiktok, visibility } }))
+          }
+        />
+        <FieldWithVisibility
+          label="Social Media: YouTube"
+          value={speakerProfile.socialYoutube?.value ?? ""}
+          visibility={speakerProfile.socialYoutube?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialYoutube: { ...c.socialYoutube, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialYoutube: { ...c.socialYoutube, visibility } }))
+          }
+        />
+        <FieldWithVisibility
+          label="Social Media: Pinterest"
+          value={speakerProfile.socialPinterest?.value ?? ""}
+          visibility={speakerProfile.socialPinterest?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialPinterest: { ...c.socialPinterest, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialPinterest: { ...c.socialPinterest, visibility } }))
+          }
+        />
+        <FieldWithVisibility
+          label="Social Media: Reddit"
+          value={speakerProfile.socialReddit?.value ?? ""}
+          visibility={speakerProfile.socialReddit?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, visibility } }))
+          }
+        />
+
         <button type="button" className="btn" onClick={saveSpeakerProfile} disabled={isSavingSpeaker}>
           {isSavingSpeaker ? "Speichern ..." : "Sprecherprofil speichern"}
         </button>

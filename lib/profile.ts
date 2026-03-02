@@ -50,6 +50,13 @@ export type SpeakerProfileData = {
   webseite: ProfileField;
   infovideo: ProfileField;
   sprechproben: Sprechprobe[];
+  socialInstagram: ProfileField;
+  socialFacebook: ProfileField;
+  socialLinkedin: ProfileField;
+  socialTiktok: ProfileField;
+  socialYoutube: ProfileField;
+  socialPinterest: ProfileField;
+  socialReddit: ProfileField;
 };
 
 export function createDefaultProfile(): ProfileData {
@@ -147,6 +154,13 @@ export function createDefaultSpeakerProfile(): SpeakerProfileData {
     webseite: { value: "", visibility: "internal" },
     infovideo: { value: "", visibility: "internal" },
     sprechproben: [],
+    socialInstagram: { value: "", visibility: "hidden" },
+    socialFacebook: { value: "", visibility: "hidden" },
+    socialLinkedin: { value: "", visibility: "hidden" },
+    socialTiktok: { value: "", visibility: "hidden" },
+    socialYoutube: { value: "", visibility: "hidden" },
+    socialPinterest: { value: "", visibility: "hidden" },
+    socialReddit: { value: "", visibility: "hidden" },
   };
 }
 

@@ -57,6 +57,13 @@ function sanitizeSpeakerProfile(
     webseite: sanitizeField(source.webseite, base.webseite, 500),
     infovideo: sanitizeField(source.infovideo, base.infovideo, 500),
     sprechproben: Array.isArray(source.sprechproben) ? source.sprechproben : [],
+    socialInstagram: sanitizeField(source.socialInstagram, base.socialInstagram, 300),
+    socialFacebook: sanitizeField(source.socialFacebook, base.socialFacebook, 300),
+    socialLinkedin: sanitizeField(source.socialLinkedin, base.socialLinkedin, 300),
+    socialTiktok: sanitizeField(source.socialTiktok, base.socialTiktok, 300),
+    socialYoutube: sanitizeField(source.socialYoutube, base.socialYoutube, 300),
+    socialPinterest: sanitizeField(source.socialPinterest, base.socialPinterest, 300),
+    socialReddit: sanitizeField(source.socialReddit, base.socialReddit, 300),
   };
 }
 
