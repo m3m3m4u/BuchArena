@@ -33,7 +33,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const { status, reviewNotes, bookTitle, author, genre, ageRange, notes } = body;
 
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (status && ["pending", "approved", "rejected"].includes(status)) {
+    if (status && ["pending", "approved", "rejected", "done"].includes(status)) {
       updateData.status = status;
       updateData.reviewedBy = admin.username;
       updateData.reviewedAt = new Date();
