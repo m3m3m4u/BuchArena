@@ -27,6 +27,13 @@ interface Mp3File {
   uploadedBy?: string;
 }
 
+/** Erzeugt eine Proxy-Download-URL statt direktem WebDAV-Zugang */
+function proxyUrl(path: string, name?: string) {
+  let url = `/api/bucharena/sprecher/download?path=${encodeURIComponent(path)}`;
+  if (name) url += `&name=${encodeURIComponent(name)}`;
+  return url;
+}
+
 interface SprecherText {
   _id: string;
   pdfFileName: string;
@@ -267,7 +274,7 @@ export default function SprecherTextePage() {
                             <MusicalNoteIcon className="w-3.5 h-3.5 text-green-600 shrink-0" />
                             <span className="flex-1 min-w-0 break-all">{mp3.fileName}</span>
                             {mp3.uploadedBy && <span className="text-gray-400">von {mp3.uploadedBy}</span>}
-                            <a href={mp3.url} download={mp3.fileName} className="text-indigo-600 p-1.5 -m-1 inline-flex" title="Herunterladen"><ArrowDownTrayIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" /></a>
+                            <a href={proxyUrl(mp3.path, mp3.fileName)} download={mp3.fileName} className="text-indigo-600 p-1.5 -m-1 inline-flex" title="Herunterladen"><ArrowDownTrayIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" /></a>
                             {isAdmin && <button onClick={() => handleDeleteMp3(text._id, idx)} className="text-red-600 bg-transparent border-none cursor-pointer p-1.5 -m-1" title="Löschen"><TrashIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" /></button>}
                           </div>
                         ))}
@@ -277,7 +284,7 @@ export default function SprecherTextePage() {
 
                   {/* Actions */}
                   <div className="flex flex-wrap gap-1 shrink-0 max-[500px]:w-full">
-                    <a href={text.pdfUrl} download={text.pdfFileName} className="btn btn-sm flex items-center gap-1" title="PDF herunterladen">
+                    <a href={proxyUrl(text.pdfPath, text.pdfFileName)} download={text.pdfFileName} className="btn btn-sm flex items-center gap-1" title="PDF herunterladen">
                       <ArrowDownTrayIcon className="w-3.5 h-3.5" />PDF
                     </a>
                     {text.status !== "erledigt" && (
