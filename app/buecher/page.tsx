@@ -122,16 +122,16 @@ function BuecherContent() {
             {pagedBooks.map((book, index) => (
               <Link
                 href={`/buch/${book.id}`}
-                className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md"
+                className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md h-full"
                 key={`${book.title}-${book.ownerUsername}-${book.createdAt}-${index}`}
               >
-                <article className="rounded-lg border border-arena-border p-3 hover:border-gray-500">
-                  <div className="grid grid-cols-[auto_1fr] items-start gap-3.5 max-[600px]:grid-cols-1">
-                    <div className="grid h-[160px] place-items-center overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-xs text-arena-muted max-[600px]:h-[200px]">
+                <article className="h-full rounded-lg border border-arena-border p-3 hover:border-gray-500">
+                  <div className="grid grid-cols-[144px_1fr] items-start gap-3.5 max-[600px]:grid-cols-1">
+                    <div className="grid w-[144px] place-items-center rounded-lg border border-arena-border bg-arena-bg text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[216px]">
                       {book.coverImageUrl ? (
-                        <img src={`${book.coverImageUrl}${book.coverImageUrl.includes('?') ? '&' : '?'}w=240`} alt={`Cover von ${book.title}`} className="h-full w-auto object-contain" loading="lazy" />
+                        <img src={`${book.coverImageUrl}${book.coverImageUrl.includes('?') ? '&' : '?'}w=240`} alt={`Cover von ${book.title}`} className="w-full h-auto rounded-lg" loading="lazy" />
                       ) : (
-                        <span className="px-6">Kein Cover</span>
+                        <span className="px-6 py-10">Kein Cover</span>
                       )}
                     </div>
                     <div className="min-w-0">
