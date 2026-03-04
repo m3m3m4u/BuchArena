@@ -126,12 +126,12 @@ function BuecherContent() {
                 key={`${book.title}-${book.ownerUsername}-${book.createdAt}-${index}`}
               >
                 <article className="rounded-lg border border-arena-border p-3 hover:border-gray-500">
-                  <div className="grid grid-cols-[120px_1fr] items-start gap-3.5 max-[600px]:grid-cols-1">
-                    <div className="grid h-auto w-[120px] place-items-center overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[180px]" style={{ aspectRatio: "3/4" }}>
+                  <div className="grid grid-cols-[auto_1fr] items-start gap-3.5 max-[600px]:grid-cols-1">
+                    <div className="grid h-[160px] place-items-center overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-xs text-arena-muted max-[600px]:h-[200px]">
                       {book.coverImageUrl ? (
-                        <img src={`${book.coverImageUrl}${book.coverImageUrl.includes('?') ? '&' : '?'}w=240`} alt={`Cover von ${book.title}`} className="h-full w-full object-contain" loading="lazy" />
+                        <img src={`${book.coverImageUrl}${book.coverImageUrl.includes('?') ? '&' : '?'}w=240`} alt={`Cover von ${book.title}`} className="h-full w-auto object-contain" loading="lazy" />
                       ) : (
-                        <span>Kein Cover</span>
+                        <span className="px-6">Kein Cover</span>
                       )}
                     </div>
                     <div className="min-w-0">
