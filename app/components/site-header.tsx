@@ -59,7 +59,7 @@ export default function SiteHeader() {
       {loggedIn && <Link href="/diskussionen" className="btn w-full sm:w-auto">Treffpunkt</Link>}
       {loggedIn && (
         <Link href="/nachrichten" className="btn w-full sm:w-auto relative">
-          Nachrichten
+          Chat
           {unreadCount > 0 && (
             <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-red-600 text-white text-[10px] font-bold px-1 leading-none">
               {unreadCount > 99 ? "99+" : unreadCount}

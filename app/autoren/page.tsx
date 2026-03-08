@@ -160,30 +160,21 @@ export default function AutorenPage() {
                       </div>
                       <div className="min-w-0">
                         <h2 className="m-0 text-[1.05rem] truncate">{author.displayName}</h2>
-                        {author.books.length > 0 ? (
-                          <>
-                            <p className="mt-0.5 text-sm font-semibold">
-                              {hasActiveFilter
-                                ? `${author.books.length} passende${author.books.length === 1 ? "s Buch" : " Bücher"}`
-                                : `${author.books.length} ${author.books.length === 1 ? "Buch" : "Bücher"}`}
-                            </p>
-                            <ul className="m-0 mt-1.5 grid gap-1 p-0" style={{ listStyle: "none" }}>
-                              {author.books.slice(0, 2).map((book) => (
-                                <li key={`${author.username}-${book.title}`} className="text-sm leading-snug truncate">
-                                  {book.title}
-                                  <span className="block text-xs text-gray-500 truncate">{book.genre}{(book.ageFrom > 0 || book.ageTo > 0) ? ` · ${book.ageFrom}–${book.ageTo} J.` : ""}</span>
-                                </li>
-                              ))}
-                              {author.books.length > 2 && (
-                                <li className="text-xs text-arena-muted mt-0.5">
-                                  + {author.books.length - 2} weitere{author.books.length - 2 === 1 ? "s Buch" : " Bücher"} →
-                                </li>
-                              )}
-                            </ul>
-                          </>
-                        ) : (
-                          <p className="mt-0.5 text-sm text-arena-muted">Noch keine Bücher</p>
-                        )}
+                        <p className="mt-0.5 mb-0 text-sm">
+                          {author.books.length === 0
+                            ? "Noch keine Bücher"
+                            : hasActiveFilter
+                              ? `${author.books.length} passende${author.books.length === 1 ? "s Buch" : " Bücher"}`
+                              : `${author.books.length} ${author.books.length === 1 ? "Buch" : "Bücher"}`}
+                        </p>
+                        {(() => {
+                          const allGenres = new Set(
+                            author.books.flatMap((b) => (b.genre ?? "").split(",").map((g) => g.trim()).filter(Boolean))
+                          );
+                          return allGenres.size > 0 ? (
+                            <p className="mt-1 mb-0 text-xs text-arena-muted truncate">{[...allGenres].join(", ")}</p>
+                          ) : null;
+                        })()}
                       </div>
                     </div>
                   </article>
