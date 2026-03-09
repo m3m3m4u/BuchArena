@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUsersCollection, getBooksCollection, getSupportCollection } from "@/lib/mongodb";
 import type { UserStatus } from "@/lib/mongodb";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 
 type StatusPayload = {
   targetUsername?: string;
@@ -10,7 +10,7 @@ type StatusPayload = {
 
 export async function POST(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json(
         { message: "Kein Zugriff." },
@@ -45,7 +45,14 @@ export async function POST(request: Request) {
 
     if (target.role === "SUPERADMIN") {
       return NextResponse.json(
-        { message: "Das Admin-Konto kann nicht geändert werden." },
+        { message: "Das SuperAdmin-Konto kann nicht geändert werden." },
+        { status: 403 }
+      );
+    }
+
+    if (target.role === "ADMIN" && admin.role !== "SUPERADMIN") {
+      return NextResponse.json(
+        { message: "Admin-Konten können nur vom SuperAdmin geändert werden." },
         { status: 403 }
       );
     }

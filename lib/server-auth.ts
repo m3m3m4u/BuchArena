@@ -107,3 +107,12 @@ export async function requireSuperAdmin(): Promise<ServerAccount | null> {
   if (!account || account.role !== "SUPERADMIN") return null;
   return account;
 }
+
+/**
+ * Prüft ob der aktuelle User mindestens ADMIN ist (ADMIN oder SUPERADMIN).
+ */
+export async function requireAdmin(): Promise<ServerAccount | null> {
+  const account = await getServerAccount();
+  if (!account || (account.role !== "ADMIN" && account.role !== "SUPERADMIN")) return null;
+  return account;
+}

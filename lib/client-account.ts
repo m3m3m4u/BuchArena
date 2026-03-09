@@ -1,4 +1,4 @@
-export type AccountRole = "USER" | "SUPERADMIN";
+export type AccountRole = "USER" | "ADMIN" | "SUPERADMIN";
 
 export type LoggedInAccount = {
   username: string;

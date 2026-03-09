@@ -7,7 +7,7 @@ import {
   getSupportCollection,
   isDuplicateKeyError,
 } from "@/lib/mongodb";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 
 type RenamePayload = {
   oldUsername?: string;
@@ -20,7 +20,7 @@ type RenamePayload = {
  */
 export async function POST(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
     }
@@ -73,7 +73,14 @@ export async function POST(request: Request) {
 
     if (target.role === "SUPERADMIN") {
       return NextResponse.json(
-        { message: "Der Admin-Benutzername kann nicht geändert werden." },
+        { message: "Der SuperAdmin-Benutzername kann nicht geändert werden." },
+        { status: 403 },
+      );
+    }
+
+    if (target.role === "ADMIN" && admin.role !== "SUPERADMIN") {
+      return NextResponse.json(
+        { message: "Admin-Benutzernamen können nur vom SuperAdmin geändert werden." },
         { status: 403 },
       );
     }

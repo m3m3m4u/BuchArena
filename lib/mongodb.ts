@@ -6,7 +6,7 @@ import type { SupportPost } from "@/lib/support";
 import type { DiscussionDocument } from "@/lib/discussions";
 import type { MessageDocument } from "@/lib/messages";
 
-export type UserRole = "USER" | "SUPERADMIN";
+export type UserRole = "USER" | "ADMIN" | "SUPERADMIN";
 
 export type UserStatus = "active" | "deactivated";
 

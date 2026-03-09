@@ -74,10 +74,10 @@ export default function AdminPage() {
         return;
       }
 
-      if (account.role !== "SUPERADMIN") {
+      if (account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
         setIsLoading(false);
         setUsers([]);
-        setMessage("Nur der SuperAdmin darf diese Seite sehen.");
+        setMessage("Nur Admins dürfen diese Seite sehen.");
         return;
       }
 
@@ -219,6 +219,39 @@ export default function AdminPage() {
     }
   }
 
+  /* ── Admin-Rolle umschalten (nur SUPERADMIN) ── */
+  async function handleToggleRole(targetUsername: string, currentRole: string) {
+    if (!account || account.role !== "SUPERADMIN") return;
+    const newRole = currentRole === "ADMIN" ? "USER" : "ADMIN";
+    const label = newRole === "ADMIN" ? "zum Admin machen" : "Admin-Rechte entziehen";
+    if (!confirm(`„${targetUsername}" wirklich ${label}?`)) return;
+
+    setBusyUser(targetUsername);
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/admin/users/role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUsername, newRole }),
+      });
+
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Rollenzuweisung fehlgeschlagen.");
+
+      setMessage(data.message ?? "Erfolgreich.");
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.username === targetUsername ? { ...u, role: newRole } : u,
+        ),
+      );
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Rollenzuweisung fehlgeschlagen.");
+    } finally {
+      setBusyUser(null);
+    }
+  }
+
   if (!account) {
     return (
       <main className="centered-main">
@@ -240,8 +273,8 @@ export default function AdminPage() {
 
         {isLoading ? (
           <p>Lade Benutzer ...</p>
-        ) : account.role !== "SUPERADMIN" ? (
-          <p className="text-red-700">Nur der SuperAdmin darf diese Seite sehen.</p>
+        ) : (account.role !== "SUPERADMIN" && account.role !== "ADMIN") ? (
+          <p className="text-red-700">Nur Admins dürfen diese Seite sehen.</p>
         ) : (
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             {/* Desktop-Tabelle */}
@@ -260,6 +293,7 @@ export default function AdminPage() {
                 {users.map((user) => {
                   const isDeactivated = user.status === "deactivated";
                   const isSuperAdmin = user.role === "SUPERADMIN";
+                  const isAdmin = user.role === "ADMIN";
                   const isBusy = busyUser === user.username;
 
                   return (
@@ -270,6 +304,8 @@ export default function AdminPage() {
                       </td>
                       <td className="p-2 border-b border-arena-border-light whitespace-nowrap">
                         {isSuperAdmin
+                          ? "SuperAdmin"
+                          : isAdmin
                           ? "Admin"
                           : isDeactivated
                           ? "Deaktiviert"
@@ -331,7 +367,18 @@ export default function AdminPage() {
                       </td>
                       <td className="p-2 border-b border-arena-border-light">
                         <div className="flex gap-1 flex-wrap">
-                          {!isSuperAdmin && (
+                          {/* SuperAdmin: Rolle umschalten */}
+                          {!isSuperAdmin && account.role === "SUPERADMIN" && (
+                            <button
+                              type="button"
+                              className={`btn btn-sm ${isAdmin ? "btn-danger" : ""}`}
+                              disabled={isBusy}
+                              onClick={() => handleToggleRole(user.username, user.role)}
+                            >
+                              {isAdmin ? "Admin ✕" : "→ Admin"}
+                            </button>
+                          )}
+                          {!isSuperAdmin && !(isAdmin && account.role !== "SUPERADMIN") && (
                             <>
                               <button
                                 type="button"
@@ -391,6 +438,7 @@ export default function AdminPage() {
               {users.map((user) => {
                 const isDeactivated = user.status === "deactivated";
                 const isSuperAdmin = user.role === "SUPERADMIN";
+                const isAdmin = user.role === "ADMIN";
                 const isBusy = busyUser === user.username;
 
                 return (
@@ -398,11 +446,12 @@ export default function AdminPage() {
                     <div className="flex items-center justify-between gap-2 mb-1.5">
                       <strong className="text-[0.95rem]">{user.username}</strong>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        isSuperAdmin ? "bg-blue-100 text-blue-800"
+                        isSuperAdmin ? "bg-purple-100 text-purple-800"
+                        : isAdmin ? "bg-blue-100 text-blue-800"
                         : isDeactivated ? "bg-red-100 text-red-700"
                         : "bg-green-100 text-green-800"
                       }`}>
-                        {isSuperAdmin ? "Admin" : isDeactivated ? "Deaktiviert" : "Aktiv"}
+                        {isSuperAdmin ? "SuperAdmin" : isAdmin ? "Admin" : isDeactivated ? "Deaktiviert" : "Aktiv"}
                       </span>
                     </div>
                     <p className="text-sm text-arena-muted mb-1 break-all">{user.email}</p>
@@ -453,7 +502,18 @@ export default function AdminPage() {
                       </Link>
                     </div>
                     <div className="flex gap-1.5 flex-wrap">
-                      {!isSuperAdmin && (
+                      {/* SuperAdmin: Rolle umschalten */}
+                      {!isSuperAdmin && account.role === "SUPERADMIN" && (
+                        <button
+                          type="button"
+                          className={`btn btn-sm ${isAdmin ? "btn-danger" : ""}`}
+                          disabled={isBusy}
+                          onClick={() => handleToggleRole(user.username, user.role)}
+                        >
+                          {isAdmin ? "Admin ✕" : "→ Admin"}
+                        </button>
+                      )}
+                      {!isSuperAdmin && !(isAdmin && account.role !== "SUPERADMIN") && (
                         <>
                           <button
                             type="button"

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUsersCollection, getBooksCollection } from "@/lib/mongodb";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 
 function hasFilledProfile(profile: Record<string, unknown> | undefined | null): boolean {
   if (!profile) return false;
@@ -22,7 +22,7 @@ function hasFilledBloggerProfile(bp: Record<string, unknown> | undefined | null)
 
 export async function POST() {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json(
         { message: "Kein Zugriff auf die User-Übersicht." },

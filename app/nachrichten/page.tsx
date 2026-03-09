@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { getStoredAccount } from "@/lib/client-account";
+import { getStoredAccount, type AccountRole } from "@/lib/client-account";
 
 /* ── Typen ── */
 type ConversationItem = {
@@ -64,6 +64,7 @@ function formatDateSeparator(dateString: string): string {
 /* ── Hauptseite ── */
 export default function NachrichtenPage() {
   const [username, setUsername] = useState("");
+  const [accountRole, setAccountRole] = useState<AccountRole>("USER");
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -93,12 +94,22 @@ export default function NachrichtenPage() {
   // Mobile: Chat-Ansicht anzeigen
   const [mobileShowChat, setMobileShowChat] = useState(false);
 
+  // Broadcast (Admin)
+  const [showBroadcast, setShowBroadcast] = useState(false);
+  const [broadcastSubject, setBroadcastSubject] = useState("");
+  const [broadcastBody, setBroadcastBody] = useState("");
+  const [broadcastSending, setBroadcastSending] = useState(false);
+  const [broadcastMessage, setBroadcastMessage] = useState("");
+
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const account = getStoredAccount();
-    if (account) setUsername(account.username);
+    if (account) {
+      setUsername(account.username);
+      setAccountRole(account.role);
+    }
   }, []);
 
   /* ── Konversationen laden ── */
@@ -270,6 +281,42 @@ export default function NachrichtenPage() {
     }
   }
 
+  /* ── Broadcast: Nachricht an alle senden (nur Admin) ── */
+  async function handleBroadcast() {
+    if (!broadcastSubject.trim() || !broadcastBody.trim()) return;
+    setBroadcastSending(true);
+    setBroadcastMessage("");
+
+    try {
+      const res = await fetch("/api/messages/broadcast", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: broadcastSubject.trim(),
+          body: broadcastBody.trim(),
+        }),
+      });
+
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Broadcast fehlgeschlagen.");
+
+      setBroadcastMessage(data.message ?? "Gesendet.");
+      setBroadcastSubject("");
+      setBroadcastBody("");
+      setTimeout(() => {
+        setShowBroadcast(false);
+        setBroadcastMessage("");
+      }, 2000);
+      void loadConversations();
+    } catch (err) {
+      setBroadcastMessage(err instanceof Error ? err.message : "Broadcast fehlgeschlagen.");
+    } finally {
+      setBroadcastSending(false);
+    }
+  }
+
+  const isAdmin = accountRole === "ADMIN" || accountRole === "SUPERADMIN";
+
   /* ── Kein Login ── */
   if (!username) {
     return (
@@ -360,16 +407,31 @@ export default function NachrichtenPage() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-arena-border bg-gray-50">
               <h2 className="text-base m-0 font-semibold">Chats</h2>
-              <button
-                className="btn btn-primary btn-sm !py-1 !px-2.5 text-[0.85rem]"
-                onClick={() => {
-                  setShowNewChat(true);
-                  setNewRecipient("");
-                  setNewSubject("");
-                }}
-              >
-                + Neu
-              </button>
+              <div className="flex gap-1.5">
+                {isAdmin && (
+                  <button
+                    className="btn btn-sm !py-1 !px-2.5 text-[0.85rem]"
+                    onClick={() => {
+                      setShowBroadcast(true);
+                      setBroadcastSubject("");
+                      setBroadcastBody("");
+                      setBroadcastMessage("");
+                    }}
+                  >
+                    📢 An alle
+                  </button>
+                )}
+                <button
+                  className="btn btn-primary btn-sm !py-1 !px-2.5 text-[0.85rem]"
+                  onClick={() => {
+                    setShowNewChat(true);
+                    setNewRecipient("");
+                    setNewSubject("");
+                  }}
+                >
+                  + Neu
+                </button>
+              </div>
             </div>
 
             {/* Konversationsliste */}
@@ -617,6 +679,61 @@ export default function NachrichtenPage() {
                   Chat starten
                 </button>
                 <button className="btn" onClick={() => setShowNewChat(false)}>
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══ Broadcast Modal (Admin) ══ */}
+        {showBroadcast && (
+          <div className="overlay-backdrop" onClick={() => setShowBroadcast(false)}>
+            <div
+              className="card"
+              style={{ maxWidth: 450 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-lg m-0 mb-3">📢 Nachricht an alle</h2>
+              <p className="text-sm text-arena-muted mb-3">
+                Die Nachricht wird an alle aktiven Benutzer gesendet. Antworten kommen direkt an dich zurück.
+              </p>
+              <label className="block">
+                <span className="text-sm font-semibold">Betreff</span>
+                <input
+                  className="input-base w-full mt-1"
+                  value={broadcastSubject}
+                  onChange={(e) => setBroadcastSubject(e.target.value)}
+                  placeholder="z. B. Wichtige Ankündigung"
+                  maxLength={200}
+                  autoFocus
+                />
+              </label>
+              <label className="block mt-2">
+                <span className="text-sm font-semibold">Nachricht</span>
+                <textarea
+                  className="input-base w-full mt-1 resize-none"
+                  rows={5}
+                  value={broadcastBody}
+                  onChange={(e) => setBroadcastBody(e.target.value)}
+                  placeholder="Nachrichtentext …"
+                  maxLength={5000}
+                />
+              </label>
+              {broadcastMessage && (
+                <p className={`text-sm mt-2 ${broadcastMessage.includes("fehlgeschlagen") ? "text-red-600" : "text-green-700"}`}>
+                  {broadcastMessage}
+                </p>
+              )}
+              <div className="flex gap-2 mt-4">
+                <button
+                  className="btn btn-primary"
+                  disabled={!broadcastSubject.trim() || !broadcastBody.trim() || broadcastSending}
+                  onClick={() => void handleBroadcast()}
+                >
+                  {broadcastSending ? "Sende …" : "An alle senden"}
+                </button>
+                <button className="btn" onClick={() => setShowBroadcast(false)}>
                   Abbrechen
                 </button>
               </div>

@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 
 type ResetPasswordPayload = {
   targetUsername?: string;
@@ -9,11 +9,11 @@ type ResetPasswordPayload = {
 };
 
 /**
- * Setzt das Passwort eines Users zurück (nur SUPERADMIN).
+ * Setzt das Passwort eines Users zurück (ADMIN oder SUPERADMIN).
  */
 export async function POST(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
     }
@@ -52,7 +52,14 @@ export async function POST(request: Request) {
 
     if (target.role === "SUPERADMIN") {
       return NextResponse.json(
-        { message: "Das Admin-Passwort kann hier nicht geändert werden." },
+        { message: "Das SuperAdmin-Passwort kann hier nicht geändert werden." },
+        { status: 403 },
+      );
+    }
+
+    if (target.role === "ADMIN" && admin.role !== "SUPERADMIN") {
+      return NextResponse.json(
+        { message: "Admin-Passwörter können nur vom SuperAdmin geändert werden." },
         { status: 403 },
       );
     }

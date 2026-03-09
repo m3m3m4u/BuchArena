@@ -13,7 +13,7 @@ type UserRow = {
   username: string;
   email: string;
   passwordHash: string;
-  role: "USER" | "SUPERADMIN";
+  role: "USER" | "ADMIN" | "SUPERADMIN";
   status?: string;
 };
 
