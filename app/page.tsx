@@ -119,17 +119,18 @@ export default function HomePage() {
           onClick={closeVideo}
         >
           <div
-            className="relative w-[360px] max-w-[90vw]"
+            className="relative flex flex-col items-end"
+            style={{ width: "min(360px, 90vw)", height: "min(640px, 80vh)", maxWidth: "90vw" }}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={closeVideo}
-              className="absolute -top-10 right-0 text-3xl leading-none text-white hover:text-arena-yellow"
+              className="mb-2 text-3xl leading-none text-white hover:text-arena-yellow"
               aria-label="Schließen"
             >
               &times;
             </button>
-            <div className="relative w-full overflow-hidden rounded-xl" style={{ paddingBottom: "177.78%" }}>
+            <div className="relative w-full flex-1 overflow-hidden rounded-xl">
               <iframe
                 className="absolute inset-0 h-full w-full"
                 src="https://www.youtube-nocookie.com/embed/5zNHyz-dgNU?autoplay=1"
