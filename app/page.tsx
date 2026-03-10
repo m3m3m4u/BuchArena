@@ -2,11 +2,21 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
 
 export default function HomePage() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
+
+  const closeVideo = useCallback(() => setShowVideo(false), []);
+
+  useEffect(() => {
+    if (!showVideo) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeVideo(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [showVideo, closeVideo]);
 
   useEffect(() => {
     const sync = () => setLoggedIn(!!getStoredAccount());
@@ -42,6 +52,14 @@ export default function HomePage() {
               </Link>
             </div>
           )}
+
+          <button
+            onClick={() => setShowVideo(true)}
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-white/15 px-5 py-2.5 text-base font-semibold text-white backdrop-blur transition hover:bg-white/25"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-arena-yellow"><path d="M8 5v14l11-7z"/></svg>
+            Erklärvideo: Was ist die BuchArena?
+          </button>
 
           <div className="mt-10 border-t border-white/20 pt-6">
             <p className="mb-4 text-sm opacity-80">
@@ -94,6 +112,35 @@ export default function HomePage() {
 
 
 
+      {/* Video-Overlay */}
+      {showVideo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={closeVideo}
+        >
+          <div
+            className="relative w-[360px] max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeVideo}
+              className="absolute -top-10 right-0 text-3xl leading-none text-white hover:text-arena-yellow"
+              aria-label="Schließen"
+            >
+              &times;
+            </button>
+            <div className="relative w-full overflow-hidden rounded-xl" style={{ paddingBottom: "177.78%" }}>
+              <iframe
+                className="absolute inset-0 h-full w-full"
+                src="https://www.youtube-nocookie.com/embed/5zNHyz-dgNU?autoplay=1"
+                title="Erklärvideo: Was ist die BuchArena?"
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
