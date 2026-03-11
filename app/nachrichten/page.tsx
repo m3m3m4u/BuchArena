@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { getStoredAccount, type AccountRole } from "@/lib/client-account";
+import { getStoredAccount, clearStoredAccount, type AccountRole } from "@/lib/client-account";
 
 /* ── Typen ── */
 type ConversationItem = {
@@ -113,10 +114,17 @@ export default function NachrichtenPage() {
   }, []);
 
   /* ── Konversationen laden ── */
+  const router = useRouter();
+
   const loadConversations = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await fetch("/api/messages/list", { method: "GET" });
+      if (res.status === 401) {
+        clearStoredAccount();
+        router.push("/auth");
+        return;
+      }
       const data = (await res.json()) as { conversations?: ConversationItem[] };
       setConversations(data.conversations ?? []);
     } catch {
@@ -124,7 +132,7 @@ export default function NachrichtenPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (username) void loadConversations();
