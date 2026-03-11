@@ -213,6 +213,7 @@ h1 { margin: 0; }
     max-height: 92vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 }
 

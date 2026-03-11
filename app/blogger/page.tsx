@@ -59,7 +59,7 @@ export default function BloggerPage() {
           <div className="flex flex-wrap gap-1.5 mb-3">
             <button
               type="button"
-              className={`px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer border ${!filterGenre ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-text border-arena-border"}`}
+              className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${!filterGenre ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-text border-arena-border"}`}
               onClick={() => setFilterGenre("")}
             >
               Alle
@@ -68,7 +68,7 @@ export default function BloggerPage() {
               <button
                 key={genre}
                 type="button"
-                className={`px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer border ${filterGenre === genre ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-text border-arena-border"}`}
+                className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${filterGenre === genre ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-text border-arena-border"}`}
                 onClick={() => setFilterGenre(genre)}
               >
                 {genre}
@@ -119,13 +119,13 @@ export default function BloggerPage() {
                           {blogger.genres.slice(0, 4).map((g) => (
                             <span
                               key={g}
-                              className="inline-block rounded-full bg-arena-blue/10 text-arena-blue text-[10px] font-medium px-2 py-0.5"
+                              className="inline-block rounded-full bg-arena-blue/10 text-arena-blue text-[11px] font-medium px-2.5 py-1"
                             >
                               {g}
                             </span>
                           ))}
                           {blogger.genres.length > 4 && (
-                            <span className="text-[10px] text-arena-muted">
+                            <span className="text-[11px] text-arena-muted">
                               +{blogger.genres.length - 4}
                             </span>
                           )}

@@ -352,7 +352,7 @@ export default function NachrichtenPage() {
           {separator}
           <div className={`flex ${isMine ? "justify-end" : "justify-start"} mb-1.5 group`}>
             <div
-              className={`relative max-w-[75%] rounded-2xl px-3.5 py-2 text-[0.95rem] ${
+              className={`relative max-w-[80%] sm:max-w-[75%] rounded-2xl px-3.5 py-2 text-[0.95rem] ${
                 isMine
                   ? "bg-arena-blue text-white rounded-br-md"
                   : "bg-white border border-gray-200 text-gray-900 rounded-bl-md"
@@ -381,7 +381,7 @@ export default function NachrichtenPage() {
               </div>
               {/* Löschen bei Hover */}
               <button
-                className={`absolute top-1 ${isMine ? "-left-7" : "-right-7"} opacity-0 group-hover:opacity-100 transition-opacity text-[11px] border-none bg-transparent cursor-pointer text-arena-muted hover:text-arena-danger`}
+                className={`absolute top-1 ${isMine ? "-left-7" : "-right-7"} sm:opacity-0 sm:group-hover:opacity-100 opacity-60 transition-opacity text-[11px] border-none bg-transparent cursor-pointer text-arena-muted hover:text-arena-danger p-1.5 -m-1`}
                 onClick={() => handleDelete(msg.id)}
                 title="Löschen"
               >
@@ -397,11 +397,11 @@ export default function NachrichtenPage() {
   return (
     <main className="flex-1 flex flex-col overflow-hidden min-h-0">
       <section className="flex-1 !p-0 overflow-hidden w-full mx-auto min-h-0" style={{ maxWidth: 1100 }}>
-        <div className="grid grid-cols-[300px_1fr] max-[700px]:grid-cols-1 h-full min-h-0">
+        <div className="grid grid-cols-[300px_1fr] max-sm:grid-cols-1 h-full min-h-0">
           {/* ══ Linke Seite: Konversationsliste ══ */}
           <div
             className={`border-r border-arena-border flex flex-col ${
-              mobileShowChat ? "max-[700px]:hidden" : ""
+              mobileShowChat ? "max-sm:hidden" : ""
             }`}
           >
             {/* Header */}
@@ -503,7 +503,7 @@ export default function NachrichtenPage() {
           {/* ══ Rechte Seite: Chat-Bereich ══ */}
           <div
             className={`flex flex-col min-h-0 ${
-              !mobileShowChat ? "max-[700px]:hidden" : ""
+              !mobileShowChat ? "max-sm:hidden" : ""
             }`}
           >
             {activePartner ? (
@@ -511,7 +511,7 @@ export default function NachrichtenPage() {
                 {/* Chat-Header */}
                 <div className="flex items-center gap-3 px-4 py-3 border-b border-arena-border bg-gray-50">
                   <button
-                    className="min-[701px]:hidden btn btn-sm !p-1"
+                    className="min-[641px]:hidden btn btn-sm !p-1"
                     onClick={() => setMobileShowChat(false)}
                   >
                     ←

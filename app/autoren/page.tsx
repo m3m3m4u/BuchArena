@@ -120,7 +120,7 @@ export default function AutorenPage() {
       <section className="card">
         <h1>Autoren entdecken</h1>
 
-        <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-[900px]:grid-cols-1">
+        <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
           <label className="grid gap-1 text-[0.95rem]">
             Genre
             <select className="input-base" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}>
@@ -185,17 +185,17 @@ export default function AutorenPage() {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
-                <button className="btn-secondary text-sm px-3 py-1" disabled={page === 1} onClick={() => goTo(page - 1)}>← Zurück</button>
+                <button className="btn btn-sm text-sm" disabled={page === 1} onClick={() => goTo(page - 1)}>← Zurück</button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                   <button
                     key={p}
-                    className={`text-sm px-3 py-1 rounded ${p === page ? "btn-primary" : "btn-secondary"}`}
+                    className={`btn btn-sm text-sm ${p === page ? "btn-primary" : ""}`}
                     onClick={() => goTo(p)}
                   >
                     {p}
                   </button>
                 ))}
-                <button className="btn-secondary text-sm px-3 py-1" disabled={page === totalPages} onClick={() => goTo(page + 1)}>Weiter →</button>
+                <button className="btn btn-sm text-sm" disabled={page === totalPages} onClick={() => goTo(page + 1)}>Weiter →</button>
               </div>
             )}
           </>

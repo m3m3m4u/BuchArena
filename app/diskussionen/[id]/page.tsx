@@ -5,11 +5,17 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 
+type ReactionItem = {
+  username: string;
+  emoji: string;
+};
+
 type ReplyItem = {
   id: string;
   authorUsername: string;
   body: string;
   createdAt: string;
+  reactions: ReactionItem[];
 };
 
 type DiscussionDetail = {
@@ -21,6 +27,7 @@ type DiscussionDetail = {
   lastActivityAt: string;
   createdAt: string;
   replies: ReplyItem[];
+  reactions: ReactionItem[];
 };
 
 function formatBody(text: string) {
@@ -64,6 +71,95 @@ function timeAgo(dateString: string): string {
   return `vor ${months} Monat${months > 1 ? "en" : ""}`;
 }
 
+function ReactionBar({
+  reactions,
+  emojis,
+  username,
+  onReact,
+}: {
+  reactions: ReactionItem[];
+  emojis: string[];
+  username: string;
+  onReact: (emoji: string) => void;
+}) {
+  // Group reactions by emoji
+  const grouped = new Map<string, string[]>();
+  for (const r of reactions) {
+    const list = grouped.get(r.emoji) ?? [];
+    list.push(r.username);
+    grouped.set(r.emoji, list);
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-2.5 items-center">
+      {/* Existing reactions */}
+      {[...grouped.entries()].map(([emoji, users]) => {
+        const active = users.includes(username);
+        return (
+          <button
+            key={emoji}
+            onClick={() => onReact(emoji)}
+            title={users.join(", ")}
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm border cursor-pointer transition-colors ${
+              active
+                ? "bg-arena-blue/10 border-arena-blue text-arena-blue"
+                : "bg-gray-50 border-arena-border-light text-arena-text hover:bg-gray-100"
+            }`}
+          >
+            <span>{emoji}</span>
+            <span className="text-xs font-medium">{users.length}</span>
+          </button>
+        );
+      })}
+
+      {/* Add reaction picker */}
+      <EmojiPicker emojis={emojis} grouped={grouped} onReact={onReact} />
+    </div>
+  );
+}
+
+function EmojiPicker({
+  emojis,
+  grouped,
+  onReact,
+}: {
+  emojis: string[];
+  grouped: Map<string, string[]>;
+  onReact: (emoji: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-dashed border-arena-border-light bg-transparent cursor-pointer text-arena-muted hover:bg-gray-100 hover:text-arena-text transition-colors"
+        title="Reaktion hinzufügen"
+      >
+        +
+      </button>
+      {open && (
+        <div className="absolute bottom-full left-0 mb-1.5 flex gap-1 bg-white border border-arena-border-light rounded-lg p-1.5 shadow-lg z-10">
+          {emojis.map((emoji) => (
+            <button
+              key={emoji}
+              onClick={() => {
+                onReact(emoji);
+                setOpen(false);
+              }}
+              className={`w-9 h-9 flex items-center justify-center rounded-md cursor-pointer border-none text-lg transition-colors ${
+                grouped.has(emoji) ? "bg-arena-blue/10" : "bg-transparent hover:bg-gray-100"
+              }`}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DiskussionDetailPage() {
   const params = useParams();
   const discussionId = params.id as string;
@@ -80,6 +176,28 @@ export default function DiskussionDetailPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const EMOJIS = ["👍", "❤️", "😂", "🎉", "🤔", "👎"];
+
+  async function handleReact(emoji: string, replyId?: string) {
+    try {
+      const payload: { discussionId: string; emoji: string; replyId?: string } = {
+        discussionId,
+        emoji,
+      };
+      if (replyId) payload.replyId = replyId;
+
+      const response = await fetch("/api/discussions/react", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        await loadDiscussion();
+      }
+    } catch { /* ignore */ }
+  }
 
   useEffect(() => {
     const account = getStoredAccount();
@@ -314,6 +432,14 @@ export default function DiskussionDetailPage() {
                   </button>
                 </div>
               )}
+
+              {/* Reactions on the discussion */}
+              <ReactionBar
+                reactions={discussion.reactions}
+                emojis={EMOJIS}
+                username={username}
+                onReact={(emoji) => handleReact(emoji)}
+              />
             </article>
 
             {/* Replies */}
@@ -353,6 +479,14 @@ export default function DiskussionDetailPage() {
                           </button>
                         </div>
                       )}
+
+                      {/* Reactions on reply */}
+                      <ReactionBar
+                        reactions={reply.reactions}
+                        emojis={EMOJIS}
+                        username={username}
+                        onReact={(emoji) => handleReact(emoji, reply.id)}
+                      />
                     </article>
                   ))}
                 </div>

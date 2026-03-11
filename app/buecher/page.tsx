@@ -96,7 +96,7 @@ function BuecherContent() {
       <section className="card">
         <h1>Bücher entdecken</h1>
 
-        <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-[900px]:grid-cols-1">
+        <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
           <label className="grid gap-1 text-[0.95rem]">
             Genre
             <select className="input-base" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}>
@@ -126,8 +126,8 @@ function BuecherContent() {
                 key={`${book.title}-${book.ownerUsername}-${book.createdAt}-${index}`}
               >
                 <article className="h-full rounded-lg border border-arena-border p-3 hover:border-gray-500">
-                  <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[600px]:grid-cols-1">
-                    <div className="w-[100px] aspect-[2/3] rounded-lg border border-arena-border bg-arena-bg flex items-center justify-center p-1 text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[150px]">
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[400px]:grid-cols-1">
+                    <div className="w-[100px] aspect-[2/3] rounded-lg border border-arena-border bg-arena-bg flex items-center justify-center p-1 text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px]">
                       {book.coverImageUrl ? (
                         <img src={`${book.coverImageUrl}${book.coverImageUrl.includes('?') ? '&' : '?'}w=240`} alt={`Cover von ${book.title}`} className="max-w-full max-h-full object-contain rounded" loading="lazy" />
                       ) : (
@@ -159,17 +159,17 @@ function BuecherContent() {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
-                <button className="btn-secondary text-sm px-3 py-1" disabled={page === 1} onClick={() => goTo(page - 1)}>← Zurück</button>
+                <button className="btn btn-sm text-sm" disabled={page === 1} onClick={() => goTo(page - 1)}>← Zurück</button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                   <button
                     key={p}
-                    className={`text-sm px-3 py-1 rounded ${p === page ? "btn-primary" : "btn-secondary"}`}
+                    className={`btn btn-sm text-sm ${p === page ? "btn-primary" : ""}`}
                     onClick={() => goTo(p)}
                   >
                     {p}
                   </button>
                 ))}
-                <button className="btn-secondary text-sm px-3 py-1" disabled={page === totalPages} onClick={() => goTo(page + 1)}>Weiter →</button>
+                <button className="btn btn-sm text-sm" disabled={page === totalPages} onClick={() => goTo(page + 1)}>Weiter →</button>
               </div>
             )}
           </>

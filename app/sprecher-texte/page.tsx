@@ -326,7 +326,7 @@ export default function SprecherTextePage() {
                 {mp3UploadId === text._id && (
                   <form onSubmit={handleMp3Upload} className="mt-2.5 pt-2.5 border-t border-arena-border-light grid gap-1.5">
                     <h4 className="m-0 text-[0.9rem]">MP3(s) hochladen</h4>
-                    <div className="flex gap-1.5 flex-wrap">
+                    <div className="flex gap-1.5 max-sm:flex-col sm:flex-row flex-wrap">
                       <input type="text" value={mp3UploaderName} onChange={e => setMp3UploaderName(e.target.value)} placeholder="Dein Name (optional)" className="input-base flex-1" />
                       <input type="file" accept=".mp3" multiple onChange={e => setMp3Files(e.target.files)} className="input-base flex-1" required />
                     </div>

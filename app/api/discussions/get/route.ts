@@ -29,6 +29,7 @@ export async function POST(request: Request) {
       authorUsername: r.authorUsername,
       body: r.body,
       createdAt: r.createdAt,
+      reactions: r.reactions ?? [],
     }));
 
     return NextResponse.json({
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
         lastActivityAt: doc.lastActivityAt,
         createdAt: doc.createdAt,
         replies,
+        reactions: doc.reactions ?? [],
       },
     });
   } catch {

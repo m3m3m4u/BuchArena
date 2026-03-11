@@ -80,24 +80,24 @@ export default function ImpressumPage() {
           <p className="my-2 leading-relaxed text-[#444]">Im Rahmen der Nutzung werden folgende Daten verarbeitet:</p>
 
           <div className="my-4 overflow-x-auto">
-            <table className="w-full text-sm text-[#444] border border-arena-border rounded-lg">
+            <table className="w-full text-sm max-sm:text-xs text-[#444] border border-arena-border rounded-lg">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="text-left p-2.5 border-b border-arena-border font-semibold">Datenart</th>
-                  <th className="text-left p-2.5 border-b border-arena-border font-semibold">Zweck</th>
-                  <th className="text-left p-2.5 border-b border-arena-border font-semibold">Rechtsgrundlage</th>
+                  <th className="text-left p-2.5 max-sm:p-1.5 border-b border-arena-border font-semibold">Datenart</th>
+                  <th className="text-left p-2.5 max-sm:p-1.5 border-b border-arena-border font-semibold">Zweck</th>
+                  <th className="text-left p-2.5 max-sm:p-1.5 border-b border-arena-border font-semibold">Rechtsgrundlage</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-arena-border">
-                <tr><td className="p-2.5">Benutzername, E-Mail, Passwort (verschlüsselt)</td><td className="p-2.5">Registrierung &amp; Login</td><td className="p-2.5">Vertragserfüllung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;b DSGVO)</td></tr>
-                <tr><td className="p-2.5">Profilbild, Autorenbild, Buchcover</td><td className="p-2.5">Öffentliches Profil / Buchseite</td><td className="p-2.5">Einwilligung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a DSGVO)</td></tr>
-                <tr><td className="p-2.5">Buchtexte, Beschreibungen, Leseproben</td><td className="p-2.5">Buchpräsentation</td><td className="p-2.5">Vertragserfüllung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;b DSGVO)</td></tr>
-                <tr><td className="p-2.5">Sprechproben (Audio-Dateien)</td><td className="p-2.5">Sprecher-Profil</td><td className="p-2.5">Einwilligung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a DSGVO)</td></tr>
-                <tr><td className="p-2.5">Private Nachrichten</td><td className="p-2.5">Kommunikation zwischen Nutzern</td><td className="p-2.5">Vertragserfüllung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;b DSGVO)</td></tr>
-                <tr><td className="p-2.5">Diskussionsbeiträge, Rezensionen, Schnipsel</td><td className="p-2.5">Community-Funktionen</td><td className="p-2.5">Vertragserfüllung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;b DSGVO)</td></tr>
-                <tr><td className="p-2.5">Support-Tickets</td><td className="p-2.5">Nutzersupport</td><td className="p-2.5">Berechtigtes Interesse (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO)</td></tr>
-                <tr><td className="p-2.5">Social-Media-Einreichungen (Bilder, Videos)</td><td className="p-2.5">Buchvorstellungen auf Social Media</td><td className="p-2.5">Einwilligung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a DSGVO)</td></tr>
-                <tr><td className="p-2.5">Technische Protokolldaten (IP, User-Agent)</td><td className="p-2.5">Sicherheit &amp; Betrieb</td><td className="p-2.5">Berechtigtes Interesse (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO)</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">Benutzername, E-Mail, Passwort (verschlüsselt)</td><td className="p-2.5 max-sm:p-1.5">Registrierung &amp; Login</td><td className="p-2.5 max-sm:p-1.5">Vertragserfüllung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;b DSGVO)</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">Profilbild, Autorenbild, Buchcover</td><td className="p-2.5 max-sm:p-1.5">Öffentliches Profil / Buchseite</td><td className="p-2.5 max-sm:p-1.5">Einwilligung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a DSGVO)</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">Buchtexte, Beschreibungen, Leseproben</td><td className="p-2.5 max-sm:p-1.5">Buchpräsentation</td><td className="p-2.5 max-sm:p-1.5">Vertragserfüllung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;b DSGVO)</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">Sprechproben (Audio-Dateien)</td><td className="p-2.5 max-sm:p-1.5">Sprecher-Profil</td><td className="p-2.5 max-sm:p-1.5">Einwilligung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a DSGVO)</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">Private Nachrichten</td><td className="p-2.5 max-sm:p-1.5">Kommunikation zwischen Nutzern</td><td className="p-2.5 max-sm:p-1.5">Vertragserfüllung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;b DSGVO)</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">Diskussionsbeiträge, Rezensionen, Schnipsel</td><td className="p-2.5 max-sm:p-1.5">Community-Funktionen</td><td className="p-2.5 max-sm:p-1.5">Vertragserfüllung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;b DSGVO)</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">Support-Tickets</td><td className="p-2.5 max-sm:p-1.5">Nutzersupport</td><td className="p-2.5 max-sm:p-1.5">Berechtigtes Interesse (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO)</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">Social-Media-Einreichungen (Bilder, Videos)</td><td className="p-2.5 max-sm:p-1.5">Buchvorstellungen auf Social Media</td><td className="p-2.5 max-sm:p-1.5">Einwilligung (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a DSGVO)</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">Technische Protokolldaten (IP, User-Agent)</td><td className="p-2.5 max-sm:p-1.5">Sicherheit &amp; Betrieb</td><td className="p-2.5 max-sm:p-1.5">Berechtigtes Interesse (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO)</td></tr>
               </tbody>
             </table>
           </div>
@@ -120,19 +120,19 @@ export default function ImpressumPage() {
             Wir verwenden folgende Cookies bzw. lokale Speichertechnologien:
           </p>
           <div className="my-4 overflow-x-auto">
-            <table className="w-full text-sm text-[#444] border border-arena-border rounded-lg">
+            <table className="w-full text-sm max-sm:text-xs text-[#444] border border-arena-border rounded-lg">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="text-left p-2.5 border-b border-arena-border font-semibold">Name</th>
-                  <th className="text-left p-2.5 border-b border-arena-border font-semibold">Typ</th>
-                  <th className="text-left p-2.5 border-b border-arena-border font-semibold">Zweck</th>
-                  <th className="text-left p-2.5 border-b border-arena-border font-semibold">Dauer</th>
+                  <th className="text-left p-2.5 max-sm:p-1.5 border-b border-arena-border font-semibold">Name</th>
+                  <th className="text-left p-2.5 max-sm:p-1.5 border-b border-arena-border font-semibold">Typ</th>
+                  <th className="text-left p-2.5 max-sm:p-1.5 border-b border-arena-border font-semibold">Zweck</th>
+                  <th className="text-left p-2.5 max-sm:p-1.5 border-b border-arena-border font-semibold">Dauer</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-arena-border">
-                <tr><td className="p-2.5">cookie_consent</td><td className="p-2.5">Notwendig</td><td className="p-2.5">Speichert Cookie-Einwilligung</td><td className="p-2.5">6 Monate</td></tr>
-                <tr><td className="p-2.5">bucharena_account (localStorage)</td><td className="p-2.5">Notwendig</td><td className="p-2.5">Login-Status</td><td className="p-2.5">Session</td></tr>
-                <tr><td className="p-2.5">YouTube-Cookies (von Google LLC)</td><td className="p-2.5">Optional</td><td className="p-2.5">Video-Wiedergabe</td><td className="p-2.5">Siehe Google-Datenschutz</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">cookie_consent</td><td className="p-2.5 max-sm:p-1.5">Notwendig</td><td className="p-2.5 max-sm:p-1.5">Speichert Cookie-Einwilligung</td><td className="p-2.5 max-sm:p-1.5">6 Monate</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">bucharena_account (localStorage)</td><td className="p-2.5 max-sm:p-1.5">Notwendig</td><td className="p-2.5 max-sm:p-1.5">Login-Status</td><td className="p-2.5 max-sm:p-1.5">Session</td></tr>
+                <tr><td className="p-2.5 max-sm:p-1.5">YouTube-Cookies (von Google LLC)</td><td className="p-2.5 max-sm:p-1.5">Optional</td><td className="p-2.5 max-sm:p-1.5">Video-Wiedergabe</td><td className="p-2.5 max-sm:p-1.5">Siehe Google-Datenschutz</td></tr>
               </tbody>
             </table>
           </div>
