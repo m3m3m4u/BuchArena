@@ -400,7 +400,7 @@ export default function NachrichtenPage() {
         <div className="grid grid-cols-[300px_1fr] max-sm:grid-cols-1 h-full min-h-0">
           {/* ══ Linke Seite: Konversationsliste ══ */}
           <div
-            className={`border-r border-arena-border flex flex-col ${
+            className={`border-r border-arena-border flex flex-col min-h-0 overflow-hidden ${
               mobileShowChat ? "max-sm:hidden" : ""
             }`}
           >
