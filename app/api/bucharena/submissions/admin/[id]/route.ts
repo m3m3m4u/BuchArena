@@ -41,9 +41,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (reviewNotes !== undefined) updateData.reviewNotes = reviewNotes;
     if (bookTitle) updateData.bookTitle = bookTitle.trim();
     if (author) updateData.author = author.trim();
-    if (genre !== undefined) updateData.genre = genre.trim();
-    if (ageRange !== undefined) updateData.ageRange = ageRange.trim();
-    if (notes !== undefined) updateData.notes = notes.trim();
+    if (genre !== undefined) updateData.genre = (genre || "").trim();
+    if (ageRange !== undefined) updateData.ageRange = (ageRange || "").trim();
+    if (notes !== undefined) updateData.notes = (notes || "").trim();
 
     const col = await getBucharenaSubmissionsCollection();
     const result = await col.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updateData }, { returnDocument: "after" });
