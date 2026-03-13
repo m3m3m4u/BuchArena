@@ -75,6 +75,10 @@ async function initializeDatabase(db: Db) {
   await messages.createIndex({ recipientUsername: 1, createdAt: -1 });
   await messages.createIndex({ senderUsername: 1, createdAt: -1 });
 
+  const analytics = db.collection("analytics");
+  await analytics.createIndex({ timestamp: -1 });
+  await analytics.createIndex({ page: 1, timestamp: -1 });
+
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
     { projection: { _id: 1 } }

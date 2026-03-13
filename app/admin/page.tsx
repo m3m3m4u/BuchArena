@@ -269,7 +269,12 @@ export default function AdminPage() {
   return (
     <main className="centered-main">
       <section className="card">
-        <h1>User-Übersicht</h1>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
+          <h1>User-Übersicht</h1>
+          <Link href="/admin/analytics" className="btn btn-sm">
+            📊 Analyse
+          </Link>
+        </div>
 
         {isLoading ? (
           <p>Lade Benutzer ...</p>
