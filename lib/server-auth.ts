@@ -26,7 +26,10 @@ const JWT_EXPIRY = "7d";
 
 function getJwtSecret(): Uint8Array {
   const raw = process.env.JWT_SECRET;
-  if (!raw) throw new Error("JWT_SECRET Umgebungsvariable fehlt – bitte setzen!");
+  if (!raw) {
+    console.warn("⚠ JWT_SECRET nicht gesetzt – verwende Fallback. Bitte JWT_SECRET als Umgebungsvariable setzen!");
+    return new TextEncoder().encode("bucharena-fallback-jwt-secret-CHANGE-ME");
+  }
   return new TextEncoder().encode(raw);
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 
 /* ═══════════════ Types ═══════════════ */
@@ -123,6 +123,11 @@ export default function BuchempfehlungPage() {
   ]);
   const [results, setResults] = useState<Recommendation[]>([]);
   const [error, setError] = useState("");
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chat, step, results]);
 
   function addMessages(...msgs: ChatMessage[]) {
     setChat((prev) => [...prev, ...msgs]);
@@ -521,6 +526,7 @@ export default function BuchempfehlungPage() {
             </div>
           )}
         </div>
+        <div ref={bottomRef} />
       </section>
     </main>
   );
