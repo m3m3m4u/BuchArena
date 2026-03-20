@@ -13,6 +13,7 @@ type Step =
   | "fantasy"
   | "trueStory"
   | "happyEnd"
+  | "freeText"
   | "loading"
   | "result";
 
@@ -24,6 +25,7 @@ type Preferences = {
   fantasy: boolean | null;
   trueStory: boolean | null;
   happyEnd: boolean | null;
+  freeText: string;
 };
 
 type Recommendation = {
@@ -94,6 +96,7 @@ const QUESTIONS: Record<string, string> = {
   fantasy: "Magst du Fantasy-Elemente (Magie, andere Welten)?",
   trueStory: "Bevorzugst du Geschichten, die auf wahren Begebenheiten basieren?",
   happyEnd: "Ist dir ein Happy End wichtig?",
+  freeText: "Was ist dir sonst noch wichtig? (kann auch leer bleiben)",
 };
 
 /* ═══════════════ Component ═══════════════ */
@@ -108,6 +111,7 @@ export default function BuchempfehlungPage() {
     fantasy: null,
     trueStory: null,
     happyEnd: null,
+    freeText: "",
   });
   // Pending single-choice selections (confirmed with "Weiter")
   const [pendingAge, setPendingAge] = useState("");
@@ -219,11 +223,10 @@ export default function BuchempfehlungPage() {
     } else {
       addMessages(
         { role: "user", text: answer },
-        { role: "bot", text: "Perfekt! Ich suche jetzt die besten Bücher für dich heraus …" },
+        { role: "bot", text: QUESTIONS.freeText },
       );
-      setStep("loading");
-      const finalPrefs = isEgal ? prefs : { ...prefs, [field]: actualValue };
-      fetchRecommendations(finalPrefs);
+      if (!isEgal) setPrefs((p) => ({ ...p, [field]: actualValue }));
+      setStep("freeText");
     }
   }
 
@@ -264,7 +267,7 @@ export default function BuchempfehlungPage() {
 
   function restart() {
     setStep("genre");
-    setPrefs({ genres: [], age: "", moods: [], length: "", fantasy: null, trueStory: null, happyEnd: null });
+    setPrefs({ genres: [], age: "", moods: [], length: "", fantasy: null, trueStory: null, happyEnd: null, freeText: "" });
     setPendingAge("");
     setPendingLength(null);
     setPendingYesNo(null);
@@ -447,6 +450,33 @@ export default function BuchempfehlungPage() {
                   Weiter →
                 </button>
               )}
+            </div>
+          )}
+
+          {/* Freitext */}
+          {step === "freeText" && (
+            <div className="grid gap-2">
+              <textarea
+                value={prefs.freeText}
+                onChange={(e) => setPrefs((p) => ({ ...p, freeText: e.target.value }))}
+                placeholder="z.B. Ich mag Geschichten mit starken Charakteren ..."
+                className="w-full rounded-lg border border-arena-border p-3 text-sm resize-none focus:outline-none focus:border-arena-blue-light"
+                rows={3}
+              />
+              <button
+                onClick={() => {
+                  const text = prefs.freeText.trim() || "Keine weiteren Wünsche";
+                  addMessages(
+                    { role: "user", text },
+                    { role: "bot", text: "Perfekt! Ich suche jetzt die besten Bücher für dich heraus …" },
+                  );
+                  setStep("loading");
+                  fetchRecommendations(prefs);
+                }}
+                className="btn btn-primary self-end"
+              >
+                Weiter →
+              </button>
             </div>
           )}
 

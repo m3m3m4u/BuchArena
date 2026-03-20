@@ -27,8 +27,7 @@ export default function FuerAutorenPage() {
     return (
       <main className="top-centered-main">
         <section className="card">
-          <h1 className="text-xl font-bold text-arena-blue">Für Autoren</h1>
-          <p className="text-arena-muted">
+          <h1 className="text-xl font-bold text-arena-blue">Für Autoren und Sprecher</h1>
             Bitte <Link href="/auth" className="text-arena-link hover:underline">melde dich an</Link>, um diesen Bereich zu nutzen.
           </p>
         </section>
@@ -64,7 +63,7 @@ export default function FuerAutorenPage() {
   return (
     <main className="top-centered-main">
       <section className="card">
-        <h1 className="text-xl font-bold text-arena-blue">Für Autoren</h1>
+        <h1 className="text-xl font-bold text-arena-blue">Für Autoren und Sprecher</h1>
         <p className="text-arena-muted text-[0.95rem]">
           Dein persönlicher Bereich als Autor in der BuchArena.
         </p>

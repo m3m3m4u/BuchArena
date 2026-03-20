@@ -10,6 +10,7 @@ type Preferences = {
   fantasy: boolean | null;
   trueStory: boolean | null;
   happyEnd: boolean | null;
+  freeText?: string;
 };
 
 type BookSummary = {
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
       prefs.fantasy !== null ? `Fantasy-Elemente erwünscht: ${prefs.fantasy ? "Ja" : "Nein"}` : "",
       prefs.trueStory !== null ? `Wahre Geschichte bevorzugt: ${prefs.trueStory ? "Ja" : "Nein"}` : "",
       prefs.happyEnd !== null ? `Happy End gewünscht: ${prefs.happyEnd ? "Ja" : "Nein"}` : "",
+      prefs.freeText ? `Sonstige Wünsche: ${prefs.freeText}` : "",
     ]
       .filter(Boolean)
       .join("\n");
