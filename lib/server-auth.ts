@@ -21,7 +21,10 @@ export type ServerAccount = {
 
 /* ── JWT-Konfiguration ── */
 
-const JWT_SECRET_RAW = process.env.JWT_SECRET ?? "bucharena-default-jwt-secret-change-me";
+const JWT_SECRET_RAW = process.env.JWT_SECRET;
+if (!JWT_SECRET_RAW) {
+  throw new Error("JWT_SECRET Umgebungsvariable fehlt – bitte setzen!");
+}
 const JWT_SECRET = new TextEncoder().encode(JWT_SECRET_RAW);
 const JWT_ISSUER = "bucharena";
 const JWT_EXPIRY = "7d";

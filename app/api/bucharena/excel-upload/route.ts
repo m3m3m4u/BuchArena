@@ -18,6 +18,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Keine Datei hochgeladen" }, { status: 400 });
     }
 
+    const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ success: false, error: "Datei zu groß (max. 10 MB)" }, { status: 400 });
+    }
+
+    const allowedTypes = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+    ];
+    if (file.name && !file.name.match(/\.xlsx?$/i)) {
+      return NextResponse.json({ success: false, error: "Nur Excel-Dateien (.xls/.xlsx) erlaubt" }, { status: 400 });
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const workbook = XLSX.read(buffer, { type: "buffer" });

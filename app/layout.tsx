@@ -12,7 +12,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "BuchArena",
-  description: "Next.js App für BuchArena",
+  description: "Die Community für Autoren, Sprecher und Leser",
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",

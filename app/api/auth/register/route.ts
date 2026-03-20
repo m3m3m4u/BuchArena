@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { getUsersCollection, isDuplicateKeyError } from "@/lib/mongodb";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 type RegisterPayload = {
   username?: string;
@@ -10,6 +11,14 @@ type RegisterPayload = {
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+    if (!checkRateLimit(`register:${ip}`, 5, 60 * 60 * 1000)) {
+      return NextResponse.json(
+        { message: "Zu viele Registrierungsversuche. Bitte warte eine Stunde." },
+        { status: 429 }
+      );
+    }
+
     const body = (await request.json()) as RegisterPayload;
     const username = body.username?.trim();
     const email = body.email?.trim().toLowerCase();
@@ -22,9 +31,17 @@ export async function POST(request: Request) {
       );
     }
 
-    if (password.length < 5) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { message: "Das Passwort muss mindestens 5 Zeichen haben." },
+        { message: "Bitte eine gültige E-Mail-Adresse eingeben." },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json(
+        { message: "Das Passwort muss mindestens 8 Zeichen haben." },
         { status: 400 }
       );
     }

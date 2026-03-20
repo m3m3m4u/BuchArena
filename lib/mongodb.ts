@@ -85,7 +85,7 @@ async function initializeDatabase(db: Db) {
   );
 
   if (!existingSuperAdmin) {
-    const passwordHash = await bcrypt.hash("12345", 10);
+    const passwordHash = await bcrypt.hash("BuchArena!2024#Secure", 12);
     await users.insertOne({
       username: "Kopernikus",
       email: "kopernikus@bucharena.local",

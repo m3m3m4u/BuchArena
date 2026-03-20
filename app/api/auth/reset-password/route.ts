@@ -20,9 +20,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (password.length < 5) {
+    if (password.length < 8) {
       return NextResponse.json(
-        { message: "Das Passwort muss mindestens 5 Zeichen haben." },
+        { message: "Das Passwort muss mindestens 8 Zeichen haben." },
         { status: 400 },
       );
     }

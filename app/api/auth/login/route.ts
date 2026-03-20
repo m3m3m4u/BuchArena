@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { createAuthToken } from "@/lib/server-auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 type LoginPayload = {
   identifier?: string;
@@ -19,6 +20,14 @@ type UserRow = {
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+    if (!checkRateLimit(`login:${ip}`, 10, 15 * 60 * 1000)) {
+      return NextResponse.json(
+        { message: "Zu viele Anmeldeversuche. Bitte warte 15 Minuten." },
+        { status: 429 }
+      );
+    }
+
     const body = (await request.json()) as LoginPayload;
     const identifier = (body.identifier ?? body.username)?.trim();
     const normalizedEmail = identifier?.toLowerCase();

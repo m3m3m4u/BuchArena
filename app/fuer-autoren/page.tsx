@@ -28,6 +28,7 @@ export default function FuerAutorenPage() {
       <main className="top-centered-main">
         <section className="card">
           <h1 className="text-xl font-bold text-arena-blue">Für Autoren und Sprecher</h1>
+          <p>
             Bitte <Link href="/auth" className="text-arena-link hover:underline">melde dich an</Link>, um diesen Bereich zu nutzen.
           </p>
         </section>

@@ -1,22 +1,24 @@
-import { createClient } from "webdav";
+import { createClient, type WebDAVClient } from "webdav";
 
-const webdavUrl = process.env.WEBDAV_URL ?? "";
-const webdavUsername = process.env.WEBDAV_USERNAME ?? "";
-const webdavPassword = process.env.WEBDAV_PASSWORD ?? "";
 const webdavUploadDir = process.env.WEBDAV_UPLOAD_DIR ?? "bucharena-profile-images";
-const webdavPublicBaseUrl = process.env.WEBDAV_PUBLIC_BASE_URL ?? webdavUrl;
+const webdavPublicBaseUrl = process.env.WEBDAV_PUBLIC_BASE_URL ?? process.env.WEBDAV_URL ?? "";
 
-if (!webdavUrl || !webdavUsername || !webdavPassword) {
-  throw new Error("WEBDAV_URL, WEBDAV_USERNAME oder WEBDAV_PASSWORD fehlt.");
+let _client: WebDAVClient | null = null;
+
+function getClient(): WebDAVClient {
+  if (_client) return _client;
+  const url = process.env.WEBDAV_URL ?? "";
+  const username = process.env.WEBDAV_USERNAME ?? "";
+  const password = process.env.WEBDAV_PASSWORD ?? "";
+  if (!url || !username || !password) {
+    throw new Error("WEBDAV_URL, WEBDAV_USERNAME oder WEBDAV_PASSWORD fehlt.");
+  }
+  _client = createClient(url, { username, password });
+  return _client;
 }
 
-const client = createClient(webdavUrl, {
-  username: webdavUsername,
-  password: webdavPassword,
-});
-
 export function getWebdavClient() {
-  return client;
+  return getClient();
 }
 
 export function getWebdavUploadDir() {

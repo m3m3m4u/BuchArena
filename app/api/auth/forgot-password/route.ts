@@ -2,11 +2,20 @@ import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { sendMail } from "@/lib/mail";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 type ForgotPayload = { email?: string };
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+    if (!checkRateLimit(`forgot:${ip}`, 3, 15 * 60 * 1000)) {
+      return NextResponse.json(
+        { message: "Zu viele Anfragen. Bitte warte 15 Minuten." },
+        { status: 429 }
+      );
+    }
+
     const body = (await request.json()) as ForgotPayload;
     const email = body.email?.trim().toLowerCase();
 
