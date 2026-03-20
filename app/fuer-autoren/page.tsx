@@ -40,16 +40,17 @@ export default function FuerAutorenPage() {
     {
       title: "Anleitungen",
       description:
-        "Informationen und Schritt-für-Schritt-Anleitungen rund um deine Buchvorstellung: wie du dein Buch einreichst, Social-Media-Beiträge erstellen lässt und Rezensionen oder Schnipsel hochlädst.",
+        "Alle Informationen zur Buchvorstellung auf der Webseite von meridianbooks.",
       icon: BookOpenIcon,
-      href: "/social-media",
+      href: "https://www.meridianbooks.at/autorenvorstellung/",
+      external: true,
     },
     {
-      title: "Dateien",
+      title: "Dateien und Infos hochladen",
       description:
         "Lade hier deine Buchvorstellung ein, reiche Rezensionen und Textschnipsel ein oder nimm Sprecher-Texte als MP3 auf. Alle Uploads und Einreichungen an einem Ort.",
       icon: DocumentTextIcon,
-      href: "/social-media/upload",
+      href: "/social-media",
     },
     {
       title: "Profil",
@@ -69,22 +70,26 @@ export default function FuerAutorenPage() {
         </p>
 
         <div className="grid gap-2.5">
-          {sections.map((s) => (
-            <Link
-              key={s.href}
-              href={s.href}
-              className="flex items-center gap-3 rounded-lg border border-arena-border p-3 no-underline text-inherit transition-colors hover:border-gray-500 hover:bg-[#fafafa]"
-            >
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
-                <s.icon className="size-6" />
-              </div>
-              <div className="grid gap-0.5 text-[0.95rem]">
-                <strong>{s.title}</strong>
-                <span className="text-arena-muted text-sm">{s.description}</span>
-              </div>
-              <span className="ml-auto shrink-0 text-arena-muted">→</span>
-            </Link>
-          ))}
+          {sections.map((s) => {
+            const cls = "flex items-center gap-3 rounded-lg border border-arena-border p-3 no-underline text-inherit transition-colors hover:border-gray-500 hover:bg-[#fafafa]";
+            const inner = (
+              <>
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
+                  <s.icon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 text-[0.95rem]">
+                  <strong>{s.title}</strong>
+                  <span className="text-arena-muted text-sm">{s.description}</span>
+                </div>
+                <span className="ml-auto shrink-0 text-arena-muted">{s.external ? "↗" : "→"}</span>
+              </>
+            );
+            return s.external ? (
+              <a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer" className={cls}>{inner}</a>
+            ) : (
+              <Link key={s.href} href={s.href} className={cls}>{inner}</Link>
+            );
+          })}
         </div>
       </section>
     </main>
