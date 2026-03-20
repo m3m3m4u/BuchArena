@@ -21,13 +21,14 @@ export type ServerAccount = {
 
 /* ── JWT-Konfiguration ── */
 
-const JWT_SECRET_RAW = process.env.JWT_SECRET;
-if (!JWT_SECRET_RAW) {
-  throw new Error("JWT_SECRET Umgebungsvariable fehlt – bitte setzen!");
-}
-const JWT_SECRET = new TextEncoder().encode(JWT_SECRET_RAW);
 const JWT_ISSUER = "bucharena";
 const JWT_EXPIRY = "7d";
+
+function getJwtSecret(): Uint8Array {
+  const raw = process.env.JWT_SECRET;
+  if (!raw) throw new Error("JWT_SECRET Umgebungsvariable fehlt – bitte setzen!");
+  return new TextEncoder().encode(raw);
+}
 
 interface AuthTokenPayload extends JWTPayload {
   sub: string;    // username
@@ -43,7 +44,7 @@ export async function createAuthToken(account: ServerAccount): Promise<string> {
     .setSubject(account.username)
     .setIssuedAt()
     .setExpirationTime(JWT_EXPIRY)
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 }
 
 /**
@@ -58,7 +59,7 @@ export async function getServerAccount(): Promise<ServerAccount | null> {
     // Zuerst neues JWT prüfen
     const token = cookieStore.get("auth_token")?.value;
     if (token) {
-      const { payload } = await jwtVerify(token, JWT_SECRET, { issuer: JWT_ISSUER });
+      const { payload } = await jwtVerify(token, getJwtSecret(), { issuer: JWT_ISSUER });
       const p = payload as AuthTokenPayload;
       if (!p.sub) return null;
 
