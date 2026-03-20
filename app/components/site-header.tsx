@@ -68,7 +68,7 @@ export default function SiteHeader() {
           )}
         </Link>
       )}
-      {loggedIn && <Link href="/social-media" className="btn w-full sm:w-auto">Anleitungen &amp; Dateien</Link>}
+      {loggedIn && <Link href="/fuer-autoren" className="btn w-full sm:w-auto">Für Autoren</Link>}
       {loggedIn ? (
         <Link href="/profil" className="btn w-full sm:w-auto">Profil</Link>
       ) : (
