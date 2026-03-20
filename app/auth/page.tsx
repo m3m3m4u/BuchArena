@@ -113,6 +113,12 @@ export default function AuthPage() {
                 <input className="input-base" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
               </label>
 
+              {mode === "login" && (
+                <Link href="/passwort-vergessen" className="text-arena-link hover:underline text-sm justify-self-end">
+                  Passwort vergessen?
+                </Link>
+              )}
+
               {mode === "register" && (
                 <label className="flex items-start gap-2 text-[0.85rem] leading-snug cursor-pointer">
                   <input
