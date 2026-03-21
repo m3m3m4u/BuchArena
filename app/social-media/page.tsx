@@ -15,6 +15,7 @@ import {
   MusicalNoteIcon,
   MicrophoneIcon,
   ArrowUpTrayIcon,
+  ArrowDownTrayIcon,
   LifebuoyIcon,
   TrashIcon,
   XMarkIcon,
@@ -206,6 +207,24 @@ export default function SocialMediaPage() {
           Hier kannst du deine Buchvorstellung einreichen oder bestehende
           Social-Media-Links ansehen.
         </p>
+
+        {/* Vorlage herunterladen */}
+        <a
+          href="/Buchempfehlung_vorlage.pptx"
+          download
+          className="flex items-center gap-3 rounded-lg border border-arena-blue/30 bg-blue-50 p-3 text-[0.95rem] no-underline text-inherit hover:border-arena-blue transition-colors"
+        >
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-arena-blue">
+            <ArrowDownTrayIcon className="size-6" />
+          </div>
+          <div className="grid gap-0.5">
+            <strong>Vorlage herunterladen (PPTX)</strong>
+            <span className="text-arena-muted text-sm">
+              Lade die PowerPoint-Vorlage für deine Buchvorstellung herunter.
+            </span>
+          </div>
+          <span className="ml-auto shrink-0 text-arena-muted">⬇</span>
+        </a>
 
         {/* Video-Links */}
         <Link
