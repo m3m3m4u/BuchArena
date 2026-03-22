@@ -93,7 +93,18 @@ function BuecherContent() {
 
   return (
     <main className="top-centered-main">
-      <section className="card">
+      {/* Buchtipp-Banner */}
+      <Link href="/buchempfehlung" className="card no-underline text-inherit hover:shadow-md transition-shadow" style={{ background: "linear-gradient(135deg, #e2b714 0%, #d4a90e 100%)", color: "#1a1a2e" }}>
+        <div className="flex items-center gap-4 py-2">
+          <div>
+            <p className="text-lg font-bold m-0">Buchtipp – intelligent nach deinen Vorlieben</p>
+            <p className="text-sm opacity-75 m-0 mt-1">Beantworte ein paar kurze Fragen und erhalte eine persönliche Buchempfehlung aus unserer Bibliothek.</p>
+          </div>
+          <span className="text-2xl ml-auto flex-shrink-0 opacity-60">→</span>
+        </div>
+      </Link>
+
+      <section className="card mt-3">
         <h1>Bücher entdecken</h1>
 
         <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
