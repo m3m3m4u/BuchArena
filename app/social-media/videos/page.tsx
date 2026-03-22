@@ -100,35 +100,57 @@ export default function ReviewVideosPage() {
 
   const isAdmin = account?.role === "SUPERADMIN";
 
+  const CHUNK_SIZE = 4 * 1024 * 1024; // 4 MB pro Chunk
+
   async function uploadSingleFile(file: File): Promise<string | null> {
-    return new Promise((resolve) => {
+    const uploadId = crypto.randomUUID();
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, file.size);
+      const chunk = file.slice(start, end);
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("uploadId", uploadId);
+      formData.append("chunkIndex", String(i));
+      formData.append("totalChunks", String(totalChunks));
+      formData.append("chunk", chunk, `chunk_${i}`);
+      formData.append("fileSize", String(file.size));
+      if (i === 0) formData.append("originalName", file.name);
 
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", "/api/bucharena/videos/upload");
+      const err: string | null = await new Promise((resolve) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/bucharena/videos/upload-chunk");
 
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          setUploadProgress(Math.round((e.loaded / e.total) * 100));
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(null);
-        } else {
-          try {
-            const data = JSON.parse(xhr.responseText);
-            resolve(data.message || `${file.name}: Upload fehlgeschlagen.`);
-          } catch {
-            resolve(`${file.name}: Upload fehlgeschlagen.`);
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const chunkProgress = e.loaded / e.total;
+            const overallProgress = (i + chunkProgress) / totalChunks;
+            setUploadProgress(Math.round(overallProgress * 100));
           }
-        }
-      };
-      xhr.onerror = () => resolve(`${file.name}: Netzwerkfehler.`);
-      xhr.send(formData);
-    });
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(null);
+          } else {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              resolve(data.message || `${file.name}: Upload fehlgeschlagen.`);
+            } catch {
+              resolve(`${file.name}: Upload fehlgeschlagen.`);
+            }
+          }
+        };
+        xhr.onerror = () => resolve(`${file.name}: Netzwerkfehler.`);
+        xhr.send(formData);
+      });
+
+      if (err) return err;
+    }
+
+    return null;
   }
 
   async function handleUpload(files: FileList) {
