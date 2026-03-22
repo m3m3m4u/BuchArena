@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { CreateBookPayload } from "@/lib/books";
 import { getBooksCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { awardBuecherHochgeladen } from "@/lib/lesezeichen";
 
 function toNumber(value: unknown, fallback: number) {
   const num = Number(value);
@@ -73,6 +74,9 @@ export async function POST(request: Request) {
       excerpts: [],
       createdAt: new Date(),
     });
+
+    // Lesezeichen: Bücher hochgeladen
+    awardBuecherHochgeladen(account.username).catch(() => {});
 
     return NextResponse.json({ message: "Buch angelegt." }, { status: 201 });
   } catch {

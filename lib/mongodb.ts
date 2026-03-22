@@ -79,6 +79,10 @@ async function initializeDatabase(db: Db) {
   await analytics.createIndex({ timestamp: -1 });
   await analytics.createIndex({ page: 1, timestamp: -1 });
 
+  const lesezeichen = db.collection("lesezeichen");
+  await lesezeichen.createIndex({ username: 1 }, { unique: true });
+  await lesezeichen.createIndex({ total: -1 });
+
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
     { projection: { _id: 1 } }

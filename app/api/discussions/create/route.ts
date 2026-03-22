@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDiscussionsCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { awardTreffpunktBeitrag } from "@/lib/lesezeichen";
 
 export async function POST(request: Request) {
   try {
@@ -54,6 +55,9 @@ export async function POST(request: Request) {
     };
 
     const result = await discussions.insertOne(doc);
+
+    // Lesezeichen: Treffpunkt-Beitrag
+    awardTreffpunktBeitrag(authorUsername).catch(() => {});
 
     return NextResponse.json({
       discussion: {

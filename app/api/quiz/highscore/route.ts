@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { awardQuizTag, awardMcQuiz10Punkte } from "@/lib/lesezeichen";
 
 type HighscoreDoc = {
   username: string;
@@ -60,6 +61,12 @@ export async function POST(request: Request) {
       total,
       createdAt: new Date(),
     });
+
+    // Lesezeichen: Quiz gespielt + 10-Punkte-Bonus
+    awardQuizTag(account.username).catch(() => {});
+    if (score >= 10) {
+      awardMcQuiz10Punkte(account.username).catch(() => {});
+    }
 
     return NextResponse.json({ message: "Highscore gespeichert." });
   } catch (err) {

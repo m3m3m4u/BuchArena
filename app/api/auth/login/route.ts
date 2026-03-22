@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { createAuthToken } from "@/lib/server-auth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { awardTagesLogin } from "@/lib/lesezeichen";
 
 type LoginPayload = {
   identifier?: string;
@@ -73,6 +74,9 @@ export async function POST(request: Request) {
       { username: user.username },
       { $set: { lastOnline: new Date() } }
     );
+
+    // Lesezeichen: täglicher Login
+    awardTagesLogin(user.username).catch(() => {});
 
     // Signiertes JWT erzeugen und als HttpOnly-Cookie setzen
     const token = await createAuthToken({

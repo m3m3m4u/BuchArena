@@ -271,9 +271,24 @@ export default function AdminPage() {
       <section className="card">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
           <h1>User-Übersicht</h1>
-          <Link href="/admin/analytics" className="btn btn-sm">
-            📊 Analyse
-          </Link>
+          <div className="flex gap-2 flex-wrap">
+            <button
+              className="btn btn-sm"
+              onClick={async () => {
+                setMessage("Lesezeichen werden vergeben …");
+                try {
+                  const r = await fetch("/api/lesezeichen/retroaktiv", { method: "POST" });
+                  const d = await r.json() as { message?: string };
+                  setMessage(d.message ?? "Fertig.");
+                } catch { setMessage("Fehler beim Vergeben."); }
+              }}
+            >
+              🔖 Lesezeichen retroaktiv vergeben
+            </button>
+            <Link href="/admin/analytics" className="btn btn-sm">
+              📊 Analyse
+            </Link>
+          </div>
         </div>
 
         {isLoading ? (

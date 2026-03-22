@@ -7,6 +7,7 @@ import {
   type Visibility,
 } from "@/lib/profile";
 import { getServerAccount } from "@/lib/server-auth";
+import { awardProfilAusgefuellt } from "@/lib/lesezeichen";
 
 type SaveProfilePayload = {
   username?: string;
@@ -94,6 +95,12 @@ export async function POST(request: Request) {
         { message: "Benutzer nicht gefunden." },
         { status: 404 }
       );
+    }
+
+    // Lesezeichen: Profil ausgefüllt prüfen
+    const p = sanitizedProfile;
+    if (p.name.value && p.motto.value && p.profileImage.value) {
+      awardProfilAusgefuellt(username).catch(() => {});
     }
 
     return NextResponse.json({ message: "Profil gespeichert." });
