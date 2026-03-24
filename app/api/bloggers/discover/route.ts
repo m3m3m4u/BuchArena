@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { createDefaultBloggerProfile } from "@/lib/profile";
-import { parseGenres } from "@/app/components/genre-picker";
+import { parseGenres } from "@/lib/genres";
 
 type BloggerDiscoverItem = {
   username: string;

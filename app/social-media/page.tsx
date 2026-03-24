@@ -52,6 +52,8 @@ export default function SocialMediaPage() {
   const [editForm, setEditForm] = useState<Partial<Submission>>({});
   const [actionError, setActionError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [showDownloadOverlay, setShowDownloadOverlay] = useState(false);
+  const [showUploadOverlay, setShowUploadOverlay] = useState(false);
 
   useEffect(() => {
     function sync() {
@@ -161,6 +163,7 @@ export default function SocialMediaPage() {
         "Erstelle eine Präsentation nach unserer Vorlage. Wir machen daraus Videos und Posts für Social Media.",
       icon: ArrowUpTrayIcon,
       href: "/social-media/upload",
+      intercept: true,
     },
     {
       title: "Rezensionen",
@@ -209,10 +212,10 @@ export default function SocialMediaPage() {
         </p>
 
         {/* Vorlage herunterladen */}
-        <a
-          href="/Buchempfehlung_vorlage.pptx"
-          download
-          className="flex items-center gap-3 rounded-lg border border-arena-blue/30 bg-blue-50 p-3 text-[0.95rem] no-underline text-inherit hover:border-arena-blue transition-colors"
+        <button
+          type="button"
+          onClick={() => setShowDownloadOverlay(true)}
+          className="flex w-full items-center gap-3 rounded-lg border border-arena-blue/30 bg-blue-50 p-3 text-[0.95rem] text-inherit hover:border-arena-blue transition-colors text-left cursor-pointer"
         >
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-arena-blue">
             <ArrowDownTrayIcon className="size-6" />
@@ -224,7 +227,66 @@ export default function SocialMediaPage() {
             </span>
           </div>
           <span className="ml-auto shrink-0 text-arena-muted">⬇</span>
-        </a>
+        </button>
+
+        {/* Overlay: Sprechertext-Hinweis (Upload / Einreichen) */}
+        {showUploadOverlay && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl grid gap-4">
+              <h2 className="text-lg font-bold">Wichtiger Hinweis</h2>
+              <p className="text-[0.95rem] leading-relaxed">
+                Wichtig: Schreibe in die Notizen jeder Folie der PowerPoint-Datei
+                den jeweiligen Sprechertext. Melde dich via Instagram bei Andrea
+                (<strong>@Lernen-mit-YoshiHeart</strong>) wenn du dabei Hilfe brauchst.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  className="btn"
+                  onClick={() => setShowUploadOverlay(false)}
+                >
+                  Abbrechen
+                </button>
+                <Link
+                  href="/social-media/upload"
+                  className="btn btn-primary no-underline"
+                  onClick={() => setShowUploadOverlay(false)}
+                >
+                  Verstanden &amp; Weiter
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Overlay: Sprechertext-Hinweis (Download) */}
+        {showDownloadOverlay && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl grid gap-4">
+              <h2 className="text-lg font-bold">Wichtiger Hinweis</h2>
+              <p className="text-[0.95rem] leading-relaxed">
+                Wichtig: Schreibe in die Notizen jeder Folie der PowerPoint-Datei
+                den jeweiligen Sprechertext. Melde dich via Instagram bei Andrea
+                (<strong>@Lernen-mit-YoshiHeart</strong>) wenn du dabei Hilfe brauchst.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  className="btn"
+                  onClick={() => setShowDownloadOverlay(false)}
+                >
+                  Abbrechen
+                </button>
+                <a
+                  href="/Buchempfehlung_vorlage.pptx"
+                  download
+                  className="btn btn-primary no-underline"
+                  onClick={() => setShowDownloadOverlay(false)}
+                >
+                  Verstanden &amp; Herunterladen
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Video-Links */}
         <Link
@@ -266,6 +328,15 @@ export default function SocialMediaPage() {
               >
                 {inner}
               </a>
+            ) : section.intercept ? (
+              <button
+                key={section.href}
+                type="button"
+                onClick={() => setShowUploadOverlay(true)}
+                className={`${cls} w-full text-left cursor-pointer`}
+              >
+                {inner}
+              </button>
             ) : (
               <Link key={section.href} href={section.href} className={cls}>
                 {inner}

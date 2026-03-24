@@ -1,25 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { GENRE_OPTIONS } from "@/lib/genres";
+import { GENRE_OPTIONS, parseGenres, joinGenres } from "@/lib/genres";
 import { XMarkIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 
-/**
- * Parst einen Genre-String (kommasepariert) in ein sauberes Array.
- * Einzelwerte wie "Fantasy" werden zu ["Fantasy"].
- */
-export function parseGenres(raw: string | undefined | null): string[] {
-  if (!raw) return [];
-  return raw
-    .split(",")
-    .map((g) => g.trim())
-    .filter(Boolean);
-}
-
-/** Wandelt ein Genre-Array zurück in einen kommaseparierten String. */
-export function joinGenres(genres: string[]): string {
-  return genres.join(", ");
-}
+// Re-export from lib so existing imports from this file keep working
+export { parseGenres, joinGenres } from "@/lib/genres";
 
 type GenrePickerProps = {
   value: string; // kommaseparierter String

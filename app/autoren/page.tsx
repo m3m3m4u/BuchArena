@@ -46,6 +46,7 @@ function weightedShuffle(authors: DiscoverAuthor[], seed: number): DiscoverAutho
 export default function AutorenPage() {
   const [authors, setAuthors] = useState<DiscoverAuthor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [genreFilter, setGenreFilter] = useState("");
   const [ageFilter, setAgeFilter] = useState("");
   const [message, setMessage] = useState("");
@@ -77,35 +78,50 @@ export default function AutorenPage() {
     return [...unique].sort((a, b) => a.localeCompare(b, "de"));
   }, [authors]);
 
-  const hasActiveFilter = genreFilter !== "" || ageFilter.trim() !== "";
+  const hasActiveFilter = genreFilter !== "" || ageFilter.trim() !== "" || searchQuery.trim() !== "";
 
   const filteredAuthors = useMemo(() => {
     const age = Number(ageFilter);
     const hasAge = Number.isFinite(age) && ageFilter.trim() !== "";
+    const q = searchQuery.trim().toLowerCase();
 
     if (!hasActiveFilter) {
       // No filter → show ALL authors (including those without books)
       return weightedShuffle(authors, seed);
     }
 
-    // With filter → only authors that have matching books
-    const result = authors
-      .map((a) => ({
-        ...a,
-        books: a.books.filter((b) => {
-          const genreList = (b.genre ?? "").split(",").map((g) => normalizeGenre(g.trim()));
-          const matchesGenre = !genreFilter || genreList.includes(genreFilter);
-          const matchesAge = !hasAge || (b.ageFrom <= age && age <= b.ageTo);
-          return matchesGenre && matchesAge;
-        }),
-      }))
-      .filter((a) => a.books.length > 0);
+    // With filter → only authors that have matching books (or matching name)
+    let result = authors;
+
+    // Text search: match on author name or book titles
+    if (q) {
+      result = result.filter((a) =>
+        a.displayName.toLowerCase().includes(q) ||
+        a.username.toLowerCase().includes(q) ||
+        a.books.some((b) => b.title.toLowerCase().includes(q))
+      );
+    }
+
+    // Genre / age filter
+    if (genreFilter || hasAge) {
+      result = result
+        .map((a) => ({
+          ...a,
+          books: a.books.filter((b) => {
+            const genreList = (b.genre ?? "").split(",").map((g) => normalizeGenre(g.trim()));
+            const matchesGenre = !genreFilter || genreList.includes(genreFilter);
+            const matchesAge = !hasAge || (b.ageFrom <= age && age <= b.ageTo);
+            return matchesGenre && matchesAge;
+          }),
+        }))
+        .filter((a) => a.books.length > 0);
+    }
 
     return weightedShuffle(result, seed);
-  }, [authors, genreFilter, ageFilter, hasActiveFilter, seed]);
+  }, [authors, genreFilter, ageFilter, searchQuery, hasActiveFilter, seed]);
 
   // Reset page when filter changes
-  useEffect(() => { setPage(1); }, [genreFilter, ageFilter]);
+  useEffect(() => { setPage(1); }, [genreFilter, ageFilter, searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAuthors.length / PAGE_SIZE));
   const pagedAuthors = filteredAuthors.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -119,6 +135,11 @@ export default function AutorenPage() {
     <main className="top-centered-main">
       <section className="card">
         <h1>Autoren entdecken</h1>
+
+        <label className="grid gap-1 text-[0.95rem]">
+          Suche
+          <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name oder Buchtitel …" />
+        </label>
 
         <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
           <label className="grid gap-1 text-[0.95rem]">

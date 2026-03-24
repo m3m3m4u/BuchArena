@@ -53,6 +53,7 @@ export default function UploadPage() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showUploadOverlay, setShowUploadOverlay] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -118,7 +119,7 @@ export default function UploadPage() {
 
     try {
       // Use chunked upload for large files, simple upload for small ones
-      if (file.size > CHUNK_SIZE) {
+      if (file!.size > CHUNK_SIZE) {
         await uploadChunked();
       } else {
         await uploadSimple();
@@ -464,6 +465,34 @@ export default function UploadPage() {
             {uploading ? "Wird hochgeladen …" : "Einreichung absenden"}
           </button>
         </form>
+
+        {/* Overlay: Sprechertext-Hinweis (Upload) */}
+        {showUploadOverlay && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl grid gap-4">
+              <h2 className="text-lg font-bold">Wichtiger Hinweis</h2>
+              <p className="text-[0.95rem] leading-relaxed">
+                Wichtig: Schreibe in die Notizen jeder Folie der PowerPoint-Datei
+                den jeweiligen Sprechertext. Melde dich via Instagram bei Andrea
+                (<strong>@Lernen-mit-YoshiHeart</strong>) wenn du dabei Hilfe brauchst.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Link
+                  href="/social-media"
+                  className="btn no-underline"
+                >
+                  Zurück
+                </Link>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setShowUploadOverlay(false)}
+                >
+                  Verstanden
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="pt-2">
           <Link

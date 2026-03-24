@@ -100,3 +100,20 @@ export function normalizeGenre(g: string): string {
   if (!trimmed) return trimmed;
   return GENRE_ALIAS_MAP[trimmed.toLowerCase()] ?? trimmed;
 }
+
+/**
+ * Parst einen Genre-String (kommasepariert) in ein sauberes Array.
+ * Einzelwerte wie "Fantasy" werden zu ["Fantasy"].
+ */
+export function parseGenres(raw: string | undefined | null): string[] {
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((g) => g.trim())
+    .filter(Boolean);
+}
+
+/** Wandelt ein Genre-Array zurück in einen kommaseparierten String. */
+export function joinGenres(genres: string[]): string {
+  return genres.join(", ");
+}

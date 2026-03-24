@@ -39,6 +39,7 @@ function BuecherContent() {
   const [books, setBooks] = useState<DiscoverBook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState("");
   const [genreFilter, setGenreFilter] = useState(normalizeGenre(searchParams.get("genre") ?? ""));
   const [ageFilter, setAgeFilter] = useState("");
   const [message, setMessage] = useState("");
@@ -72,16 +73,22 @@ function BuecherContent() {
   const filteredBooks = useMemo(() => {
     const age = Number(ageFilter);
     const hasAge = Number.isFinite(age) && ageFilter.trim() !== "";
+    const q = searchQuery.trim().toLowerCase();
     return books.filter((book) => {
       const genreList = (book.genre ?? "").split(",").map((g) => normalizeGenre(g.trim()));
       const matchesGenre = !genreFilter || genreList.includes(genreFilter);
       const matchesAge = !hasAge || (book.ageFrom <= age && age <= book.ageTo);
-      return matchesGenre && matchesAge;
+      const matchesSearch = !q ||
+        book.title.toLowerCase().includes(q) ||
+        book.authorDisplayName.toLowerCase().includes(q) ||
+        (book.publisher ?? "").toLowerCase().includes(q) ||
+        (book.isbn ?? "").toLowerCase().includes(q);
+      return matchesGenre && matchesAge && matchesSearch;
     });
-  }, [books, genreFilter, ageFilter]);
+  }, [books, genreFilter, ageFilter, searchQuery]);
 
   // Reset page when filter changes
-  useEffect(() => { setPage(1); }, [genreFilter, ageFilter]);
+  useEffect(() => { setPage(1); }, [genreFilter, ageFilter, searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(filteredBooks.length / PAGE_SIZE));
   const pagedBooks = filteredBooks.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -106,6 +113,11 @@ function BuecherContent() {
 
       <section className="card mt-3">
         <h1>Bücher entdecken</h1>
+
+        <label className="grid gap-1 text-[0.95rem]">
+          Suche
+          <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Titel, Autor, Verlag oder ISBN …" />
+        </label>
 
         <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
           <label className="grid gap-1 text-[0.95rem]">
