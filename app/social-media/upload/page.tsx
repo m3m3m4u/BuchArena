@@ -232,6 +232,11 @@ export default function UploadPage() {
               Vielen Dank! Deine Buchvorstellung wurde erfolgreich eingereicht.
               Wir melden uns bei dir, sobald sie bearbeitet wurde.
             </p>
+            {!instagram.trim() && (
+              <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm">
+                Du hast deinen Instagram-Account nicht angegeben. Das ist kein Problem, aber dann können wir dich nicht auf Instagram verlinken.
+              </p>
+            )}
             <div className="flex gap-3 pt-2">
               <button
                 className="btn btn-primary"
@@ -417,6 +422,9 @@ export default function UploadPage() {
           {/* Instagram */}
           <label className="grid gap-1 text-[0.95rem]">
             <span className="font-medium">Instagram (optional)</span>
+            <span className="text-xs text-arena-muted">
+              Gib deinen Instagram-Account an, damit wir dich auf Instagram verlinken können.
+            </span>
             <input
               type="text"
               className="input-base"

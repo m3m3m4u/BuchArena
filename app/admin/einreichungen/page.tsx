@@ -200,7 +200,7 @@ export default function BucharenaAdminSubmissions() {
                   {sub.submittedBy && (
                     <div className="col-span-full flex items-center gap-1">
                       <span className="text-[#888]">Hochgeladen von:</span>
-                      <Link href={`/autor/${sub.submittedBy}`} className="text-arena-link no-underline hover:underline font-medium">{sub.submittedBy}</Link>
+                      <Link href={`/profil?user=${encodeURIComponent(sub.submittedBy)}`} className="text-arena-link no-underline hover:underline font-medium">{sub.submittedBy}</Link>
                     </div>
                   )}
                   {sub.notes && <div className="col-span-full text-[#555]">Notiz: {sub.notes}</div>}
