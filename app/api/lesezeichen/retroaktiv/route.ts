@@ -49,15 +49,15 @@ export async function POST() {
         }
       }
 
-      // 2) Bücher hochgeladen (15 pro Buch)
+      // 2) Bücher hochgeladen (3 pro Buch)
       const bookCount = await books.countDocuments({ ownerUsername: username });
       const alreadyBookEntries = doc.entries.filter((e) => e.reason === "buecher_hochgeladen").length;
       const missingBooks = bookCount - alreadyBookEntries;
       if (missingBooks > 0) {
-        const amount = missingBooks * 15;
+        const amount = missingBooks * 3;
         const newEntries = Array.from({ length: missingBooks }, () => ({
           reason: "buecher_hochgeladen" as const,
-          amount: 15,
+          amount: 3,
           date: new Date(),
         }));
         await col.updateOne(

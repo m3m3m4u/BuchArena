@@ -5,7 +5,8 @@ export type LesezeichenReason =
   | "wochen_streak"
   | "treffpunkt_beitrag"
   | "quiz_tag"
-  | "mc_quiz_10_punkte";
+  | "mc_quiz_10_punkte"
+  | "buchempfehlung";
 
 export const LESEZEICHEN_RULES: {
   reason: LesezeichenReason;
@@ -23,7 +24,7 @@ export const LESEZEICHEN_RULES: {
     reason: "buecher_hochgeladen",
     label: "Buch hochgeladen",
     description: "Lade ein Buch hoch.",
-    amount: "15 Lesezeichen pro Buch",
+    amount: "3 Lesezeichen pro Buch",
   },
   {
     reason: "tages_login",
@@ -54,5 +55,11 @@ export const LESEZEICHEN_RULES: {
     label: "10 Punkte im MC-Quiz",
     description: "Erreiche mindestens 10 Punkte im Multiple-Choice-Quiz.",
     amount: "1 Lesezeichen",
+  },
+  {
+    reason: "buchempfehlung",
+    label: "Buchempfehlung",
+    description: "Empfiehl ein Buch auf dessen Buchseite.",
+    amount: "1 Lesezeichen (max. 3 pro Tag)",
   },
 ];

@@ -21,6 +21,8 @@ export type LesezeichenDocument = {
   quizDays: string[];
   /** Tage, an denen der User im Treffpunkt geschrieben hat (YYYY-MM-DD) */
   treffpunktDays: string[];
+  /** Empfehlungen pro Tag: key = YYYY-MM-DD, value = Anzahl */
+  empfehlungenHeute: Record<string, number>;
   updatedAt: Date;
 };
 
@@ -68,6 +70,7 @@ export async function getOrCreateDoc(
     loginDays: [],
     quizDays: [],
     treffpunktDays: [],
+    empfehlungenHeute: {},
     updatedAt: new Date(),
   };
   await col.insertOne(newDoc);
@@ -101,9 +104,9 @@ export async function awardProfilAusgefuellt(username: string) {
   await addLesezeichen(username, "profil_ausgefuellt", 10);
 }
 
-/** Buch hochgeladen: 15 Lesezeichen pro Buch */
+/** Buch hochgeladen: 3 Lesezeichen pro Buch */
 export async function awardBuecherHochgeladen(username: string) {
-  await addLesezeichen(username, "buecher_hochgeladen", 15);
+  await addLesezeichen(username, "buecher_hochgeladen", 3);
 }
 
 /** Täglicher Login: 1 Lesezeichen + evtl. 7 Streak-Bonus */
@@ -160,6 +163,24 @@ export async function awardQuizTag(username: string) {
 /** MC-Quiz 10+ Punkte: 1 Lesezeichen (pro Spiel) */
 export async function awardMcQuiz10Punkte(username: string) {
   await addLesezeichen(username, "mc_quiz_10_punkte", 1);
+}
+
+/** Buchempfehlung: +1 Lesezeichen, max. 3 pro Tag */
+export async function awardBuchempfehlung(username: string): Promise<boolean> {
+  const today = todayKey();
+  const doc = await getOrCreateDoc(username);
+  const todayCount = doc.empfehlungenHeute?.[today] ?? 0;
+  if (todayCount >= 3) return false;
+
+  const col = await getLesezeichenCollection();
+  await col.updateOne(
+    { username },
+    {
+      $set: { [`empfehlungenHeute.${today}`]: todayCount + 1, updatedAt: new Date() },
+    },
+  );
+  await addLesezeichen(username, "buchempfehlung", 1);
+  return true;
 }
 
 /* ── Abfragen ── */

@@ -21,6 +21,7 @@ const REASON_ICONS: Record<string, string> = {
   treffpunkt_beitrag: "💬",
   quiz_tag: "🧠",
   mc_quiz_10_punkte: "🏆",
+  buchempfehlung: "⭐",
 };
 
 export default function LesezeichenPage() {

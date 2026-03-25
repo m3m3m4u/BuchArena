@@ -83,6 +83,10 @@ async function initializeDatabase(db: Db) {
   await lesezeichen.createIndex({ username: 1 }, { unique: true });
   await lesezeichen.createIndex({ total: -1 });
 
+  const buchempfehlungen = db.collection("buchempfehlungen");
+  await buchempfehlungen.createIndex({ bookId: 1, createdAt: -1 });
+  await buchempfehlungen.createIndex({ bookId: 1, username: 1 }, { unique: true });
+
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
     { projection: { _id: 1 } }

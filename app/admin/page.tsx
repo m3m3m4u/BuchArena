@@ -275,15 +275,15 @@ export default function AdminPage() {
             <button
               className="btn btn-sm"
               onClick={async () => {
-                setMessage("Lesezeichen werden vergeben …");
+                setMessage("Lesezeichen werden neu berechnet …");
                 try {
-                  const r = await fetch("/api/lesezeichen/retroaktiv", { method: "POST" });
+                  const r = await fetch("/api/lesezeichen/recalc", { method: "POST" });
                   const d = await r.json() as { message?: string };
                   setMessage(d.message ?? "Fertig.");
-                } catch { setMessage("Fehler beim Vergeben."); }
+                } catch { setMessage("Fehler bei der Neuberechnung."); }
               }}
             >
-              🔖 Lesezeichen retroaktiv vergeben
+              🔖 Lesezeichen neu berechnen
             </button>
             <Link href="/admin/analytics" className="btn btn-sm">
               📊 Analyse
