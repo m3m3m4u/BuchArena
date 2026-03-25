@@ -194,6 +194,13 @@ export default function BookDetailPage({ params }: PageProps) {
               </div>
               <div>
                 <h1 className="mb-2.5">{book.title}{author && <span className="block text-base font-normal text-arena-muted mt-1">von {author.name || author.username}</span>}</h1>
+                {empfehlungen.length > 0 && (
+                  <div className="mb-3 flex items-center gap-1.5" title={`${empfehlungen.length} Empfehlung${empfehlungen.length !== 1 ? "en" : ""}`}>
+                    <span className="text-xl leading-none">❤️</span>
+                    <span className="text-base font-semibold text-red-600">{empfehlungen.length}</span>
+                    <span className="text-sm text-arena-muted">{empfehlungen.length === 1 ? "Empfehlung" : "Empfehlungen"}</span>
+                  </div>
+                )}
                 <div className="mt-2 space-y-1">
                   {author && (
                     <p className="my-1"><strong>Autor*in:</strong>{" "}
