@@ -160,12 +160,6 @@ function BuecherContent() {
                     </div>
                     <div className="min-w-0">
                       <h3 className="mb-1 mt-0 truncate">{book.title}</h3>
-                      {book.empfehlungenCount > 0 && (
-                        <div className="mb-1.5 flex items-center gap-1.5" title={`${book.empfehlungenCount} Empfehlung${book.empfehlungenCount !== 1 ? "en" : ""}`}>
-                          <span className="text-lg leading-none">❤️</span>
-                          <span className="text-sm font-semibold text-red-600">{book.empfehlungenCount}</span>
-                        </div>
-                      )}
                       {(() => {
                         const lines: { label: string; value: string }[] = [];
                         lines.push({ label: "Autor", value: book.authorDisplayName });
