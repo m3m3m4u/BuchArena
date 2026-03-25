@@ -3,11 +3,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useCallback } from "react";
-import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
+import { getStoredAccount, ACCOUNT_CHANGED_EVENT, type LoggedInAccount } from "@/lib/client-account";
+
+
 
 export default function HomePage() {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [account, setAccount] = useState<LoggedInAccount | null>(null);
   const [showVideo, setShowVideo] = useState(false);
+  const [lesezeichen, setLesezeichen] = useState<{ total: number; loginDays: number } | null>(null);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   const closeVideo = useCallback(() => setShowVideo(false), []);
 
@@ -19,7 +23,7 @@ export default function HomePage() {
   }, [showVideo, closeVideo]);
 
   useEffect(() => {
-    const sync = () => setLoggedIn(!!getStoredAccount());
+    const sync = () => setAccount(getStoredAccount());
     sync();
     window.addEventListener(ACCOUNT_CHANGED_EVENT, sync);
     window.addEventListener("storage", sync);
@@ -29,6 +33,118 @@ export default function HomePage() {
     };
   }, []);
 
+  // Dashboard data loading
+  useEffect(() => {
+    if (!account) return;
+    fetch("/api/lesezeichen").then(r => r.json()).then(d => setLesezeichen(d)).catch(() => {});
+    fetch("/api/messages/unread-count").then(r => r.json()).then(d => setUnreadMessages(d.count ?? 0)).catch(() => {});
+  }, [account]);
+
+  // Logged-in: Dashboard
+  if (account) {
+    return (
+      <main className="top-centered-main">
+        {/* Greeting */}
+        <section className="card">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center w-14 h-14 rounded-full bg-linear-to-br from-arena-blue to-arena-blue-light text-white text-2xl font-bold shrink-0">
+              {account.username.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h1 className="text-xl m-0">Hallo, {account.username}! 👋</h1>
+              <p className="text-arena-muted text-sm m-0 mt-0.5">Willkommen zurück in der BuchArena</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Quick Stats */}
+        <section className="w-full max-w-[1100px] grid grid-cols-3 gap-3 mt-3 max-sm:grid-cols-1">
+          <Link href="/lesezeichen" className="no-underline text-inherit">
+            <div className="rounded-xl border border-arena-border-light bg-white p-4 text-center hover:border-arena-blue transition-colors">
+              <p className="text-3xl font-bold m-0 text-arena-blue">🔖 {lesezeichen?.total ?? "–"}</p>
+              <p className="text-arena-muted text-sm m-0 mt-1">Lesezeichen</p>
+            </div>
+          </Link>
+          <Link href="/nachrichten" className="no-underline text-inherit">
+            <div className="rounded-xl border border-arena-border-light bg-white p-4 text-center hover:border-arena-blue transition-colors">
+              <p className="text-3xl font-bold m-0 text-arena-blue">
+                ✉️ {unreadMessages}
+              </p>
+              <p className="text-arena-muted text-sm m-0 mt-1">
+                {unreadMessages === 1 ? "Neue Nachricht" : "Neue Nachrichten"}
+              </p>
+            </div>
+          </Link>
+          <Link href="/lesezeichen" className="no-underline text-inherit">
+            <div className="rounded-xl border border-arena-border-light bg-white p-4 text-center hover:border-arena-blue transition-colors">
+              <p className="text-3xl font-bold m-0 text-arena-blue">📅 {lesezeichen?.loginDays ?? "–"}</p>
+              <p className="text-arena-muted text-sm m-0 mt-1">Login-Tage</p>
+            </div>
+          </Link>
+        </section>
+
+        {/* Quick Links */}
+        <section className="card mt-3">
+          <h2 className="text-lg m-0 flex items-center gap-2">🚀 Schnellzugriff</h2>
+          <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
+            <Link href="/buecher" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+              <span className="text-2xl">📚</span>
+              <div>
+                <p className="font-semibold m-0 text-[0.95rem]">Bücher entdecken</p>
+                <p className="text-arena-muted text-xs m-0">Stöbere durch alle Bücher</p>
+              </div>
+            </Link>
+            <Link href="/diskussionen" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+              <span className="text-2xl">💬</span>
+              <div>
+                <p className="font-semibold m-0 text-[0.95rem]">Treffpunkt</p>
+                <p className="text-arena-muted text-xs m-0">Diskutiere mit der Community</p>
+              </div>
+            </Link>
+            <Link href="/quiz" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+              <span className="text-2xl">🧠</span>
+              <div>
+                <p className="font-semibold m-0 text-[0.95rem]">Quiz spielen</p>
+                <p className="text-arena-muted text-xs m-0">Teste dein Buchwissen</p>
+              </div>
+            </Link>
+            <Link href="/profil" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+              <span className="text-2xl">👤</span>
+              <div>
+                <p className="font-semibold m-0 text-[0.95rem]">Mein Profil</p>
+                <p className="text-arena-muted text-xs m-0">Profil bearbeiten</p>
+              </div>
+            </Link>
+            <Link href="/buchempfehlung" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+              <span className="text-2xl">❤️</span>
+              <div>
+                <p className="font-semibold m-0 text-[0.95rem]">Buchempfehlung</p>
+                <p className="text-arena-muted text-xs m-0">Empfiehl dein Lieblingsbuch</p>
+              </div>
+            </Link>
+            <Link href="/nachrichten" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+              <span className="text-2xl">✉️</span>
+              <div>
+                <p className="font-semibold m-0 text-[0.95rem]">Nachrichten</p>
+                <p className="text-arena-muted text-xs m-0">Deine Unterhaltungen</p>
+              </div>
+            </Link>
+          </div>
+        </section>
+
+        {/* Buch der Woche */}
+        <section className="card mt-3">
+          <h2 className="text-lg m-0 flex items-center gap-2">📖 Buch der Woche</h2>
+          <div className="rounded-lg border border-dashed border-arena-border-light bg-gray-50 p-6 text-center">
+            <p className="text-3xl m-0">📚</p>
+            <p className="font-semibold text-arena-muted m-0 mt-2">Bald verfügbar</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  // Guest: Landing page
   return (
     <main className="flex flex-1 flex-col">
       {/* Hero */}
@@ -46,13 +162,11 @@ export default function HomePage() {
             Willkommen in der <span className="text-arena-yellow">BuchArena</span>
           </h1>
           <p className="mb-4 text-lg opacity-90 max-sm:text-base">Die Community für Autoren, Sprecher und Leser</p>
-          {!loggedIn && (
-            <div className="mt-4 flex flex-wrap justify-center gap-3">
-              <Link href="/auth" className="btn btn-primary rounded-lg px-5 py-2.5 text-base">
-                Kostenlos registrieren
-              </Link>
-            </div>
-          )}
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <Link href="/auth" className="btn btn-primary rounded-lg px-5 py-2.5 text-base">
+              Kostenlos registrieren
+            </Link>
+          </div>
 
           <button
             onClick={() => setShowVideo(true)}

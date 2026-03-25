@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getStoredAccount, setStoredAccount } from "@/lib/client-account";
 
 type Mode = "login" | "register";
@@ -11,6 +12,7 @@ type ApiResponse = {
 };
 
 export default function AuthPage() {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
   const [account, setAccount] = useState(() => getStoredAccount());
   const [username, setUsername] = useState("");
@@ -50,9 +52,11 @@ export default function AuthPage() {
       if (data.user) {
         setStoredAccount(data.user);
         setAccount(data.user);
+        router.push("/");
+        return;
       }
 
-      setMessage(data.user ? `${data.message} Rolle: ${data.user.role}` : data.message);
+      setMessage(data.message);
       if (mode === "register") setMode("login");
       setPassword("");
     } catch {

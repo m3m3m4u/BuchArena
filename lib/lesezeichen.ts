@@ -23,6 +23,8 @@ export type LesezeichenDocument = {
   treffpunktDays: string[];
   /** Empfehlungen pro Tag: key = YYYY-MM-DD, value = Anzahl */
   empfehlungenHeute: Record<string, number>;
+  /** Nicht in der Highscore-Rangliste anzeigen */
+  hideFromHighscores?: boolean;
   updatedAt: Date;
 };
 
@@ -197,7 +199,10 @@ export async function getLesezeichenHighscores(
 ): Promise<{ username: string; displayName: string; total: number }[]> {
   const col = await getLesezeichenCollection();
   const rows = await col
-    .find({}, { projection: { username: 1, total: 1, _id: 0 } })
+    .find(
+      { hideFromHighscores: { $ne: true } },
+      { projection: { username: 1, total: 1, _id: 0 } },
+    )
     .sort({ total: -1 })
     .limit(limit)
     .toArray();

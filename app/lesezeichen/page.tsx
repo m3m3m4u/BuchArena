@@ -11,6 +11,7 @@ type MyStats = {
   loginDays: number;
   quizDays: number;
   treffpunktDays: number;
+  hideFromHighscores: boolean;
 };
 
 const REASON_ICONS: Record<string, string> = {
@@ -29,6 +30,7 @@ export default function LesezeichenPage() {
   const [myStats, setMyStats] = useState<MyStats | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hideSaving, setHideSaving] = useState(false);
   const username = getStoredAccount()?.username ?? "";
 
   useEffect(() => {
@@ -50,6 +52,24 @@ export default function LesezeichenPage() {
       .then((d: MyStats) => setMyStats(d))
       .catch(() => {});
   }, [loggedIn]);
+
+  async function toggleHideFromHighscores() {
+    if (!myStats) return;
+    setHideSaving(true);
+    try {
+      const res = await fetch("/api/lesezeichen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hideFromHighscores: !myStats.hideFromHighscores }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMyStats({ ...myStats, hideFromHighscores: data.hideFromHighscores });
+        loadHighscores();
+      }
+    } catch { /* ignore */ }
+    finally { setHideSaving(false); }
+  }
 
   useEffect(() => {
     loadHighscores();
@@ -119,6 +139,21 @@ export default function LesezeichenPage() {
         <h2 className="text-xl flex items-center gap-2">
           🏅 Rangliste
         </h2>
+
+        {loggedIn && myStats && (
+          <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={myStats.hideFromHighscores}
+              onChange={toggleHideFromHighscores}
+              disabled={hideSaving}
+              className="accent-arena-blue w-4 h-4"
+            />
+            <span className={hideSaving ? "text-arena-muted" : ""}>
+              Ich möchte nicht in den Highscores auftauchen
+            </span>
+          </label>
+        )}
 
         {isLoading && (
           <p className="text-arena-muted text-sm">Lade Rangliste …</p>
