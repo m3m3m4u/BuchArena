@@ -11,6 +11,7 @@ export type DiscussionReply = {
   body: string;
   createdAt: Date;
   reactions?: Reaction[];
+  parentReplyId?: ObjectId;
 };
 
 export type DiscussionDocument = {

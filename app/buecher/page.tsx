@@ -184,15 +184,33 @@ function BuecherContent() {
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
                 <button className="btn btn-sm text-sm" disabled={page === 1} onClick={() => goTo(page - 1)}>← Zurück</button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    className={`btn btn-sm text-sm ${p === page ? "btn-primary" : ""}`}
-                    onClick={() => goTo(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
+                {(() => {
+                  const pages: (number | "…")[] = [];
+                  if (totalPages <= 7) {
+                    for (let i = 1; i <= totalPages; i++) pages.push(i);
+                  } else {
+                    pages.push(1);
+                    if (page > 3) pages.push("…");
+                    const start = Math.max(2, page - 1);
+                    const end = Math.min(totalPages - 1, page + 1);
+                    for (let i = start; i <= end; i++) pages.push(i);
+                    if (page < totalPages - 2) pages.push("…");
+                    pages.push(totalPages);
+                  }
+                  return pages.map((p, idx) =>
+                    p === "…" ? (
+                      <span key={`dots-${idx}`} className="px-1 text-sm select-none">…</span>
+                    ) : (
+                      <button
+                        key={p}
+                        className={`btn btn-sm text-sm ${p === page ? "btn-primary" : ""}`}
+                        onClick={() => goTo(p)}
+                      >
+                        {p}
+                      </button>
+                    )
+                  );
+                })()}
                 <button className="btn btn-sm text-sm" disabled={page === totalPages} onClick={() => goTo(page + 1)}>Weiter →</button>
               </div>
             )}

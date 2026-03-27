@@ -30,6 +30,7 @@ export async function POST(request: Request) {
       body: r.body,
       createdAt: r.createdAt,
       reactions: r.reactions ?? [],
+      parentReplyId: r.parentReplyId?.toString() ?? null,
     }));
 
     return NextResponse.json({

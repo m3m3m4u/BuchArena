@@ -16,6 +16,7 @@ type ReplyItem = {
   body: string;
   createdAt: string;
   reactions: ReactionItem[];
+  parentReplyId?: string | null;
 };
 
 type DiscussionDetail = {
@@ -170,6 +171,7 @@ export default function DiskussionDetailPage() {
   const [replyBody, setReplyBody] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [username, setUsername] = useState("");
+  const [replyingTo, setReplyingTo] = useState<{ id: string; author: string } | null>(null);
 
   // Editing state for the discussion itself
   const [isEditingDiscussion, setIsEditingDiscussion] = useState(false);
@@ -244,14 +246,17 @@ export default function DiskussionDetailPage() {
     setIsSending(true);
 
     try {
+      const payload: { discussionId: string; authorUsername: string; body: string; parentReplyId?: string } = {
+        discussionId,
+        authorUsername: username,
+        body: replyBody.trim(),
+      };
+      if (replyingTo) payload.parentReplyId = replyingTo.id;
+
       const response = await fetch("/api/discussions/reply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          discussionId,
-          authorUsername: username,
-          body: replyBody.trim(),
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = (await response.json()) as { message?: string };
@@ -261,6 +266,7 @@ export default function DiskussionDetailPage() {
       }
 
       setReplyBody("");
+      setReplyingTo(null);
       await loadDiscussion();
     } catch (error) {
       setMessage(
@@ -455,46 +461,91 @@ export default function DiskussionDetailPage() {
                 </p>
               ) : (
                 <div className="grid gap-3">
-                  {discussion.replies.map((reply) => (
-                    <article key={reply.id} className="rounded-lg border border-arena-border-light p-3 ml-3 sm:ml-6">
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <strong>{reply.authorUsername}</strong>
-                        <span className="text-xs text-arena-muted">
-                          {timeAgo(reply.createdAt)}
-                        </span>
-                      </div>
-                      <div
-                        className="mt-1 text-[0.95rem] leading-relaxed [overflow-wrap:break-word]" style={{ wordBreak: "break-word" }}
-                        dangerouslySetInnerHTML={{
-                          __html: formatBody(reply.body),
-                        }}
-                      />
-                      {reply.authorUsername === username && (
-                        <div className="flex gap-2 mt-3">
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() => handleDeleteReply(reply.id)}
-                          >
-                            Löschen
-                          </button>
-                        </div>
-                      )}
+                  {(() => {
+                    // Build tree: top-level + children
+                    const topLevel = discussion.replies.filter((r) => !r.parentReplyId);
+                    const childrenMap = new Map<string, ReplyItem[]>();
+                    for (const r of discussion.replies) {
+                      if (r.parentReplyId) {
+                        const list = childrenMap.get(r.parentReplyId) ?? [];
+                        list.push(r);
+                        childrenMap.set(r.parentReplyId, list);
+                      }
+                    }
 
-                      {/* Reactions on reply */}
-                      <ReactionBar
-                        reactions={reply.reactions}
-                        emojis={EMOJIS}
-                        username={username}
-                        onReact={(emoji) => handleReact(emoji, reply.id)}
-                      />
-                    </article>
-                  ))}
+                    function renderReply(reply: ReplyItem, depth: number) {
+                      const children = childrenMap.get(reply.id) ?? [];
+                      return (
+                        <div key={reply.id} style={{ marginLeft: depth > 0 ? Math.min(depth * 20, 60) : 0 }}>
+                          <article className="rounded-lg border border-arena-border-light p-3 ml-3 sm:ml-6">
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <strong>{reply.authorUsername}</strong>
+                              <span className="text-xs text-arena-muted">
+                                {timeAgo(reply.createdAt)}
+                              </span>
+                            </div>
+                            <div
+                              className="mt-1 text-[0.95rem] leading-relaxed [overflow-wrap:break-word]" style={{ wordBreak: "break-word" }}
+                              dangerouslySetInnerHTML={{
+                                __html: formatBody(reply.body),
+                              }}
+                            />
+                            <div className="flex gap-2 mt-3 items-center">
+                              <button
+                                className="btn btn-sm text-xs"
+                                onClick={() => {
+                                  setReplyingTo({ id: reply.id, author: reply.authorUsername });
+                                  setTimeout(() => document.getElementById("reply-form")?.scrollIntoView({ behavior: "smooth" }), 100);
+                                }}
+                              >
+                                Antworten
+                              </button>
+                              {reply.authorUsername === username && (
+                                <button
+                                  className="btn btn-sm btn-danger text-xs"
+                                  onClick={() => handleDeleteReply(reply.id)}
+                                >
+                                  Löschen
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Reactions on reply */}
+                            <ReactionBar
+                              reactions={reply.reactions}
+                              emojis={EMOJIS}
+                              username={username}
+                              onReact={(emoji) => handleReact(emoji, reply.id)}
+                            />
+                          </article>
+                          {children.length > 0 && (
+                            <div className="grid gap-3 mt-3">
+                              {children.map((child) => renderReply(child, depth + 1))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return topLevel.map((reply) => renderReply(reply, 0));
+                  })()}
                 </div>
               )}
 
               {/* Reply form */}
-              <div className="grid gap-2 mt-4">
+              <div id="reply-form" className="grid gap-2 mt-4">
                 <h3>Antworten</h3>
+                {replyingTo && (
+                  <div className="flex items-center gap-2 text-sm text-arena-muted bg-gray-50 rounded-lg px-3 py-2">
+                    <span>Antwort auf <strong>{replyingTo.author}</strong></span>
+                    <button
+                      className="btn btn-sm text-xs"
+                      onClick={() => setReplyingTo(null)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
                 <p className="text-xs text-arena-muted">
                   Formatierung: **fett**, *kursiv*, [Linktext](URL) und direkte
                   URLs werden erkannt.

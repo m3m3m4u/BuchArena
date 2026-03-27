@@ -31,6 +31,10 @@ pnpm-debug.log*
 # env files
 .env*
 
+# backup
+backup_db.py
+/backups
+
 # vercel
 .vercel
 

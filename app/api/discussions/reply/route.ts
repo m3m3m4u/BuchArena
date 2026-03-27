@@ -15,11 +15,13 @@ export async function POST(request: Request) {
       discussionId?: string;
       authorUsername?: string;
       body?: string;
+      parentReplyId?: string;
     };
 
     const discussionId = body.discussionId?.trim();
     const authorUsername = account.username;
     const replyBody = body.body?.trim();
+    const parentReplyId = body.parentReplyId?.trim();
 
     if (!discussionId || !ObjectId.isValid(discussionId) || !replyBody) {
       return NextResponse.json(
@@ -39,17 +41,27 @@ export async function POST(request: Request) {
     const now = new Date();
     const replyId = new ObjectId();
 
+    const replyDoc: {
+      _id: ObjectId;
+      authorUsername: string;
+      body: string;
+      createdAt: Date;
+      parentReplyId?: ObjectId;
+    } = {
+      _id: replyId,
+      authorUsername,
+      body: replyBody,
+      createdAt: now,
+    };
+
+    if (parentReplyId && ObjectId.isValid(parentReplyId)) {
+      replyDoc.parentReplyId = new ObjectId(parentReplyId);
+    }
+
     const result = await discussions.updateOne(
       { _id: new ObjectId(discussionId) },
       {
-        $push: {
-          replies: {
-            _id: replyId,
-            authorUsername,
-            body: replyBody,
-            createdAt: now,
-          },
-        },
+        $push: { replies: replyDoc },
         $inc: { replyCount: 1 },
         $set: { lastActivityAt: now },
       }
@@ -71,6 +83,7 @@ export async function POST(request: Request) {
         authorUsername,
         body: replyBody,
         createdAt: now,
+        parentReplyId: replyDoc.parentReplyId?.toString() ?? null,
       },
     });
   } catch {
