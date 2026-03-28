@@ -71,11 +71,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const webdavKey = `bucharena-submissions/${uniqueFileName}`;
 
       const bytes = await file.arrayBuffer();
-      const uploadResult = await davPut(webdavKey, new Uint8Array(bytes), contentType);
+      let filePath = `local:${uniqueFileName}`;
+      try {
+        const uploadResult = await davPut(webdavKey, new Uint8Array(bytes), contentType);
+        if (uploadResult) filePath = webdavKey;
+      } catch (uploadErr) {
+        console.error("WebDAV-Upload fehlgeschlagen, speichere Referenz:", uploadErr);
+        // Continue with submission even if upload failed
+      }
       uploadedFiles.push({
         fileName: generatedName,
         fileSize: file.size,
-        filePath: uploadResult ? webdavKey : `local:${uniqueFileName}`,
+        filePath,
       });
     }
 
@@ -92,7 +99,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       fileSize: primary.fileSize,
       filePath: primary.filePath,
       files: uploadedFiles,
-      notes: "Erstellt mit dem Vorlagen-Editor",
+      notes: vorlage.notiz || "Erstellt mit dem Vorlagen-Editor",
       submittedBy: account.username,
       status: "pending",
       createdAt: now,

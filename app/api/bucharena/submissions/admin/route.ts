@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const status = searchParams.get("status");
 
     const query: Record<string, unknown> = {};
-    if (status && ["pending", "approved", "rejected"].includes(status)) query.status = status;
+    if (status && ["pending", "approved", "rejected", "done"].includes(status)) query.status = status;
 
     const col = await getBucharenaSubmissionsCollection();
     const submissions = await col.find(query).sort({ createdAt: -1 }).toArray();

@@ -16,17 +16,36 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const submission = await col.findOne({ _id: new ObjectId(id) });
     if (!submission) return NextResponse.json({ success: false, error: "Einreichung nicht gefunden" }, { status: 404 });
 
-    const fileBuffer = await davGet(submission.filePath);
+    // Support downloading a specific file by index (?file=0, ?file=1)
+    const { searchParams } = new URL(request.url);
+    const fileIdx = searchParams.get("file");
+
+    let filePath: string;
+    let fileName: string;
+
+    if (fileIdx !== null && submission.files && submission.files.length > 0) {
+      const idx = parseInt(fileIdx, 10);
+      if (isNaN(idx) || idx < 0 || idx >= submission.files.length) {
+        return NextResponse.json({ success: false, error: "Ungültiger Datei-Index" }, { status: 400 });
+      }
+      filePath = submission.files[idx].filePath;
+      fileName = submission.files[idx].fileName;
+    } else {
+      filePath = submission.filePath;
+      fileName = submission.fileName;
+    }
+
+    const fileBuffer = await davGet(filePath);
     if (!fileBuffer) return NextResponse.json({ success: false, error: "Datei nicht gefunden" }, { status: 404 });
 
-    const contentType = submission.fileName.endsWith(".pptx")
+    const contentType = fileName.endsWith(".pptx")
       ? "application/vnd.openxmlformats-officedocument.presentationml.presentation"
       : "application/vnd.ms-powerpoint";
 
     return new NextResponse(Buffer.from(fileBuffer) as unknown as BodyInit, {
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `attachment; filename="${encodeURIComponent(submission.fileName)}"`,
+        "Content-Disposition": `attachment; filename="${encodeURIComponent(fileName)}"`,
         "Content-Length": fileBuffer.length.toString(),
       },
     });

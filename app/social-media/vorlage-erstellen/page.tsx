@@ -21,6 +21,7 @@ import {
   PaperAirplaneIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
+import GenrePicker from "@/app/components/genre-picker";
 
 /* ── helpers ── */
 
@@ -158,6 +159,7 @@ export default function VorlageErstellenPage() {
   const [error, setError] = useState("");
   const coverRef = useRef<HTMLInputElement>(null);
   const autorRef = useRef<HTMLInputElement>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function sync() {
@@ -179,7 +181,7 @@ export default function VorlageErstellenPage() {
     const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
-  }, []);
+  }, [dirty]);
 
   function set<K extends keyof FormData>(key: K, val: FormData[K]) {
     setForm((f) => ({ ...f, [key]: val }));
@@ -583,7 +585,7 @@ export default function VorlageErstellenPage() {
           <SlideFrame>
             <SlideCard>
               <div className="absolute" style={{ left: "5%", top: "6%", width: "85%", fontSize: "0.85em", fontWeight: 700, color: "#000" }}>
-                {form.autorTitel || ("Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin"))}
+                {"Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin")}
               </div>
               <div className="absolute rounded-[0.4em] p-[3%]" style={{ left: "3%", top: "18%", width: "50%", height: "75%", border: "1px solid #DDD", background: "#FAFAFA" }}>
                 <ul className="space-y-[0.3em] text-[0.42em] sm:text-[0.48em] list-none p-0 m-0">
@@ -779,7 +781,7 @@ export default function VorlageErstellenPage() {
           <ShortsSlideFrame>
             <div className="absolute inset-[3%] rounded-[0.4em] bg-white border border-gray-200">
               <div className="absolute" style={{ left: "6%", top: "4%", width: "88%", fontSize: "0.65em", fontWeight: 700, color: "#000" }}>
-                {form.autorTitel || ("Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin"))}
+                {"Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin")}
               </div>
               <div className="absolute flex items-center justify-center" style={{ left: "15%", top: "10%", width: "70%", height: "35%" }}>
                 {autorImg ? (
@@ -839,6 +841,7 @@ export default function VorlageErstellenPage() {
 
     /* 1. Load template */
     const response = await fetch("/Buchempfehlung_vorlage.pptx");
+    if (!response.ok) throw new Error("Vorlage-Template konnte nicht geladen werden (HTTP " + response.status + ")");
     const zip = await JSZip.loadAsync(await response.arrayBuffer());
 
       const A_NS = "http://schemas.openxmlformats.org/drawingml/2006/main";
@@ -1020,7 +1023,7 @@ export default function VorlageErstellenPage() {
       /* ────── Slide 4: Über den Autor ────── */
       let s4 = await zip.file("ppt/slides/slide4.xml")!.async("string");
       s4 = replaceParagraphTexts(s4, [
-        ["Über die Autorin", form.autorTitel || ("Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin"))],
+        ["Über die Autorin", "Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin")],
         ["Martina Zöchinger", autorFull],
         ["Österreich, Steiermark", form.autorHerkunft],
         ["Mutter, Medienfachfrau, Mentaltrainerin", form.autorBeruf],
@@ -1030,12 +1033,17 @@ export default function VorlageErstellenPage() {
 
       /* ────── Slide 5: Zusammenfassung ────── */
       const bullets = form.zusammenfassung.filter((b) => b.trim());
-      const s5replacements: [string, string][] = [];
-      for (let i = 0; i < 5; i++) {
-        s5replacements.push([`#${i + 1}`, bullets[i] || ""]);
-      }
+      const templateBullets = [
+        "Hüter in Ausbildung",
+        "Fantasieroman",
+        "Nach einer wahren Begebenheit",
+        "Trauerbewältigung",
+        "Emotional berührend",
+        "Spannend",
+      ];
       let s5 = await zip.file("ppt/slides/slide5.xml")!.async("string");
-      s5 = replaceParagraphTexts(s5, s5replacements);
+      s5 = replaceBulletParagraphs(s5, templateBullets[0], bullets.length > 0 ? bullets : [""]);
+      zip.file("ppt/slides/slide5.xml", s5);
       zip.file("ppt/slides/slide5.xml", s5);
 
       /* ────── Replace images ────── */
@@ -1070,6 +1078,7 @@ export default function VorlageErstellenPage() {
     const JSZip = (await import("jszip")).default;
 
     const response = await fetch("/Shorts.pptx");
+    if (!response.ok) throw new Error("Shorts-Template konnte nicht geladen werden (HTTP " + response.status + ")");
     const zip = await JSZip.loadAsync(await response.arrayBuffer());
 
     const A_NS = "http://schemas.openxmlformats.org/drawingml/2006/main";
@@ -1175,7 +1184,7 @@ export default function VorlageErstellenPage() {
     /* ────── Slide 4: Über den Autor ────── */
     let s4 = await zip.file("ppt/slides/slide4.xml")!.async("string");
     s4 = replacePlaceholders(s4, [
-      ["Über die Autorin", form.autorTitel || ("Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin"))],
+      ["Über die Autorin", "Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin")],
       ["#1", autorFull],
       ["#2", form.autorHerkunft],
       ["#3", form.autorBeruf],
@@ -1266,15 +1275,25 @@ export default function VorlageErstellenPage() {
     }
   }
 
+  function showError(msg: string) {
+    setError(msg);
+    setTimeout(() => feedbackRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
+  }
+
+  function showSuccess(msg: string) {
+    setSuccessMsg(msg);
+    setTimeout(() => feedbackRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
+  }
+
   async function submitVorlage() {
     setError("");
     setSuccessMsg("");
     if (!form.buchtitel.trim() || !form.autorName.trim()) {
-      setError("Buchtitel und Autorname sind Pflichtfelder.");
+      showError("Buchtitel und Autorname sind Pflichtfelder.");
       return;
     }
     if (submissionId) {
-      setError("Diese Vorlage wurde bereits eingereicht.");
+      showError("Diese Vorlage wurde bereits eingereicht.");
       return;
     }
 
@@ -1289,20 +1308,28 @@ export default function VorlageErstellenPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
+        if (!saveRes.ok) {
+          showError("Fehler beim Speichern (HTTP " + saveRes.status + ")");
+          return;
+        }
         const saveData = await saveRes.json();
         if (!saveData.success) {
-          setError(saveData.error || "Fehler beim Speichern");
+          showError(saveData.error || "Fehler beim Speichern");
           return;
         }
         currentId = saveData.id;
         setSavedId(currentId);
       } else {
         // Save latest changes
-        await fetch(`/api/bucharena/vorlagen/${currentId}`, {
+        const putRes = await fetch(`/api/bucharena/vorlagen/${currentId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
+        if (!putRes.ok) {
+          showError("Fehler beim Aktualisieren der Vorlage (HTTP " + putRes.status + ")");
+          return;
+        }
       }
 
       // Generate PPTX (both formats)
@@ -1326,18 +1353,28 @@ export default function VorlageErstellenPage() {
         method: "POST",
         body: fd,
       });
+      if (!res.ok) {
+        let errMsg = "Fehler beim Einreichen (HTTP " + res.status + ")";
+        try {
+          const data = await res.json();
+          if (data.error) errMsg = data.error;
+        } catch { /* response not JSON */ }
+        showError(errMsg);
+        return;
+      }
       const data = await res.json();
       if (!data.success) {
-        setError(data.error || "Fehler beim Einreichen");
+        showError(data.error || "Fehler beim Einreichen");
         return;
       }
       setSubmissionId(data.submissionId);
-      setSuccessMsg("Vorlage erfolgreich eingereicht! 🎉");
+      setDirty(false);
+      showSuccess("Vorlage erfolgreich eingereicht! 🎉");
       loadVorlagen();
       loadSubmissions();
     } catch (err) {
-      console.error(err);
-      setError("Fehler beim Einreichen: " + (err instanceof Error ? err.message : "Unbekannter Fehler"));
+      console.error("Submit-Fehler:", err);
+      showError("Fehler beim Einreichen: " + (err instanceof Error ? err.message : "Unbekannter Fehler"));
     } finally {
       setSubmitting(false);
     }
@@ -1515,12 +1552,7 @@ export default function VorlageErstellenPage() {
       case 3:
         return (
           <div className="grid gap-4">
-            <h2 className="text-lg font-bold">Folie 4 – Über die Autorin / den Autor</h2>
-            <label className="grid gap-1 text-[0.95rem]">
-              <span className="font-medium">Folientitel</span>
-              <input className="input-base" placeholder={"z. B. " + (form.geschlecht === "Autor" ? "Über den Autor" : "Über die Autorin")} value={form.autorTitel} onChange={(e) => set("autorTitel", e.target.value)} />
-              <span className="text-arena-muted text-xs">Leer lassen für automatischen Titel basierend auf Geschlecht</span>
-            </label>
+            <h2 className="text-lg font-bold">Folie 4 – {form.geschlecht === "Autor" ? "Über den Autor" : "Über die Autorin"}</h2>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Herkunft / Land</span>
               <input className={"input-base" + req(form.autorHerkunft)} placeholder="z. B. Österreich, Steiermark" value={form.autorHerkunft} onChange={(e) => set("autorHerkunft", e.target.value)} />
@@ -1769,15 +1801,17 @@ export default function VorlageErstellenPage() {
           )}
         </div>
 
-        {error && (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
-        )}
+        <div ref={feedbackRef}>
+          {error && (
+            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+          )}
 
-        {successMsg && (
-          <p className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700 flex items-center gap-2">
-            <CheckCircleIcon className="size-4" /> {successMsg}
-          </p>
-        )}
+          {successMsg && (
+            <p className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700 flex items-center gap-2">
+              <CheckCircleIcon className="size-4" /> {successMsg}
+            </p>
+          )}
+        </div>
 
         {/* ── Navigation ── */}
         <div className="flex items-center gap-3 pt-1">
@@ -1814,6 +1848,7 @@ export default function VorlageErstellenPage() {
                 Hinweis: Nicht alle Felder sind ausgefüllt. Leere Felder erscheinen als Platzhalter in der Vorlage.
               </p>
             )}
+            <GenrePicker value={form.genre} onChange={(v) => set("genre", v)} label="Genre" />
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Hinweis an die BuchArena <span className="text-arena-muted text-sm font-normal">(optional)</span></span>
               <textarea className="input-base" rows={3} placeholder="z. B. Buch wird erst im Mai veröffentlicht, bitte erst dann posten …" value={form.notiz} onChange={(e) => set("notiz", e.target.value)} />

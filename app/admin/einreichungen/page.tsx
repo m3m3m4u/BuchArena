@@ -41,6 +41,7 @@ interface Submission {
   ageRange?: string;
   fileName: string;
   fileSize: number;
+  files?: { fileName: string; fileSize: number; filePath: string }[];
   notes?: string;
   contact: string;
   contactType: "email" | "instagram";
@@ -91,16 +92,41 @@ export default function BucharenaAdminSubmissions() {
   const fmtSize = (b: number) => b < 1024 * 1024 ? `${(b / 1024).toFixed(1)} KB` : `${(b / (1024 * 1024)).toFixed(1)} MB`;
   const fmtDate = (d: string) => new Date(d).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
-  const handleDownload = async (id: string, fileName: string) => {
+  const handleDownload = async (id: string, fileName: string, fileIndex?: number) => {
     try {
-      const res = await fetch(`/api/bucharena/submissions/admin/${id}/download`);
+      const url = fileIndex !== undefined
+        ? `/api/bucharena/submissions/admin/${id}/download?file=${fileIndex}`
+        : `/api/bucharena/submissions/admin/${id}/download`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error("Download fehlgeschlagen");
       const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a"); a.href = url; a.download = fileName;
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = blobUrl; a.download = fileName;
       document.body.appendChild(a); a.click();
-      window.URL.revokeObjectURL(url); document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl); document.body.removeChild(a);
     } catch { alert("Download fehlgeschlagen"); }
+  };
+
+  const [downloadingAll, setDownloadingAll] = useState(false);
+
+  const handleDownloadAllPending = async () => {
+    const pending = submissions.filter(s => s.status === "pending");
+    if (pending.length === 0) { alert("Keine ausstehenden Einreichungen."); return; }
+    setDownloadingAll(true);
+    try {
+      for (const sub of pending) {
+        if (sub.files && sub.files.length > 0) {
+          for (let i = 0; i < sub.files.length; i++) {
+            await handleDownload(sub._id, sub.files[i].fileName, i);
+            await new Promise(r => setTimeout(r, 500));
+          }
+        } else {
+          await handleDownload(sub._id, sub.fileName);
+          await new Promise(r => setTimeout(r, 500));
+        }
+      }
+    } catch { alert("Fehler beim Herunterladen"); }
+    finally { setDownloadingAll(false); }
   };
 
   const handleUpdate = async () => {
@@ -171,6 +197,9 @@ export default function BucharenaAdminSubmissions() {
           <button onClick={loadSubmissions} className="btn btn-sm ml-auto flex items-center gap-1">
             <ArrowPathIcon className="w-3.5 h-3.5" />Aktualisieren
           </button>
+          <button onClick={handleDownloadAllPending} disabled={downloadingAll} className="btn btn-sm btn-primary flex items-center gap-1">
+            <ArrowDownTrayIcon className="w-3.5 h-3.5" />{downloadingAll ? "Lade …" : "Alle ausstehenden herunterladen"}
+          </button>
         </div>
 
         {/* Content */}
@@ -192,7 +221,18 @@ export default function BucharenaAdminSubmissions() {
                 <div className="grid grid-cols-2 gap-1 text-[0.82rem] mb-2 max-[500px]:grid-cols-1">
                   <div><span className="text-[#888]">Genre:</span> {sub.genre || "-"}</div>
                   <div><span className="text-[#888]">Alter:</span> {sub.ageRange || "-"}</div>
-                  <div className="col-span-full"><span className="text-[#888]">Datei:</span> {sub.fileName} ({fmtSize(sub.fileSize)})</div>
+                  <div className="col-span-full">
+                    <span className="text-[#888]">Dateien:</span>{" "}
+                    {sub.files && sub.files.length > 0
+                      ? sub.files.map((f, i) => (
+                          <span key={i}>
+                            {i > 0 && ", "}
+                            {f.fileName} ({fmtSize(f.fileSize)})
+                          </span>
+                        ))
+                      : <span>{sub.fileName} ({fmtSize(sub.fileSize)})</span>
+                    }
+                  </div>
                   <div className="col-span-full flex items-center gap-1 min-w-0">
                     {sub.contactType === "email" ? <EnvelopeIcon className="w-3.5 h-3.5 text-[#888] shrink-0" /> : <SvgIg />}
                     <span className="break-all">{sub.contact}</span>
@@ -208,8 +248,17 @@ export default function BucharenaAdminSubmissions() {
                 </div>
                 <div className="flex justify-between items-center border-t border-[#e5e7eb] pt-2">
                   <span className="text-[0.75rem] text-[#888]">{fmtDate(sub.createdAt)}</span>
-                  <div className="flex gap-1">
-                    <button onClick={() => handleDownload(sub._id, sub.fileName)} className="btn btn-sm text-arena-link" title="Herunterladen"><ArrowDownTrayIcon className="w-4 h-4" /></button>
+                  <div className="flex gap-1 flex-wrap justify-end">
+                    {sub.files && sub.files.length > 1 ? (
+                      sub.files.map((f, i) => (
+                        <button key={i} onClick={() => handleDownload(sub._id, f.fileName, i)} className="btn btn-sm text-arena-link" title={f.fileName}>
+                          <ArrowDownTrayIcon className="w-4 h-4" />
+                          <span className="text-[0.7rem]">{f.fileName.startsWith("Shorts") ? "Shorts" : "Quer"}</span>
+                        </button>
+                      ))
+                    ) : (
+                      <button onClick={() => handleDownload(sub._id, sub.fileName)} className="btn btn-sm text-arena-link" title="Herunterladen"><ArrowDownTrayIcon className="w-4 h-4" /></button>
+                    )}
                     <button onClick={() => setEditingSubmission(sub)} className="btn btn-sm text-[#d97706]" title="Bearbeiten"><PencilIcon className="w-4 h-4" /></button>
                     <button onClick={() => setShowDeleteConfirm(sub._id)} className="btn btn-sm btn-danger" title="Löschen"><TrashIcon className="w-4 h-4" /></button>
                   </div>
