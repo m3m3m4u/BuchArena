@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getPollsCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { ObjectId } from "mongodb";
+import { awardAbstimmung } from "@/lib/lesezeichen";
 
 export async function POST(request: Request) {
   try {
@@ -58,6 +59,9 @@ export async function POST(request: Request) {
         },
       }
     );
+
+    // Lesezeichen: Abstimmung
+    awardAbstimmung(account.username).catch(() => {});
 
     return NextResponse.json({ ok: true });
   } catch {

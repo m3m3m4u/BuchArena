@@ -144,6 +144,11 @@ export async function awardTreffpunktBeitrag(username: string) {
   await addLesezeichen(username, "treffpunkt_beitrag", 1);
 }
 
+/** Abstimmung: 1 Lesezeichen pro Abstimmung */
+export async function awardAbstimmung(username: string) {
+  await addLesezeichen(username, "abstimmung", 1);
+}
+
 /** Quiz gespielt: 1 Lesezeichen pro Tag */
 export async function awardQuizTag(username: string) {
   const today = todayKey();

@@ -20,6 +20,7 @@ const REASON_ICONS: Record<string, string> = {
   tages_login: "📅",
   wochen_streak: "🔥",
   treffpunkt_beitrag: "💬",
+  abstimmung: "🗳️",
   quiz_tag: "🧠",
   mc_quiz_10_punkte: "🏆",
   buchempfehlung: "⭐",

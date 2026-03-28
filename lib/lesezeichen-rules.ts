@@ -4,6 +4,7 @@ export type LesezeichenReason =
   | "tages_login"
   | "wochen_streak"
   | "treffpunkt_beitrag"
+  | "abstimmung"
   | "quiz_tag"
   | "mc_quiz_10_punkte"
   | "buchempfehlung";
@@ -43,6 +44,12 @@ export const LESEZEICHEN_RULES: {
     label: "Treffpunkt-Beitrag",
     description: "Schreibe etwas im Treffpunkt (Diskussionen).",
     amount: "1 Lesezeichen pro Beitrag",
+  },
+  {
+    reason: "abstimmung",
+    label: "Abstimmung",
+    description: "Stimme bei einer Abstimmung im Treffpunkt ab.",
+    amount: "1 Lesezeichen pro Abstimmung",
   },
   {
     reason: "quiz_tag",
