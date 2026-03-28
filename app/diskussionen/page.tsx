@@ -18,6 +18,18 @@ type DiscussionItem = {
   hasBloggerProfile?: boolean;
 };
 
+type PollVoteItem = { username: string; optionIndex: number };
+
+type PollItem = {
+  id: string;
+  authorUsername: string;
+  question: string;
+  options: string[];
+  votes: PollVoteItem[];
+  totalVotes: number;
+  createdAt: string;
+};
+
 function RoleBadges({ username, hasProfile, hasSpeakerProfile, hasBloggerProfile }: { username: string; hasProfile?: boolean; hasSpeakerProfile?: boolean; hasBloggerProfile?: boolean }) {
   const badges: { label: string; href: string }[] = [];
   if (hasProfile) badges.push({ label: "Autor", href: `/autor/${encodeURIComponent(username)}` });
@@ -72,6 +84,15 @@ export default function DiskussionenPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [username, setUsername] = useState("");
 
+  /* ── Poll state ── */
+  const [polls, setPolls] = useState<PollItem[]>([]);
+  const [showPollOverlay, setShowPollOverlay] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState("");
+  const [pollOptions, setPollOptions] = useState(["", ""]);
+  const [isSavingPoll, setIsSavingPoll] = useState(false);
+  const [votingPoll, setVotingPoll] = useState<string | null>(null);
+  const [openPollId, setOpenPollId] = useState<string | null>(null);
+
   useEffect(() => {
     const account = getStoredAccount();
     if (account) {
@@ -105,6 +126,62 @@ export default function DiskussionenPage() {
   useEffect(() => {
     void loadDiscussions();
   }, [loadDiscussions]);
+
+  const loadPolls = useCallback(async () => {
+    try {
+      const res = await fetch("/api/discussions/polls/list");
+      const data = (await res.json()) as { polls?: PollItem[] };
+      setPolls(data.polls ?? []);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    void loadPolls();
+  }, [loadPolls]);
+
+  async function handleCreatePoll() {
+    const q = pollQuestion.trim();
+    const opts = pollOptions.map((o) => o.trim()).filter(Boolean);
+    if (!q || opts.length < 2) return;
+
+    setIsSavingPoll(true);
+    try {
+      const res = await fetch("/api/discussions/polls/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q, options: opts }),
+      });
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Fehler");
+
+      setPollQuestion("");
+      setPollOptions(["", ""]);
+      setShowPollOverlay(false);
+      await loadPolls();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Abstimmung konnte nicht erstellt werden.");
+    } finally {
+      setIsSavingPoll(false);
+    }
+  }
+
+  async function handleVote(pollId: string, optionIndex: number) {
+    setVotingPoll(pollId);
+    try {
+      const res = await fetch("/api/discussions/polls/vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pollId, optionIndex }),
+      });
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Fehler");
+      await loadPolls();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Stimme konnte nicht abgegeben werden.");
+    } finally {
+      setVotingPoll(null);
+    }
+  }
 
   async function handleCreate() {
     if (!title.trim() || !body.trim()) return;
@@ -160,45 +237,156 @@ export default function DiskussionenPage() {
       <section className="card">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1>Diskussionen</h1>
-          <button className="btn" onClick={() => setShowOverlay(true)}>
-            Neues Thema
-          </button>
+          <div className="flex gap-2">
+            <button className="btn" onClick={() => setShowPollOverlay(true)}>
+              Neue Abstimmung
+            </button>
+            <button className="btn" onClick={() => setShowOverlay(true)}>
+              Neues Thema
+            </button>
+          </div>
         </div>
 
         {message && <p className="text-red-700">{message}</p>}
 
         {isLoading ? (
           <p>Lade Diskussionen ...</p>
-        ) : discussions.length === 0 ? (
-          <p>Noch keine Diskussionen vorhanden. Starte das erste Thema!</p>
-        ) : (
-          <div className="grid gap-3">
-            {discussions.map((d) => (
-              <div
-                key={d.id}
-                onClick={() => router.push(`/diskussionen/${d.id}`)}
-                className="rounded-lg border border-arena-border p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <strong>{d.title}</strong>
-                  <span className="text-xs text-arena-muted">
-                    {d.replyCount} {d.replyCount === 1 ? "Antwort" : "Antworten"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2 text-sm text-arena-muted mt-1">
-                  <span>
-                    von {d.authorUsername}{" "}
-                    <RoleBadges username={d.authorUsername} hasProfile={d.hasProfile} hasSpeakerProfile={d.hasSpeakerProfile} hasBloggerProfile={d.hasBloggerProfile} />
-                  </span>
-                  <span className="text-xs text-arena-muted">
-                    Letzte Aktivität: {timeAgo(d.lastActivityAt)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        ) : (() => {
+          // Merge discussions & polls into one sorted list
+          type ListItem = { type: "discussion"; data: DiscussionItem } | { type: "poll"; data: PollItem };
+          const items: ListItem[] = [
+            ...discussions.map((d) => ({ type: "discussion" as const, data: d })),
+            ...polls.map((p) => ({ type: "poll" as const, data: p })),
+          ].sort((a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime());
+
+          if (items.length === 0) return <p>Noch keine Diskussionen vorhanden. Starte das erste Thema!</p>;
+
+          return (
+            <div className="grid gap-3">
+              {items.map((item) => {
+                if (item.type === "discussion") {
+                  const d = item.data;
+                  return (
+                    <div
+                      key={`d-${d.id}`}
+                      onClick={() => router.push(`/diskussionen/${d.id}`)}
+                      className="rounded-lg border border-arena-border p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <strong>{d.title}</strong>
+                        <span className="text-xs text-arena-muted">
+                          {d.replyCount} {d.replyCount === 1 ? "Antwort" : "Antworten"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 text-sm text-arena-muted mt-1">
+                        <span>
+                          von {d.authorUsername}{" "}
+                          <RoleBadges username={d.authorUsername} hasProfile={d.hasProfile} hasSpeakerProfile={d.hasSpeakerProfile} hasBloggerProfile={d.hasBloggerProfile} />
+                        </span>
+                        <span className="text-xs text-arena-muted">
+                          Letzte Aktivität: {timeAgo(d.lastActivityAt)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                }
+
+                const poll = item.data;
+                return (
+                  <div
+                    key={`p-${poll.id}`}
+                    onClick={() => setOpenPollId(poll.id)}
+                    className="rounded-lg border border-arena-border p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <strong className="flex items-center gap-1.5">
+                        <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium">Abstimmung</span>
+                        {poll.question}
+                      </strong>
+                      <span className="text-xs text-arena-muted whitespace-nowrap">
+                        {poll.totalVotes} {poll.totalVotes === 1 ? "Stimme" : "Stimmen"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 text-sm text-arena-muted mt-1">
+                      <span>von {poll.authorUsername}</span>
+                      <span className="text-xs text-arena-muted">{timeAgo(poll.createdAt)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
       </section>
+
+      {/* ═══ Poll Detail Overlay ═══ */}
+      {openPollId && (() => {
+        const poll = polls.find((p) => p.id === openPollId);
+        if (!poll) return null;
+        const hasVoted = poll.votes.some((v) => v.username === username);
+        const myVote = poll.votes.find((v) => v.username === username);
+        const total = poll.totalVotes;
+
+        return (
+          <div className="overlay-backdrop" onClick={() => setOpenPollId(null)}>
+            <div className="w-[min(560px,100%)] bg-white rounded-xl p-5 box-border grid gap-4" onClick={(e) => e.stopPropagation()}>
+              <div>
+                <h2 className="m-0 mb-1">{poll.question}</h2>
+                <p className="text-sm text-arena-muted m-0">
+                  von {poll.authorUsername} · {timeAgo(poll.createdAt)} · {total} {total === 1 ? "Stimme" : "Stimmen"}
+                </p>
+              </div>
+
+              <div className="grid gap-2">
+                {poll.options.map((opt, idx) => {
+                  const count = poll.votes.filter((v) => v.optionIndex === idx).length;
+                  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                  const isMyVote = myVote?.optionIndex === idx;
+
+                  if (hasVoted) {
+                    return (
+                      <div key={idx} className="relative">
+                        <div
+                          className="absolute inset-0 rounded-lg transition-all"
+                          style={{
+                            width: `${pct}%`,
+                            backgroundColor: isMyVote ? "rgb(59 130 246 / 0.2)" : "rgb(229 231 235)",
+                          }}
+                        />
+                        <div className={`relative flex items-center justify-between px-3 py-2.5 rounded-lg border ${isMyVote ? "border-blue-400 font-medium" : "border-transparent"}`}>
+                          <span className="text-sm">
+                            {isMyVote && <span className="mr-1">✓</span>}
+                            {opt}
+                          </span>
+                          <span className="text-sm font-medium tabular-nums">{pct}%</span>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      disabled={votingPoll === poll.id}
+                      onClick={() => handleVote(poll.id, idx)}
+                      className="w-full text-left px-3 py-2.5 rounded-lg border border-arena-border hover:border-blue-400 hover:bg-blue-50 transition-colors text-sm cursor-pointer disabled:opacity-50"
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {hasVoted && <p className="text-xs text-arena-muted m-0">Du hast bereits abgestimmt.</p>}
+
+              <div className="flex justify-end">
+                <button className="btn" onClick={() => setOpenPollId(null)}>Schließen</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {showOverlay && (
         <div className="overlay-backdrop" onClick={() => setShowOverlay(false)}>
@@ -244,6 +432,80 @@ export default function DiskussionenPage() {
               <button
                 className="btn"
                 onClick={() => setShowOverlay(false)}
+              >
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPollOverlay && (
+        <div className="overlay-backdrop" onClick={() => setShowPollOverlay(false)}>
+          <div className="w-[min(520px,100%)] bg-white rounded-xl p-4 box-border grid gap-3.5" onClick={(e) => e.stopPropagation()}>
+            <h2>Neue Abstimmung</h2>
+
+            <label className="grid gap-1 text-[0.95rem]">
+              Frage
+              <input
+                className="input-base"
+                type="text"
+                value={pollQuestion}
+                onChange={(e) => setPollQuestion(e.target.value)}
+                maxLength={300}
+                placeholder="Worüber soll abgestimmt werden?"
+              />
+            </label>
+
+            <div className="grid gap-2">
+              <span className="text-[0.95rem]">Optionen</span>
+              {pollOptions.map((opt, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <input
+                    className="input-base flex-1"
+                    type="text"
+                    value={opt}
+                    onChange={(e) => {
+                      const next = [...pollOptions];
+                      next[idx] = e.target.value;
+                      setPollOptions(next);
+                    }}
+                    maxLength={100}
+                    placeholder={`Option ${idx + 1}`}
+                  />
+                  {pollOptions.length > 2 && (
+                    <button
+                      type="button"
+                      className="text-red-500 hover:text-red-700 text-sm px-1"
+                      onClick={() => setPollOptions(pollOptions.filter((_, i) => i !== idx))}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+              {pollOptions.length < 10 && (
+                <button
+                  type="button"
+                  className="btn btn-sm w-fit"
+                  onClick={() => setPollOptions([...pollOptions, ""])}
+                >
+                  + Option hinzufügen
+                </button>
+              )}
+            </div>
+
+            <div className="flex gap-2 justify-end">
+              <button
+                className="btn"
+                onClick={handleCreatePoll}
+                disabled={isSavingPoll || !pollQuestion.trim() || pollOptions.filter((o) => o.trim()).length < 2}
+              >
+                {isSavingPoll ? "Wird erstellt ..." : "Abstimmung erstellen"}
+              </button>
+              <button
+                className="btn"
+                onClick={() => setShowPollOverlay(false)}
               >
                 Abbrechen
               </button>

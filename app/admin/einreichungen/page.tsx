@@ -50,6 +50,7 @@ interface Submission {
   reviewedBy?: string;
   reviewedAt?: string;
   submittedBy?: string;
+  authorInstagram?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -241,6 +242,14 @@ export default function BucharenaAdminSubmissions() {
                     <div className="col-span-full flex items-center gap-1">
                       <span className="text-[#888]">Hochgeladen von:</span>
                       <Link href={`/profil?user=${encodeURIComponent(sub.submittedBy)}`} className="text-arena-link no-underline hover:underline font-medium">{sub.submittedBy}</Link>
+                    </div>
+                  )}
+                  {sub.authorInstagram && (
+                    <div className="col-span-full flex items-center gap-1">
+                      <SvgIg />
+                      <a href={`https://instagram.com/${sub.authorInstagram.replace(/^@/, "")}`} target="_blank" rel="noreferrer" className="text-arena-link no-underline hover:underline break-all">
+                        {sub.authorInstagram.startsWith("@") ? sub.authorInstagram : `@${sub.authorInstagram}`}
+                      </a>
                     </div>
                   )}
                   {sub.notes && <div className="col-span-full text-[#555]">Notiz: {sub.notes}</div>}

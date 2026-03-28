@@ -39,3 +39,20 @@ export type AddReplyPayload = {
   authorUsername?: string;
   body?: string;
 };
+
+/* ── Polls / Abstimmungen ── */
+
+export type PollVote = {
+  username: string;
+  optionIndex: number;
+  votedAt: Date;
+};
+
+export type PollDocument = {
+  _id?: ObjectId;
+  authorUsername: string;
+  question: string;
+  options: string[];
+  votes: PollVote[];
+  createdAt: Date;
+};

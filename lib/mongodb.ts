@@ -4,6 +4,7 @@ import type { BookDocument } from "@/lib/books";
 import type { ProfileData, SpeakerProfileData, BloggerProfileData } from "@/lib/profile";
 import type { SupportPost } from "@/lib/support";
 import type { DiscussionDocument } from "@/lib/discussions";
+import type { PollDocument } from "@/lib/discussions";
 import type { MessageDocument } from "@/lib/messages";
 
 export type UserRole = "USER" | "ADMIN" | "SUPERADMIN";
@@ -140,6 +141,11 @@ export async function getSupportCollection(): Promise<Collection<SupportPost>> {
 export async function getDiscussionsCollection(): Promise<Collection<DiscussionDocument>> {
   const db = await getDatabase();
   return db.collection<DiscussionDocument>("discussions");
+}
+
+export async function getPollsCollection(): Promise<Collection<PollDocument>> {
+  const db = await getDatabase();
+  return db.collection<PollDocument>("polls");
 }
 
 export async function getMessagesCollection(): Promise<Collection<MessageDocument>> {
