@@ -244,14 +244,19 @@ export default function BucharenaAdminSubmissions() {
                       <Link href={`/profil?user=${encodeURIComponent(sub.submittedBy)}`} className="text-arena-link no-underline hover:underline font-medium">{sub.submittedBy}</Link>
                     </div>
                   )}
-                  {sub.authorInstagram && (
-                    <div className="col-span-full flex items-center gap-1">
-                      <SvgIg />
-                      <a href={`https://instagram.com/${sub.authorInstagram.replace(/^@/, "")}`} target="_blank" rel="noreferrer" className="text-arena-link no-underline hover:underline break-all">
-                        {sub.authorInstagram.startsWith("@") ? sub.authorInstagram : `@${sub.authorInstagram}`}
-                      </a>
-                    </div>
-                  )}
+                  {sub.authorInstagram && (() => {
+                    const raw = sub.authorInstagram!;
+                    const handle = raw.replace(/^https?:\/\/(www\.)?instagram\.com\//, "").replace(/^@/, "").replace(/\/+$/, "");
+                    if (!handle) return null;
+                    return (
+                      <div className="col-span-full flex items-center gap-1">
+                        <SvgIg />
+                        <a href={`https://instagram.com/${handle}`} target="_blank" rel="noreferrer" className="text-arena-link no-underline hover:underline break-all">
+                          @{handle}
+                        </a>
+                      </div>
+                    );
+                  })()}
                   {sub.notes && <div className="col-span-full text-[#555]">Notiz: {sub.notes}</div>}
                   {sub.reviewNotes && <div className="col-span-full text-[#555]">Admin: {sub.reviewNotes}</div>}
                 </div>
