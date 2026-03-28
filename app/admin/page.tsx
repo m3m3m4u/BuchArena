@@ -51,6 +51,10 @@ export default function AdminPage() {
   const [pwResetTarget, setPwResetTarget] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
 
+  /* ── E-Mail ändern ── */
+  const [emailChangeTarget, setEmailChangeTarget] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState("");
+
   useEffect(() => {
     function syncAccount() {
       setAccount(getStoredAccount());
@@ -214,6 +218,37 @@ export default function AdminPage() {
       setNewPassword("");
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Passwort-Reset fehlgeschlagen.");
+    } finally {
+      setBusyUser(null);
+    }
+  }
+
+  /* ── E-Mail ändern ── */
+  async function handleChangeEmail() {
+    if (!emailChangeTarget || !newEmail.trim()) return;
+    setBusyUser(emailChangeTarget);
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/admin/users/change-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUsername: emailChangeTarget, newEmail: newEmail.trim() }),
+      });
+
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "E-Mail-Änderung fehlgeschlagen.");
+
+      setMessage(data.message ?? "Erfolgreich.");
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.username === emailChangeTarget ? { ...u, email: newEmail.trim().toLowerCase() } : u,
+        ),
+      );
+      setEmailChangeTarget(null);
+      setNewEmail("");
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "E-Mail-Änderung fehlgeschlagen.");
     } finally {
       setBusyUser(null);
     }
@@ -416,6 +451,14 @@ export default function AdminPage() {
                               >
                                 Passwort
                               </button>
+                              <button
+                                type="button"
+                                className="btn btn-sm"
+                                disabled={isBusy}
+                                onClick={() => { setEmailChangeTarget(user.username); setNewEmail(user.email); }}
+                              >
+                                E-Mail
+                              </button>
                               {isDeactivated ? (
                                 <button
                                   type="button"
@@ -551,6 +594,14 @@ export default function AdminPage() {
                           >
                             Passwort
                           </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm"
+                            disabled={isBusy}
+                            onClick={() => { setEmailChangeTarget(user.username); setNewEmail(user.email); }}
+                          >
+                            E-Mail
+                          </button>
                           {isDeactivated ? (
                             <button
                               type="button"
@@ -614,6 +665,38 @@ export default function AdminPage() {
                   Umbenennen
                 </button>
                 <button type="button" className="btn flex-1" onClick={() => setRenameTarget(null)}>
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══ Overlay: E-Mail ändern ══ */}
+        {emailChangeTarget && (
+          <div className="overlay-backdrop" onClick={() => setEmailChangeTarget(null)}>
+            <div className="bg-white rounded-xl p-5 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-lg m-0 mb-3">E-Mail ändern</h2>
+              <p className="text-sm text-arena-muted mb-2">
+                Benutzer: <strong>{emailChangeTarget}</strong>
+              </p>
+              <label className="block">
+                <span className="text-sm font-semibold">Neue E-Mail-Adresse</span>
+                <input
+                  type="email"
+                  className="input-base w-full mt-1"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="neue@email.de"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === "Enter") void handleChangeEmail(); }}
+                />
+              </label>
+              <div className="flex gap-2 mt-4">
+                <button type="button" className="btn btn-primary flex-1" disabled={!newEmail.trim() || busyUser === emailChangeTarget} onClick={() => void handleChangeEmail()}>
+                  Ändern
+                </button>
+                <button type="button" className="btn flex-1" onClick={() => setEmailChangeTarget(null)}>
                   Abbrechen
                 </button>
               </div>

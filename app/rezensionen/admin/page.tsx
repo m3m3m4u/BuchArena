@@ -21,6 +21,7 @@ interface Review {
   review: string;
   authorEmail: string;
   authorName?: string;
+  instagram?: string;
   status: "pending" | "processed";
   processedBy?: string;
   processedAt?: string;
@@ -163,6 +164,7 @@ export default function ReviewsAdminPage() {
                     </div>
                     <div className="text-[0.82rem] text-[#888] grid gap-0.5">
                       <div><strong>Eingereicht von:</strong> {review.authorName || review.authorEmail} ({review.authorEmail})</div>
+                      {review.instagram && <div><strong>Instagram:</strong> {review.instagram}</div>}
                       <div><strong>Eingereicht am:</strong> {new Date(review.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
                       {review.processedBy && <div><strong>Bearbeitet von:</strong> {review.processedBy}</div>}
                       {review.processedAt && <div><strong>Bearbeitet am:</strong> {new Date(review.processedAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</div>}

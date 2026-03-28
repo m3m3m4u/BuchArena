@@ -19,6 +19,7 @@ export async function GET() {
       review: r.review,
       authorEmail: r.authorEmail,
       authorName: r.authorName,
+      instagram: r.instagram,
       status: r.status,
       processedBy: r.processedBy,
       processedAt: r.processedAt,

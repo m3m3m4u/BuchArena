@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   try {
     const account = await getServerAccount();
     const body = await request.json();
-    const { bookTitle, review } = body;
+    const { bookTitle, review, authorName: submittedAuthorName, instagram } = body;
 
     if (!bookTitle || !review) {
       return NextResponse.json({ success: false, error: "Buchtitel und Rezension sind erforderlich" }, { status: 400 });
@@ -30,7 +30,8 @@ export async function POST(request: Request) {
       bookTitle: trimmedTitle,
       review: trimmedReview,
       authorEmail: account?.email || undefined,
-      authorName: account?.username || undefined,
+      authorName: (typeof submittedAuthorName === "string" && submittedAuthorName.trim()) ? submittedAuthorName.trim() : (account?.username || undefined),
+      instagram: (typeof instagram === "string" && instagram.trim()) ? instagram.trim() : undefined,
       status: "pending",
       createdAt: now,
       updatedAt: now,

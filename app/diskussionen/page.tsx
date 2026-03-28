@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 
@@ -12,7 +13,34 @@ type DiscussionItem = {
   replyCount: number;
   lastActivityAt: string;
   createdAt: string;
+  hasProfile?: boolean;
+  hasSpeakerProfile?: boolean;
+  hasBloggerProfile?: boolean;
 };
+
+function RoleBadges({ username, hasProfile, hasSpeakerProfile, hasBloggerProfile }: { username: string; hasProfile?: boolean; hasSpeakerProfile?: boolean; hasBloggerProfile?: boolean }) {
+  const badges: { label: string; href: string }[] = [];
+  if (hasProfile) badges.push({ label: "Autor", href: `/autor/${encodeURIComponent(username)}` });
+  if (hasBloggerProfile) badges.push({ label: "Blogger", href: `/blogger/${encodeURIComponent(username)}` });
+  if (hasSpeakerProfile) badges.push({ label: "Sprecher", href: `/sprecher/${encodeURIComponent(username)}` });
+  if (badges.length === 0) return null;
+  return (
+    <span className="text-xs text-arena-muted">
+      ({badges.map((b, i) => (
+        <span key={b.label}>
+          {i > 0 && ", "}
+          <Link
+            href={b.href}
+            className="underline hover:text-arena-text"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {b.label}
+          </Link>
+        </span>
+      ))})
+    </span>
+  );
+}
 
 function timeAgo(dateString: string): string {
   const now = Date.now();
@@ -34,6 +62,7 @@ function timeAgo(dateString: string): string {
 }
 
 export default function DiskussionenPage() {
+  const router = useRouter();
   const [discussions, setDiscussions] = useState<DiscussionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -145,9 +174,9 @@ export default function DiskussionenPage() {
         ) : (
           <div className="grid gap-3">
             {discussions.map((d) => (
-              <Link
+              <div
                 key={d.id}
-                href={`/diskussionen/${d.id}`}
+                onClick={() => router.push(`/diskussionen/${d.id}`)}
                 className="rounded-lg border border-arena-border p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -157,12 +186,15 @@ export default function DiskussionenPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-2 text-sm text-arena-muted mt-1">
-                  <span>von {d.authorUsername}</span>
+                  <span>
+                    von {d.authorUsername}{" "}
+                    <RoleBadges username={d.authorUsername} hasProfile={d.hasProfile} hasSpeakerProfile={d.hasSpeakerProfile} hasBloggerProfile={d.hasBloggerProfile} />
+                  </span>
                   <span className="text-xs text-arena-muted">
                     Letzte Aktivität: {timeAgo(d.lastActivityAt)}
                   </span>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

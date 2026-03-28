@@ -34,6 +34,7 @@ export type BucharenaReviewDoc = {
   review: string;
   authorEmail?: string;
   authorName?: string;
+  instagram?: string;
   status: "pending" | "processed";
   processedBy?: string;
   processedAt?: Date;

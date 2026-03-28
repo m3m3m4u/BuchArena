@@ -5,6 +5,8 @@ import Link from "next/link";
 
 export default function BucharenaReviewsPage() {
   const [bookTitle, setBookTitle] = useState("");
+  const [authorName, setAuthorName] = useState("");
+  const [instagram, setInstagram] = useState("");
   const [review, setReview] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -13,7 +15,7 @@ export default function BucharenaReviewsPage() {
     e.preventDefault();
     setMessage(null);
     if (!bookTitle.trim() || !review.trim()) {
-      setMessage({ type: "error", text: "Bitte fülle beide Felder aus" });
+      setMessage({ type: "error", text: "Bitte fülle beide Pflichtfelder aus" });
       return;
     }
     setSubmitting(true);
@@ -21,12 +23,14 @@ export default function BucharenaReviewsPage() {
       const res = await fetch("/api/bucharena/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookTitle: bookTitle.trim(), review: review.trim() }),
+        body: JSON.stringify({ bookTitle: bookTitle.trim(), review: review.trim(), authorName: authorName.trim() || undefined, instagram: instagram.trim() || undefined }),
       });
       const data = await res.json();
       if (data.success) {
         setMessage({ type: "success", text: "Rezension erfolgreich eingereicht! Vielen Dank." });
         setBookTitle("");
+        setAuthorName("");
+        setInstagram("");
         setReview("");
       } else {
         setMessage({ type: "error", text: data.error || "Fehler beim Einreichen der Rezension" });
@@ -68,6 +72,24 @@ export default function BucharenaReviewsPage() {
               required maxLength={200} disabled={submitting}
             />
             <span className="text-xs text-[#888]">{bookTitle.length}/200 Zeichen</span>
+          </label>
+
+          <label className="grid gap-1 text-[0.95rem]">
+            Dein Name
+            <input
+              type="text" value={authorName} onChange={e => setAuthorName(e.target.value)}
+              className="input-base" placeholder="z.B. Max Mustermann"
+              maxLength={100} disabled={submitting}
+            />
+          </label>
+
+          <label className="grid gap-1 text-[0.95rem]">
+            Instagram
+            <input
+              type="text" value={instagram} onChange={e => setInstagram(e.target.value)}
+              className="input-base" placeholder="z.B. @dein_account"
+              maxLength={100} disabled={submitting}
+            />
           </label>
 
           <label className="grid gap-1 text-[0.95rem]">

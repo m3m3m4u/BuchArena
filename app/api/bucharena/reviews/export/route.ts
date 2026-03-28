@@ -12,16 +12,12 @@ export async function GET() {
     const col = await getBucharenaReviewsCollection();
     const reviews = await col.find().sort({ createdAt: -1 }).toArray();
 
-    const headers = ["Datum", "Buchtitel", "Rezension", "Autor Email", "Autor Name", "Status", "Bearbeitet von", "Bearbeitet am"];
+    const headers = ["Buchtitel", "Autor", "Instagram", "Rezension"];
     const rows = reviews.map((r) => [
-      new Date(r.createdAt).toLocaleDateString("de-DE"),
       r.bookTitle,
-      r.review,
-      r.authorEmail || "",
       r.authorName || "",
-      r.status === "pending" ? "Ausstehend" : "Bearbeitet",
-      r.processedBy || "",
-      r.processedAt ? new Date(r.processedAt).toLocaleDateString("de-DE") : "",
+      r.instagram || "",
+      r.review,
     ]);
 
     const csvContent = [headers.join("\t"), ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""').replace(/\n/g, " ")}"`).join("\t"))].join("\n");

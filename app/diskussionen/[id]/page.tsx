@@ -17,6 +17,9 @@ type ReplyItem = {
   createdAt: string;
   reactions: ReactionItem[];
   parentReplyId?: string | null;
+  hasProfile?: boolean;
+  hasSpeakerProfile?: boolean;
+  hasBloggerProfile?: boolean;
 };
 
 type DiscussionDetail = {
@@ -29,6 +32,9 @@ type DiscussionDetail = {
   createdAt: string;
   replies: ReplyItem[];
   reactions: ReactionItem[];
+  hasProfile?: boolean;
+  hasSpeakerProfile?: boolean;
+  hasBloggerProfile?: boolean;
 };
 
 function formatBody(text: string) {
@@ -70,6 +76,29 @@ function timeAgo(dateString: string): string {
 
   const months = Math.floor(days / 30);
   return `vor ${months} Monat${months > 1 ? "en" : ""}`;
+}
+
+function RoleBadges({ username, hasProfile, hasSpeakerProfile, hasBloggerProfile }: { username: string; hasProfile?: boolean; hasSpeakerProfile?: boolean; hasBloggerProfile?: boolean }) {
+  const badges: { label: string; href: string }[] = [];
+  if (hasProfile) badges.push({ label: "Autor", href: `/autor/${encodeURIComponent(username)}` });
+  if (hasBloggerProfile) badges.push({ label: "Blogger", href: `/blogger/${encodeURIComponent(username)}` });
+  if (hasSpeakerProfile) badges.push({ label: "Sprecher", href: `/sprecher/${encodeURIComponent(username)}` });
+  if (badges.length === 0) return null;
+  return (
+    <span className="text-xs text-arena-muted">
+      ({badges.map((b, i) => (
+        <span key={b.label}>
+          {i > 0 && ", "}
+          <Link
+            href={b.href}
+            className="underline hover:text-arena-text"
+          >
+            {b.label}
+          </Link>
+        </span>
+      ))})
+    </span>
+  );
 }
 
 function ReactionBar({
@@ -407,7 +436,8 @@ export default function DiskussionDetailPage() {
                 <h1>{discussion.title}</h1>
                 <div className="flex items-center justify-between gap-2 text-sm text-arena-muted">
                   <span>
-                    von <strong>{discussion.authorUsername}</strong>
+                    von <strong>{discussion.authorUsername}</strong>{" "}
+                    <RoleBadges username={discussion.authorUsername} hasProfile={discussion.hasProfile} hasSpeakerProfile={discussion.hasSpeakerProfile} hasBloggerProfile={discussion.hasBloggerProfile} />
                   </span>
                   <span className="text-xs text-arena-muted">
                     {timeAgo(discussion.createdAt)}
@@ -479,7 +509,10 @@ export default function DiskussionDetailPage() {
                         <div key={reply.id} style={{ marginLeft: depth > 0 ? Math.min(depth * 20, 60) : 0 }}>
                           <article className="rounded-lg border border-arena-border-light p-3 ml-3 sm:ml-6">
                             <div className="flex items-center justify-between gap-2 mb-2">
-                              <strong>{reply.authorUsername}</strong>
+                              <span>
+                                <strong>{reply.authorUsername}</strong>{" "}
+                                <RoleBadges username={reply.authorUsername} hasProfile={reply.hasProfile} hasSpeakerProfile={reply.hasSpeakerProfile} hasBloggerProfile={reply.hasBloggerProfile} />
+                              </span>
                               <span className="text-xs text-arena-muted">
                                 {timeAgo(reply.createdAt)}
                               </span>
