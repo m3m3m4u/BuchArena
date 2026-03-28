@@ -152,6 +152,11 @@ h1 { margin: 0; }
   font-family: inherit;
   transition: border-color 0.15s, background 0.15s;
   min-height: 44px;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
 }
 
 @media (min-width: 640px) {

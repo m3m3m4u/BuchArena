@@ -81,6 +81,48 @@ export type BucharenaSprecherDoc = {
   updatedAt: Date;
 };
 
+export type BucharenaVorlageDoc = {
+  _id?: ObjectId;
+  /** Owner */
+  username: string;
+  /** Form fields */
+  buchtitel: string;
+  untertitel: string;
+  autorName: string;
+  /** @deprecated kept for backward compat with old documents */
+  autorVorname?: string;
+  /** @deprecated kept for backward compat with old documents */
+  autorNachname?: string;
+  geschlecht?: string;
+  erscheinungsjahr: string;
+  genre: string;
+  verlag: string;
+  coverDesign: string;
+  hintergrund: string;
+  hauptfigur: string;
+  thema: string;
+  inhalte: string;
+  schwerpunkt: string;
+  autorTitel: string;
+  autorHerkunft: string;
+  autorBeruf: string;
+  autorStil: string;
+  zusammenfassung: string[];
+  notes1: string;
+  notes2: string;
+  notes3: string;
+  notes4: string;
+  notes5: string;
+  notiz: string;
+  /** Base64 data-URLs for images (optional) */
+  coverImg?: string;
+  autorImg?: string;
+  /** Submission reference (set when submitted) */
+  submissionId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type BucharenaSubmissionDoc = {
   _id?: ObjectId;
   bookTitle: string;
@@ -90,12 +132,13 @@ export type BucharenaSubmissionDoc = {
   fileName: string;
   fileSize: number;
   filePath: string;
+  files?: { fileName: string; fileSize: number; filePath: string }[];
   notes?: string;
   contact?: string;
   contactType?: "email" | "instagram";
   instagram?: string;
   submittedBy?: string;
-  status: "pending" | "approved" | "rejected" | "done";
+  status: "pending" | "approved" | "rejected" | "done" | "withdrawn";
   reviewNotes?: string;
   reviewedBy?: string;
   reviewedAt?: Date;
@@ -165,6 +208,11 @@ export async function getBucharenaSprecherCollection(): Promise<Collection<Bucha
 export async function getBucharenaSubmissionsCollection(): Promise<Collection<BucharenaSubmissionDoc>> {
   const db = await getDatabase();
   return db.collection<BucharenaSubmissionDoc>("bucharenasubmissions");
+}
+
+export async function getBucharenaVorlagenCollection(): Promise<Collection<BucharenaVorlageDoc>> {
+  const db = await getDatabase();
+  return db.collection<BucharenaVorlageDoc>("bucharenavorlagen");
 }
 
 /* ═══════════════ Helpers ═══════════════ */

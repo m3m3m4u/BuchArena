@@ -16,12 +16,12 @@ import {
   MicrophoneIcon,
   ArrowUpTrayIcon,
   ArrowDownTrayIcon,
-  LifebuoyIcon,
   TrashIcon,
   XMarkIcon,
   CheckIcon,
   DocumentIcon,
   ChatBubbleLeftRightIcon,
+  DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
 
 type Submission = {
@@ -148,7 +148,22 @@ export default function SocialMediaPage() {
     }
   }
 
-  const sections = [
+  const videoSections = [
+    {
+      title: "Vorlage online erstellen",
+      description:
+        "Erstelle deine Buchvorstellung direkt im Browser – wir generieren automatisch eine fertige PowerPoint-Datei.",
+      icon: DocumentArrowDownIcon,
+      href: "/social-media/vorlage-erstellen",
+    },
+    {
+      title: "Buchvorstellung einreichen",
+      description:
+        "Lade eine fertige PowerPoint-Datei hoch. Wir machen daraus Videos und Posts für Social Media.",
+      icon: ArrowUpTrayIcon,
+      href: "/social-media/upload",
+      intercept: true,
+    },
     {
       title: "Anleitung für Autoren",
       description:
@@ -158,13 +173,15 @@ export default function SocialMediaPage() {
       external: true,
     },
     {
-      title: "Buchvorstellung einreichen",
+      title: "Sprecher-Texte",
       description:
-        "Erstelle eine Präsentation nach unserer Vorlage. Wir machen daraus Videos und Posts für Social Media.",
-      icon: ArrowUpTrayIcon,
-      href: "/social-media/upload",
-      intercept: true,
+        "Das Tool für unsere freiwilligen Sprecher. Wähle einen Text, trage deinen Namen ein und lade deine Aufnahme als MP3 hoch.",
+      icon: MicrophoneIcon,
+      href: "/sprecher-texte",
     },
+  ];
+
+  const weitereAktionen = [
     {
       title: "Rezensionen",
       description:
@@ -180,20 +197,6 @@ export default function SocialMediaPage() {
       href: "/schnipsel",
     },
     {
-      title: "Sprecher-Texte",
-      description:
-        "Das Tool für unsere freiwilligen Sprecher. Wähle einen Text, trage deinen Namen ein und lade deine Aufnahme als MP3 hoch.",
-      icon: MicrophoneIcon,
-      href: "/sprecher-texte",
-    },
-    {
-      title: "Support",
-      description:
-        "Du möchtest die Community um Support für dein neues Buch oder sonst einen Beitrag bitten? Hier ist der passende Platz dafür.",
-      icon: LifebuoyIcon,
-      href: "/support",
-    },
-    {
       title: "Kurz gefragt",
       description:
         "Beantworte kurze Fragen zu dir und deinem Schreibstil – wir machen daraus Social-Media-Beiträge.",
@@ -207,27 +210,8 @@ export default function SocialMediaPage() {
       <section className="card">
         <h1 className="text-xl font-bold">BuchArena – Social Media</h1>
         <p className="text-arena-muted text-[0.95rem]">
-          Hier kannst du deine Buchvorstellung einreichen oder bestehende
-          Social-Media-Links ansehen.
+          Hier findest du alle Werkzeuge rund um deine Buchvorstellung und weitere Aktionen der BuchArena.
         </p>
-
-        {/* Vorlage herunterladen */}
-        <button
-          type="button"
-          onClick={() => setShowDownloadOverlay(true)}
-          className="flex w-full items-center gap-3 rounded-lg border border-arena-blue/30 bg-blue-50 p-3 text-[0.95rem] text-inherit hover:border-arena-blue transition-colors text-left cursor-pointer"
-        >
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-arena-blue">
-            <ArrowDownTrayIcon className="size-6" />
-          </div>
-          <div className="grid gap-0.5">
-            <strong>Vorlage herunterladen (PPTX)</strong>
-            <span className="text-arena-muted text-sm">
-              Lade die PowerPoint-Vorlage für deine Buchvorstellung herunter.
-            </span>
-          </div>
-          <span className="ml-auto shrink-0 text-arena-muted">⬇</span>
-        </button>
 
         {/* Overlay: Sprechertext-Hinweis (Upload / Einreichen) */}
         {showUploadOverlay && (
@@ -288,61 +272,118 @@ export default function SocialMediaPage() {
           </div>
         )}
 
-        {/* Video-Links */}
-        <Link
-          href="/social-media/videos"
-          className="flex items-center gap-2 rounded-lg border border-arena-border-light bg-[#fffbe6] p-3 text-[0.95rem] no-underline text-inherit hover:border-arena-yellow transition-colors"
-        >
-          📹 <span className="font-medium">Videos zur Kontrolle</span>
-          <span className="text-xs text-arena-muted ml-auto">Ansehen</span>
-        </Link>
+        {/* ═══ SECTION 1: Buch für Video vorbereiten ═══ */}
+        <div className="grid gap-3 pt-1">
+          <div>
+            <h2 className="text-lg font-bold">Buch für Video vorbereiten</h2>
+            <p className="text-arena-muted text-sm">
+              Um dein Buch als Video auf Social Media vorzustellen, brauchst du eine ausgefüllte PowerPoint-Vorlage.
+              Du hast zwei Möglichkeiten: Erstelle die Vorlage bequem über unser <strong>Online-Formular</strong> oder
+              lade die <strong>PPTX-Datei</strong> herunter und fülle sie selbst aus.
+            </p>
+          </div>
 
-        {/* Sections */}
-        <div className="grid gap-2.5">
-          {sections.map((section) => {
-            const inner = (
-              <>
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
-                  <section.icon className="size-6" />
-                </div>
-                <div className="grid gap-0.5 text-[0.95rem]">
-                  <strong>{section.title}</strong>
-                  <span className="text-arena-muted text-sm">{section.description}</span>
-                </div>
-                <span className="ml-auto shrink-0 text-arena-muted">
-                  {section.external ? "↗" : "→"}
+          <div className="grid gap-2.5">
+            {videoSections.map((section) => {
+              const inner = (
+                <>
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
+                    <section.icon className="size-6" />
+                  </div>
+                  <div className="grid gap-0.5 text-[0.95rem]">
+                    <strong>{section.title}</strong>
+                    <span className="text-arena-muted text-sm">{section.description}</span>
+                  </div>
+                  <span className="ml-auto shrink-0 text-arena-muted">
+                    {section.external ? "↗" : "→"}
+                  </span>
+                </>
+              );
+
+              const cls =
+                "flex items-center gap-3 rounded-lg border border-arena-border p-3 no-underline text-inherit transition-colors hover:border-gray-500 hover:bg-[#fafafa]";
+
+              return section.external ? (
+                <a
+                  key={section.href}
+                  href={section.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cls}
+                >
+                  {inner}
+                </a>
+              ) : section.intercept ? (
+                <button
+                  key={section.href}
+                  type="button"
+                  onClick={() => setShowUploadOverlay(true)}
+                  className={`${cls} w-full text-left cursor-pointer`}
+                >
+                  {inner}
+                </button>
+              ) : (
+                <Link key={section.href} href={section.href} className={cls}>
+                  {inner}
+                </Link>
+              );
+            })}
+
+            {/* Vorlage herunterladen */}
+            <button
+              type="button"
+              onClick={() => setShowDownloadOverlay(true)}
+              className="flex w-full items-center gap-3 rounded-lg border border-arena-border p-3 text-[0.95rem] text-inherit hover:border-gray-500 hover:bg-[#fafafa] transition-colors text-left cursor-pointer"
+            >
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
+                <ArrowDownTrayIcon className="size-6" />
+              </div>
+              <div className="grid gap-0.5">
+                <strong>Vorlage herunterladen (PPTX)</strong>
+                <span className="text-arena-muted text-sm">
+                  Lade die PowerPoint-Vorlage herunter und fülle sie selbst in PowerPoint aus.
                 </span>
-              </>
-            );
+              </div>
+              <span className="ml-auto shrink-0 text-arena-muted">⬇</span>
+            </button>
+          </div>
 
-            const cls =
-              "flex items-center gap-3 rounded-lg border border-arena-border p-3 no-underline text-inherit transition-colors hover:border-gray-500 hover:bg-[#fafafa]";
+          {/* Video-Links */}
+          <Link
+            href="/social-media/videos"
+            className="flex items-center gap-2 rounded-lg border border-arena-border-light bg-[#fffbe6] p-3 text-[0.95rem] no-underline text-inherit hover:border-arena-yellow transition-colors"
+          >
+            📹 <span className="font-medium">Videos zur Kontrolle</span>
+            <span className="text-xs text-arena-muted ml-auto">Ansehen</span>
+          </Link>
+        </div>
 
-            return section.external ? (
-              <a
-                key={section.href}
-                href={section.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cls}
-              >
-                {inner}
-              </a>
-            ) : section.intercept ? (
-              <button
-                key={section.href}
-                type="button"
-                onClick={() => setShowUploadOverlay(true)}
-                className={`${cls} w-full text-left cursor-pointer`}
-              >
-                {inner}
-              </button>
-            ) : (
-              <Link key={section.href} href={section.href} className={cls}>
-                {inner}
-              </Link>
-            );
-          })}
+        {/* ═══ SECTION 2: Weitere Aktionen ═══ */}
+        <div className="grid gap-3 pt-2 border-t border-arena-border mt-2">
+          <div>
+            <h2 className="text-lg font-bold">Weitere Aktionen der BuchArena</h2>
+            <p className="text-arena-muted text-sm">
+              Diese Informationen werden in längeren Intervallen gesammelt und zu Social-Media-Beiträgen verarbeitet.
+            </p>
+          </div>
+
+          <div className="grid gap-2.5">
+            {weitereAktionen.map((section) => {
+              const cls =
+                "flex items-center gap-3 rounded-lg border border-arena-border p-3 no-underline text-inherit transition-colors hover:border-gray-500 hover:bg-[#fafafa]";
+              return (
+                <Link key={section.href} href={section.href} className={cls}>
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
+                    <section.icon className="size-6" />
+                  </div>
+                  <div className="grid gap-0.5 text-[0.95rem]">
+                    <strong>{section.title}</strong>
+                    <span className="text-arena-muted text-sm">{section.description}</span>
+                  </div>
+                  <span className="ml-auto shrink-0 text-arena-muted">→</span>
+                </Link>
+              );
+            })}
 
           {/* Admin-Links */}
           {isAdmin && (
@@ -399,6 +440,7 @@ export default function SocialMediaPage() {
               </Link>
             </>
           )}
+        </div>
         </div>
 
         {/* Meine Einreichungen */}
