@@ -152,6 +152,7 @@ export default function VorlageErstellenPage() {
   const [step, setStep] = useState(0);
   const [showPreview, setShowPreview] = useState(true);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
 
   /* Preview follows the active step */
@@ -377,6 +378,7 @@ export default function VorlageErstellenPage() {
       }
       loadVorlagen();
     } catch { /* ignore */ }
+    setDeleteConfirmId(null);
   }
 
   function newVorlage() {
@@ -1453,7 +1455,7 @@ export default function VorlageErstellenPage() {
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
-              <textarea className={"input-base" + req(form.notes1)} rows={3} placeholder="z. B. Willkommen zu unserer Buchempfehlung! Heute möchte ich euch ein ganz besonderes Buch vorstellen." value={form.notes1} onChange={(e) => set("notes1", e.target.value)} />
+              <textarea className={"input-base" + req(form.notes1)} rows={3} placeholder="z. B. In diesem Video erzähle ich dir vom Buch Hüter in Ausbildung - Eine Episode endet. Eine neue beginnt. - von Martina Zöchinger. Du erfährst von mir die wichtigsten Informationen, ohne dass ich zu viel verrate oder spoiler." value={form.notes1} onChange={(e) => set("notes1", e.target.value)} />
             </label>
           </div>
         );
@@ -1516,7 +1518,7 @@ export default function VorlageErstellenPage() {
             </div>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
-              <textarea className={"input-base" + req(form.notes2)} rows={3} placeholder="z. B. Hier seht ihr die wichtigsten Eckdaten zum Buch – Erscheinungsjahr, Genre und Verlag." value={form.notes2} onChange={(e) => set("notes2", e.target.value)} />
+              <textarea className={"input-base" + req(form.notes2)} rows={3} placeholder="z. B. Das Buch wurde von Martina Zöchinger geschrieben und erschien 2025. Sie hat den Roman als Selfpublisher veröffentlicht und es gehört zum Genre Fantasy. Das Buch ist schön illustriert und verschiedene Zeichnungen stellen einzelne Szenen dar. Die Entstehungsgeschichte des Buches ist spannend: Die Autorin schrieb es in tiefer Trauer nach dem Tod ihres Vaters, um den Verlust zu verarbeiten. Sie schreibt über das Leben nach dem Tod und machte ihren Vater zum Helden der Geschichte." value={form.notes2} onChange={(e) => set("notes2", e.target.value)} />
             </label>
           </div>
         );
@@ -1544,7 +1546,7 @@ export default function VorlageErstellenPage() {
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
-              <textarea className={"input-base" + req(form.notes3)} rows={3} placeholder="z. B. Worum geht es in dem Buch? Hier erfahrt ihr mehr über die Hauptfigur, das Thema und die zentralen Inhalte." value={form.notes3} onChange={(e) => set("notes3", e.target.value)} />
+              <textarea className={"input-base" + req(form.notes3)} rows={3} placeholder="z. B. Die Handlung dreht sich um eine Hauptfigur, die sich nach dem Tod in einer neuen Existenz wiederfindet, nachdem er gestorben ist. In dieser Geschichte mischen sich Realität, Erinnerung und Magie. Die Erzählung behandelt, wie man mit Trauer umgeht, wie sich Bewusstsein und Erkenntnis des Lebens öffnen, wenn eine Episode endet und etwas Neues beginnt." value={form.notes3} onChange={(e) => set("notes3", e.target.value)} />
             </label>
           </div>
         );
@@ -1584,7 +1586,7 @@ export default function VorlageErstellenPage() {
             </div>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
-              <textarea className={"input-base" + req(form.notes4)} rows={3} placeholder="z. B. Lernt die Autorin bzw. den Autor kennen – woher sie kommt, was sie macht und wie sie schreibt." value={form.notes4} onChange={(e) => set("notes4", e.target.value)} />
+              <textarea className={"input-base" + req(form.notes4)} rows={3} placeholder="z. B. Martina Zöchinger ist eine österreichische Autorin, Medienfachfrau und Mentaltrainerin. Sie ist Mutter und hat sich schon früh mit Themen wie Bewusstsein, Leben und Spiritualität beschäftigt – sowohl beruflich als auch persönlich. Mit Hüter in Ausbildung legt sie ein Werk vor, das stark mit ihrem Leben und ihren Erfahrungen verbunden ist." value={form.notes4} onChange={(e) => set("notes4", e.target.value)} />
             </label>
           </div>
         );
@@ -1602,7 +1604,7 @@ export default function VorlageErstellenPage() {
             ))}
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
-              <textarea className={"input-base" + req(form.notes5)} rows={3} placeholder="z. B. Zum Schluss eine kurze Zusammenfassung: Das sind die wichtigsten Punkte, die ihr euch merken solltet." value={form.notes5} onChange={(e) => set("notes5", e.target.value)} />
+              <textarea className={"input-base" + req(form.notes5)} rows={3} placeholder="z. B. Ich empfehle dir dieses Buch, weil es nicht nur Trost spendet, sondern auch Mut macht, nach Verlust und Schmerz eine neue Perspektive zu finden. Es verbindet magische Elemente mit sehr menschlichen Themen – ideal, wenn du Geschichten magst, die emotional berühren und zum Nachdenken anregen." value={form.notes5} onChange={(e) => set("notes5", e.target.value)} />
             </label>
           </div>
         );
@@ -1695,13 +1697,27 @@ export default function VorlageErstellenPage() {
                     {v.submissionId && (
                       <button type="button" className="btn btn-sm text-orange-600 border-orange-300 hover:bg-orange-50" onClick={() => withdrawSubmission(v._id)}>Zurückziehen</button>
                     )}
-                    <button type="button" className="btn btn-sm btn-danger" onClick={() => deleteVorlage(v._id)}>
+                    <button type="button" className="btn btn-sm btn-danger" onClick={() => setDeleteConfirmId(v._id)}>
                       <TrashIcon className="size-4" />
                     </button>
                   </div>
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ═══ Löschen bestätigen ═══ */}
+        {deleteConfirmId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
+              <p className="font-semibold mb-2">Vorlage löschen?</p>
+              <p className="text-sm text-gray-600 mb-4">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+              <div className="flex justify-end gap-2">
+                <button type="button" className="btn btn-sm" onClick={() => setDeleteConfirmId(null)}>Abbrechen</button>
+                <button type="button" className="btn btn-sm btn-danger" onClick={() => deleteVorlage(deleteConfirmId)}>Löschen</button>
+              </div>
+            </div>
           </div>
         )}
 
