@@ -88,7 +88,7 @@ export default function BloggerProfilePage({ params }: PageProps) {
         if (!res.ok) throw new Error(data.message ?? "Bloggerprofil konnte nicht geladen werden.");
         setProfileImageUrl(data.blogger.profileImageUrl ?? "");
         setProfileImageCrop(data.blogger.profileImageCrop);
-        setBloggerProfile(data.blogger.bloggerProfile ?? createDefaultBloggerProfile());
+        setBloggerProfile({ ...createDefaultBloggerProfile(), ...data.blogger.bloggerProfile });
       } catch {
         setMessage("Bloggerprofil konnte nicht geladen werden.");
       } finally {

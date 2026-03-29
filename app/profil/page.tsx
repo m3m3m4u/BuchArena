@@ -139,9 +139,9 @@ function ProfilPageInner() {
           throw new Error("Profil konnte nicht geladen werden.");
         }
 
-        setProfile(data.profile ?? createDefaultProfile());
-        setSpeakerProfile(data.speakerProfile ?? createDefaultSpeakerProfile());
-        setBloggerProfile(data.bloggerProfile ?? createDefaultBloggerProfile());
+        setProfile({ ...createDefaultProfile(), ...data.profile });
+        setSpeakerProfile({ ...createDefaultSpeakerProfile(), ...data.speakerProfile });
+        setBloggerProfile({ ...createDefaultBloggerProfile(), ...data.bloggerProfile });
       } catch {
         setIsError(true);
         setMessage("Profil konnte nicht geladen werden.");

@@ -90,7 +90,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
         const res = await fetch(`/api/authors/profile?username=${encodeURIComponent(username)}`, { method: "GET" });
         const data = (await res.json()) as AuthorProfilePayload & { message?: string };
         if (!res.ok) throw new Error(data.message ?? "Autorprofil konnte nicht geladen werden.");
-        setProfile(data.author.profile ?? createDefaultProfile());
+        setProfile({ ...createDefaultProfile(), ...data.author.profile });
         setBooks(data.author.books ?? []);
       } catch {
         setMessage("Autorprofil konnte nicht geladen werden.");

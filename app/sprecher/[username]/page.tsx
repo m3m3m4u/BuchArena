@@ -87,7 +87,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
         if (!res.ok) throw new Error(data.message ?? "Sprecherprofil konnte nicht geladen werden.");
         setProfileImageUrl(data.speaker.profileImageUrl ?? "");
         setProfileImageCrop(data.speaker.profileImageCrop);
-        setSpeakerProfile(data.speaker.speakerProfile ?? createDefaultSpeakerProfile());
+        setSpeakerProfile({ ...createDefaultSpeakerProfile(), ...data.speaker.speakerProfile });
       } catch {
         setMessage("Sprecherprofil konnte nicht geladen werden.");
       } finally {
