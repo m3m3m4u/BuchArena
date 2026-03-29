@@ -594,7 +594,8 @@ export default function ShortsErstellenPage() {
     function replaceNotesText(xml: string, newNotes: string): string {
       const parser = new DOMParser();
       const doc = parser.parseFromString(xml, "application/xml");
-      const bodies = doc.getElementsByTagNameNS(A_NS, "txBody");
+      const P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main";
+      const bodies = doc.getElementsByTagNameNS(P_NS, "txBody");
 
       for (const body of Array.from(bodies)) {
         const paras = body.getElementsByTagNameNS(A_NS, "p");
