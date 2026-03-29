@@ -123,7 +123,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
       { label: "Linktree", field: profile.socialLinktree },
       { label: "Newsletter", field: profile.socialNewsletter },
       { label: "WhatsApp-Kanal", field: profile.socialWhatsapp },
-    ].filter((e) => e.field.visibility === "public" && e.field.value);
+    ].filter((e) => e.field?.visibility === "public" && e.field?.value);
   }, [profile]);
 
   const profileImageUrl = (!profile.profileImage.visibility || profile.profileImage.visibility === "public") ? profile.profileImage.value : "";
