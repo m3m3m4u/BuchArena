@@ -32,19 +32,23 @@ export async function GET(request: Request) {
 
     // Prefer blogger-specific image; fall back to general profile image
     let profileImageUrl = "";
+    let profileImageCrop = bloggerProfile.profileImage?.crop;
     if (bloggerProfile.profileImage?.visibility === "public" && bloggerProfile.profileImage.value) {
       profileImageUrl = bloggerProfile.profileImage.value;
+      profileImageCrop = bloggerProfile.profileImage.crop;
     } else if (
       user.profile?.profileImage?.visibility === "public" &&
       user.profile.profileImage.value
     ) {
       profileImageUrl = user.profile.profileImage.value;
+      profileImageCrop = user.profile.profileImage.crop;
     }
 
     return NextResponse.json({
       blogger: {
         username: user.username,
         profileImageUrl,
+        profileImageCrop,
         bloggerProfile,
       },
     });

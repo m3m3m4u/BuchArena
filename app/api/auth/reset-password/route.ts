@@ -56,7 +56,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       message: "Passwort wurde erfolgreich zurückgesetzt. Du kannst dich jetzt einloggen.",
     });
-  } catch {
+  } catch (err) {
+    console.error("Reset-password error:", err);
     return NextResponse.json(
       { message: "Passwort-Reset fehlgeschlagen." },
       { status: 500 },

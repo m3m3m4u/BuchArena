@@ -8,6 +8,7 @@ type DiscoverBlogger = {
   username: string;
   displayName: string;
   profileImageUrl: string;
+  profileImageCrop?: { x: number; y: number; zoom: number };
   motto: string;
   genres: string[];
   lieblingsbuch: string;
@@ -95,10 +96,14 @@ export default function BloggerPage() {
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
                     <div className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted">
                       {blogger.profileImageUrl ? (
-                        <img
-                          src={blogger.profileImageUrl}
-                          alt={`Profilbild von ${blogger.displayName}`}
-                          className="h-full w-full object-cover"
+                        <div
+                          className="h-full w-full"
+                          style={{
+                            backgroundImage: `url(${blogger.profileImageUrl})`,
+                            backgroundPosition: `${blogger.profileImageCrop?.x ?? 50}% ${blogger.profileImageCrop?.y ?? 50}%`,
+                            backgroundSize: `${(blogger.profileImageCrop?.zoom ?? 1) * 100}%`,
+                            backgroundRepeat: "no-repeat",
+                          }}
                         />
                       ) : (
                         <span>Kein Bild</span>

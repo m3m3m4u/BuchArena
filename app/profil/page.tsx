@@ -8,13 +8,14 @@ import {
   ACCOUNT_CHANGED_EVENT,
   clearStoredAccount,
   getStoredAccount,
+  setStoredAccount,
   type LoggedInAccount,
 } from "@/lib/client-account";
 import { createDefaultProfile, createDefaultSpeakerProfile, createDefaultBloggerProfile, type ProfileData, type SpeakerProfileData, type BloggerProfileData, type Visibility } from "@/lib/profile";
 import MeineBuecherTab from "@/app/components/meine-buecher-tab";
 import GenrePicker from "@/app/components/genre-picker";
 
-type ProfileTab = "autor" | "sprecher" | "blogger" | "buecher";
+type ProfileTab = "autor" | "sprecher" | "blogger" | "buecher" | "konto";
 
 type GetProfileResponse = {
   profile: ProfileData;
@@ -65,6 +66,12 @@ function ProfilPageInner() {
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [isDeactivating, setIsDeactivating] = useState(false);
+  const [accountNewUsername, setAccountNewUsername] = useState("");
+  const [accountNewEmail, setAccountNewEmail] = useState("");
+  const [accountNewPassword, setAccountNewPassword] = useState("");
+  const [accountNewPasswordConfirm, setAccountNewPasswordConfirm] = useState("");
+  const [accountCurrentPassword, setAccountCurrentPassword] = useState("");
+  const [isSavingAccount, setIsSavingAccount] = useState(false);
   const dragStateRef = useRef<{
     pointerId: number;
     startX: number;
@@ -88,7 +95,7 @@ function ProfilPageInner() {
     setRequestedUser(user);
 
     const tab = searchParams.get("tab")?.trim();
-    if (tab === "buecher" || tab === "sprecher" || tab === "autor" || tab === "blogger") {
+    if (tab === "buecher" || tab === "sprecher" || tab === "autor" || tab === "blogger" || tab === "konto") {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -655,6 +662,13 @@ function ProfilPageInner() {
             onClick={() => { setActiveTab("buecher"); setMessage(""); }}
           >
             Bücher
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "konto" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            onClick={() => { setActiveTab("konto"); setMessage(""); }}
+          >
+            Konto
           </button>
         </div>
 
@@ -1271,6 +1285,153 @@ function ProfilPageInner() {
             Lege hier deine Bücher an und verwalte sie. Die Bücher werden auf deiner Autorenseite und in der Bücherübersicht angezeigt.
           </p>
           <MeineBuecherTab username={targetUsername} />
+          </>
+        )}
+
+        {activeTab === "konto" && (
+          <>
+          <h2 className="text-lg mt-0">Kontoeinstellungen</h2>
+          <p className="text-arena-muted text-[0.95rem]">
+            Hier kannst du deinen Benutzernamen, deine E-Mail-Adresse oder dein Passwort ändern.
+            Zur Bestätigung musst du dein aktuelles Passwort eingeben.
+          </p>
+
+          <label className="grid gap-1">
+            <span className="text-sm font-medium">Neuer Benutzername</span>
+            <input
+              type="text"
+              className="input-base"
+              placeholder={account.username}
+              value={accountNewUsername}
+              onChange={(e) => setAccountNewUsername(e.target.value)}
+              autoComplete="username"
+            />
+          </label>
+
+          <label className="grid gap-1">
+            <span className="text-sm font-medium">Neue E-Mail-Adresse</span>
+            <input
+              type="email"
+              className="input-base"
+              placeholder={account.email}
+              value={accountNewEmail}
+              onChange={(e) => setAccountNewEmail(e.target.value)}
+              autoComplete="email"
+            />
+          </label>
+
+          <label className="grid gap-1">
+            <span className="text-sm font-medium">Neues Passwort</span>
+            <input
+              type="password"
+              className="input-base"
+              placeholder="Mindestens 8 Zeichen"
+              value={accountNewPassword}
+              onChange={(e) => setAccountNewPassword(e.target.value)}
+              autoComplete="new-password"
+            />
+          </label>
+
+          <label className="grid gap-1">
+            <span className="text-sm font-medium">Neues Passwort bestätigen</span>
+            <input
+              type="password"
+              className="input-base"
+              placeholder="Passwort wiederholen"
+              value={accountNewPasswordConfirm}
+              onChange={(e) => setAccountNewPasswordConfirm(e.target.value)}
+              autoComplete="new-password"
+            />
+          </label>
+
+          <hr className="my-2" />
+
+          <label className="grid gap-1">
+            <span className="text-sm font-medium">Aktuelles Passwort (Pflichtfeld)</span>
+            <input
+              type="password"
+              className="input-base"
+              placeholder="Zur Bestätigung"
+              value={accountCurrentPassword}
+              onChange={(e) => setAccountCurrentPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+          </label>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={isSavingAccount || !accountCurrentPassword}
+            onClick={async () => {
+              setMessage("");
+              setIsError(false);
+
+              if (accountNewPassword && accountNewPassword !== accountNewPasswordConfirm) {
+                setIsError(true);
+                setMessage("Die neuen Passwörter stimmen nicht überein.");
+                return;
+              }
+
+              if (!accountNewUsername && !accountNewEmail && !accountNewPassword) {
+                setIsError(true);
+                setMessage("Bitte fülle mindestens ein Feld aus.");
+                return;
+              }
+
+              setIsSavingAccount(true);
+              try {
+                const payload: Record<string, string> = {
+                  currentPassword: accountCurrentPassword,
+                };
+                if (accountNewUsername && accountNewUsername !== account.username) {
+                  payload.newUsername = accountNewUsername;
+                }
+                if (accountNewEmail && accountNewEmail !== account.email) {
+                  payload.newEmail = accountNewEmail;
+                }
+                if (accountNewPassword) {
+                  payload.newPassword = accountNewPassword;
+                }
+
+                const res = await fetch("/api/auth/update-account", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                });
+
+                const data = (await res.json()) as { message?: string; user?: { username: string; email: string; role: string } };
+                if (!res.ok) {
+                  throw new Error(data.message ?? "Aktualisierung fehlgeschlagen.");
+                }
+
+                // Update local account state
+                if (data.user) {
+                  const updatedAccount: LoggedInAccount = {
+                    username: data.user.username,
+                    email: data.user.email,
+                    role: data.user.role as LoggedInAccount["role"],
+                  };
+                  setStoredAccount(updatedAccount);
+                }
+
+                setMessage(data.message ?? "Kontodaten aktualisiert.");
+                setAccountNewUsername("");
+                setAccountNewEmail("");
+                setAccountNewPassword("");
+                setAccountNewPasswordConfirm("");
+                setAccountCurrentPassword("");
+              } catch (err) {
+                setIsError(true);
+                setMessage(
+                  err instanceof Error ? err.message : "Aktualisierung fehlgeschlagen."
+                );
+              } finally {
+                setIsSavingAccount(false);
+              }
+            }}
+          >
+            {isSavingAccount ? "Wird gespeichert …" : "Änderungen speichern"}
+          </button>
           </>
         )}
 

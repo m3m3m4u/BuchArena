@@ -7,6 +7,7 @@ type DiscoverSpeaker = {
   username: string;
   displayName: string;
   profileImageUrl: string;
+  profileImageCrop?: { x: number; y: number; zoom: number };
   ort: string;
   motto: string;
   sprechprobenCount: number;
@@ -61,10 +62,14 @@ export default function SprecherPage() {
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
                     <div className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted">
                       {speaker.profileImageUrl ? (
-                        <img
-                          src={speaker.profileImageUrl}
-                          alt={`Profilbild von ${speaker.displayName}`}
-                          className="h-full w-full object-cover"
+                        <div
+                          className="h-full w-full"
+                          style={{
+                            backgroundImage: `url(${speaker.profileImageUrl})`,
+                            backgroundPosition: `${speaker.profileImageCrop?.x ?? 50}% ${speaker.profileImageCrop?.y ?? 50}%`,
+                            backgroundSize: `${(speaker.profileImageCrop?.zoom ?? 1) * 100}%`,
+                            backgroundRepeat: "no-repeat",
+                          }}
                         />
                       ) : (
                         <span>Kein Bild</span>

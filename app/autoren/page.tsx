@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { normalizeGenre } from "@/lib/genres";
 
 type AuthorBook = { title: string; genre: string; ageFrom: number; ageTo: number };
-type DiscoverAuthor = { username: string; displayName: string; profileImageUrl: string; lastOnline: string | null; books: AuthorBook[] };
+type DiscoverAuthor = { username: string; displayName: string; profileImageUrl: string; profileImageCrop?: { x: number; y: number; zoom: number }; lastOnline: string | null; books: AuthorBook[] };
 
 const PAGE_SIZE = 10;
 
@@ -174,7 +174,15 @@ export default function AutorenPage() {
                     <div className="grid grid-cols-[72px_1fr] items-start gap-3">
                       <div className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted">
                         {author.profileImageUrl ? (
-                          <img src={`${author.profileImageUrl}${author.profileImageUrl.includes('?') ? '&' : '?'}w=200`} alt={`Profilbild von ${author.displayName}`} className="h-full w-full object-cover" loading="lazy" />
+                          <div
+                            className="h-full w-full"
+                            style={{
+                              backgroundImage: `url(${author.profileImageUrl}${author.profileImageUrl.includes('?') ? '&' : '?'}w=200)`,
+                              backgroundPosition: `${author.profileImageCrop?.x ?? 50}% ${author.profileImageCrop?.y ?? 50}%`,
+                              backgroundSize: `${(author.profileImageCrop?.zoom ?? 1) * 100}%`,
+                              backgroundRepeat: "no-repeat",
+                            }}
+                          />
                         ) : (
                           <span>Kein Bild</span>
                         )}

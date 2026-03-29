@@ -36,6 +36,7 @@ type SpeakerProfilePayload = {
   speaker: {
     username: string;
     profileImageUrl: string;
+    profileImageCrop?: { x: number; y: number; zoom: number };
     speakerProfile: SpeakerProfileData;
   };
 };
@@ -44,6 +45,7 @@ type PageProps = { params: Promise<{ username: string }> };
 export default function SpeakerProfilePage({ params }: PageProps) {
   const [username, setUsername] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
+  const [profileImageCrop, setProfileImageCrop] = useState<{ x: number; y: number; zoom: number } | undefined>();
   const [speakerProfile, setSpeakerProfile] = useState<SpeakerProfileData>(createDefaultSpeakerProfile());
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -73,6 +75,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
         const data = (await res.json()) as SpeakerProfilePayload & { message?: string };
         if (!res.ok) throw new Error(data.message ?? "Sprecherprofil konnte nicht geladen werden.");
         setProfileImageUrl(data.speaker.profileImageUrl ?? "");
+        setProfileImageCrop(data.speaker.profileImageCrop);
         setSpeakerProfile(data.speaker.speakerProfile ?? createDefaultSpeakerProfile());
       } catch {
         setMessage("Sprecherprofil konnte nicht geladen werden.");
@@ -153,7 +156,15 @@ export default function SpeakerProfilePage({ params }: PageProps) {
             <div className="grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
               <div className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted">
                 {profileImageUrl ? (
-                  <img src={profileImageUrl} alt={`Profilbild von ${visibleName}`} className="h-full w-full object-cover" />
+                  <div
+                    className="h-full w-full"
+                    style={{
+                      backgroundImage: `url(${profileImageUrl})`,
+                      backgroundPosition: `${profileImageCrop?.x ?? 50}% ${profileImageCrop?.y ?? 50}%`,
+                      backgroundSize: `${(profileImageCrop?.zoom ?? 1) * 100}%`,
+                      backgroundRepeat: "no-repeat",
+                    }}
+                  />
                 ) : (
                   <span>Kein Bild</span>
                 )}

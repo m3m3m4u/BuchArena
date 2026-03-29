@@ -6,6 +6,7 @@ type SpeakerDiscoverItem = {
   username: string;
   displayName: string;
   profileImageUrl: string;
+  profileImageCrop?: { x: number; y: number; zoom: number };
   ort: string;
   motto: string;
   sprechprobenCount: number;
@@ -40,13 +41,16 @@ export async function GET() {
 
       // Prefer speaker-specific image; fall back to general profile image
       let profileImageUrl = "";
+      let profileImageCrop = sp.profileImage?.crop;
       if (sp.profileImage?.visibility === "public" && sp.profileImage.value) {
         profileImageUrl = sp.profileImage.value;
+        profileImageCrop = sp.profileImage.crop;
       } else if (
         user.profile?.profileImage?.visibility === "public" &&
         user.profile.profileImage.value
       ) {
         profileImageUrl = user.profile.profileImage.value;
+        profileImageCrop = user.profile.profileImage.crop;
       }
 
       const ort =
@@ -59,6 +63,7 @@ export async function GET() {
         username: user.username,
         displayName,
         profileImageUrl,
+        profileImageCrop,
         ort,
         motto,
         sprechprobenCount: sp.sprechproben?.length ?? 0,

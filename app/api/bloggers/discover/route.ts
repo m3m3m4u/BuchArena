@@ -7,6 +7,7 @@ type BloggerDiscoverItem = {
   username: string;
   displayName: string;
   profileImageUrl: string;
+  profileImageCrop?: { x: number; y: number; zoom: number };
   motto: string;
   genres: string[];
   lieblingsbuch: string;
@@ -42,13 +43,16 @@ export async function GET() {
 
       // Prefer blogger-specific image; fall back to general profile image
       let profileImageUrl = "";
+      let profileImageCrop = bp.profileImage?.crop;
       if (bp.profileImage?.visibility === "public" && bp.profileImage.value) {
         profileImageUrl = bp.profileImage.value;
+        profileImageCrop = bp.profileImage.crop;
       } else if (
         user.profile?.profileImage?.visibility === "public" &&
         user.profile.profileImage.value
       ) {
         profileImageUrl = user.profile.profileImage.value;
+        profileImageCrop = user.profile.profileImage.crop;
       }
 
       const motto =
@@ -66,6 +70,7 @@ export async function GET() {
         username: user.username,
         displayName,
         profileImageUrl,
+        profileImageCrop,
         motto,
         genres,
         lieblingsbuch,

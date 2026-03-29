@@ -32,19 +32,23 @@ export async function GET(request: Request) {
 
     // Prefer speaker-specific image; fall back to general profile image
     let profileImageUrl = "";
+    let profileImageCrop = speakerProfile.profileImage?.crop;
     if (speakerProfile.profileImage?.visibility === "public" && speakerProfile.profileImage.value) {
       profileImageUrl = speakerProfile.profileImage.value;
+      profileImageCrop = speakerProfile.profileImage.crop;
     } else if (
       user.profile?.profileImage?.visibility === "public" &&
       user.profile.profileImage.value
     ) {
       profileImageUrl = user.profile.profileImage.value;
+      profileImageCrop = user.profile.profileImage.crop;
     }
 
     return NextResponse.json({
       speaker: {
         username: user.username,
         profileImageUrl,
+        profileImageCrop,
         speakerProfile,
       },
     });

@@ -49,10 +49,10 @@ export async function POST(request: Request) {
       { $set: { resetToken: token, resetTokenExpiresAt: expiresAt } },
     );
 
-    // Origin-Header nutzen, damit der Link die Domain des Aufrufers enthält
+    // Konfigurierte App-URL verwenden (nicht origin – kann hinter Proxy falsch sein)
     const baseUrl =
-      request.headers.get("origin")
-      || process.env.NEXT_PUBLIC_APP_URL
+      process.env.NEXT_PUBLIC_APP_URL
+      || request.headers.get("origin")
       || "http://localhost:3000";
     const resetLink = `${baseUrl}/passwort-reset?token=${token}`;
 

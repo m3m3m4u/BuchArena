@@ -5,6 +5,7 @@ type AuthorDiscoverItem = {
   username: string;
   displayName: string;
   profileImageUrl: string;
+  profileImageCrop?: { x: number; y: number; zoom: number };
   lastOnline: string | null;
   books: Array<{
     title: string;
@@ -31,13 +32,13 @@ export async function GET() {
       .toArray();
 
     /* Build lookup maps for all active users */
-    const profileByUser = new Map<string, string>();
+    const profileByUser = new Map<string, { url: string; crop?: { x: number; y: number; zoom: number } }>();
     const lastOnlineByUser = new Map<string, string | null>();
 
     for (const user of users) {
       const pi = user.profile?.profileImage;
       const profileImageUrl = (!pi?.visibility || pi.visibility === "public") ? (pi?.value ?? "") : "";
-      profileByUser.set(user.username, profileImageUrl);
+      profileByUser.set(user.username, { url: profileImageUrl, crop: pi?.crop });
       lastOnlineByUser.set(user.username, user.lastOnline ? new Date(user.lastOnline).toISOString() : null);
     }
 
@@ -52,10 +53,12 @@ export async function GET() {
           ? user.profile.name.value
           : user.username;
 
+      const imgData = profileByUser.get(user.username);
       grouped.set(user.username, {
         username: user.username,
         displayName,
-        profileImageUrl: profileByUser.get(user.username) ?? "",
+        profileImageUrl: imgData?.url ?? "",
+        profileImageCrop: imgData?.crop,
         lastOnline: lastOnlineByUser.get(user.username) ?? null,
         books: [],
       });
