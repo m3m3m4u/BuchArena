@@ -35,7 +35,8 @@ export async function GET() {
     const lastOnlineByUser = new Map<string, string | null>();
 
     for (const user of users) {
-      const profileImageUrl = user.profile?.profileImage?.value ?? "";
+      const pi = user.profile?.profileImage;
+      const profileImageUrl = (!pi?.visibility || pi.visibility === "public") ? (pi?.value ?? "") : "";
       profileByUser.set(user.username, profileImageUrl);
       lastOnlineByUser.set(user.username, user.lastOnline ? new Date(user.lastOnline).toISOString() : null);
     }

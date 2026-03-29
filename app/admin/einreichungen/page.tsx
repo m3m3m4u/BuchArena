@@ -236,7 +236,7 @@ export default function BucharenaAdminSubmissions() {
                   </div>
                   <div className="col-span-full flex items-center gap-1 min-w-0">
                     {sub.contactType === "email" ? <EnvelopeIcon className="w-3.5 h-3.5 text-[#888] shrink-0" /> : <SvgIg />}
-                    <span className="break-all">{sub.contact}</span>
+                    <span className="break-all">{sub.contactType === "instagram" ? sub.contact.replace(/[?#].*$/, "") : sub.contact}</span>
                   </div>
                   {sub.submittedBy && (
                     <div className="col-span-full flex items-center gap-1">
@@ -246,7 +246,7 @@ export default function BucharenaAdminSubmissions() {
                   )}
                   {sub.authorInstagram && (() => {
                     const raw = sub.authorInstagram!;
-                    const handle = raw.replace(/^https?:\/\/(www\.)?instagram\.com\//, "").replace(/^@/, "").replace(/\/+$/, "");
+                    const handle = raw.replace(/^https?:\/\/(www\.)?instagram\.com\//, "").replace(/^@/, "").replace(/[?#].*$/, "").replace(/\/+$/, "");
                     if (!handle) return null;
                     return (
                       <div className="col-span-full flex items-center gap-1">

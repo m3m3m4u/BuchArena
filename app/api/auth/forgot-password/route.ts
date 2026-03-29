@@ -49,8 +49,11 @@ export async function POST(request: Request) {
       { $set: { resetToken: token, resetTokenExpiresAt: expiresAt } },
     );
 
+    // Origin-Header nutzen, damit der Link die Domain des Aufrufers enthält
     const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      request.headers.get("origin")
+      || process.env.NEXT_PUBLIC_APP_URL
+      || "http://localhost:3000";
     const resetLink = `${baseUrl}/passwort-reset?token=${token}`;
 
     await sendMail(

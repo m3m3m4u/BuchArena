@@ -111,7 +111,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
     ].filter((e) => e.field.visibility === "public" && e.field.value);
   }, [profile]);
 
-  const profileImageUrl = profile.profileImage.visibility === "public" ? profile.profileImage.value : "";
+  const profileImageUrl = (!profile.profileImage.visibility || profile.profileImage.visibility === "public") ? profile.profileImage.value : "";
 
   async function handleSendMessage() {
     setIsSending(true);
