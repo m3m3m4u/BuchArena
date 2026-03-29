@@ -103,6 +103,9 @@ export default function SiteFooter() {
                 )}
               </Link>
             )}
+            {account && (
+              <Link href="/profil" className="btn">Mein Profil</Link>
+            )}
             <Link href="/info" className="btn">Info</Link>
             <Link href="/impressum" className="btn">Impressum &amp; Datenschutz</Link>
             <button type="button" className="btn" onClick={openCookieSettings}>Cookies</button>
@@ -133,6 +136,9 @@ export default function SiteFooter() {
                       </span>
                     )}
                   </Link>
+                )}
+                {account && (
+                  <Link href="/profil" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Mein Profil</Link>
                 )}
                 <Link href="/info" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Info</Link>
                 <Link href="/impressum" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Impressum &amp; Datenschutz</Link>
