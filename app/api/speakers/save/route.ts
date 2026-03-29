@@ -64,6 +64,10 @@ function sanitizeSpeakerProfile(
     socialYoutube: sanitizeField(source.socialYoutube, base.socialYoutube, 300),
     socialPinterest: sanitizeField(source.socialPinterest, base.socialPinterest, 300),
     socialReddit: sanitizeField(source.socialReddit, base.socialReddit, 300),
+    socialWebsite: sanitizeField(source.socialWebsite, base.socialWebsite, 300),
+    socialLinktree: sanitizeField(source.socialLinktree, base.socialLinktree, 300),
+    socialNewsletter: sanitizeField(source.socialNewsletter, base.socialNewsletter, 300),
+    socialWhatsapp: sanitizeField(source.socialWhatsapp, base.socialWhatsapp, 300),
   };
 }
 

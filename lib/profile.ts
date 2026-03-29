@@ -29,6 +29,10 @@ export type ProfileData = {
   socialYoutube: ProfileField;
   socialPinterest: ProfileField;
   socialReddit: ProfileField;
+  socialWebsite: ProfileField;
+  socialLinktree: ProfileField;
+  socialNewsletter: ProfileField;
+  socialWhatsapp: ProfileField;
 };
 
 export type Sprechprobe = {
@@ -57,6 +61,10 @@ export type SpeakerProfileData = {
   socialYoutube: ProfileField;
   socialPinterest: ProfileField;
   socialReddit: ProfileField;
+  socialWebsite: ProfileField;
+  socialLinktree: ProfileField;
+  socialNewsletter: ProfileField;
+  socialWhatsapp: ProfileField;
 };
 
 export function createDefaultProfile(): ProfileData {
@@ -118,6 +126,22 @@ export function createDefaultProfile(): ProfileData {
       value: "",
       visibility: "hidden",
     },
+    socialWebsite: {
+      value: "",
+      visibility: "hidden",
+    },
+    socialLinktree: {
+      value: "",
+      visibility: "hidden",
+    },
+    socialNewsletter: {
+      value: "",
+      visibility: "hidden",
+    },
+    socialWhatsapp: {
+      value: "",
+      visibility: "hidden",
+    },
   };
 }
 
@@ -139,6 +163,10 @@ export type BloggerProfileData = {
   socialYoutube: ProfileField;
   socialPinterest: ProfileField;
   socialReddit: ProfileField;
+  socialWebsite: ProfileField;
+  socialLinktree: ProfileField;
+  socialNewsletter: ProfileField;
+  socialWhatsapp: ProfileField;
 };
 
 export function createDefaultSpeakerProfile(): SpeakerProfileData {
@@ -161,6 +189,10 @@ export function createDefaultSpeakerProfile(): SpeakerProfileData {
     socialYoutube: { value: "", visibility: "hidden" },
     socialPinterest: { value: "", visibility: "hidden" },
     socialReddit: { value: "", visibility: "hidden" },
+    socialWebsite: { value: "", visibility: "hidden" },
+    socialLinktree: { value: "", visibility: "hidden" },
+    socialNewsletter: { value: "", visibility: "hidden" },
+    socialWhatsapp: { value: "", visibility: "hidden" },
   };
 }
 
@@ -183,5 +215,9 @@ export function createDefaultBloggerProfile(): BloggerProfileData {
     socialYoutube: { value: "", visibility: "hidden" },
     socialPinterest: { value: "", visibility: "hidden" },
     socialReddit: { value: "", visibility: "hidden" },
+    socialWebsite: { value: "", visibility: "hidden" },
+    socialLinktree: { value: "", visibility: "hidden" },
+    socialNewsletter: { value: "", visibility: "hidden" },
+    socialWhatsapp: { value: "", visibility: "hidden" },
   };
 }

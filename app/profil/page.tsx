@@ -852,6 +852,58 @@ function ProfilPageInner() {
           onVisibilityChange={(visibility) => updateVisibility("socialReddit", visibility)}
         />
 
+        <FieldWithVisibility
+          label="Website"
+          value={profile.socialWebsite.value}
+          visibility={profile.socialWebsite.visibility}
+          onValueChange={(value) =>
+            setProfile((current) => ({
+              ...current,
+              socialWebsite: { ...current.socialWebsite, value },
+            }))
+          }
+          onVisibilityChange={(visibility) => updateVisibility("socialWebsite", visibility)}
+        />
+
+        <FieldWithVisibility
+          label="Linktree"
+          value={profile.socialLinktree.value}
+          visibility={profile.socialLinktree.visibility}
+          onValueChange={(value) =>
+            setProfile((current) => ({
+              ...current,
+              socialLinktree: { ...current.socialLinktree, value },
+            }))
+          }
+          onVisibilityChange={(visibility) => updateVisibility("socialLinktree", visibility)}
+        />
+
+        <FieldWithVisibility
+          label="Newsletter"
+          value={profile.socialNewsletter.value}
+          visibility={profile.socialNewsletter.visibility}
+          onValueChange={(value) =>
+            setProfile((current) => ({
+              ...current,
+              socialNewsletter: { ...current.socialNewsletter, value },
+            }))
+          }
+          onVisibilityChange={(visibility) => updateVisibility("socialNewsletter", visibility)}
+        />
+
+        <FieldWithVisibility
+          label="WhatsApp-Kanal"
+          value={profile.socialWhatsapp.value}
+          visibility={profile.socialWhatsapp.visibility}
+          onValueChange={(value) =>
+            setProfile((current) => ({
+              ...current,
+              socialWhatsapp: { ...current.socialWhatsapp, value },
+            }))
+          }
+          onVisibilityChange={(visibility) => updateVisibility("socialWhatsapp", visibility)}
+        />
+
         <div className="flex gap-2 flex-wrap">
           {profile.socialInstagram.value && (
             <a className="btn" href={profile.socialInstagram.value} target="_blank" rel="noreferrer">
@@ -886,6 +938,26 @@ function ProfilPageInner() {
           {profile.socialReddit.value && (
             <a className="btn" href={profile.socialReddit.value} target="_blank" rel="noreferrer">
               Reddit
+            </a>
+          )}
+          {profile.socialWebsite.value && (
+            <a className="btn" href={profile.socialWebsite.value} target="_blank" rel="noreferrer">
+              Website
+            </a>
+          )}
+          {profile.socialLinktree.value && (
+            <a className="btn" href={profile.socialLinktree.value} target="_blank" rel="noreferrer">
+              Linktree
+            </a>
+          )}
+          {profile.socialNewsletter.value && (
+            <a className="btn" href={profile.socialNewsletter.value} target="_blank" rel="noreferrer">
+              Newsletter
+            </a>
+          )}
+          {profile.socialWhatsapp.value && (
+            <a className="btn" href={profile.socialWhatsapp.value} target="_blank" rel="noreferrer">
+              WhatsApp-Kanal
             </a>
           )}
         </div>
@@ -1093,6 +1165,50 @@ function ProfilPageInner() {
             setSpeakerProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, visibility } }))
           }
         />
+        <FieldWithVisibility
+          label="Website"
+          value={speakerProfile.socialWebsite?.value ?? ""}
+          visibility={speakerProfile.socialWebsite?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, visibility } }))
+          }
+        />
+        <FieldWithVisibility
+          label="Linktree"
+          value={speakerProfile.socialLinktree?.value ?? ""}
+          visibility={speakerProfile.socialLinktree?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, visibility } }))
+          }
+        />
+        <FieldWithVisibility
+          label="Newsletter"
+          value={speakerProfile.socialNewsletter?.value ?? ""}
+          visibility={speakerProfile.socialNewsletter?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, visibility } }))
+          }
+        />
+        <FieldWithVisibility
+          label="WhatsApp-Kanal"
+          value={speakerProfile.socialWhatsapp?.value ?? ""}
+          visibility={speakerProfile.socialWhatsapp?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))
+          }
+        />
 
         <button type="button" className="btn" onClick={saveSpeakerProfile} disabled={isSavingSpeaker}>
           {isSavingSpeaker ? "Speichern ..." : "Sprecherprofil speichern"}
@@ -1272,6 +1388,54 @@ function ProfilPageInner() {
           }
           onVisibilityChange={(visibility) =>
             setBloggerProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Website"
+          value={bloggerProfile.socialWebsite.value}
+          visibility={bloggerProfile.socialWebsite.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Linktree"
+          value={bloggerProfile.socialLinktree.value}
+          visibility={bloggerProfile.socialLinktree.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Newsletter"
+          value={bloggerProfile.socialNewsletter.value}
+          visibility={bloggerProfile.socialNewsletter.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="WhatsApp-Kanal"
+          value={bloggerProfile.socialWhatsapp.value}
+          visibility={bloggerProfile.socialWhatsapp.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))
           }
         />
 
@@ -1749,7 +1913,13 @@ function FieldWithVisibility({
     <div className="grid grid-cols-[2fr_1fr] gap-3 max-[780px]:grid-cols-1">
       <label className="grid gap-1 text-[0.95rem]">
         {label}
-        <input className="input-base" value={value} onChange={(event) => onValueChange(event.target.value)} />
+        <input className="input-base" value={value} onChange={(event) => {
+          const newValue = event.target.value;
+          onValueChange(newValue);
+          if (newValue.trim() && visibility === "hidden") {
+            onVisibilityChange("public");
+          }
+        }} />
       </label>
 
       <div>

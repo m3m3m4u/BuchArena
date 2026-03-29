@@ -62,6 +62,10 @@ function sanitizeProfile(input: ProfileData | undefined): ProfileData {
     socialYoutube: sanitizeField(source.socialYoutube, base.socialYoutube, 250),
     socialPinterest: sanitizeField(source.socialPinterest, base.socialPinterest, 250),
     socialReddit: sanitizeField(source.socialReddit, base.socialReddit, 250),
+    socialWebsite: sanitizeField(source.socialWebsite, base.socialWebsite, 250),
+    socialLinktree: sanitizeField(source.socialLinktree, base.socialLinktree, 250),
+    socialNewsletter: sanitizeField(source.socialNewsletter, base.socialNewsletter, 250),
+    socialWhatsapp: sanitizeField(source.socialWhatsapp, base.socialWhatsapp, 250),
   };
 }
 
