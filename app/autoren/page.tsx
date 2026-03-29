@@ -172,20 +172,16 @@ export default function AutorenPage() {
                 >
                   <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">
                     <div className="grid grid-cols-[72px_1fr] items-start gap-3">
-                      <div className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted">
-                        {author.profileImageUrl ? (
-                          <div
-                            className="h-full w-full"
-                            style={{
-                              backgroundImage: `url(${author.profileImageUrl}${author.profileImageUrl.includes('?') ? '&' : '?'}w=200)`,
-                              backgroundPosition: `${author.profileImageCrop?.x ?? 50}% ${author.profileImageCrop?.y ?? 50}%`,
-                              backgroundSize: `${(author.profileImageCrop?.zoom ?? 1) * 100}%`,
-                              backgroundRepeat: "no-repeat",
-                            }}
-                          />
-                        ) : (
-                          <span>Kein Bild</span>
-                        )}
+                      <div
+                        className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
+                        style={author.profileImageUrl ? {
+                          backgroundImage: `url(${author.profileImageUrl}${author.profileImageUrl.includes('?') ? '&' : '?'}w=200)`,
+                          backgroundPosition: `${author.profileImageCrop?.x ?? 50}% ${author.profileImageCrop?.y ?? 50}%`,
+                          backgroundSize: `${(author.profileImageCrop?.zoom ?? 1) * 100}%`,
+                          backgroundRepeat: "no-repeat",
+                        } : undefined}
+                      >
+                        {!author.profileImageUrl && <span>Kein Bild</span>}
                       </div>
                       <div className="min-w-0">
                         <h2 className="m-0 text-[1.05rem] truncate">{author.displayName}</h2>

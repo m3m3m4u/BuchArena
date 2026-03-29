@@ -60,20 +60,16 @@ export default function SprecherPage() {
               >
                 <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500">
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
-                    <div className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted">
-                      {speaker.profileImageUrl ? (
-                        <div
-                          className="h-full w-full"
-                          style={{
-                            backgroundImage: `url(${speaker.profileImageUrl})`,
-                            backgroundPosition: `${speaker.profileImageCrop?.x ?? 50}% ${speaker.profileImageCrop?.y ?? 50}%`,
-                            backgroundSize: `${(speaker.profileImageCrop?.zoom ?? 1) * 100}%`,
-                            backgroundRepeat: "no-repeat",
-                          }}
-                        />
-                      ) : (
-                        <span>Kein Bild</span>
-                      )}
+                    <div
+                      className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
+                      style={speaker.profileImageUrl ? {
+                        backgroundImage: `url(${speaker.profileImageUrl})`,
+                        backgroundPosition: `${speaker.profileImageCrop?.x ?? 50}% ${speaker.profileImageCrop?.y ?? 50}%`,
+                        backgroundSize: `${(speaker.profileImageCrop?.zoom ?? 1) * 100}%`,
+                        backgroundRepeat: "no-repeat",
+                      } : undefined}
+                    >
+                      {!speaker.profileImageUrl && <span>Kein Bild</span>}
                     </div>
                     <div>
                       <h2 className="m-0 text-[1.05rem]">{speaker.displayName}</h2>

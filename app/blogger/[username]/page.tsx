@@ -153,20 +153,16 @@ export default function BloggerProfilePage({ params }: PageProps) {
         ) : (
           <>
             <div className="grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
-              <div className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted">
-                {profileImageUrl ? (
-                  <div
-                    className="h-full w-full"
-                    style={{
-                      backgroundImage: `url(${profileImageUrl})`,
-                      backgroundPosition: `${profileImageCrop?.x ?? 50}% ${profileImageCrop?.y ?? 50}%`,
-                      backgroundSize: `${(profileImageCrop?.zoom ?? 1) * 100}%`,
-                      backgroundRepeat: "no-repeat",
-                    }}
-                  />
-                ) : (
-                  <span>Kein Bild</span>
-                )}
+              <div
+                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
+                style={profileImageUrl ? {
+                  backgroundImage: `url(${profileImageUrl})`,
+                  backgroundPosition: `${profileImageCrop?.x ?? 50}% ${profileImageCrop?.y ?? 50}%`,
+                  backgroundSize: `${(profileImageCrop?.zoom ?? 1) * 100}%`,
+                  backgroundRepeat: "no-repeat",
+                } : undefined}
+              >
+                {!profileImageUrl && <span>Kein Bild</span>}
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl">{visibleName}</h1>
