@@ -190,6 +190,11 @@ export async function awardBuchempfehlung(username: string): Promise<boolean> {
   return true;
 }
 
+/** Buchempfehlung erhalten: +1 Lesezeichen für Buchbesitzer (ohne Tageslimit) */
+export async function awardBuchempfehlungErhalten(username: string) {
+  await addLesezeichen(username, "buchempfehlung", 1);
+}
+
 /* ── Abfragen ── */
 
 /** Lesezeichen-Stand eines Users */

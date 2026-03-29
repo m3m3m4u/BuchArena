@@ -1614,7 +1614,7 @@ export default function VorlageErstellenPage() {
   /* ═══ RENDER ═══ */
 
   return (
-    <main className="top-centered-main">
+    <main className="top-centered-main overflow-x-hidden">
       <section className="card">
         <h1 className="text-xl font-bold">Vorlage online erstellen</h1>
         <p className="text-[0.95rem]">
@@ -1622,10 +1622,10 @@ export default function VorlageErstellenPage() {
         </p>
 
         {/* ── Toolbar: Öffnen / Speichern / Herunterladen / Einreichen ── */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
           <button type="button" className="btn btn-sm" onClick={() => setShowVorlagen((v) => !v)}>
             <FolderOpenIcon className="size-4" />
-            {showVorlagen ? "Liste ausblenden" : "Öffnen"}
+            <span className="truncate">{showVorlagen ? "Ausblenden" : "Öffnen"}</span>
             {savedVorlagen.length > 0 && <span className="ml-1 rounded-full bg-arena-yellow text-arena-blue px-1.5 text-xs font-bold">{savedVorlagen.length}</span>}
           </button>
           <button type="button" className="btn btn-sm" onClick={newVorlage}>
@@ -1636,19 +1636,19 @@ export default function VorlageErstellenPage() {
 
           <button type="button" className="btn btn-sm" onClick={saveVorlage} disabled={saving}>
             {saving ? <ArrowPathIcon className="size-4 animate-spin" /> : <CloudArrowUpIcon className="size-4" />}
-            {saving ? "Speichern …" : savedId ? "Speichern" : "Speichern"}
+            <span className="truncate">{saving ? "Speichern …" : "Speichern"}</span>
           </button>
           <button type="button" className="btn btn-sm" onClick={() => generatePptx("querformat")} disabled={generating}>
             <DocumentArrowDownIcon className="size-4" />
-            Querformat
+            <span className="hidden sm:inline">Querformat</span><span className="sm:hidden">Quer</span>
           </button>
           <button type="button" className="btn btn-sm" onClick={() => generatePptx("hochformat")} disabled={generating}>
             <DocumentArrowDownIcon className="size-4" />
-            Hochformat
+            <span className="hidden sm:inline">Hochformat</span><span className="sm:hidden">Hoch</span>
           </button>
           <button
             type="button"
-            className="btn btn-sm btn-primary"
+            className="btn btn-sm btn-primary col-span-2 sm:col-span-1"
             onClick={() => setShowSubmitDialog(true)}
             disabled={submitting || !!submissionId}
             title={submissionId ? "Bereits eingereicht" : "PPTX generieren und bei BuchArena einreichen"}
@@ -1659,7 +1659,7 @@ export default function VorlageErstellenPage() {
           {submissionId && (
             <button
               type="button"
-              className="btn btn-sm btn-danger"
+              className="btn btn-sm btn-danger col-span-2 sm:col-span-1"
               onClick={() => withdrawSubmission()}
               disabled={submitting}
               title="Einreichung zurückziehen"
@@ -1669,7 +1669,7 @@ export default function VorlageErstellenPage() {
           )}
 
           {savedId && (
-            <span className="text-xs text-arena-muted ml-auto">
+            <span className="text-xs text-arena-muted col-span-2 sm:col-span-1 sm:ml-auto truncate">
               <strong>{form.buchtitel || "Unbenannt"}</strong>
               {submissionId && <span className="ml-1 text-green-600">(eingereicht)</span>}
             </span>
@@ -1686,20 +1686,22 @@ export default function VorlageErstellenPage() {
                   <div key={v._id} className="flex items-center gap-3 rounded-lg border border-arena-border bg-white px-3 py-2">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{v.buchtitel || "Unbenannt"}</p>
-                      <p className="text-xs text-arena-muted">
+                      <p className="text-xs text-arena-muted truncate">
                         {v.autorName || "–"}
                         {" · "}
                         {new Date(v.updatedAt).toLocaleDateString("de-DE")}
                         {v.submissionId && <span className="ml-1 text-green-600">(eingereicht)</span>}
                       </p>
                     </div>
+                    <div className="flex items-center gap-1 shrink-0">
                     <button type="button" className="btn btn-sm" onClick={() => loadVorlage(v._id)}>Laden</button>
                     {v.submissionId && (
-                      <button type="button" className="btn btn-sm text-orange-600 border-orange-300 hover:bg-orange-50" onClick={() => withdrawSubmission(v._id)}>Zurückziehen</button>
+                      <button type="button" className="btn btn-sm text-orange-600 border-orange-300 hover:bg-orange-50" onClick={() => withdrawSubmission(v._id)}><span className="hidden sm:inline">Zurückziehen</span><span className="sm:hidden text-xs">✕</span></button>
                     )}
                     <button type="button" className="btn btn-sm btn-danger" onClick={() => setDeleteConfirmId(v._id)}>
                       <TrashIcon className="size-4" />
                     </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1736,24 +1738,26 @@ export default function VorlageErstellenPage() {
                 const st = statusMap[sub.status] || statusMap.pending;
                 const linkedVorlage = savedVorlagen.find((v) => v.submissionId === sub._id);
                 return (
-                  <div key={sub._id} className="flex items-center gap-3 rounded-lg border border-arena-border bg-white px-3 py-2">
+                  <div key={sub._id} className="flex items-center gap-2 sm:gap-3 rounded-lg border border-arena-border bg-white px-3 py-2 min-w-0">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{sub.bookTitle}</p>
-                      <p className="text-xs text-arena-muted">
+                      <p className="text-xs text-arena-muted truncate">
                         von {sub.author} · {new Date(sub.createdAt).toLocaleDateString("de-DE")}
                       </p>
                     </div>
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${st.cls}`}>{st.label}</span>
-                    {sub.status === "pending" && linkedVorlage && (
-                      <button
-                        type="button"
-                        className="btn btn-sm text-orange-600 border-orange-300 hover:bg-orange-50"
-                        onClick={() => withdrawSubmission(linkedVorlage._id)}
-                        disabled={submitting}
-                      >
-                        Zurückziehen
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${st.cls}`}>{st.label}</span>
+                      {sub.status === "pending" && linkedVorlage && (
+                        <button
+                          type="button"
+                          className="btn btn-sm text-orange-600 border-orange-300 hover:bg-orange-50"
+                          onClick={() => withdrawSubmission(linkedVorlage._id)}
+                          disabled={submitting}
+                        >
+                          <span className="hidden sm:inline">Zurückziehen</span><span className="sm:hidden text-xs">✕</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -1761,7 +1765,7 @@ export default function VorlageErstellenPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-1 overflow-x-auto pb-1">
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 -mx-1 px-1">
           {STEP_LABELS.map((label, i) => (
             <button
               key={i}
@@ -1798,11 +1802,11 @@ export default function VorlageErstellenPage() {
             <div className="grid gap-2">
               <div className="rounded-xl border border-arena-border bg-gray-50 p-2 sm:p-3">
                 <div className="mx-auto flex flex-col sm:flex-row gap-3 items-start justify-center" style={{ maxWidth: 800 }}>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 w-full">
                     {renderSlidePreview(previewSlide)}
                     <p className="text-center text-[10px] text-arena-muted mt-1">Querformat</p>
                   </div>
-                  <div className="w-full sm:w-[28%] shrink-0">
+                  <div className="w-[55%] max-w-[200px] mx-auto sm:w-[28%] sm:max-w-none sm:mx-0 shrink-0">
                     {renderShortsSlidePreview(previewSlide)}
                     <p className="text-center text-[10px] text-arena-muted mt-1">Hochformat (Shorts)</p>
                   </div>

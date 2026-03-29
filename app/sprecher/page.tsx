@@ -56,9 +56,9 @@ export default function SprecherPage() {
               <Link
                 key={speaker.username}
                 href={`/sprecher/${encodeURIComponent(speaker.username)}`}
-                className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md"
+                className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md h-full"
               >
-                <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500">
+                <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
                     <div
                       className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"

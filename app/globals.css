@@ -40,6 +40,14 @@ body {
 
 h1 { margin: 0; }
 
+/* ── Twemoji ── */
+.twemoji {
+  display: inline-block;
+  height: 1.2em;
+  width: 1.2em;
+  vertical-align: -0.15em;
+}
+
 /* Prevent iOS zoom on input focus (font-size < 16px triggers zoom) */
 @media (max-width: 639px) {
   input, select, textarea {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDatabase, getBooksCollection, getUsersCollection, getMessagesCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import { awardBuchempfehlung } from "@/lib/lesezeichen";
+import { awardBuchempfehlung, awardBuchempfehlungErhalten } from "@/lib/lesezeichen";
 
 export type EmpfehlungDoc = {
   _id?: ObjectId;
@@ -126,9 +126,9 @@ export async function POST(req: NextRequest) {
     // Lesezeichen vergeben (max. 3/Tag für Empfehler)
     await awardBuchempfehlung(account.username);
 
-    // +1 Lesezeichen für den Buchbesitzer (auch gedeckelt auf 3/Tag)
+    // +1 Lesezeichen für den Buchbesitzer (ohne Tageslimit)
     if (book.ownerUsername && book.ownerUsername !== account.username) {
-      await awardBuchempfehlung(book.ownerUsername);
+      await awardBuchempfehlungErhalten(book.ownerUsername);
 
       // Nachricht an den Autor senden
       try {

@@ -574,12 +574,12 @@
   {
     "question": "Wer ist der göttliche Vater von Percy Jackson in der gleichnamigen Buchreihe?",
     "answers": [
-      "b",
+      "Poseidon",
       "Zeus",
       "Hades",
       "Ares"
     ],
-    "correct": "b",
+    "correct": "Poseidon",
     "explanation": "Percy ist ein Halbgott und Sohn des Meeresgottes."
   },
   {
@@ -1419,15 +1419,15 @@
     "explanation": "Hesse erhielt 1946 den Nobelpreis für Literatur."
   },
   {
-    "question": "Wie heißt der Zauberer in „Der Herr der Ringe“?",
+    "question": "Wie heißt der Zauberer, der die Gefährten in „Der Herr der Ringe“ anführt?",
     "answers": [
       "Gandalf",
       "Dumbledore",
       "Merlin",
-      "Saruman"
+      "Aragorn"
     ],
     "correct": "Gandalf",
-    "explanation": "Gandalf der Graue (später der Weiße) ist der Führer der Gefährten."
+    "explanation": "Gandalf der Graue (später der Weiße) ist der Führer der Gefährten. Saruman ist zwar auch ein Zauberer, wechselt aber die Seite."
   },
   {
     "question": "Welches Tier ist „Paddington“?",
@@ -1443,12 +1443,12 @@
   {
     "question": "In welchem Land spielt „Stolz und Vorurteil“?",
     "answers": [
-      "Berthold Bürger",
+      "England",
       "Frankreich",
       "USA",
       "Deutschland"
     ],
-    "correct": "Berthold Bürger",
+    "correct": "England",
     "explanation": "Der Roman porträtiert den englischen Landadel (Gentry)."
   },
   {
@@ -1463,7 +1463,7 @@
     "explanation": "Es ist eines der wichtigsten Dokumente des Holocaust."
   },
   {
-    "question": "Wie heißt der Riese in „Harry Potter“?",
+    "question": "Wie heißt der Halbriese und Wildhüter in „Harry Potter“?",
     "answers": [
       "Hagrid",
       "Grawp",
@@ -1471,7 +1471,7 @@
       "Lurch"
     ],
     "correct": "Hagrid",
-    "explanation": "Rubeus Hagrid ist der Wildhüter von Hogwarts."
+    "explanation": "Rubeus Hagrid ist Halbriese und Wildhüter von Hogwarts. Sein Halbbruder Grawp ist ein Vollriese."
   },
   {
     "question": "Welcher Dichter schrieb „Die Glocke“?",
@@ -1716,15 +1716,15 @@
     "explanation": "Ein Klassiker der Nonsens-Literatur."
   },
   {
-    "question": "Wie heißt der Vampir in „Twilight“?",
+    "question": "In wen verliebt sich Bella in „Twilight“?",
     "answers": [
       "Edward Cullen",
       "Jacob Black",
-      "Emmett Cullen",
-      "Carlisle Cullen"
+      "Mike Newton",
+      "Charlie Swan"
     ],
     "correct": "Edward Cullen",
-    "explanation": "Er glitzert in der Sonne."
+    "explanation": "Edward Cullen ist der Vampir, in den sich Bella verliebt. Er glitzert in der Sonne."
   },
   {
     "question": "In welchem Buch geht es um den Jungen Charlie und eine Fabrik?",
@@ -2607,15 +2607,15 @@
     "explanation": "Der „Gute Riese“ bläst den Menschen schöne Träume ins Schlafzimmer."
   },
   {
-    "question": "Welches Tier ist „Sultan“ in den Fabeln (und bei Disney „Aladdin“)?",
+    "question": "Welches Tier ist „Iago“ bei Disneys „Aladdin“?",
     "answers": [
-      "(Trickfrage: In der Fabel kein Tier, im Märchen oft Hund/Pferd) Aber in „Aladdin“ der Vater. Besser: Welches Tier ist „Iago“?",
       "Ein Papagei",
       "Ein Affe",
-      "Ein Tiger"
+      "Ein Tiger",
+      "Ein Löwe"
     ],
-    "correct": "(Trickfrage: In der Fabel kein Tier, im Märchen oft Hund/Pferd) Aber in „Aladdin“ der Vater. Besser: Welches Tier ist „Iago“?",
-    "explanation": "Ein Löwe"
+    "correct": "Ein Papagei",
+    "explanation": "Iago ist Dschafars gesprächiger Papagei und dient als komischer Sidekick."
   },
   {
     "question": "Wer schrieb den Roman „Stolz und Vorurteil“?",

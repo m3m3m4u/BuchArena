@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import CookieBanner from "./components/cookie-banner";
 import LayoutChrome from "./components/layout-chrome";
 import SiteFooter from "./components/site-footer";
+import TwemojiProvider from "./components/twemoji";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -28,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body>
+        <TwemojiProvider />
         <LayoutChrome>{children}</LayoutChrome>
         <SiteFooter />
         <CookieBanner />

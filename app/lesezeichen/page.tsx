@@ -78,7 +78,7 @@ export default function LesezeichenPage() {
   }, [loadHighscores, loadMyStats]);
 
   return (
-    <main className="top-centered-main">
+    <main className="top-centered-main overflow-x-hidden">
       {/* Eigener Stand */}
       {loggedIn && myStats && (
         <section className="card">
@@ -89,7 +89,7 @@ export default function LesezeichenPage() {
             <p className="text-4xl font-bold m-0">{myStats.total}</p>
             <p className="text-arena-muted text-sm mt-1 m-0">Lesezeichen gesammelt</p>
           </div>
-          <div className="grid grid-cols-3 gap-2 text-center text-sm">
+          <div className="grid grid-cols-3 gap-2 text-center text-sm max-[360px]:grid-cols-1">
             <div className="rounded-lg bg-arena-bg border border-arena-border-light p-3">
               <p className="font-bold text-lg m-0">{myStats.loginDays}</p>
               <p className="text-arena-muted m-0">Login-Tage</p>
@@ -118,7 +118,7 @@ export default function LesezeichenPage() {
           {LESEZEICHEN_RULES.map((rule) => (
             <div
               key={rule.reason}
-              className="flex items-start gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3"
+              className="flex items-start gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 min-w-0"
             >
               <span className="text-2xl flex-shrink-0 mt-0.5">
                 {REASON_ICONS[rule.reason] ?? "🔖"}
@@ -127,7 +127,7 @@ export default function LesezeichenPage() {
                 <p className="font-semibold m-0">{rule.label}</p>
                 <p className="text-arena-muted text-sm m-0">{rule.description}</p>
               </div>
-              <span className="badge bg-yellow-100 text-yellow-800 flex-shrink-0 whitespace-nowrap">
+              <span className="badge bg-yellow-100 text-yellow-800 flex-shrink-0 whitespace-nowrap text-xs">
                 {rule.amount}
               </span>
             </div>
@@ -173,7 +173,7 @@ export default function LesezeichenPage() {
               return (
                 <div
                   key={`${entry.username}-${i}`}
-                  className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 ${
+                  className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 min-w-0 ${
                     isMe
                       ? "bg-yellow-50 border-yellow-300"
                       : i === 0

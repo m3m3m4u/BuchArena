@@ -556,9 +556,9 @@ export default function AdminPage() {
                       <div style={{ display: "flex", gap: "1rem", fontSize: "0.72rem", color: "var(--color-arena-muted)", flexWrap: "wrap" }}>
                         <span>Aufrufe · <span style={{ color: "var(--color-arena-blue)", fontWeight: 600 }}>Eingeloggt</span> / <span style={{ opacity: 0.6 }}>Anonym</span></span>
                       </div>
-                      <div style={{ display: "grid", gap: "3px", maxHeight: 400, overflowY: "auto" }}>
+                      <div style={{ display: "grid", gap: "3px", maxHeight: 400, overflowY: "auto", overflowX: "hidden" }}>
                         {analyticsData.visitorsPerDay.map((d) => (
-                          <div key={d.date} style={{ display: "grid", gridTemplateColumns: "80px 1fr 55px", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem" }}>
+                          <div key={d.date} style={{ display: "grid", gridTemplateColumns: "80px 1fr auto", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem" }}>
                             <span style={{ color: "var(--color-arena-muted)" }}>{formatDateShort(d.date)}</span>
                             <div style={{ background: "#e0e0e0", borderRadius: 4, height: 16, overflow: "hidden" }}>
                               <div style={{ width: maxCount ? `${(d.count / maxCount) * 100}%` : "0%", background: "var(--color-arena-yellow)", height: "100%", borderRadius: 4, transition: "width 0.3s" }} />
