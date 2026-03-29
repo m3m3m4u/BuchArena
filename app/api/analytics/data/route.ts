@@ -30,6 +30,20 @@ export async function POST(request: NextRequest) {
               $dateToString: { format: "%Y-%m-%d", date: "$timestamp" },
             },
             count: { $sum: 1 },
+            uniqueVisitors: { $addToSet: "$visitorId" },
+            loggedInVisitors: {
+              $addToSet: {
+                $cond: [{ $and: [{ $ne: ["$username", ""] }, { $ne: ["$username", null] }] }, "$visitorId", "$$REMOVE"],
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            count: 1,
+            unique: { $size: "$uniqueVisitors" },
+            loggedIn: { $size: "$loggedInVisitors" },
           },
         },
         { $sort: { _id: 1 } },
@@ -83,10 +97,34 @@ export async function POST(request: NextRequest) {
       timestamp: { $gte: todayStart },
     });
 
+    // Eindeutige Besucher heute
+    const todayUniqueResult = await collection
+      .aggregate([
+        { $match: { timestamp: { $gte: todayStart }, visitorId: { $exists: true } } },
+        { $group: { _id: "$visitorId" } },
+        { $count: "count" },
+      ])
+      .toArray();
+    const todayUniqueVisitors = todayUniqueResult[0]?.count ?? 0;
+
+    // Eingeloggte vs. anonyme Besucher heute
+    const todayLoggedIn = await collection
+      .aggregate([
+        { $match: { timestamp: { $gte: todayStart }, username: { $ne: "" } } },
+        { $group: { _id: "$visitorId" } },
+        { $count: "count" },
+      ])
+      .toArray();
+    const todayLoggedInUsers = todayLoggedIn[0]?.count ?? 0;
+    const todayAnonymousUsers = Math.max(0, todayUniqueVisitors - todayLoggedInUsers);
+
     return NextResponse.json({
       visitorsPerDay: visitorsPerDay.map((d) => ({
         date: d._id,
         count: d.count,
+        unique: d.unique ?? 0,
+        loggedIn: d.loggedIn ?? 0,
+        anonymous: Math.max(0, (d.unique ?? 0) - (d.loggedIn ?? 0)),
       })),
       topPages: topPages.map((p) => ({
         page: p._id,
@@ -98,6 +136,9 @@ export async function POST(request: NextRequest) {
       })),
       totalViews,
       todayViews,
+      todayUniqueVisitors,
+      todayLoggedInUsers,
+      todayAnonymousUsers,
       days: lookbackDays,
     });
   } catch {

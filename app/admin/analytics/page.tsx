@@ -8,7 +8,7 @@ import {
   type LoggedInAccount,
 } from "@/lib/client-account";
 
-type DayData = { date: string; count: number };
+type DayData = { date: string; count: number; unique: number; loggedIn: number; anonymous: number };
 type PageData = { page: string; count: number };
 type ReferrerData = { referrer: string; count: number };
 
@@ -18,6 +18,9 @@ type AnalyticsData = {
   topReferrers: ReferrerData[];
   totalViews: number;
   todayViews: number;
+  todayUniqueVisitors: number;
+  todayLoggedInUsers: number;
+  todayAnonymousUsers: number;
   days: number;
 };
 
@@ -32,7 +35,15 @@ function formatDate(iso: string): string {
 
 function tryExtractHost(url: string): string {
   try {
-    return new URL(url).hostname;
+    const u = new URL(url);
+    // Doppelte Hostnamen im Pfad erkennen und bereinigen
+    const decodedPath = decodeURIComponent(u.pathname);
+    const pathWithoutSlash = decodedPath.replace(/^\//, "");
+    if (pathWithoutSlash.startsWith(u.hostname)) {
+      const realPath = pathWithoutSlash.slice(u.hostname.length);
+      return u.hostname + (realPath.startsWith("/") ? realPath : "/" + realPath);
+    }
+    return u.hostname;
   } catch {
     return url;
   }
@@ -43,6 +54,7 @@ export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [days, setDays] = useState(30);
+  const [tab, setTab] = useState<"chart" | "pages" | "referrer">("chart");
 
   useEffect(() => {
     function syncAccount() {
@@ -130,122 +142,120 @@ export default function AnalyticsPage() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-                gap: "0.75rem",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: "0.5rem",
               }}
             >
-              <div
-                style={{
-                  background: "var(--color-arena-blue)",
-                  color: "#fff",
-                  borderRadius: 10,
-                  padding: "1rem",
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ fontSize: "2rem", fontWeight: 700 }}>
-                  {data.todayViews}
-                </div>
-                <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
-                  Aufrufe heute
-                </div>
-              </div>
-              <div
-                style={{
-                  background: "var(--color-arena-blue-light)",
-                  color: "#fff",
-                  borderRadius: 10,
-                  padding: "1rem",
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ fontSize: "2rem", fontWeight: 700 }}>
-                  {data.totalViews}
-                </div>
-                <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
-                  Aufrufe gesamt ({data.days} Tage)
-                </div>
-              </div>
-              <div
-                style={{
-                  background: "var(--color-arena-blue-mid)",
-                  color: "#fff",
-                  borderRadius: 10,
-                  padding: "1rem",
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ fontSize: "2rem", fontWeight: 700 }}>
-                  {data.visitorsPerDay.length}
-                </div>
-                <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
-                  Aktive Tage
-                </div>
-              </div>
-            </div>
-
-            {/* Besucher pro Tag – Balkendiagramm */}
-            <h2 style={{ fontSize: "1.1rem", marginBottom: 0 }}>
-              Seitenaufrufe pro Tag
-            </h2>
-            <div
-              style={{
-                display: "grid",
-                gap: "3px",
-                maxHeight: 350,
-                overflowY: "auto",
-              }}
-            >
-              {data.visitorsPerDay.map((d) => (
+              {[
+                { value: data.todayViews, label: "Aufrufe heute", bg: "var(--color-arena-blue)", color: "#fff" },
+                { value: data.todayUniqueVisitors, label: "Nutzer heute", bg: "var(--color-arena-yellow)", color: "#333" },
+                { value: data.todayLoggedInUsers, label: "Eingeloggt", bg: "var(--color-arena-blue-light)", color: "#fff" },
+                { value: data.todayAnonymousUsers, label: "Anonym", bg: "var(--color-arena-blue-mid)", color: "#fff" },
+                { value: data.totalViews, label: `Gesamt (${data.days}d)`, bg: "var(--color-arena-blue)", color: "#fff" },
+                { value: data.visitorsPerDay.length, label: "Aktive Tage", bg: "var(--color-arena-blue-mid)", color: "#fff" },
+              ].map((card) => (
                 <div
-                  key={d.date}
+                  key={card.label}
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "90px 1fr 40px",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    fontSize: "0.82rem",
+                    background: card.bg,
+                    color: card.color,
+                    borderRadius: 8,
+                    padding: "0.6rem 0.4rem",
+                    textAlign: "center",
                   }}
                 >
-                  <span style={{ color: "var(--color-arena-muted)" }}>
-                    {formatDate(d.date)}
-                  </span>
-                  <div
-                    style={{
-                      background: "#e0e0e0",
-                      borderRadius: 4,
-                      height: 18,
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: maxCount
-                          ? `${(d.count / maxCount) * 100}%`
-                          : "0%",
-                        background: "var(--color-arena-yellow)",
-                        height: "100%",
-                        borderRadius: 4,
-                        transition: "width 0.3s",
-                      }}
-                    />
+                  <div style={{ fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.1 }}>
+                    {card.value}
                   </div>
-                  <span style={{ fontWeight: 600, textAlign: "right" }}>
-                    {d.count}
-                  </span>
+                  <div style={{ fontSize: "0.72rem", opacity: 0.85 }}>
+                    {card.label}
+                  </div>
                 </div>
               ))}
-              {data.visitorsPerDay.length === 0 && (
-                <p style={{ color: "var(--color-arena-muted)" }}>
-                  Keine Daten im gewählten Zeitraum.
-                </p>
-              )}
             </div>
 
-            {/* Top-Seiten */}
-            <h2 style={{ fontSize: "1.1rem", marginBottom: 0 }}>
-              Beliebteste Seiten
-            </h2>
+            {/* Tabs */}
+            <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
+              {[
+                { key: "chart" as const, label: "📈 Verlauf" },
+                { key: "pages" as const, label: "📄 Top-Seiten" },
+                { key: "referrer" as const, label: "🔗 Herkunft" },
+              ].map((t) => (
+                <button
+                  key={t.key}
+                  className={`btn btn-sm${tab === t.key ? " btn-primary" : ""}`}
+                  onClick={() => setTab(t.key)}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab: Verlauf */}
+            {tab === "chart" && (
+              <>
+              <div style={{ display: "flex", gap: "1rem", fontSize: "0.72rem", color: "var(--color-arena-muted)", flexWrap: "wrap" }}>
+                <span>Aufrufe · <span style={{ color: "var(--color-arena-blue)", fontWeight: 600 }}>Eingeloggt</span> / <span style={{ opacity: 0.6 }}>Anonym</span></span>
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gap: "3px",
+                  maxHeight: 400,
+                  overflowY: "auto",
+                }}
+              >
+                {data.visitorsPerDay.map((d) => (
+                  <div
+                    key={d.date}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "80px 1fr 55px",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                      fontSize: "0.78rem",
+                    }}
+                  >
+                    <span style={{ color: "var(--color-arena-muted)" }}>
+                      {formatDate(d.date)}
+                    </span>
+                    <div
+                      style={{
+                        background: "#e0e0e0",
+                        borderRadius: 4,
+                        height: 16,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: maxCount
+                            ? `${(d.count / maxCount) * 100}%`
+                            : "0%",
+                          background: "var(--color-arena-yellow)",
+                          height: "100%",
+                          borderRadius: 4,
+                          transition: "width 0.3s",
+                        }}
+                      />
+                    </div>
+                    <span style={{ fontWeight: 600, textAlign: "right", whiteSpace: "nowrap", fontSize: "0.75rem" }}>
+                      {d.count} · <span title="Eingeloggt" style={{ color: "var(--color-arena-blue)" }}>{d.loggedIn}</span>/<span title="Anonym" style={{ opacity: 0.6 }}>{d.anonymous}</span>
+                    </span>
+                  </div>
+                ))}
+                {data.visitorsPerDay.length === 0 && (
+                  <p style={{ color: "var(--color-arena-muted)" }}>
+                    Keine Daten im gewählten Zeitraum.
+                  </p>
+                )}
+              </div>
+              </>
+            )}
+
+            {/* Tab: Top-Seiten */}
+            {tab === "pages" && (
+              <>
             <div style={{ overflowX: "auto" }}>
               <table
                 style={{
@@ -303,11 +313,12 @@ export default function AnalyticsPage() {
                 </tbody>
               </table>
             </div>
+              </>
+            )}
 
-            {/* Referrer */}
-            <h2 style={{ fontSize: "1.1rem", marginBottom: 0 }}>
-              Herkunft (Referrer)
-            </h2>
+            {/* Tab: Referrer */}
+            {tab === "referrer" && (
+              <>
             {data.topReferrers.length === 0 ? (
               <p style={{ color: "var(--color-arena-muted)", fontSize: "0.9rem" }}>
                 Keine externen Referrer im gewählten Zeitraum.
@@ -371,6 +382,8 @@ export default function AnalyticsPage() {
                   </tbody>
                 </table>
               </div>
+            )}
+              </>
             )}
           </>
         ) : (

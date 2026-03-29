@@ -20,6 +20,8 @@ const socialIcons: Record<string, React.ReactNode> = {
 function toSocialUrl(platform: string, raw: string): string {
   const v = raw.trim();
   if (/^https?:\/\//i.test(v)) return v;
+  // URL ohne Protokoll erkennen (z.B. www.instagram.com/user)
+  if (/^(www\.)?[a-z0-9-]+\.[a-z]{2,}/i.test(v)) return `https://${v}`;
   const handle = v.replace(/^@/, "");
   switch (platform) {
     case "Instagram": return `https://www.instagram.com/${encodeURIComponent(handle)}`;

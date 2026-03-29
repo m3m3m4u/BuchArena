@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { getStoredAccount } from "@/lib/client-account";
 
 /**
  * Unsichtbare Komponente, die bei jedem Seitenwechsel einen
@@ -16,12 +17,13 @@ export default function AnalyticsTracker() {
     lastTracked.current = pathname;
 
     const referrer = document.referrer || "";
+    const account = getStoredAccount();
 
     // Fire-and-forget – kein await nötig
     fetch("/api/analytics/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ page: pathname, referrer }),
+      body: JSON.stringify({ page: pathname, referrer, username: account?.username || "" }),
     }).catch(() => {
       /* Tracking-Fehler still ignorieren */
     });

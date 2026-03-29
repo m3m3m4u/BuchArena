@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   ACCOUNT_CHANGED_EVENT,
   getStoredAccount,
@@ -36,12 +36,51 @@ function formatDateTime(iso: string | null | undefined): string {
     + " " + d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 }
 
+/* ── Analytics-Typen ── */
+type DayData = { date: string; count: number; unique: number; loggedIn: number; anonymous: number };
+type PageData = { page: string; count: number };
+type ReferrerData = { referrer: string; count: number };
+type AnalyticsData = {
+  visitorsPerDay: DayData[];
+  topPages: PageData[];
+  topReferrers: ReferrerData[];
+  totalViews: number;
+  todayViews: number;
+  todayUniqueVisitors: number;
+  todayLoggedInUsers: number;
+  todayAnonymousUsers: number;
+  days: number;
+};
+
+function tryExtractHost(url: string): string {
+  try {
+    const u = new URL(url);
+    const decodedPath = decodeURIComponent(u.pathname);
+    const pathWithoutSlash = decodedPath.replace(/^\//, "");
+    if (pathWithoutSlash.startsWith(u.hostname)) {
+      const realPath = pathWithoutSlash.slice(u.hostname.length);
+      return u.hostname + (realPath.startsWith("/") ? realPath : "/" + realPath);
+    }
+    return u.hostname;
+  } catch {
+    return url;
+  }
+}
+
+function formatDateShort(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
 export default function AdminPage() {
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
   const [users, setUsers] = useState<UserListEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [busyUser, setBusyUser] = useState<string | null>(null);
+
+  /* ── Haupt-Reiter ── */
+  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "users">("bdw");
 
   /* ── Benutzername ändern ── */
   const [renameTarget, setRenameTarget] = useState<string | null>(null);
@@ -54,6 +93,23 @@ export default function AdminPage() {
   /* ── E-Mail ändern ── */
   const [emailChangeTarget, setEmailChangeTarget] = useState<string | null>(null);
   const [newEmail, setNewEmail] = useState("");
+
+  /* ── Buch der Woche ── */
+  const [bdwTitle, setBdwTitle] = useState("");
+  const [bdwAuthor, setBdwAuthor] = useState("");
+  const [bdwYoutube, setBdwYoutube] = useState("");
+  const [bdwBuyUrl, setBdwBuyUrl] = useState("");
+  const [bdwActive, setBdwActive] = useState(true);
+  const [bdwMsg, setBdwMsg] = useState("");
+  const [bdwLoading, setBdwLoading] = useState(false);
+  const [bdwLoaded, setBdwLoaded] = useState(false);
+
+  /* ── Analytics ── */
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsDays, setAnalyticsDays] = useState(30);
+  const [analyticsTab, setAnalyticsTab] = useState<"chart" | "pages" | "referrer">("chart");
+  const [analyticsLoaded, setAnalyticsLoaded] = useState(false);
 
   useEffect(() => {
     function syncAccount() {
@@ -110,6 +166,64 @@ export default function AdminPage() {
 
     loadUsers();
   }, [account]);
+
+  // Buch der Woche laden
+  useEffect(() => {
+    if (mainTab !== "bdw" || bdwLoaded) return;
+    setBdwLoaded(true);
+    fetch("/api/buch-der-woche?admin=1").then(r => r.json()).then(d => {
+      if (d.buchDerWoche) {
+        setBdwTitle(d.buchDerWoche.title ?? "");
+        setBdwAuthor(d.buchDerWoche.author ?? "");
+        setBdwYoutube(d.buchDerWoche.youtubeUrl ?? "");
+        setBdwBuyUrl(d.buchDerWoche.buyUrl ?? "");
+        setBdwActive(d.buchDerWoche.active ?? true);
+      }
+    }).catch(() => {});
+  }, [mainTab, bdwLoaded]);
+
+  // Analytics laden
+  const loadAnalytics = useCallback(async () => {
+    setAnalyticsLoading(true);
+    try {
+      const res = await fetch("/api/analytics/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ days: analyticsDays }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setAnalyticsData(json);
+      }
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }, [analyticsDays]);
+
+  useEffect(() => {
+    if (mainTab !== "analytics") return;
+    if (!account || (account.role !== "ADMIN" && account.role !== "SUPERADMIN")) return;
+    loadAnalytics();
+    setAnalyticsLoaded(true);
+  }, [mainTab, account, loadAnalytics]);
+
+  async function saveBuchDerWoche() {
+    setBdwLoading(true);
+    setBdwMsg("");
+    try {
+      const res = await fetch("/api/buch-der-woche", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: bdwTitle, author: bdwAuthor, youtubeUrl: bdwYoutube, buyUrl: bdwBuyUrl, active: bdwActive }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Fehler"); }
+      setBdwMsg("✅ Gespeichert!");
+    } catch (err) {
+      setBdwMsg(err instanceof Error ? err.message : "Fehler beim Speichern.");
+    } finally {
+      setBdwLoading(false);
+    }
+  }
 
   async function changeUserStatus(
     targetUsername: string,
@@ -291,7 +405,7 @@ export default function AdminPage() {
     return (
       <main className="centered-main">
         <section className="card">
-          <h1>User-Übersicht</h1>
+          <h1>Admin</h1>
           <p>Bitte zuerst anmelden.</p>
           <Link href="/auth" className="btn">
             Zur Anmeldung
@@ -305,7 +419,7 @@ export default function AdminPage() {
     <main className="centered-main">
       <section className="card">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
-          <h1>User-Übersicht</h1>
+          <h1>Admin</h1>
           <div className="flex gap-2 flex-wrap">
             <button
               className="btn btn-sm"
@@ -320,12 +434,207 @@ export default function AdminPage() {
             >
               🔖 Lesezeichen neu berechnen
             </button>
-            <Link href="/admin/analytics" className="btn btn-sm">
-              📊 Analyse
+            <Link href="/admin/einreichungen" className="btn btn-sm">
+              📬 Einreichungen
             </Link>
           </div>
         </div>
 
+        {/* ── Haupt-Reiter ── */}
+        <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
+          {([
+            { key: "bdw" as const, label: "📖 Buch der Woche" },
+            { key: "analytics" as const, label: "📊 Analyse" },
+            { key: "users" as const, label: "👥 User-Übersicht" },
+          ]).map((t) => (
+            <button
+              key={t.key}
+              className={`btn btn-sm${mainTab === t.key ? " btn-primary" : ""}`}
+              onClick={() => setMainTab(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ══ Tab: Buch der Woche ══ */}
+        {mainTab === "bdw" && (
+          <div className="grid gap-2">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <span className="text-sm font-semibold">Aktiv</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={bdwActive}
+                onClick={() => setBdwActive(!bdwActive)}
+                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${bdwActive ? "bg-arena-blue" : "bg-gray-300"}`}
+              >
+                <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${bdwActive ? "translate-x-5" : "translate-x-0"}`} />
+              </button>
+              <span className="text-xs text-arena-muted">{bdwActive ? "Wird angezeigt" : "Ausgeblendet"}</span>
+            </label>
+            <label className="block">
+              <span className="text-sm font-semibold">Buchtitel</span>
+              <input className="input-base w-full mt-1" value={bdwTitle} onChange={e => setBdwTitle(e.target.value)} placeholder="z.B. Der Alchimist" />
+            </label>
+            <label className="block">
+              <span className="text-sm font-semibold">Autor</span>
+              <input className="input-base w-full mt-1" value={bdwAuthor} onChange={e => setBdwAuthor(e.target.value)} placeholder="z.B. Paulo Coelho" />
+            </label>
+            <label className="block">
+              <span className="text-sm font-semibold">YouTube-Link</span>
+              <input className="input-base w-full mt-1" value={bdwYoutube} onChange={e => setBdwYoutube(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." />
+            </label>
+            <label className="block">
+              <span className="text-sm font-semibold">Kauf-Link</span>
+              <input className="input-base w-full mt-1" value={bdwBuyUrl} onChange={e => setBdwBuyUrl(e.target.value)} placeholder="https://..." />
+            </label>
+            <div className="flex items-center gap-3 mt-1">
+              <button className="btn btn-primary btn-sm" disabled={bdwLoading || !bdwTitle.trim() || !bdwAuthor.trim()} onClick={() => void saveBuchDerWoche()}>
+                {bdwLoading ? "Speichern …" : "Speichern"}
+              </button>
+              {bdwMsg && <span className="text-sm">{bdwMsg}</span>}
+            </div>
+          </div>
+        )}
+
+        {/* ══ Tab: Analytics ══ */}
+        {mainTab === "analytics" && (
+          <div className="grid gap-3">
+            {/* Zeitraum-Auswahl */}
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              {[7, 14, 30, 90].map((d) => (
+                <button
+                  key={d}
+                  className={`btn btn-sm${d === analyticsDays ? " btn-primary" : ""}`}
+                  onClick={() => setAnalyticsDays(d)}
+                >
+                  {d} Tage
+                </button>
+              ))}
+            </div>
+
+            {analyticsLoading ? (
+              <p style={{ color: "var(--color-arena-muted)" }}>Lade Daten…</p>
+            ) : analyticsData ? (
+              <>
+                {/* Übersichtskarten */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.5rem" }}>
+                  {[
+                    { value: analyticsData.todayViews, label: "Aufrufe heute", bg: "var(--color-arena-blue)", color: "#fff" },
+                    { value: analyticsData.todayUniqueVisitors, label: "Nutzer heute", bg: "var(--color-arena-yellow)", color: "#333" },
+                    { value: analyticsData.todayLoggedInUsers, label: "Eingeloggt", bg: "var(--color-arena-blue-light)", color: "#fff" },
+                    { value: analyticsData.todayAnonymousUsers, label: "Anonym", bg: "var(--color-arena-blue-mid)", color: "#fff" },
+                    { value: analyticsData.totalViews, label: `Gesamt (${analyticsData.days}d)`, bg: "var(--color-arena-blue)", color: "#fff" },
+                    { value: analyticsData.visitorsPerDay.length, label: "Aktive Tage", bg: "var(--color-arena-blue-mid)", color: "#fff" },
+                  ].map((card) => (
+                    <div key={card.label} style={{ background: card.bg, color: card.color, borderRadius: 8, padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.1 }}>{card.value}</div>
+                      <div style={{ fontSize: "0.72rem", opacity: 0.85 }}>{card.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Sub-Tabs */}
+                <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
+                  {([
+                    { key: "chart" as const, label: "📈 Verlauf" },
+                    { key: "pages" as const, label: "📄 Top-Seiten" },
+                    { key: "referrer" as const, label: "🔗 Herkunft" },
+                  ]).map((t) => (
+                    <button key={t.key} className={`btn btn-sm${analyticsTab === t.key ? " btn-primary" : ""}`} onClick={() => setAnalyticsTab(t.key)}>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sub-Tab: Verlauf */}
+                {analyticsTab === "chart" && (() => {
+                  const maxCount = analyticsData.visitorsPerDay.reduce((max, d) => Math.max(max, d.count), 0);
+                  return (
+                    <>
+                      <div style={{ display: "flex", gap: "1rem", fontSize: "0.72rem", color: "var(--color-arena-muted)", flexWrap: "wrap" }}>
+                        <span>Aufrufe · <span style={{ color: "var(--color-arena-blue)", fontWeight: 600 }}>Eingeloggt</span> / <span style={{ opacity: 0.6 }}>Anonym</span></span>
+                      </div>
+                      <div style={{ display: "grid", gap: "3px", maxHeight: 400, overflowY: "auto" }}>
+                        {analyticsData.visitorsPerDay.map((d) => (
+                          <div key={d.date} style={{ display: "grid", gridTemplateColumns: "80px 1fr 55px", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem" }}>
+                            <span style={{ color: "var(--color-arena-muted)" }}>{formatDateShort(d.date)}</span>
+                            <div style={{ background: "#e0e0e0", borderRadius: 4, height: 16, overflow: "hidden" }}>
+                              <div style={{ width: maxCount ? `${(d.count / maxCount) * 100}%` : "0%", background: "var(--color-arena-yellow)", height: "100%", borderRadius: 4, transition: "width 0.3s" }} />
+                            </div>
+                            <span style={{ fontWeight: 600, textAlign: "right", whiteSpace: "nowrap", fontSize: "0.75rem" }}>
+                              {d.count} · <span title="Eingeloggt" style={{ color: "var(--color-arena-blue)" }}>{d.loggedIn}</span>/<span title="Anonym" style={{ opacity: 0.6 }}>{d.anonymous}</span>
+                            </span>
+                          </div>
+                        ))}
+                        {analyticsData.visitorsPerDay.length === 0 && (
+                          <p style={{ color: "var(--color-arena-muted)" }}>Keine Daten im gewählten Zeitraum.</p>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+
+                {/* Sub-Tab: Top-Seiten */}
+                {analyticsTab === "pages" && (
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+                      <thead>
+                        <tr style={{ borderBottom: "2px solid var(--color-arena-border)", textAlign: "left" }}>
+                          <th style={{ padding: "0.4rem 0.5rem" }}>Seite</th>
+                          <th style={{ padding: "0.4rem 0.5rem", textAlign: "right", whiteSpace: "nowrap" }}>Aufrufe</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {analyticsData.topPages.map((p) => (
+                          <tr key={p.page} style={{ borderBottom: "1px solid var(--color-arena-border-light)" }}>
+                            <td style={{ padding: "0.35rem 0.5rem", wordBreak: "break-all" }}>{p.page}</td>
+                            <td style={{ padding: "0.35rem 0.5rem", textAlign: "right", fontWeight: 600 }}>{p.count}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Sub-Tab: Referrer */}
+                {analyticsTab === "referrer" && (
+                  <>
+                    {analyticsData.topReferrers.length === 0 ? (
+                      <p style={{ color: "var(--color-arena-muted)", fontSize: "0.9rem" }}>Keine externen Referrer im gewählten Zeitraum.</p>
+                    ) : (
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+                          <thead>
+                            <tr style={{ borderBottom: "2px solid var(--color-arena-border)", textAlign: "left" }}>
+                              <th style={{ padding: "0.4rem 0.5rem" }}>Quelle</th>
+                              <th style={{ padding: "0.4rem 0.5rem", textAlign: "right", whiteSpace: "nowrap" }}>Aufrufe</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {analyticsData.topReferrers.map((r) => (
+                              <tr key={r.referrer} style={{ borderBottom: "1px solid var(--color-arena-border-light)" }}>
+                                <td style={{ padding: "0.35rem 0.5rem", wordBreak: "break-all" }}>{tryExtractHost(r.referrer)}</td>
+                                <td style={{ padding: "0.35rem 0.5rem", textAlign: "right", fontWeight: 600 }}>{r.count}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            ) : (
+              <p style={{ color: "var(--color-arena-danger)" }}>Daten konnten nicht geladen werden.</p>
+            )}
+          </div>
+        )}
+
+        {/* ══ Tab: User-Übersicht ══ */}
+        {mainTab === "users" && (
+          <>
         {isLoading ? (
           <p>Lade Benutzer ...</p>
         ) : (account.role !== "SUPERADMIN" && account.role !== "ADMIN") ? (
@@ -637,6 +946,8 @@ export default function AdminPage() {
               })}
             </div>
           </div>
+        )}
+          </>
         )}
 
         {message && <p className="text-red-700">{message}</p>}

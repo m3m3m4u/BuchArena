@@ -4,6 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT, type LoggedInAccount } from "@/lib/client-account";
+import { extractYouTubeId } from "@/lib/bucharena-types";
+
+type BuchDerWoche = { title: string; author: string; youtubeUrl: string; buyUrl: string; active?: boolean };
+type Stats = { bookCount: number; authorCount: number; bloggerCount: number; speakerCount: number };
 
 
 
@@ -12,6 +16,8 @@ export default function HomePage() {
   const [showVideo, setShowVideo] = useState(false);
   const [lesezeichen, setLesezeichen] = useState<{ total: number; loginDays: number } | null>(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [bdw, setBdw] = useState<BuchDerWoche | null>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
 
   const closeVideo = useCallback(() => setShowVideo(false), []);
 
@@ -38,6 +44,15 @@ export default function HomePage() {
     if (!account) return;
     fetch("/api/lesezeichen").then(r => r.json()).then(d => setLesezeichen(d)).catch(() => {});
     fetch("/api/messages/unread-count").then(r => r.json()).then(d => setUnreadMessages(d.count ?? 0)).catch(() => {});
+    fetch("/api/buch-der-woche").then(r => r.json()).then(d => setBdw(d.buchDerWoche ?? null)).catch(() => {});
+  }, [account]);
+
+  // Public data (stats + BdW für Gäste)
+  useEffect(() => {
+    fetch("/api/stats").then(r => r.json()).then(d => setStats(d)).catch(() => {});
+    if (!account) {
+      fetch("/api/buch-der-woche").then(r => r.json()).then(d => setBdw(d.buchDerWoche ?? null)).catch(() => {});
+    }
   }, [account]);
 
   // Logged-in: Dashboard
@@ -134,11 +149,38 @@ export default function HomePage() {
 
         {/* Buch der Woche */}
         <section className="card mt-3">
-          <h2 className="text-lg m-0 flex items-center gap-2">📖 Buch der Woche</h2>
-          <div className="rounded-lg border border-dashed border-arena-border-light bg-gray-50 p-6 text-center">
-            <p className="text-3xl m-0">📚</p>
-            <p className="font-semibold text-arena-muted m-0 mt-2">Bald verfügbar</p>
-          </div>
+          {bdw && bdw.title ? (
+            <div>
+              <p className="text-lg font-semibold m-0 flex items-center gap-2 flex-wrap">
+                <span>Buch der Woche:</span>
+                <span>{bdw.title} <span className="font-normal text-arena-muted">von {bdw.author}</span></span>
+                {bdw.buyUrl && (
+                  <a href={bdw.buyUrl} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm inline-flex items-center">
+                    HIER ERHÄLTLICH
+                  </a>
+                )}
+              </p>
+              {bdw.youtubeUrl && (() => {
+                const ytId = extractYouTubeId(bdw.youtubeUrl);
+                return ytId ? (
+                  <div className="mt-3 mx-auto relative w-full" style={{ maxWidth: "80%", paddingBottom: "45%" }}>
+                    <iframe
+                      className="absolute inset-0 w-full h-full rounded-lg"
+                      src={`https://www.youtube-nocookie.com/embed/${ytId}`}
+                      title={bdw.title}
+                      allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          ) : (
+            <div>
+              <h2 className="text-lg m-0">Buch der Woche</h2>
+              <p className="font-semibold text-arena-muted m-0 mt-2">Bald verfügbar</p>
+            </div>
+          )}
         </section>
       </main>
     );
@@ -225,7 +267,53 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Buch der Woche */}
+      {bdw && bdw.title && (
+        <section className="mx-auto px-4 py-10 text-center" style={{ width: "80%", maxWidth: "1100px" }}>
+          <p className="text-xl m-0 flex items-center justify-center gap-2 flex-wrap">
+            <span className="font-bold">Buch der Woche:</span>
+            <span><strong>{bdw.title}</strong> <span className="text-arena-muted">von {bdw.author}</span></span>
+            {bdw.buyUrl && (
+              <a href={bdw.buyUrl} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm inline-flex items-center gap-1">
+                HIER ERHÄLTLICH
+              </a>
+            )}
+          </p>
+          {bdw.youtubeUrl && (() => {
+            const ytId = extractYouTubeId(bdw.youtubeUrl);
+            return ytId ? (
+              <div className="mt-4 relative w-full" style={{ paddingBottom: "56.25%" }}>
+                <iframe
+                  className="absolute inset-0 w-full h-full rounded-lg"
+                  src={`https://www.youtube-nocookie.com/embed/${ytId}`}
+                  title={bdw.title}
+                  allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            ) : null;
+          })()}
+        </section>
+      )}
 
+      {/* Statistiken */}
+      {stats && (
+        <section className="bg-arena-bg py-10 px-4">
+          <div className="mx-auto max-w-[1100px] grid grid-cols-4 gap-4 max-sm:grid-cols-2">
+            {[
+              { value: stats.bookCount, label: "Bücher", icon: "" },
+              { value: stats.authorCount, label: "Autoren", icon: "" },
+              { value: stats.bloggerCount, label: "Blogger", icon: "" },
+              { value: stats.speakerCount, label: "Sprecher", icon: "" },
+            ].map((s) => (
+              <div key={s.label} className="rounded-xl bg-white border border-arena-border-light px-5 py-4 text-center">
+                <p className="text-2xl font-bold m-0 text-arena-blue">{s.value}</p>
+                <p className="text-arena-muted text-sm m-0 mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Video-Overlay */}
       {showVideo && (

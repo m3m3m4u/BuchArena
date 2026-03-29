@@ -24,6 +24,8 @@ function toSocialUrl(platform: string, raw: string): string {
   const v = raw.trim();
   // Bereits eine vollständige URL → direkt verwenden
   if (/^https?:\/\//i.test(v)) return v;
+  // URL ohne Protokoll erkennen (z.B. www.instagram.com/user)
+  if (/^(www\.)?[a-z0-9-]+\.[a-z]{2,}/i.test(v)) return `https://${v}`;
 
   // Handle ohne @ normalisieren
   const handle = v.replace(/^@/, "");

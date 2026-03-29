@@ -91,7 +91,7 @@ export default function SiteFooter() {
           {/* Desktop: text links inline */}
           <div className="hidden sm:contents">
             {(account?.role === "SUPERADMIN" || account?.role === "ADMIN") && (
-              <Link href="/admin" className="btn">User-Übersicht</Link>
+              <Link href="/admin" className="btn">Admin</Link>
             )}
             {account && (
               <Link href="/nachrichten" className="btn relative">
@@ -125,7 +125,7 @@ export default function SiteFooter() {
             {menuOpen && (
               <div className="absolute bottom-full left-0 mb-2 min-w-[200px] rounded-xl border border-arena-border-light bg-white shadow-lg py-1.5 z-50">
                 {(account?.role === "SUPERADMIN" || account?.role === "ADMIN") && (
-                  <Link href="/admin" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>User-Übersicht</Link>
+                  <Link href="/admin" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Admin</Link>
                 )}
                 {account && (
                   <Link href="/nachrichten" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>
