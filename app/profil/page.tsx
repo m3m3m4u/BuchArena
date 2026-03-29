@@ -335,6 +335,7 @@ function ProfilPageInner() {
         profileImage: {
           ...current.profileImage,
           value: data.imageUrl as string,
+          visibility: current.profileImage.visibility === "hidden" ? "public" : current.profileImage.visibility,
         },
       }));
       setMessage("Bild erfolgreich hochgeladen.");
@@ -373,6 +374,7 @@ function ProfilPageInner() {
         profileImage: {
           ...current.profileImage,
           value: data.imageUrl as string,
+          visibility: current.profileImage.visibility === "hidden" ? "public" : current.profileImage.visibility,
         },
       }));
       setMessage("Sprecher-Bild erfolgreich hochgeladen.");
@@ -449,6 +451,7 @@ function ProfilPageInner() {
         profileImage: {
           ...current.profileImage,
           value: data.imageUrl as string,
+          visibility: current.profileImage.visibility === "hidden" ? "public" : current.profileImage.visibility,
         },
       }));
       setMessage("Blogger-Bild erfolgreich hochgeladen.");
