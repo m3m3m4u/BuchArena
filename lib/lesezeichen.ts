@@ -100,10 +100,29 @@ async function addLesezeichen(
 
 /** Profil ausgefüllt: 10 Lesezeichen (einmalig) */
 export async function awardProfilAusgefuellt(username: string) {
-  const doc = await getOrCreateDoc(username);
-  const already = doc.entries.some((e) => e.reason === "profil_ausgefuellt");
-  if (already) return;
-  await addLesezeichen(username, "profil_ausgefuellt", 10);
+  const col = await getLesezeichenCollection();
+  // Atomar: Nur vergeben wenn noch kein profil_ausgefuellt-Eintrag existiert
+  const result = await col.updateOne(
+    { username, "entries.reason": { $ne: "profil_ausgefuellt" } },
+    {
+      $inc: { total: 10 },
+      $push: { entries: { reason: "profil_ausgefuellt" as const, amount: 10, date: new Date() } },
+      $set: { updatedAt: new Date() },
+    },
+  );
+  if (result.matchedCount === 0) {
+    // Entweder schon vergeben, oder Dokument existiert noch nicht
+    await getOrCreateDoc(username);
+    // Nochmal versuchen falls Dokument gerade erst erstellt wurde
+    await col.updateOne(
+      { username, "entries.reason": { $ne: "profil_ausgefuellt" } },
+      {
+        $inc: { total: 10 },
+        $push: { entries: { reason: "profil_ausgefuellt" as const, amount: 10, date: new Date() } },
+        $set: { updatedAt: new Date() },
+      },
+    );
+  }
 }
 
 /** Buch hochgeladen: 3 Lesezeichen pro Buch */
@@ -115,32 +134,43 @@ export async function awardBuecherHochgeladen(username: string) {
 export async function awardTagesLogin(username: string) {
   const today = todayKey();
   const col = await getLesezeichenCollection();
-  const doc = await getOrCreateDoc(username);
+  await getOrCreateDoc(username);
 
-  if (doc.loginDays.includes(today)) return;
-
-  // Tag hinzufügen
-  const updatedDays = [...doc.loginDays, today];
-  await col.updateOne(
-    { username },
+  // Atomar: Tag nur hinzufügen wenn noch nicht vorhanden
+  const result = await col.updateOne(
+    { username, loginDays: { $ne: today } },
     {
       $addToSet: { loginDays: today },
       $set: { updatedAt: new Date() },
     },
   );
+  if (result.modifiedCount === 0) return; // Bereits eingeloggt heute
 
   // +1 für täglichen Login
   await addLesezeichen(username, "tages_login", 1);
 
   // Streak prüfen
-  const streak = getConsecutiveDays(updatedDays);
-  if (streak > 0 && streak % 7 === 0) {
-    await addLesezeichen(username, "wochen_streak", 7);
+  const doc = await col.findOne({ username });
+  if (doc) {
+    const streak = getConsecutiveDays(doc.loginDays);
+    if (streak > 0 && streak % 7 === 0) {
+      await addLesezeichen(username, "wochen_streak", 7);
+    }
   }
 }
 
 /** Treffpunkt-Beitrag: 1 Lesezeichen pro Beitrag */
 export async function awardTreffpunktBeitrag(username: string) {
+  const today = todayKey();
+  const col = await getLesezeichenCollection();
+  await col.updateOne(
+    { username },
+    {
+      $addToSet: { treffpunktDays: today },
+      $set: { updatedAt: new Date() },
+    },
+    { upsert: true },
+  );
   await addLesezeichen(username, "treffpunkt_beitrag", 1);
 }
 
@@ -152,18 +182,19 @@ export async function awardAbstimmung(username: string) {
 /** Quiz gespielt: 1 Lesezeichen pro Tag */
 export async function awardQuizTag(username: string) {
   const today = todayKey();
-  const doc = await getOrCreateDoc(username);
-
-  if (doc.quizDays.includes(today)) return;
-
   const col = await getLesezeichenCollection();
-  await col.updateOne(
-    { username },
+  await getOrCreateDoc(username);
+
+  // Atomar: Tag nur hinzufügen wenn noch nicht vorhanden
+  const result = await col.updateOne(
+    { username, quizDays: { $ne: today } },
     {
       $addToSet: { quizDays: today },
       $set: { updatedAt: new Date() },
     },
   );
+  if (result.modifiedCount === 0) return;
+
   await addLesezeichen(username, "quiz_tag", 1);
 }
 
@@ -175,24 +206,36 @@ export async function awardMcQuiz10Punkte(username: string) {
 /** Buchempfehlung: +1 Lesezeichen, max. 3 pro Tag */
 export async function awardBuchempfehlung(username: string): Promise<boolean> {
   const today = todayKey();
-  const doc = await getOrCreateDoc(username);
-  const todayCount = doc.empfehlungenHeute?.[today] ?? 0;
-  if (todayCount >= 3) return false;
-
   const col = await getLesezeichenCollection();
-  await col.updateOne(
-    { username },
+  await getOrCreateDoc(username);
+
+  // Atomar: Zähler nur erhöhen wenn < 3
+  const result = await col.updateOne(
+    { username, [`empfehlungenHeute.${today}`]: { $lt: 3 } },
     {
-      $set: { [`empfehlungenHeute.${today}`]: todayCount + 1, updatedAt: new Date() },
+      $inc: { [`empfehlungenHeute.${today}`]: 1 },
+      $set: { updatedAt: new Date() },
     },
   );
+
+  // Falls kein Match (noch kein Key oder >= 3), prüfen ob Key fehlt
+  if (result.modifiedCount === 0) {
+    const setResult = await col.updateOne(
+      { username, [`empfehlungenHeute.${today}`]: { $exists: false } },
+      {
+        $set: { [`empfehlungenHeute.${today}`]: 1, updatedAt: new Date() },
+      },
+    );
+    if (setResult.modifiedCount === 0) return false; // Tageslimit erreicht
+  }
+
   await addLesezeichen(username, "buchempfehlung", 1);
   return true;
 }
 
 /** Buchempfehlung erhalten: +1 Lesezeichen für Buchbesitzer (ohne Tageslimit) */
 export async function awardBuchempfehlungErhalten(username: string) {
-  await addLesezeichen(username, "buchempfehlung", 1);
+  await addLesezeichen(username, "buchempfehlung_erhalten", 1);
 }
 
 /* ── Abfragen ── */

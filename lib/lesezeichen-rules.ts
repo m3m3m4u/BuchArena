@@ -7,7 +7,8 @@ export type LesezeichenReason =
   | "abstimmung"
   | "quiz_tag"
   | "mc_quiz_10_punkte"
-  | "buchempfehlung";
+  | "buchempfehlung"
+  | "buchempfehlung_erhalten";
 
 export const LESEZEICHEN_RULES: {
   reason: LesezeichenReason;
@@ -68,5 +69,11 @@ export const LESEZEICHEN_RULES: {
     label: "Buchempfehlung",
     description: "Empfiehl ein Buch auf dessen Buchseite.",
     amount: "1 Lesezeichen (max. 3 pro Tag)",
+  },
+  {
+    reason: "buchempfehlung_erhalten",
+    label: "Buchempfehlung erhalten",
+    description: "Jemand hat dein Buch empfohlen.",
+    amount: "1 Lesezeichen",
   },
 ];

@@ -81,7 +81,7 @@ export async function POST() {
       const allDiscussions = await discussions
         .find(
           { "replies.authorUsername": username },
-          { projection: { "replies.$": 1 } },
+          { projection: { replies: 1 } },
         )
         .toArray();
 

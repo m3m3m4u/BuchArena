@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
     await col.insertOne(doc);
 
     // Lesezeichen vergeben (max. 3/Tag für Empfehler)
-    await awardBuchempfehlung(account.username);
+    const pointsAwarded = await awardBuchempfehlung(account.username);
 
     // +1 Lesezeichen für den Buchbesitzer (ohne Tageslimit)
     if (book.ownerUsername && book.ownerUsername !== account.username) {
@@ -165,7 +165,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ message: "Empfehlung gespeichert!" });
+    return NextResponse.json({
+      message: "Empfehlung gespeichert!",
+      pointsAwarded,
+    });
   } catch (err) {
     console.error("POST /api/books/empfehlungen error:", err);
     return NextResponse.json({ message: "Interner Fehler." }, { status: 500 });

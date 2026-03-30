@@ -24,6 +24,7 @@ const REASON_ICONS: Record<string, string> = {
   quiz_tag: "🧠",
   mc_quiz_10_punkte: "🏆",
   buchempfehlung: "⭐",
+  buchempfehlung_erhalten: "🌟",
 };
 
 export default function LesezeichenPage() {
@@ -78,8 +79,8 @@ export default function LesezeichenPage() {
   }, [loadHighscores, loadMyStats]);
 
   return (
-    <main className="flex-1 flex flex-col overflow-hidden w-full min-w-0">
-      <div className="w-[min(1100px,100%)] mx-auto px-4 max-sm:px-2 flex flex-col flex-1 overflow-hidden min-h-0 gap-3 pt-4 max-sm:pt-2">
+    <main className="centered-main">
+      <div className="w-full flex flex-col gap-3">
         {/* Eigener Stand */}
         {loggedIn && myStats && (
           <section className="card flex-shrink-0">
@@ -140,7 +141,7 @@ export default function LesezeichenPage() {
         </section>
 
         {/* Highscores */}
-        <section className="card flex-1 min-h-0 flex flex-col !overflow-hidden">
+        <section className="card flex flex-col">
           <h2 className="text-xl flex items-center gap-2 flex-shrink-0">
             🏅 Rangliste
           </h2>
@@ -171,7 +172,7 @@ export default function LesezeichenPage() {
           )}
 
           {!isLoading && scores.length > 0 && (
-            <div className="flex flex-col gap-1 overflow-y-auto min-h-0 flex-1 -mx-1 px-1 pb-1">
+            <div className="flex flex-col gap-1">
               {scores.map((entry, i) => {
                 const isMe = entry.username === username;
                 return (
