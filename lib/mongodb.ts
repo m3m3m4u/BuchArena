@@ -22,6 +22,7 @@ export type UserDocument = {
   profile?: ProfileData;
   speakerProfile?: SpeakerProfileData;
   bloggerProfile?: BloggerProfileData;
+  newsletterOptIn?: boolean;
 };
 
 const dbName = process.env.MONGODB_DB_NAME ?? "bucharena";

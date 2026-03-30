@@ -18,6 +18,8 @@ export default function HomePage() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [bdw, setBdw] = useState<BuchDerWoche | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false);
+  const [isSavingNewsletter, setIsSavingNewsletter] = useState(false);
 
   const closeVideo = useCallback(() => setShowVideo(false), []);
 
@@ -45,6 +47,8 @@ export default function HomePage() {
     fetch("/api/lesezeichen").then(r => r.json()).then(d => setLesezeichen(d)).catch(() => {});
     fetch("/api/messages/unread-count").then(r => r.json()).then(d => setUnreadMessages(d.count ?? 0)).catch(() => {});
     fetch("/api/buch-der-woche").then(r => r.json()).then(d => setBdw(d.buchDerWoche ?? null)).catch(() => {});
+    fetch("/api/profile/get", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
+      .then(r => r.json()).then(d => setNewsletterOptIn(!!d.newsletterOptIn)).catch(() => {});
   }, [account]);
 
   // Public data (stats + BdW für Gäste)
@@ -96,6 +100,48 @@ export default function HomePage() {
               <p className="text-arena-muted text-sm m-0 mt-1">Login-Tage</p>
             </div>
           </Link>
+        </section>
+
+        {/* Newsletter Opt-In */}
+        <section className="card mt-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg m-0 flex items-center gap-2">📬 Newsletter</h2>
+              <p className="text-arena-muted text-sm m-0 mt-1">Erhalte Neuigkeiten und Updates per E-Mail.</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={newsletterOptIn}
+              disabled={isSavingNewsletter}
+              style={{
+                width: 48, height: 26, borderRadius: 13, border: "none",
+                background: newsletterOptIn ? "var(--color-arena-blue)" : "#ccc",
+                position: "relative", cursor: "pointer", flexShrink: 0,
+                transition: "background 0.2s",
+              }}
+              onClick={async () => {
+                setIsSavingNewsletter(true);
+                const newVal = !newsletterOptIn;
+                try {
+                  const res = await fetch("/api/profile/newsletter", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ newsletterOptIn: newVal }),
+                  });
+                  if (res.ok) setNewsletterOptIn(newVal);
+                } catch { /* ignore */ } finally {
+                  setIsSavingNewsletter(false);
+                }
+              }}
+            >
+              <span style={{
+                position: "absolute", top: 3, left: newsletterOptIn ? 24 : 3,
+                width: 20, height: 20, borderRadius: "50%", background: "#fff",
+                transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+              }} />
+            </button>
+          </div>
         </section>
 
         {/* Quick Links */}
