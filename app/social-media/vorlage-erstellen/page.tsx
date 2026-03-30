@@ -1767,13 +1767,13 @@ export default function VorlageErstellenPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="flex items-center gap-1.5 sm:gap-1 overflow-x-auto pb-2 sm:pb-1 -mx-1 px-1 snap-x snap-mandatory">
           {STEP_LABELS.map((label, i) => (
             <button
               key={i}
               type="button"
               onClick={() => setStep(i)}
-              className={"shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors cursor-pointer " + (
+              className={"snap-start shrink-0 rounded-full px-3 sm:px-3 py-2 sm:py-1 text-sm sm:text-xs font-medium transition-colors cursor-pointer " + (
                 isStepComplete(i)
                   ? "bg-green-100 text-green-800 border-green-300"
                   : "bg-gray-100 text-arena-muted border-arena-border"
@@ -1783,7 +1783,8 @@ export default function VorlageErstellenPage() {
                   : " border"
               )}
             >
-              {truncate(label, 18)}
+              <span className="sm:hidden">{i + 1}. {truncate(label, 10)}</span>
+              <span className="hidden sm:inline">{truncate(label, 18)}</span>
             </button>
           ))}
         </div>

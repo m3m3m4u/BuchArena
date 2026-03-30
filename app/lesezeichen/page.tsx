@@ -110,34 +110,31 @@ export default function LesezeichenPage() {
 
         {/* Regeln */}
         <section className="card flex-shrink-0">
-          <details>
-            <summary className="text-xl flex items-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden select-none">
-              📖 So sammelst du Lesezeichen
-              <span className="text-sm text-arena-muted ml-auto transition-transform [[open]>&]:rotate-90">▶</span>
-            </summary>
-            <p className="text-arena-muted text-sm m-0 mt-3">
-              Lesezeichen sind deine Belohnung für Aktivität auf BuchArena. Sammle so viele wie möglich!
-            </p>
-            <div className="flex flex-col gap-2 mt-2">
-              {LESEZEICHEN_RULES.map((rule) => (
-                <div
-                  key={rule.reason}
-                  className="flex items-start gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 min-w-0"
-                >
-                  <span className="text-2xl flex-shrink-0 mt-0.5">
-                    {REASON_ICONS[rule.reason] ?? "🔖"}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold m-0">{rule.label}</p>
-                    <p className="text-arena-muted text-sm m-0">{rule.description}</p>
-                  </div>
-                  <span className="badge bg-yellow-100 text-yellow-800 flex-shrink-0 whitespace-nowrap text-xs">
-                    {rule.amount}
-                  </span>
+          <h2 className="text-xl flex items-center gap-2 m-0">
+            📖 So sammelst du Lesezeichen
+          </h2>
+          <p className="text-arena-muted text-sm m-0 mt-3">
+            Lesezeichen sind deine Belohnung für Aktivität auf BuchArena. Sammle so viele wie möglich!
+          </p>
+          <div className="flex flex-col gap-2 mt-2">
+            {LESEZEICHEN_RULES.map((rule) => (
+              <div
+                key={rule.reason}
+                className="flex items-start gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 min-w-0"
+              >
+                <span className="text-2xl flex-shrink-0 mt-0.5">
+                  {REASON_ICONS[rule.reason] ?? "🔖"}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold m-0">{rule.label}</p>
+                  <p className="text-arena-muted text-sm m-0">{rule.description}</p>
                 </div>
-              ))}
-            </div>
-          </details>
+                <span className="badge bg-yellow-100 text-yellow-800 flex-shrink-0 whitespace-nowrap text-xs">
+                  {rule.amount}
+                </span>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Highscores */}
