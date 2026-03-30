@@ -7,6 +7,7 @@ type RegisterPayload = {
   username?: string;
   email?: string;
   password?: string;
+  newsletterOptIn?: boolean;
 };
 
 export async function POST(request: Request) {
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
       passwordHash,
       role: "USER",
       createdAt: new Date(),
+      newsletterOptIn: !!body.newsletterOptIn,
     });
 
     return NextResponse.json(

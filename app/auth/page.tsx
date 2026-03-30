@@ -22,6 +22,7 @@ export default function AuthPage() {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,7 +34,7 @@ export default function AuthPage() {
     const payload =
       mode === "login"
         ? { identifier: username, password }
-        : { username, email, password };
+        : { username, email, password, newsletterOptIn };
 
     try {
       const response = await fetch(endpoint, {
@@ -124,22 +125,33 @@ export default function AuthPage() {
               )}
 
               {mode === "register" && (
-                <label className="flex items-start gap-2 text-[0.85rem] leading-snug cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={privacyAccepted}
-                    onChange={(e) => setPrivacyAccepted(e.target.checked)}
-                    className="mt-0.5 accent-arena-accent"
-                    required
-                  />
-                  <span>
-                    Ich habe die{" "}
-                    <Link href="/impressum#datenschutz" target="_blank" className="text-arena-link hover:underline">
-                      Datenschutzerklärung
-                    </Link>{" "}
-                    gelesen und stimme der Verarbeitung meiner Daten zu.
-                  </span>
-                </label>
+                <>
+                  <label className="flex items-start gap-2 text-[0.85rem] leading-snug cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newsletterOptIn}
+                      onChange={(e) => setNewsletterOptIn(e.target.checked)}
+                      className="mt-0.5 accent-arena-accent"
+                    />
+                    <span>Ich möchte den Newsletter erhalten und über Neuigkeiten informiert werden.</span>
+                  </label>
+                  <label className="flex items-start gap-2 text-[0.85rem] leading-snug cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={privacyAccepted}
+                      onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                      className="mt-0.5 accent-arena-accent"
+                      required
+                    />
+                    <span>
+                      Ich habe die{" "}
+                      <Link href="/impressum#datenschutz" target="_blank" className="text-arena-link hover:underline">
+                        Datenschutzerklärung
+                      </Link>{" "}
+                      gelesen und stimme der Verarbeitung meiner Daten zu.
+                    </span>
+                  </label>
+                </>
               )}
 
               <button type="submit" className="btn" disabled={isLoading || (mode === "register" && !privacyAccepted)}>
