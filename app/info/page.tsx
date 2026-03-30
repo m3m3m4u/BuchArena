@@ -234,7 +234,7 @@ export default function InfoPage() {
     <main className="centered-main">
       <section className="w-full max-w-[1100px] rounded-[14px] bg-white px-12 py-10 box-border max-sm:px-5 max-sm:py-6">
         <h1 className="mb-3 border-b-2 border-gray-200 pb-4 text-3xl font-extrabold max-sm:text-2xl">
-          Über die BuchArena
+          FAQ – Häufige Fragen
         </h1>
         <p className="mb-10 text-[0.95rem] leading-relaxed text-[#555]">
           Hier findest du Antworten auf die häufigsten Fragen rund um die BuchArena, die LernArena und

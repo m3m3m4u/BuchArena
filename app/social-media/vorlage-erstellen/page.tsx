@@ -126,6 +126,35 @@ const STEP_LABELS = [
 
 ];
 
+/** Empfohlene Max-Zeichen pro Feld (abgeleitet aus den PPTX-Textboxen). */
+const CHAR_LIMITS: Record<string, number> = {
+  buchtitel: 40,
+  untertitel: 50,
+  autorName: 35,
+  genre: 40,
+  verlag: 40,
+  coverDesign: 40,
+  hintergrund: 50,
+  hauptfigur: 50,
+  thema: 50,
+  inhalte: 50,
+  schwerpunkt: 50,
+  autorHerkunft: 40,
+  autorBeruf: 45,
+  autorStil: 40,
+  zusammenfassung: 40,
+};
+
+function CharWarn({ value, field }: { value: string; field: string }) {
+  const limit = CHAR_LIMITS[field];
+  if (!limit || value.length <= limit) return null;
+  return (
+    <span className="text-orange-600 text-xs mt-0.5">
+      ⚠️ Fasse dich wenn möglich kürzer ({value.length}/{limit} Zeichen) – in Ausnahmefällen darfst du die Zeichenzahl auch überschreiten.
+    </span>
+  );
+}
+
 const DECO = {
   buchstapel: "/vorlage/buchstapel.png",
   offenesBuch: "/vorlage/offenes-buch.png",
@@ -1005,21 +1034,21 @@ export default function VorlageErstellenPage() {
       s2 = replaceParagraphTexts(s2, [
         ["Autorin: Martina Zöchinger", form.geschlecht + ": " + autorFull],
         ["Erscheinungsjahr: 2025", "Erscheinungsjahr: " + form.erscheinungsjahr],
-        ["Genre: Fantasy, Spiritualität", "Genre: " + form.genre],
-        ["Hintergrund: basiert auf einer wahren Begebenheit", "Hintergrund: " + form.hintergrund],
+        ["Genre: Fantasy, Spiritualität", form.genre.trim() ? "Genre: " + form.genre : ""],
+        ["Hintergrund: basiert auf einer wahren Begebenheit", form.hintergrund.trim() ? "Hintergrund: " + form.hintergrund : ""],
         ["Hüter - Die Ausbildung beginnt", form.buchtitel],
         ["Autorin & Coverdesign: Martina Zöchinger", coverDesignText],
-        ["Verlag: Independently published", "Verlag: " + form.verlag],
+        ["Verlag: Independently published", form.verlag.trim() ? "Verlag: " + form.verlag : ""],
       ]);
       zip.file("ppt/slides/slide2.xml", s2);
 
       /* ────── Slide 3: Worum geht's? ────── */
       let s3 = await zip.file("ppt/slides/slide3.xml")!.async("string");
       s3 = replaceParagraphTexts(s3, [
-        ["Hauptfigur: ein Verstorbener auf dem Weg zum Hüter", "Hauptfigur: " + form.hauptfigur],
-        ["Thema: Tod & Jenseits", "Thema: " + form.thema],
-        ["Inhalte: Wahrheitssuche, Prüfungen", "Inhalte: " + form.inhalte],
-        ["Schwerpunkt: Trauerbewältigung, Leben nach dem Tod", "Schwerpunkt: " + form.schwerpunkt],
+        ["Hauptfigur: ein Verstorbener auf dem Weg zum Hüter", form.hauptfigur.trim() ? "Hauptfigur: " + form.hauptfigur : ""],
+        ["Thema: Tod & Jenseits", form.thema.trim() ? "Thema: " + form.thema : ""],
+        ["Inhalte: Wahrheitssuche, Prüfungen", form.inhalte.trim() ? "Inhalte: " + form.inhalte : ""],
+        ["Schwerpunkt: Trauerbewältigung, Leben nach dem Tod", form.schwerpunkt.trim() ? "Schwerpunkt: " + form.schwerpunkt : ""],
       ]);
       zip.file("ppt/slides/slide3.xml", s3);
 
@@ -1030,7 +1059,7 @@ export default function VorlageErstellenPage() {
         ["Martina Zöchinger", autorFull],
         ["Österreich, Steiermark", form.autorHerkunft],
         ["Mutter, Medienfachfrau, Mentaltrainerin", form.autorBeruf],
-        ["Stil: authentisch, autobiografisch", "Stil: " + form.autorStil],
+        ["Stil: authentisch, autobiografisch", form.autorStil.trim() ? "Stil: " + form.autorStil : ""],
       ]);
       zip.file("ppt/slides/slide4.xml", s4);
 
@@ -1166,22 +1195,22 @@ export default function VorlageErstellenPage() {
     s2 = replacePlaceholders(s2, [
       ["#1", form.geschlecht + ": " + autorFull],
       ["#2", "Erscheinungsjahr: " + form.erscheinungsjahr],
-      ["#3", "Genre: " + form.genre],
-      ["#4", "Hintergrund: " + form.hintergrund],
+      ["#3", form.genre.trim() ? "Genre: " + form.genre : ""],
+      ["#4", form.hintergrund.trim() ? "Hintergrund: " + form.hintergrund : ""],
       ["#Titel", form.buchtitel],
-      ["Cover: #Cover", "Cover: " + (form.coverDesign || autorFull)],
+      ["Cover: #Cover", form.coverDesign.trim() ? "Cover: " + form.coverDesign : ""],
       ["#Verlag", form.verlag],
-      ["Verlag: #Verlag", "Verlag: " + form.verlag],
+      ["Verlag: #Verlag", form.verlag.trim() ? "Verlag: " + form.verlag : ""],
     ]);
     zip.file("ppt/slides/slide2.xml", s2);
 
     /* ────── Slide 3: Worum geht's? ────── */
     let s3 = await zip.file("ppt/slides/slide3.xml")!.async("string");
     s3 = replacePlaceholders(s3, [
-      ["#1", "Hauptfigur: " + form.hauptfigur],
-      ["#2", "Thema: " + form.thema],
-      ["#3", "Inhalte: " + form.inhalte],
-      ["#4", "Schwerpunkt: " + form.schwerpunkt],
+      ["#1", form.hauptfigur.trim() ? "Hauptfigur: " + form.hauptfigur : ""],
+      ["#2", form.thema.trim() ? "Thema: " + form.thema : ""],
+      ["#3", form.inhalte.trim() ? "Inhalte: " + form.inhalte : ""],
+      ["#4", form.schwerpunkt.trim() ? "Schwerpunkt: " + form.schwerpunkt : ""],
     ]);
     zip.file("ppt/slides/slide3.xml", s3);
 
@@ -1192,7 +1221,7 @@ export default function VorlageErstellenPage() {
       ["#1", autorFull],
       ["#2", form.autorHerkunft],
       ["#3", form.autorBeruf],
-      ["#4", "Stil: " + form.autorStil],
+      ["#4", form.autorStil.trim() ? "Stil: " + form.autorStil : ""],
     ]);
     zip.file("ppt/slides/slide4.xml", s4);
 
@@ -1446,14 +1475,17 @@ export default function VorlageErstellenPage() {
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Buchtitel <span className="text-red-500">*</span></span>
               <input className={"input-base" + req(form.buchtitel)} placeholder="z. B. Hüter in Ausbildung" value={form.buchtitel} onChange={(e) => set("buchtitel", e.target.value)} />
+              <CharWarn value={form.buchtitel} field="buchtitel" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Untertitel</span>
               <input className="input-base" placeholder="z. B. Eine Episode endet. Eine neue beginnt." value={form.untertitel} onChange={(e) => set("untertitel", e.target.value)} />
+              <CharWarn value={form.untertitel} field="untertitel" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Name des Autors/der Autorin <span className="text-red-500">*</span></span>
               <input className={"input-base" + req(form.autorName)} placeholder="z. B. Martina Zöchinger" value={form.autorName} onChange={(e) => { set("autorName", e.target.value); tryPrefillAutor(e.target.value); }} />
+              <CharWarn value={form.autorName} field="autorName" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
@@ -1474,6 +1506,7 @@ export default function VorlageErstellenPage() {
               <label className="grid gap-1 text-[0.95rem]">
                 <span className="font-medium">Genre</span>
                 <input className={"input-base" + req(form.genre)} placeholder="z. B. Fantasy, Spiritualität" value={form.genre} onChange={(e) => set("genre", e.target.value)} />
+                <CharWarn value={form.genre} field="genre" />
               </label>
             </div>
             <div className="grid gap-1 text-[0.95rem]">
@@ -1492,14 +1525,17 @@ export default function VorlageErstellenPage() {
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Verlag <span className="text-arena-muted text-sm font-normal">(oder &quot;Selfpublisher&quot;)</span></span>
               <input className={"input-base" + req(form.verlag)} placeholder="z. B. Independently published" value={form.verlag} onChange={(e) => set("verlag", e.target.value)} />
+              <CharWarn value={form.verlag} field="verlag" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Cover-Design von</span>
               <input className="input-base" placeholder="z. B. Name des Designers" value={form.coverDesign} onChange={(e) => set("coverDesign", e.target.value)} />
+              <CharWarn value={form.coverDesign} field="coverDesign" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Hintergrund / Besonderheit</span>
               <textarea className="input-base" rows={2} placeholder="z. B. basiert auf einer wahren Begebenheit" value={form.hintergrund} onChange={(e) => set("hintergrund", e.target.value)} />
+              <CharWarn value={form.hintergrund} field="hintergrund" />
             </label>
             <div className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Buchcover (Bild)</span>
@@ -1533,18 +1569,22 @@ export default function VorlageErstellenPage() {
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Hauptfigur</span>
               <input className={"input-base" + req(form.hauptfigur)} placeholder="z. B. ein Verstorbener auf dem Weg zum Hüter" value={form.hauptfigur} onChange={(e) => set("hauptfigur", e.target.value)} />
+              <CharWarn value={form.hauptfigur} field="hauptfigur" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Thema</span>
               <input className={"input-base" + req(form.thema)} placeholder="z. B. Tod & Jenseits" value={form.thema} onChange={(e) => set("thema", e.target.value)} />
+              <CharWarn value={form.thema} field="thema" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Inhalte</span>
               <textarea className={"input-base" + req(form.inhalte)} rows={2} placeholder="z. B. Wahrheitssuche, Prüfungen" value={form.inhalte} onChange={(e) => set("inhalte", e.target.value)} />
+              <CharWarn value={form.inhalte} field="inhalte" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Schwerpunkt</span>
               <input className={"input-base" + req(form.schwerpunkt)} placeholder="z. B. Trauerbewältigung, Leben nach dem Tod" value={form.schwerpunkt} onChange={(e) => set("schwerpunkt", e.target.value)} />
+              <CharWarn value={form.schwerpunkt} field="schwerpunkt" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
@@ -1560,14 +1600,17 @@ export default function VorlageErstellenPage() {
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Herkunft / Land</span>
               <input className={"input-base" + req(form.autorHerkunft)} placeholder="z. B. Österreich, Steiermark" value={form.autorHerkunft} onChange={(e) => set("autorHerkunft", e.target.value)} />
+              <CharWarn value={form.autorHerkunft} field="autorHerkunft" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Beruf / Beschreibung</span>
               <input className={"input-base" + req(form.autorBeruf)} placeholder="z. B. Mutter, Medienfachfrau, Mentaltrainerin" value={form.autorBeruf} onChange={(e) => set("autorBeruf", e.target.value)} />
+              <CharWarn value={form.autorBeruf} field="autorBeruf" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Schreibstil</span>
               <input className={"input-base" + req(form.autorStil)} placeholder="z. B. authentisch, autobiografisch" value={form.autorStil} onChange={(e) => set("autorStil", e.target.value)} />
+              <CharWarn value={form.autorStil} field="autorStil" />
             </label>
             <div className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Autorenfoto</span>
@@ -1599,9 +1642,12 @@ export default function VorlageErstellenPage() {
             <h2 className="text-lg font-bold">Folie 5 – Zusammenfassung</h2>
             <p className="text-arena-muted text-sm">Gib die 5 wichtigsten Stichpunkte für die letzte Folie ein.</p>
             {form.zusammenfassung.map((b, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="text-arena-muted text-sm w-5 shrink-0 text-right">{i + 1}.</span>
-                <input className={"input-base flex-1" + req(b)} placeholder={"Stichpunkt " + (i + 1)} value={b} onChange={(e) => setBullet(i, e.target.value)} />
+              <div key={i} className="grid gap-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-arena-muted text-sm w-5 shrink-0 text-right">{i + 1}.</span>
+                  <input className={"input-base flex-1" + req(b)} placeholder={"Stichpunkt " + (i + 1)} value={b} onChange={(e) => setBullet(i, e.target.value)} />
+                </div>
+                <div className="pl-7"><CharWarn value={b} field="zusammenfassung" /></div>
               </div>
             ))}
             <label className="grid gap-1 text-[0.95rem]">
@@ -1767,24 +1813,21 @@ export default function VorlageErstellenPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-1.5 sm:gap-1 overflow-x-auto pb-2 sm:pb-1 -mx-1 px-1 snap-x snap-mandatory">
+        <div className="grid grid-cols-5 gap-1 py-1.5 px-1.5 rounded-lg border border-gray-300 bg-gray-100">
           {STEP_LABELS.map((label, i) => (
             <button
               key={i}
               type="button"
               onClick={() => setStep(i)}
-              className={"snap-start shrink-0 rounded-full px-3 sm:px-3 py-2 sm:py-1 text-sm sm:text-xs font-medium transition-colors cursor-pointer " + (
-                isStepComplete(i)
-                  ? "bg-green-100 text-green-800 border-green-300"
-                  : "bg-gray-100 text-arena-muted border-arena-border"
-              ) + (
+              className={"rounded-lg px-1 py-2 text-xs sm:text-sm font-semibold transition-colors cursor-pointer shadow-sm text-center truncate " + (
                 i === step
-                  ? " ring-2 ring-arena-blue"
-                  : " border"
+                  ? "bg-arena-blue text-white border border-arena-blue"
+                  : isStepComplete(i)
+                    ? "bg-green-200 text-green-900 border border-green-400 hover:bg-green-300"
+                    : "bg-white text-gray-800 border border-gray-300 hover:bg-gray-50"
               )}
             >
-              <span className="sm:hidden">{i + 1}. {truncate(label, 10)}</span>
-              <span className="hidden sm:inline">{truncate(label, 18)}</span>
+              {label}
             </button>
           ))}
         </div>
