@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import GenrePicker, { parseGenres } from "@/app/components/genre-picker";
+import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
 type BookExcerpt = {
   id: string;
@@ -191,13 +192,14 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
         }),
       });
 
-      const data = (await response.json()) as { message?: string };
+      const data = (await response.json()) as { message?: string; lesezeichen?: number };
       if (!response.ok) {
         throw new Error(
           data.message ?? (editingBookId ? "Buch konnte nicht gespeichert werden." : "Buch konnte nicht angelegt werden.")
         );
       }
 
+      if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
       setMessage(editingBookId ? "Buch gespeichert." : "Buch angelegt.");
       resetForm();
       await refreshBooks();

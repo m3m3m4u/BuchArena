@@ -102,12 +102,13 @@ export async function POST(request: Request) {
     }
 
     // Lesezeichen: Profil ausgefüllt prüfen
+    let lesezeichen = 0;
     const p = sanitizedProfile;
     if (p.name.value && p.motto.value && p.profileImage.value) {
-      awardProfilAusgefuellt(username).catch(() => {});
+      lesezeichen = await awardProfilAusgefuellt(username).catch(() => 0);
     }
 
-    return NextResponse.json({ message: "Profil gespeichert." });
+    return NextResponse.json({ message: "Profil gespeichert.", lesezeichen });
   } catch {
     return NextResponse.json(
       { message: "Profil konnte nicht gespeichert werden." },

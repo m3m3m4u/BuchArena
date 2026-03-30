@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import SiteHeader from "./site-header";
 import AnalyticsTracker from "./analytics-tracker";
+import LesezeichenToast from "./lesezeichen-toast";
 
 type LayoutChromeProps = { children: ReactNode };
 
@@ -15,6 +16,7 @@ export default function LayoutChrome({ children }: LayoutChromeProps) {
     <>
       {showHeader && <SiteHeader />}
       <AnalyticsTracker />
+      <LesezeichenToast />
       <div className="site-main">{children}</div>
     </>
   );

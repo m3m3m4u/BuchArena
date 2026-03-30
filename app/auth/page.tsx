@@ -4,10 +4,12 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredAccount, setStoredAccount } from "@/lib/client-account";
+import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
 type Mode = "login" | "register";
 type ApiResponse = {
   message: string;
+  lesezeichen?: number;
   user?: { username: string; email: string; role: "USER" | "SUPERADMIN" };
 };
 
@@ -53,6 +55,7 @@ export default function AuthPage() {
       if (data.user) {
         setStoredAccount(data.user);
         setAccount(data.user);
+        if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
         router.push("/");
         return;
       }

@@ -63,12 +63,12 @@ export async function POST(request: Request) {
     });
 
     // Lesezeichen: Quiz gespielt + 10-Punkte-Bonus
-    awardQuizTag(account.username).catch(() => {});
+    let lesezeichen = await awardQuizTag(account.username).catch(() => 0);
     if (score >= 10) {
-      awardMcQuiz10Punkte(account.username).catch(() => {});
+      lesezeichen += await awardMcQuiz10Punkte(account.username).catch(() => 0);
     }
 
-    return NextResponse.json({ message: "Highscore gespeichert." });
+    return NextResponse.json({ message: "Highscore gespeichert.", lesezeichen });
   } catch (err) {
     console.error("POST /api/quiz/highscore error:", err);
     return NextResponse.json({ message: "Interner Fehler." }, { status: 500 });

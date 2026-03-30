@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount } from "@/lib/client-account";
+import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
 /* ---------- Typen ---------- */
 type WelchesBuch = { hints: string[]; book: string; author: string };
@@ -176,6 +177,8 @@ export default function QuizPage() {
         body: JSON.stringify({ score: mcScore, total: mcCount }),
       });
       if (res.ok) {
+        const data = await res.json();
+        if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
         setScoreSaved(true);
         loadHighscores();
       }

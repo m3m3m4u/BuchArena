@@ -57,13 +57,14 @@ export async function POST(request: Request) {
     const result = await discussions.insertOne(doc);
 
     // Lesezeichen: Treffpunkt-Beitrag
-    awardTreffpunktBeitrag(authorUsername).catch(() => {});
+    const lesezeichen = await awardTreffpunktBeitrag(authorUsername).catch(() => 0);
 
     return NextResponse.json({
       discussion: {
         id: result.insertedId.toString(),
         ...doc,
       },
+      lesezeichen,
     });
   } catch {
     return NextResponse.json(

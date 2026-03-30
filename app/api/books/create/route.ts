@@ -76,9 +76,9 @@ export async function POST(request: Request) {
     });
 
     // Lesezeichen: Bücher hochgeladen
-    awardBuecherHochgeladen(account.username).catch(() => {});
+    const lesezeichen = await awardBuecherHochgeladen(account.username).catch(() => 0);
 
-    return NextResponse.json({ message: "Buch angelegt." }, { status: 201 });
+    return NextResponse.json({ message: "Buch angelegt.", lesezeichen }, { status: 201 });
   } catch {
     return NextResponse.json(
       { message: "Buch konnte nicht angelegt werden." },

@@ -8,6 +8,7 @@ import {
   getStoredAccount,
   type LoggedInAccount,
 } from "@/lib/client-account";
+import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
 type BookExcerpt = {
   id: string;
@@ -123,8 +124,9 @@ export default function BookDetailPage({ params }: PageProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bookId, text: empText.trim() }),
       });
-      const data = (await res.json()) as { message?: string };
+      const data = (await res.json()) as { message?: string; lesezeichen?: number; pointsAwarded?: boolean };
       if (!res.ok) throw new Error(data.message ?? "Fehler.");
+      if (data.lesezeichen || data.pointsAwarded) showLesezeichenToast(data.lesezeichen ?? 1);
       setEmpMsg(data.message ?? "Gespeichert!");
       setEmpText("");
       await reloadEmpfehlungen();

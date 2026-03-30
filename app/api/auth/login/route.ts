@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     );
 
     // Lesezeichen: täglicher Login
-    awardTagesLogin(user.username).catch(() => {});
+    const lesezeichen = await awardTagesLogin(user.username).catch(() => 0);
 
     // Signiertes JWT erzeugen und als HttpOnly-Cookie setzen
     const token = await createAuthToken({
@@ -87,6 +87,7 @@ export async function POST(request: Request) {
 
     const res = NextResponse.json({
       message: `Willkommen ${user.username}!`,
+      lesezeichen,
       user: {
         username: user.username,
         email: user.email,

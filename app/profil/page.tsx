@@ -14,6 +14,7 @@ import {
 import { createDefaultProfile, createDefaultSpeakerProfile, createDefaultBloggerProfile, type ProfileData, type SpeakerProfileData, type BloggerProfileData, type Visibility } from "@/lib/profile";
 import MeineBuecherTab from "@/app/components/meine-buecher-tab";
 import GenrePicker from "@/app/components/genre-picker";
+import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
 type ProfileTab = "autor" | "sprecher" | "blogger" | "buecher" | "konto";
 
@@ -21,6 +22,7 @@ type GetProfileResponse = {
   profile: ProfileData;
   speakerProfile?: SpeakerProfileData;
   bloggerProfile?: BloggerProfileData;
+  newsletterOptIn?: boolean;
 };
 
 const visibilityOptions: Array<{ value: Visibility; label: string }> = [
@@ -72,6 +74,8 @@ function ProfilPageInner() {
   const [accountNewPasswordConfirm, setAccountNewPasswordConfirm] = useState("");
   const [accountCurrentPassword, setAccountCurrentPassword] = useState("");
   const [isSavingAccount, setIsSavingAccount] = useState(false);
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false);
+  const [isSavingNewsletter, setIsSavingNewsletter] = useState(false);
   const dragStateRef = useRef<{
     pointerId: number;
     startX: number;
@@ -142,6 +146,7 @@ function ProfilPageInner() {
         setProfile({ ...createDefaultProfile(), ...data.profile });
         setSpeakerProfile({ ...createDefaultSpeakerProfile(), ...data.speakerProfile });
         setBloggerProfile({ ...createDefaultBloggerProfile(), ...data.bloggerProfile });
+        setNewsletterOptIn(!!data.newsletterOptIn);
       } catch {
         setIsError(true);
         setMessage("Profil konnte nicht geladen werden.");
@@ -172,11 +177,12 @@ function ProfilPageInner() {
         }),
       });
 
-      const data = (await response.json()) as { message?: string };
+      const data = (await response.json()) as { message?: string; lesezeichen?: number };
       if (!response.ok) {
         throw new Error(data.message ?? "Profil konnte nicht gespeichert werden.");
       }
 
+      if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
       setMessage(data.message ?? "Profil gespeichert.");
     } catch {
       setIsError(true);
@@ -1458,6 +1464,62 @@ function ProfilPageInner() {
         {activeTab === "konto" && (
           <>
           <h2 className="text-lg mt-0">Kontoeinstellungen</h2>
+
+          {/* ── Newsletter Opt-In ── */}
+          <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+            <div>
+              <span className="text-sm font-semibold">📬 Newsletter</span>
+              <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0" }}>
+                Erhalte Neuigkeiten und Updates per E-Mail.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={newsletterOptIn}
+              disabled={isSavingNewsletter}
+              className="toggle-switch"
+              style={{
+                width: 48, height: 26, borderRadius: 13, border: "none",
+                background: newsletterOptIn ? "var(--color-arena-blue)" : "#ccc",
+                position: "relative", cursor: "pointer", flexShrink: 0,
+                transition: "background 0.2s",
+              }}
+              onClick={async () => {
+                setIsSavingNewsletter(true);
+                const newVal = !newsletterOptIn;
+                try {
+                  const res = await fetch("/api/profile/newsletter", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ newsletterOptIn: newVal }),
+                  });
+                  if (res.ok) {
+                    setNewsletterOptIn(newVal);
+                    setMessage(newVal ? "Newsletter aktiviert." : "Newsletter deaktiviert.");
+                    setIsError(false);
+                  } else {
+                    setIsError(true);
+                    setMessage("Newsletter-Einstellung konnte nicht gespeichert werden.");
+                  }
+                } catch {
+                  setIsError(true);
+                  setMessage("Newsletter-Einstellung konnte nicht gespeichert werden.");
+                } finally {
+                  setIsSavingNewsletter(false);
+                }
+              }}
+            >
+              <span style={{
+                position: "absolute", top: 3, left: newsletterOptIn ? 24 : 3,
+                width: 20, height: 20, borderRadius: "50%", background: "#fff",
+                transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+              }} />
+            </button>
+          </div>
+
+          <hr className="my-2" />
+
           <p className="text-arena-muted text-[0.95rem]">
             Hier kannst du deinen Benutzernamen, deine E-Mail-Adresse oder dein Passwort ändern.
             Zur Bestätigung musst du dein aktuelles Passwort eingeben.

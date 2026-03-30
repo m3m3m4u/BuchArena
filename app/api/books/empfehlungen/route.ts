@@ -168,6 +168,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       message: "Empfehlung gespeichert!",
       pointsAwarded,
+      lesezeichen: pointsAwarded ? 1 : 0,
     });
   } catch (err) {
     console.error("POST /api/books/empfehlungen error:", err);

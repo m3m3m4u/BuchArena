@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     }
 
     // Lesezeichen: Treffpunkt-Beitrag
-    awardTreffpunktBeitrag(authorUsername).catch(() => {});
+    const lesezeichen = await awardTreffpunktBeitrag(authorUsername).catch(() => 0);
 
     return NextResponse.json({
       reply: {
@@ -85,6 +85,7 @@ export async function POST(request: Request) {
         createdAt: now,
         parentReplyId: replyDoc.parentReplyId?.toString() ?? null,
       },
+      lesezeichen,
     });
   } catch {
     return NextResponse.json(

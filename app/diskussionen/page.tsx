@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
+import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
 type DiscussionItem = {
   id: string;
@@ -173,8 +174,9 @@ export default function DiskussionenPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pollId, optionIndex }),
       });
-      const data = (await res.json()) as { message?: string };
+      const data = (await res.json()) as { message?: string; lesezeichen?: number };
       if (!res.ok) throw new Error(data.message ?? "Fehler");
+      if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
       await loadPolls();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Stimme konnte nicht abgegeben werden.");
@@ -199,12 +201,13 @@ export default function DiskussionenPage() {
         }),
       });
 
-      const data = (await response.json()) as { message?: string };
+      const data = (await response.json()) as { message?: string; lesezeichen?: number };
 
       if (!response.ok) {
         throw new Error(data.message ?? "Fehler beim Erstellen.");
       }
 
+      if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
       setTitle("");
       setBody("");
       setShowOverlay(false);

@@ -61,9 +61,9 @@ export async function POST(request: Request) {
     );
 
     // Lesezeichen: Abstimmung
-    awardAbstimmung(account.username).catch(() => {});
+    const lesezeichen = await awardAbstimmung(account.username).catch(() => 0);
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, lesezeichen });
   } catch {
     return NextResponse.json(
       { message: "Stimme konnte nicht abgegeben werden." },

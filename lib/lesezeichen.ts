@@ -99,7 +99,7 @@ async function addLesezeichen(
 /* ── Award-Funktionen ── */
 
 /** Profil ausgefüllt: 10 Lesezeichen (einmalig) */
-export async function awardProfilAusgefuellt(username: string) {
+export async function awardProfilAusgefuellt(username: string): Promise<number> {
   const col = await getLesezeichenCollection();
   // Atomar: Nur vergeben wenn noch kein profil_ausgefuellt-Eintrag existiert
   const result = await col.updateOne(
@@ -114,7 +114,7 @@ export async function awardProfilAusgefuellt(username: string) {
     // Entweder schon vergeben, oder Dokument existiert noch nicht
     await getOrCreateDoc(username);
     // Nochmal versuchen falls Dokument gerade erst erstellt wurde
-    await col.updateOne(
+    const retry = await col.updateOne(
       { username, "entries.reason": { $ne: "profil_ausgefuellt" } },
       {
         $inc: { total: 10 },
@@ -122,16 +122,19 @@ export async function awardProfilAusgefuellt(username: string) {
         $set: { updatedAt: new Date() },
       },
     );
+    return retry.modifiedCount > 0 ? 10 : 0;
   }
+  return result.modifiedCount > 0 ? 10 : 0;
 }
 
 /** Buch hochgeladen: 3 Lesezeichen pro Buch */
-export async function awardBuecherHochgeladen(username: string) {
+export async function awardBuecherHochgeladen(username: string): Promise<number> {
   await addLesezeichen(username, "buecher_hochgeladen", 3);
+  return 3;
 }
 
 /** Täglicher Login: 1 Lesezeichen + evtl. 7 Streak-Bonus */
-export async function awardTagesLogin(username: string) {
+export async function awardTagesLogin(username: string): Promise<number> {
   const today = todayKey();
   const col = await getLesezeichenCollection();
   await getOrCreateDoc(username);
@@ -144,10 +147,11 @@ export async function awardTagesLogin(username: string) {
       $set: { updatedAt: new Date() },
     },
   );
-  if (result.modifiedCount === 0) return; // Bereits eingeloggt heute
+  if (result.modifiedCount === 0) return 0; // Bereits eingeloggt heute
 
   // +1 für täglichen Login
   await addLesezeichen(username, "tages_login", 1);
+  let awarded = 1;
 
   // Streak prüfen
   const doc = await col.findOne({ username });
@@ -155,12 +159,14 @@ export async function awardTagesLogin(username: string) {
     const streak = getConsecutiveDays(doc.loginDays);
     if (streak > 0 && streak % 7 === 0) {
       await addLesezeichen(username, "wochen_streak", 7);
+      awarded += 7;
     }
   }
+  return awarded;
 }
 
 /** Treffpunkt-Beitrag: 1 Lesezeichen pro Beitrag */
-export async function awardTreffpunktBeitrag(username: string) {
+export async function awardTreffpunktBeitrag(username: string): Promise<number> {
   const today = todayKey();
   const col = await getLesezeichenCollection();
   await col.updateOne(
@@ -172,15 +178,17 @@ export async function awardTreffpunktBeitrag(username: string) {
     { upsert: true },
   );
   await addLesezeichen(username, "treffpunkt_beitrag", 1);
+  return 1;
 }
 
 /** Abstimmung: 1 Lesezeichen pro Abstimmung */
-export async function awardAbstimmung(username: string) {
+export async function awardAbstimmung(username: string): Promise<number> {
   await addLesezeichen(username, "abstimmung", 1);
+  return 1;
 }
 
 /** Quiz gespielt: 1 Lesezeichen pro Tag */
-export async function awardQuizTag(username: string) {
+export async function awardQuizTag(username: string): Promise<number> {
   const today = todayKey();
   const col = await getLesezeichenCollection();
   await getOrCreateDoc(username);
@@ -193,14 +201,16 @@ export async function awardQuizTag(username: string) {
       $set: { updatedAt: new Date() },
     },
   );
-  if (result.modifiedCount === 0) return;
+  if (result.modifiedCount === 0) return 0;
 
   await addLesezeichen(username, "quiz_tag", 1);
+  return 1;
 }
 
 /** MC-Quiz 10+ Punkte: 1 Lesezeichen (pro Spiel) */
-export async function awardMcQuiz10Punkte(username: string) {
+export async function awardMcQuiz10Punkte(username: string): Promise<number> {
   await addLesezeichen(username, "mc_quiz_10_punkte", 1);
+  return 1;
 }
 
 /** Buchempfehlung: +1 Lesezeichen, max. 3 pro Tag */
@@ -234,8 +244,9 @@ export async function awardBuchempfehlung(username: string): Promise<boolean> {
 }
 
 /** Buchempfehlung erhalten: +1 Lesezeichen für Buchbesitzer (ohne Tageslimit) */
-export async function awardBuchempfehlungErhalten(username: string) {
+export async function awardBuchempfehlungErhalten(username: string): Promise<number> {
   await addLesezeichen(username, "buchempfehlung_erhalten", 1);
+  return 1;
 }
 
 /* ── Abfragen ── */

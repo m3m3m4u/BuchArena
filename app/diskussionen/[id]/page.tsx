@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
+import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
 type ReactionItem = {
   username: string;
@@ -288,12 +289,13 @@ export default function DiskussionDetailPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = (await response.json()) as { message?: string };
+      const data = (await response.json()) as { message?: string; lesezeichen?: number };
 
       if (!response.ok) {
         throw new Error(data.message ?? "Fehler beim Antworten.");
       }
 
+      if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
       setReplyBody("");
       setReplyingTo(null);
       await loadDiscussion();
