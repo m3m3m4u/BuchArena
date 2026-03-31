@@ -156,6 +156,7 @@ export default function ShortsErstellenPage() {
   const [submitting, setSubmitting] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [showThankYou, setShowThankYou] = useState(false);
   const [savedVorlagen, setSavedVorlagen] = useState<SavedVorlage[]>([]);
   const [showVorlagen, setShowVorlagen] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
@@ -1178,6 +1179,20 @@ export default function ShortsErstellenPage() {
           <Link href="/social-media" className="btn btn-sm">← Zurück zu Social Media</Link>
         </div>
       </section>
+
+      {/* \u2500\u2500 Danke-Overlay \u2500\u2500 */}
+      {showThankYou && (
+        <div className="overlay-backdrop" onClick={() => setShowThankYou(false)}>
+          <div className="card w-full max-w-lg text-center" onClick={(e) => e.stopPropagation()}>
+            <CheckCircleIcon className="size-16 text-green-600 mx-auto" />
+            <h2 className="text-xl font-bold mt-3">Danke f\u00fcr deine Einreichung!</h2>
+            <p className="text-[0.95rem] text-arena-muted mt-2">
+              Wir melden uns bei dir, sobald das Video fertig ist, damit du noch einmal alles kontrollieren kannst \u2013 oder wenn wir Fragen an dich haben.
+            </p>
+            <button type="button" className="btn btn-primary mt-4" onClick={() => setShowThankYou(false)}>Alles klar</button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

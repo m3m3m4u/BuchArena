@@ -227,10 +227,9 @@ export default function UploadPage() {
         <section className="card">
           <div className="grid gap-4 place-items-center py-6 text-center">
             <CheckCircleIcon className="size-16 text-green-600" />
-            <h1 className="text-xl font-bold">Einreichung erfolgreich!</h1>
+            <h1 className="text-xl font-bold">Danke für deine Einreichung!</h1>
             <p className="text-arena-muted text-[0.95rem]">
-              Vielen Dank! Deine Buchvorstellung wurde erfolgreich eingereicht.
-              Wir melden uns bei dir, sobald sie bearbeitet wurde.
+              Wir melden uns bei dir, sobald das Video fertig ist, damit du noch einmal alles kontrollieren kannst – oder wenn wir Fragen an dich haben.
             </p>
             {!instagram.trim() && (
               <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm">

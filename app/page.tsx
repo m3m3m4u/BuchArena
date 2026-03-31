@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT, type LoggedInAccount } from "@/lib/client-account";
 import { extractYouTubeId } from "@/lib/bucharena-types";
 
-type BuchDerWoche = { title: string; author: string; youtubeUrl: string; buyUrl: string; active?: boolean };
+type BuchDerWoche = { title: string; author: string; speaker?: string; youtubeUrl: string; buyUrl: string; active?: boolean };
 type Stats = { bookCount: number; authorCount: number; bloggerCount: number; speakerCount: number };
 
 
@@ -196,7 +196,7 @@ export default function HomePage() {
             <div>
               <p className="text-lg font-semibold m-0 flex items-center gap-2 flex-wrap">
                 <span>Buch der Woche:</span>
-                <span>{bdw.title} <span className="font-normal text-arena-muted">von {bdw.author}</span></span>
+                <span>{bdw.title} <span className="font-normal text-arena-muted">von {bdw.author}</span>{bdw.speaker && <span className="font-normal text-arena-muted"> · Sprecher: {bdw.speaker}</span>}</span>
                 {bdw.buyUrl && (
                   <a href={bdw.buyUrl} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm inline-flex items-center">
                     HIER ERHÄLTLICH
@@ -315,7 +315,7 @@ export default function HomePage() {
         <section className="mx-auto px-4 py-10 text-center" style={{ width: "80%", maxWidth: "1100px" }}>
           <p className="text-xl m-0 flex items-center justify-center gap-2 flex-wrap">
             <span className="font-bold">Buch der Woche:</span>
-            <span><strong>{bdw.title}</strong> <span className="text-arena-muted">von {bdw.author}</span></span>
+            <span><strong>{bdw.title}</strong> <span className="text-arena-muted">von {bdw.author}</span>{bdw.speaker && <span className="text-arena-muted"> · Sprecher: {bdw.speaker}</span>}</span>
             {bdw.buyUrl && (
               <a href={bdw.buyUrl} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm inline-flex items-center gap-1">
                 HIER ERHÄLTLICH

@@ -98,6 +98,7 @@ export default function AdminPage() {
   /* ── Buch der Woche ── */
   const [bdwTitle, setBdwTitle] = useState("");
   const [bdwAuthor, setBdwAuthor] = useState("");
+  const [bdwSpeaker, setBdwSpeaker] = useState("");
   const [bdwYoutube, setBdwYoutube] = useState("");
   const [bdwBuyUrl, setBdwBuyUrl] = useState("");
   const [bdwActive, setBdwActive] = useState(true);
@@ -176,6 +177,7 @@ export default function AdminPage() {
       if (d.buchDerWoche) {
         setBdwTitle(d.buchDerWoche.title ?? "");
         setBdwAuthor(d.buchDerWoche.author ?? "");
+        setBdwSpeaker(d.buchDerWoche.speaker ?? "");
         setBdwYoutube(d.buchDerWoche.youtubeUrl ?? "");
         setBdwBuyUrl(d.buchDerWoche.buyUrl ?? "");
         setBdwActive(d.buchDerWoche.active ?? true);
@@ -215,7 +217,7 @@ export default function AdminPage() {
       const res = await fetch("/api/buch-der-woche", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: bdwTitle, author: bdwAuthor, youtubeUrl: bdwYoutube, buyUrl: bdwBuyUrl, active: bdwActive }),
+        body: JSON.stringify({ title: bdwTitle, author: bdwAuthor, speaker: bdwSpeaker, youtubeUrl: bdwYoutube, buyUrl: bdwBuyUrl, active: bdwActive }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Fehler"); }
       setBdwMsg("✅ Gespeichert!");
@@ -482,6 +484,10 @@ export default function AdminPage() {
             <label className="block">
               <span className="text-sm font-semibold">Autor</span>
               <input className="input-base w-full mt-1" value={bdwAuthor} onChange={e => setBdwAuthor(e.target.value)} placeholder="z.B. Paulo Coelho" />
+            </label>
+            <label className="block">
+              <span className="text-sm font-semibold">Sprecher</span>
+              <input className="input-base w-full mt-1" value={bdwSpeaker} onChange={e => setBdwSpeaker(e.target.value)} placeholder="z.B. Max Mustermann" />
             </label>
             <label className="block">
               <span className="text-sm font-semibold">YouTube-Link</span>

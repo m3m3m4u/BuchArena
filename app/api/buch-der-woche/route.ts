@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/server-auth";
 export type BuchDerWoche = {
   title: string;
   author: string;
+  speaker: string;
   youtubeUrl: string;
   buyUrl: string;
   active: boolean;
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, author, youtubeUrl, buyUrl, active } = body as Partial<BuchDerWoche>;
+    const { title, author, speaker, youtubeUrl, buyUrl, active } = body as Partial<BuchDerWoche>;
 
     if (!title || !author) {
       return NextResponse.json({ error: "Titel und Autor sind Pflichtfelder" }, { status: 400 });
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
     const value: BuchDerWoche = {
       title: title.trim().slice(0, 200),
       author: author.trim().slice(0, 200),
+      speaker: (speaker ?? "").trim().slice(0, 200),
       youtubeUrl: (youtubeUrl ?? "").trim().slice(0, 500),
       buyUrl: (buyUrl ?? "").trim().slice(0, 500),
       active: active ?? true,

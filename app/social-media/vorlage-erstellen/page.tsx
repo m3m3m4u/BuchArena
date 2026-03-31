@@ -207,6 +207,7 @@ export default function VorlageErstellenPage() {
   const [step, setStep] = useState(0);
   const [showPreview, setShowPreview] = useState(true);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
 
@@ -1429,6 +1430,7 @@ export default function VorlageErstellenPage() {
       setSubmissionId(data.submissionId);
       setDirty(false);
       showSuccess("Vorlage erfolgreich eingereicht! 🎉");
+      setShowThankYou(true);
       loadVorlagen();
       loadSubmissions();
     } catch (err) {
@@ -1957,6 +1959,20 @@ export default function VorlageErstellenPage() {
                 {submitting ? "Einreichen …" : "Jetzt einreichen"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Danke-Overlay ── */}
+      {showThankYou && (
+        <div className="overlay-backdrop" onClick={() => setShowThankYou(false)}>
+          <div className="card w-full max-w-lg text-center" onClick={(e) => e.stopPropagation()}>
+            <CheckCircleIcon className="size-16 text-green-600 mx-auto" />
+            <h2 className="text-xl font-bold mt-3">Danke für deine Einreichung!</h2>
+            <p className="text-[0.95rem] text-arena-muted mt-2">
+              Wir melden uns bei dir, sobald das Video fertig ist, damit du noch einmal alles kontrollieren kannst – oder wenn wir Fragen an dich haben.
+            </p>
+            <button type="button" className="btn btn-primary mt-4" onClick={() => setShowThankYou(false)}>Alles klar</button>
           </div>
         </div>
       )}
