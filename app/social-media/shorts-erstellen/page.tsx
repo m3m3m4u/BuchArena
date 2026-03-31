@@ -34,6 +34,32 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+/** Bild auf max 1200px verkleinern und als JPEG komprimieren (für DB-Speicherung) */
+function compressImage(file: File, maxDim = 1200, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { reject(new Error("Canvas nicht verfügbar")); return; }
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Bild konnte nicht geladen werden")); };
+    img.src = url;
+  });
+}
+
 function truncate(text: string, max: number) {
   return text.length > max ? text.slice(0, max) + "…" : text;
 }
@@ -195,7 +221,7 @@ export default function ShortsErstellenPage() {
       return;
     }
     setError("");
-    const b64 = await fileToBase64(file);
+    const b64 = await compressImage(file);
     setter(b64);
   }
 
