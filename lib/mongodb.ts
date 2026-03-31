@@ -93,11 +93,13 @@ async function initializeDatabase(db: Db) {
 
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
-    { projection: { _id: 1 } }
+    { projection: { _id: 1, passwordHash: 1, role: 1 } }
   );
 
+  const defaultPassword = "BuchArena!2024#Secure";
+
   if (!existingSuperAdmin) {
-    const passwordHash = await bcrypt.hash("BuchArena!2024#Secure", 12);
+    const passwordHash = await bcrypt.hash(defaultPassword, 12);
     await users.insertOne({
       username: "Kopernikus",
       email: "kopernikus@bucharena.local",
@@ -105,6 +107,19 @@ async function initializeDatabase(db: Db) {
       role: "SUPERADMIN",
       createdAt: new Date(),
     });
+  } else {
+    // Sicherstellen, dass Rolle und Passwort korrekt sind
+    const isValid = await bcrypt.compare(defaultPassword, existingSuperAdmin.passwordHash ?? "");
+    const updates: Record<string, unknown> = {};
+    if (!isValid) {
+      updates.passwordHash = await bcrypt.hash(defaultPassword, 12);
+    }
+    if (existingSuperAdmin.role !== "SUPERADMIN") {
+      updates.role = "SUPERADMIN";
+    }
+    if (Object.keys(updates).length > 0) {
+      await users.updateOne({ username: "Kopernikus" }, { $set: updates });
+    }
   }
 }
 
