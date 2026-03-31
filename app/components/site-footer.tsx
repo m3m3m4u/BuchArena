@@ -94,16 +94,6 @@ export default function SiteFooter() {
               <Link href="/admin" className="btn">Admin</Link>
             )}
             {account && (
-              <Link href="/nachrichten" className="btn relative">
-                Nachrichten
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-arena-danger text-white text-[0.65rem] font-bold px-1 leading-none">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
-              </Link>
-            )}
-            {account && (
               <Link href="/profil" className="btn">Mein Profil</Link>
             )}
             <Link href="/info" className="btn">FAQ</Link>
@@ -126,16 +116,6 @@ export default function SiteFooter() {
               <div className="absolute bottom-full left-0 mb-2 min-w-[200px] rounded-xl border border-arena-border-light bg-white shadow-lg py-1.5 z-50">
                 {(account?.role === "SUPERADMIN" || account?.role === "ADMIN") && (
                   <Link href="/admin" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Admin</Link>
-                )}
-                {account && (
-                  <Link href="/nachrichten" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>
-                    Nachrichten
-                    {unreadCount > 0 && (
-                      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-arena-danger text-white text-[0.6rem] font-bold px-1 leading-none">
-                        {unreadCount > 99 ? "99+" : unreadCount}
-                      </span>
-                    )}
-                  </Link>
                 )}
                 {account && (
                   <Link href="/profil" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Mein Profil</Link>

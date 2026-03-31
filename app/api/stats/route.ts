@@ -7,14 +7,16 @@ export async function GET() {
     const db = await getDatabase();
     const users = db.collection("users");
 
-    const [bookCount, authorCount, bloggerCount, speakerCount] = await Promise.all([
+    const [bookCount, authorCount, bloggerCount, speakerCount, testleserCount, lektorenCount] = await Promise.all([
       db.collection("books").countDocuments({}),
       users.countDocuments({ "profile": { $exists: true } }),
       users.countDocuments({ "bloggerProfile": { $exists: true } }),
       users.countDocuments({ "speakerProfile": { $exists: true } }),
+      users.countDocuments({ "testleserProfile": { $exists: true } }),
+      users.countDocuments({ "lektorenProfile": { $exists: true } }),
     ]);
 
-    const res = NextResponse.json({ bookCount, authorCount, bloggerCount, speakerCount });
+    const res = NextResponse.json({ bookCount, authorCount, bloggerCount, speakerCount, testleserCount, lektorenCount });
     res.headers.set("Cache-Control", "public, s-maxage=120, stale-while-revalidate=600");
     return res;
   } catch {

@@ -1,10 +1,10 @@
 import bcrypt from "bcryptjs";
 import { MongoClient, type Collection, type Db, MongoServerError } from "mongodb";
 import type { BookDocument } from "@/lib/books";
-import type { ProfileData, SpeakerProfileData, BloggerProfileData } from "@/lib/profile";
+import type { ProfileData, SpeakerProfileData, BloggerProfileData, TestleserProfileData, LektorenProfileData } from "@/lib/profile";
 import type { SupportPost } from "@/lib/support";
 import type { DiscussionDocument } from "@/lib/discussions";
-import type { PollDocument } from "@/lib/discussions";
+import type { PollDocument, TauschDocument } from "@/lib/discussions";
 import type { MessageDocument } from "@/lib/messages";
 
 export type UserRole = "USER" | "ADMIN" | "SUPERADMIN";
@@ -23,6 +23,8 @@ export type UserDocument = {
   profile?: ProfileData;
   speakerProfile?: SpeakerProfileData;
   bloggerProfile?: BloggerProfileData;
+  testleserProfile?: TestleserProfileData;
+  lektorenProfile?: LektorenProfileData;
   newsletterOptIn?: boolean;
 };
 
@@ -169,6 +171,11 @@ export async function getPollsCollection(): Promise<Collection<PollDocument>> {
 export async function getMessagesCollection(): Promise<Collection<MessageDocument>> {
   const db = await getDatabase();
   return db.collection<MessageDocument>("messages");
+}
+
+export async function getTauschCollection(): Promise<Collection<TauschDocument>> {
+  const db = await getDatabase();
+  return db.collection<TauschDocument>("tausch");
 }
 
 export function isDuplicateKeyError(error: unknown) {

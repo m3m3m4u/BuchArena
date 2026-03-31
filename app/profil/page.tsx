@@ -11,17 +11,19 @@ import {
   setStoredAccount,
   type LoggedInAccount,
 } from "@/lib/client-account";
-import { createDefaultProfile, createDefaultSpeakerProfile, createDefaultBloggerProfile, type ProfileData, type SpeakerProfileData, type BloggerProfileData, type Visibility } from "@/lib/profile";
+import { createDefaultProfile, createDefaultSpeakerProfile, createDefaultBloggerProfile, createDefaultTestleserProfile, createDefaultLektorenProfile, type ProfileData, type SpeakerProfileData, type BloggerProfileData, type TestleserProfileData, type LektorenProfileData, type Visibility } from "@/lib/profile";
 import MeineBuecherTab from "@/app/components/meine-buecher-tab";
 import GenrePicker from "@/app/components/genre-picker";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
-type ProfileTab = "autor" | "sprecher" | "blogger" | "buecher" | "konto";
+type ProfileTab = "autor" | "sprecher" | "blogger" | "testleser" | "lektoren" | "buecher" | "konto";
 
 type GetProfileResponse = {
   profile: ProfileData;
   speakerProfile?: SpeakerProfileData;
   bloggerProfile?: BloggerProfileData;
+  testleserProfile?: TestleserProfileData;
+  lektorenProfile?: LektorenProfileData;
   newsletterOptIn?: boolean;
   displayName?: string;
 };
@@ -52,6 +54,28 @@ function ProfilPageInner() {
   const [isSavingSpeaker, setIsSavingSpeaker] = useState(false);
   const [isSavingBlogger, setIsSavingBlogger] = useState(false);
   const [bloggerProfile, setBloggerProfile] = useState<BloggerProfileData>(createDefaultBloggerProfile());
+  const [testleserProfile, setTestleserProfile] = useState<TestleserProfileData>(createDefaultTestleserProfile());
+  const [lektorenProfile, setLektorenProfile] = useState<LektorenProfileData>(createDefaultLektorenProfile());
+  const [isSavingTestleser, setIsSavingTestleser] = useState(false);
+  const [isSavingLektoren, setIsSavingLektoren] = useState(false);
+  const [isTestleserImageOverlayOpen, setIsTestleserImageOverlayOpen] = useState(false);
+  const [isUploadingTestleserImage, setIsUploadingTestleserImage] = useState(false);
+  const testleserDragStateRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startCropX: number;
+    startCropY: number;
+  } | null>(null);
+  const [isLektorenImageOverlayOpen, setIsLektorenImageOverlayOpen] = useState(false);
+  const [isUploadingLektorenImage, setIsUploadingLektorenImage] = useState(false);
+  const lektorenDragStateRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startCropX: number;
+    startCropY: number;
+  } | null>(null);
   const [isBloggerImageOverlayOpen, setIsBloggerImageOverlayOpen] = useState(false);
   const [isUploadingBloggerImage, setIsUploadingBloggerImage] = useState(false);
   const bloggerDragStateRef = useRef<{
@@ -102,7 +126,7 @@ function ProfilPageInner() {
     setRequestedUser(user);
 
     const tab = searchParams.get("tab")?.trim();
-    if (tab === "buecher" || tab === "sprecher" || tab === "autor" || tab === "blogger" || tab === "konto") {
+    if (tab === "buecher" || tab === "sprecher" || tab === "autor" || tab === "blogger" || tab === "testleser" || tab === "lektoren" || tab === "konto") {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -149,6 +173,8 @@ function ProfilPageInner() {
         setProfile({ ...createDefaultProfile(), ...data.profile });
         setSpeakerProfile({ ...createDefaultSpeakerProfile(), ...data.speakerProfile });
         setBloggerProfile({ ...createDefaultBloggerProfile(), ...data.bloggerProfile });
+        setTestleserProfile({ ...createDefaultTestleserProfile(), ...data.testleserProfile });
+        setLektorenProfile({ ...createDefaultLektorenProfile(), ...data.lektorenProfile });
         setNewsletterOptIn(!!data.newsletterOptIn);
         setDisplayName(data.displayName ?? "");
       } catch {
@@ -255,6 +281,68 @@ function ProfilPageInner() {
       setMessage("Bloggerprofil konnte nicht gespeichert werden.");
     } finally {
       setIsSavingBlogger(false);
+    }
+  }
+
+  async function saveTestleserProfile() {
+    if (!account || !targetUsername) return;
+
+    setIsSavingTestleser(true);
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const response = await fetch("/api/testleser/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: targetUsername,
+          testleserProfile,
+        }),
+      });
+
+      const data = (await response.json()) as { message?: string };
+      if (!response.ok) {
+        throw new Error(data.message ?? "Testleserprofil konnte nicht gespeichert werden.");
+      }
+
+      setMessage(data.message ?? "Testleserprofil gespeichert.");
+    } catch {
+      setIsError(true);
+      setMessage("Testleserprofil konnte nicht gespeichert werden.");
+    } finally {
+      setIsSavingTestleser(false);
+    }
+  }
+
+  async function saveLektorenProfile() {
+    if (!account || !targetUsername) return;
+
+    setIsSavingLektoren(true);
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const response = await fetch("/api/lektoren/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: targetUsername,
+          lektorenProfile,
+        }),
+      });
+
+      const data = (await response.json()) as { message?: string };
+      if (!response.ok) {
+        throw new Error(data.message ?? "Lektorenprofil konnte nicht gespeichert werden.");
+      }
+
+      setMessage(data.message ?? "Lektorenprofil gespeichert.");
+    } catch {
+      setIsError(true);
+      setMessage("Lektorenprofil konnte nicht gespeichert werden.");
+    } finally {
+      setIsSavingLektoren(false);
     }
   }
 
@@ -554,6 +642,100 @@ function ProfilPageInner() {
     }
   }
 
+  const testleserImagePreviewStyle = useMemo(() => {
+    const imageUrl = testleserProfile.profileImage?.value;
+    if (!imageUrl) return undefined;
+    return {
+      backgroundImage: `url(${imageUrl})`,
+      backgroundPosition: `${testleserProfile.profileImage.crop.x}% ${testleserProfile.profileImage.crop.y}%`,
+      backgroundSize: `${testleserProfile.profileImage.crop.zoom * 100}%`,
+      backgroundRepeat: "no-repeat",
+    };
+  }, [testleserProfile.profileImage]);
+
+  const lektorenImagePreviewStyle = useMemo(() => {
+    const imageUrl = lektorenProfile.profileImage?.value;
+    if (!imageUrl) return undefined;
+    return {
+      backgroundImage: `url(${imageUrl})`,
+      backgroundPosition: `${lektorenProfile.profileImage.crop.x}% ${lektorenProfile.profileImage.crop.y}%`,
+      backgroundSize: `${lektorenProfile.profileImage.crop.zoom * 100}%`,
+      backgroundRepeat: "no-repeat",
+    };
+  }, [lektorenProfile.profileImage]);
+
+  async function uploadTestleserImage(file: File) {
+    if (!targetUsername) return;
+    if (file.size > 5 * 1024 * 1024) { setIsError(true); setMessage("Das Bild darf maximal 5 MB groß sein."); return; }
+    setIsUploadingTestleserImage(true); setMessage(""); setIsError(false);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("username", targetUsername);
+      const response = await fetch("/api/profile/upload-image", { method: "POST", body: formData });
+      if (response.status === 413) throw new Error("Das Bild ist zu groß. Bitte ein kleineres Bild wählen (max. 5 MB).");
+      const data = (await response.json()) as { message?: string; imageUrl?: string };
+      if (!response.ok || !data.imageUrl) throw new Error(data.message ?? "Upload fehlgeschlagen.");
+      setTestleserProfile((current) => ({ ...current, profileImage: { ...current.profileImage, value: data.imageUrl as string, visibility: current.profileImage.visibility === "hidden" ? "public" : current.profileImage.visibility } }));
+      setMessage("Testleser-Bild erfolgreich hochgeladen.");
+    } catch { setIsError(true); setMessage("Testleser-Bild-Upload fehlgeschlagen."); }
+    finally { setIsUploadingTestleserImage(false); }
+  }
+
+  function onTestleserImagePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    testleserDragStateRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, startCropX: testleserProfile.profileImage.crop.x, startCropY: testleserProfile.profileImage.crop.y };
+  }
+  function onTestleserImagePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const dragState = testleserDragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+    const previewSize = event.currentTarget.clientWidth || 160;
+    const zoom = testleserProfile.profileImage.crop.zoom || 1;
+    const factor = (100 / previewSize) / zoom;
+    const deltaX = (event.clientX - dragState.startX) * factor;
+    const deltaY = (event.clientY - dragState.startY) * factor;
+    setTestleserProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, x: clampPercent(dragState.startCropX - deltaX), y: clampPercent(dragState.startCropY - deltaY) } } }));
+  }
+  function onTestleserImagePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (testleserDragStateRef.current?.pointerId === event.pointerId) { testleserDragStateRef.current = null; event.currentTarget.releasePointerCapture(event.pointerId); }
+  }
+
+  async function uploadLektorenImage(file: File) {
+    if (!targetUsername) return;
+    if (file.size > 5 * 1024 * 1024) { setIsError(true); setMessage("Das Bild darf maximal 5 MB groß sein."); return; }
+    setIsUploadingLektorenImage(true); setMessage(""); setIsError(false);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("username", targetUsername);
+      const response = await fetch("/api/profile/upload-image", { method: "POST", body: formData });
+      if (response.status === 413) throw new Error("Das Bild ist zu groß. Bitte ein kleineres Bild wählen (max. 5 MB).");
+      const data = (await response.json()) as { message?: string; imageUrl?: string };
+      if (!response.ok || !data.imageUrl) throw new Error(data.message ?? "Upload fehlgeschlagen.");
+      setLektorenProfile((current) => ({ ...current, profileImage: { ...current.profileImage, value: data.imageUrl as string, visibility: current.profileImage.visibility === "hidden" ? "public" : current.profileImage.visibility } }));
+      setMessage("Lektoren-Bild erfolgreich hochgeladen.");
+    } catch { setIsError(true); setMessage("Lektoren-Bild-Upload fehlgeschlagen."); }
+    finally { setIsUploadingLektorenImage(false); }
+  }
+
+  function onLektorenImagePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    lektorenDragStateRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, startCropX: lektorenProfile.profileImage.crop.x, startCropY: lektorenProfile.profileImage.crop.y };
+  }
+  function onLektorenImagePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const dragState = lektorenDragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+    const previewSize = event.currentTarget.clientWidth || 160;
+    const zoom = lektorenProfile.profileImage.crop.zoom || 1;
+    const factor = (100 / previewSize) / zoom;
+    const deltaX = (event.clientX - dragState.startX) * factor;
+    const deltaY = (event.clientY - dragState.startY) * factor;
+    setLektorenProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, x: clampPercent(dragState.startCropX - deltaX), y: clampPercent(dragState.startCropY - deltaY) } } }));
+  }
+  function onLektorenImagePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (lektorenDragStateRef.current?.pointerId === event.pointerId) { lektorenDragStateRef.current = null; event.currentTarget.releasePointerCapture(event.pointerId); }
+  }
+
   function updateVisibility(field: keyof ProfileData, visibility: Visibility) {
     setProfile((current) => ({
       ...current,
@@ -708,6 +890,20 @@ function ProfilPageInner() {
             onClick={() => { setActiveTab("blogger"); setMessage(""); }}
           >
             Blogger
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "testleser" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            onClick={() => { setActiveTab("testleser"); setMessage(""); }}
+          >
+            Testleser
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "lektoren" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            onClick={() => { setActiveTab("lektoren"); setMessage(""); }}
+          >
+            Lektoren
           </button>
           <button
             type="button"
@@ -1495,6 +1691,183 @@ function ProfilPageInner() {
         </>
         )}
 
+        {activeTab === "testleser" && (
+        <>
+        <h2 className="text-lg mt-0">Testleserprofil</h2>
+        <p className="text-arena-muted text-[0.95rem]">
+          Fülle dein Profil als Testleser aus. Öffentlich sichtbare Felder werden auf deiner Testleserseite angezeigt.
+        </p>
+
+        <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
+          <button type="button" className="border-0 bg-transparent p-0 m-0 cursor-pointer" onClick={() => setIsTestleserImageOverlayOpen(true)}>
+            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border" style={testleserImagePreviewStyle}>
+              {!testleserProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            </div>
+          </button>
+        </div>
+
+        <FieldWithVisibility
+          label="Name"
+          value={testleserProfile.name.value}
+          visibility={testleserProfile.name.visibility}
+          onValueChange={(value) => setTestleserProfile((c) => ({ ...c, name: { ...c.name, value } }))}
+          onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, name: { ...c.name, visibility } }))}
+        />
+
+        <div className="grid gap-1">
+          <label className="text-sm font-semibold">Zu mir</label>
+          <textarea
+            className="input-base w-full"
+            rows={4}
+            maxLength={2000}
+            placeholder="Erzähle etwas über dich ..."
+            value={testleserProfile.zuMir}
+            onChange={(e) => setTestleserProfile((c) => ({ ...c, zuMir: e.target.value }))}
+          />
+        </div>
+
+        <div className="grid grid-cols-[2fr_1fr] gap-3 max-[780px]:grid-cols-1">
+          <div className="grid gap-1">
+            <GenrePicker
+              label="Genres"
+              value={testleserProfile.genres}
+              onChange={(value) => setTestleserProfile((c) => ({ ...c, genres: value }))}
+            />
+          </div>
+          <div />
+        </div>
+
+        {/* Verfügbarkeits-Schalter */}
+        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+          <div>
+            <span className="text-sm font-semibold">📖 Freie Kapazitäten</span>
+            <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0" }}>
+              Zeige an, ob du aktuell als Testleser verfügbar bist.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={testleserProfile.verfuegbar}
+            className="toggle-switch"
+            style={{
+              width: 48, height: 26, borderRadius: 13, border: "none",
+              background: testleserProfile.verfuegbar ? "var(--color-arena-blue)" : "#ccc",
+              position: "relative", cursor: "pointer", flexShrink: 0,
+              transition: "background 0.2s",
+            }}
+            onClick={() => setTestleserProfile((c) => ({ ...c, verfuegbar: !c.verfuegbar }))}
+          >
+            <span style={{
+              position: "absolute", top: 3, left: testleserProfile.verfuegbar ? 24 : 3,
+              width: 20, height: 20, borderRadius: "50%", background: "#fff",
+              transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+            }} />
+          </button>
+        </div>
+
+        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Kontakt / Social Media</h3>
+        <FieldWithVisibility label="Social Media: Instagram" value={testleserProfile.socialInstagram.value} visibility={testleserProfile.socialInstagram.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, visibility } }))} />
+        <FieldWithVisibility label="Social Media: Facebook" value={testleserProfile.socialFacebook.value} visibility={testleserProfile.socialFacebook.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, visibility } }))} />
+        <FieldWithVisibility label="Social Media: LinkedIn" value={testleserProfile.socialLinkedin.value} visibility={testleserProfile.socialLinkedin.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, visibility } }))} />
+        <FieldWithVisibility label="Social Media: TikTok" value={testleserProfile.socialTiktok.value} visibility={testleserProfile.socialTiktok.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialTiktok: { ...c.socialTiktok, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialTiktok: { ...c.socialTiktok, visibility } }))} />
+        <FieldWithVisibility label="Social Media: YouTube" value={testleserProfile.socialYoutube.value} visibility={testleserProfile.socialYoutube.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialYoutube: { ...c.socialYoutube, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialYoutube: { ...c.socialYoutube, visibility } }))} />
+        <FieldWithVisibility label="Social Media: Pinterest" value={testleserProfile.socialPinterest.value} visibility={testleserProfile.socialPinterest.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialPinterest: { ...c.socialPinterest, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialPinterest: { ...c.socialPinterest, visibility } }))} />
+        <FieldWithVisibility label="Social Media: Reddit" value={testleserProfile.socialReddit.value} visibility={testleserProfile.socialReddit.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, visibility } }))} />
+        <FieldWithVisibility label="Website" value={testleserProfile.socialWebsite.value} visibility={testleserProfile.socialWebsite.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, visibility } }))} />
+        <FieldWithVisibility label="Linktree" value={testleserProfile.socialLinktree.value} visibility={testleserProfile.socialLinktree.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, visibility } }))} />
+        <FieldWithVisibility label="Newsletter" value={testleserProfile.socialNewsletter.value} visibility={testleserProfile.socialNewsletter.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, visibility } }))} />
+        <FieldWithVisibility label="WhatsApp-Kanal" value={testleserProfile.socialWhatsapp.value} visibility={testleserProfile.socialWhatsapp.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))} />
+
+        <button type="button" className="btn" onClick={saveTestleserProfile} disabled={isSavingTestleser}>
+          {isSavingTestleser ? "Speichern ..." : "Testleserprofil speichern"}
+        </button>
+        </>
+        )}
+
+        {activeTab === "lektoren" && (
+        <>
+        <h2 className="text-lg mt-0">Lektorenprofil</h2>
+        <p className="text-arena-muted text-[0.95rem]">
+          Fülle dein Profil als Lektor aus. Öffentlich sichtbare Felder werden auf deiner Lektorenseite angezeigt.
+        </p>
+
+        <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
+          <button type="button" className="border-0 bg-transparent p-0 m-0 cursor-pointer" onClick={() => setIsLektorenImageOverlayOpen(true)}>
+            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border" style={lektorenImagePreviewStyle}>
+              {!lektorenProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            </div>
+          </button>
+        </div>
+
+        <FieldWithVisibility
+          label="Name"
+          value={lektorenProfile.name.value}
+          visibility={lektorenProfile.name.visibility}
+          onValueChange={(value) => setLektorenProfile((c) => ({ ...c, name: { ...c.name, value } }))}
+          onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, name: { ...c.name, visibility } }))}
+        />
+
+        <div className="grid gap-1">
+          <label className="text-sm font-semibold">Zu mir</label>
+          <textarea
+            className="input-base w-full"
+            rows={4}
+            maxLength={2000}
+            placeholder="Erzähle etwas über dich ..."
+            value={lektorenProfile.zuMir}
+            onChange={(e) => setLektorenProfile((c) => ({ ...c, zuMir: e.target.value }))}
+          />
+        </div>
+
+        {/* Kapazitäten-Kalender */}
+        <div className="mt-2">
+          <h3 className="text-[0.95rem] font-semibold mb-2">Kapazitäten nach Monat</h3>
+          <p className="text-arena-muted text-xs mb-2">Klicke auf die Monate, in denen du Kapazitäten hast.</p>
+          <div className="flex flex-wrap gap-1.5">
+            {["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"].map((label, index) => {
+              const month = index + 1;
+              const isActive = lektorenProfile.kapazitaeten.includes(month);
+              return (
+                <button
+                  key={month}
+                  type="button"
+                  className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${isActive ? "bg-green-600 text-white border-green-600" : "bg-white text-arena-text border-arena-border"}`}
+                  onClick={() => {
+                    setLektorenProfile((c) => ({
+                      ...c,
+                      kapazitaeten: isActive
+                        ? c.kapazitaeten.filter((m) => m !== month)
+                        : [...c.kapazitaeten, month].sort((a, b) => a - b),
+                    }));
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Kontakt / Social Media</h3>
+        <FieldWithVisibility label="Website" value={lektorenProfile.socialWebsite.value} visibility={lektorenProfile.socialWebsite.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, visibility } }))} />
+        <FieldWithVisibility label="Social Media: Instagram" value={lektorenProfile.socialInstagram.value} visibility={lektorenProfile.socialInstagram.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, visibility } }))} />
+        <FieldWithVisibility label="Social Media: Facebook" value={lektorenProfile.socialFacebook.value} visibility={lektorenProfile.socialFacebook.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, visibility } }))} />
+        <FieldWithVisibility label="Social Media: LinkedIn" value={lektorenProfile.socialLinkedin.value} visibility={lektorenProfile.socialLinkedin.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, visibility } }))} />
+        <FieldWithVisibility label="Social Media: TikTok" value={lektorenProfile.socialTiktok.value} visibility={lektorenProfile.socialTiktok.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialTiktok: { ...c.socialTiktok, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialTiktok: { ...c.socialTiktok, visibility } }))} />
+        <FieldWithVisibility label="Social Media: YouTube" value={lektorenProfile.socialYoutube.value} visibility={lektorenProfile.socialYoutube.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialYoutube: { ...c.socialYoutube, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialYoutube: { ...c.socialYoutube, visibility } }))} />
+        <FieldWithVisibility label="Social Media: Pinterest" value={lektorenProfile.socialPinterest.value} visibility={lektorenProfile.socialPinterest.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialPinterest: { ...c.socialPinterest, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialPinterest: { ...c.socialPinterest, visibility } }))} />
+        <FieldWithVisibility label="Social Media: Reddit" value={lektorenProfile.socialReddit.value} visibility={lektorenProfile.socialReddit.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, visibility } }))} />
+        <FieldWithVisibility label="Linktree" value={lektorenProfile.socialLinktree.value} visibility={lektorenProfile.socialLinktree.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, visibility } }))} />
+        <FieldWithVisibility label="Newsletter" value={lektorenProfile.socialNewsletter.value} visibility={lektorenProfile.socialNewsletter.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, visibility } }))} />
+        <FieldWithVisibility label="WhatsApp-Kanal" value={lektorenProfile.socialWhatsapp.value} visibility={lektorenProfile.socialWhatsapp.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))} />
+
+        <button type="button" className="btn" onClick={saveLektorenProfile} disabled={isSavingLektoren}>
+          {isSavingLektoren ? "Speichern ..." : "Lektorenprofil speichern"}
+        </button>
+        </>
+        )}
+
         {activeTab === "buecher" && (
           <>
           <h2 className="text-lg mt-0">Meine Bücher</h2>
@@ -2039,6 +2412,60 @@ function ProfilPageInner() {
             >
               Fertig
             </button>
+          </section>
+        </div>
+      )}
+
+      {isTestleserImageOverlayOpen && (
+        <div className="overlay-backdrop" onClick={() => setIsTestleserImageOverlayOpen(false)}>
+          <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
+            <h2>Testleser-Bildeinstellungen</h2>
+            <label>
+              Datei auswählen
+              <input type="file" accept="image/*" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadTestleserImage(selectedFile); event.currentTarget.value = ""; }} />
+              {isUploadingTestleserImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
+            </label>
+            <div>
+              <span className="block text-xs mb-1">Sichtbarkeit</span>
+              <VisibilityToggle value={testleserProfile.profileImage.visibility} onChange={(visibility) => setTestleserProfile((current) => ({ ...current, profileImage: { ...current.profileImage, visibility } }))} />
+            </div>
+            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab" style={testleserImagePreviewStyle} onPointerDown={onTestleserImagePointerDown} onPointerMove={onTestleserImagePointerMove} onPointerUp={onTestleserImagePointerUp} onPointerCancel={onTestleserImagePointerUp}>
+              {!testleserProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            </div>
+            <div className="grid gap-2.5">
+              <label>
+                Zoom
+                <input type="range" min={1} max={3} step={0.1} value={testleserProfile.profileImage.crop.zoom} onChange={(event) => setTestleserProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, zoom: Number(event.target.value) } } }))} />
+              </label>
+            </div>
+            <button type="button" className="btn" onClick={() => setIsTestleserImageOverlayOpen(false)}>Fertig</button>
+          </section>
+        </div>
+      )}
+
+      {isLektorenImageOverlayOpen && (
+        <div className="overlay-backdrop" onClick={() => setIsLektorenImageOverlayOpen(false)}>
+          <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
+            <h2>Lektoren-Bildeinstellungen</h2>
+            <label>
+              Datei auswählen
+              <input type="file" accept="image/*" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadLektorenImage(selectedFile); event.currentTarget.value = ""; }} />
+              {isUploadingLektorenImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
+            </label>
+            <div>
+              <span className="block text-xs mb-1">Sichtbarkeit</span>
+              <VisibilityToggle value={lektorenProfile.profileImage.visibility} onChange={(visibility) => setLektorenProfile((current) => ({ ...current, profileImage: { ...current.profileImage, visibility } }))} />
+            </div>
+            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab" style={lektorenImagePreviewStyle} onPointerDown={onLektorenImagePointerDown} onPointerMove={onLektorenImagePointerMove} onPointerUp={onLektorenImagePointerUp} onPointerCancel={onLektorenImagePointerUp}>
+              {!lektorenProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            </div>
+            <div className="grid gap-2.5">
+              <label>
+                Zoom
+                <input type="range" min={1} max={3} step={0.1} value={lektorenProfile.profileImage.crop.zoom} onChange={(event) => setLektorenProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, zoom: Number(event.target.value) } } }))} />
+              </label>
+            </div>
+            <button type="button" className="btn" onClick={() => setIsLektorenImageOverlayOpen(false)}>Fertig</button>
           </section>
         </div>
       )}

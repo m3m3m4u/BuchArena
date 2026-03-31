@@ -56,3 +56,17 @@ export type PollDocument = {
   votes: PollVote[];
   createdAt: Date;
 };
+
+/* ── Tauschbörse ── */
+
+export type TauschStatus = "offen" | "reserviert" | "abgeschlossen";
+
+export type TauschDocument = {
+  _id?: ObjectId;
+  authorUsername: string;
+  title: string;
+  description: string;
+  category: string;
+  status: TauschStatus;
+  createdAt: Date;
+};

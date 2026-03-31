@@ -244,6 +244,7 @@ export default function DiskussionenPage() {
           <h1>Diskussionen</h1>
           <div className="flex gap-2">
             <Link href="/quiz" className="btn">Quiz</Link>
+            <Link href="/tauschboerse" className="btn">Tauschbörse</Link>
             <button className="btn" onClick={() => setShowPollOverlay(true)}>
               Neue Abstimmung
             </button>

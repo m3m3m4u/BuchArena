@@ -273,6 +273,37 @@ h1 { margin: 0; }
   border-color: var(--color-arena-yellow);
 }
 
+/* ── Header navigation links ── */
+.header-link-public {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 4px;
+  text-decoration: none;
+  color: #fff;
+  transition: background 0.15s, color 0.15s;
+}
+.header-link-public:hover {
+  background: var(--color-arena-yellow);
+  color: var(--color-arena-blue);
+}
+
+.header-link-member {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 4px;
+  text-decoration: none;
+  color: var(--color-arena-blue);
+  transition: background 0.15s, color 0.15s;
+}
+.header-link-member:hover {
+  background: var(--color-arena-blue);
+  color: var(--color-arena-yellow);
+}
+
 /* ── Draggable image preview ── */
 .draggable { cursor: grab; touch-action: none; user-select: none; }
 .draggable:active { cursor: grabbing; }
