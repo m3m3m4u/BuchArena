@@ -49,6 +49,7 @@ function sanitizeLektorenProfile(
   const profileImage = source.profileImage ?? base.profileImage;
 
   return {
+    deaktiviert: typeof source.deaktiviert === "boolean" ? source.deaktiviert : false,
     profileImage: {
       value: (profileImage.value ?? "").trim().slice(0, 1000),
       visibility: sanitizeVisibility(profileImage.visibility, base.profileImage.visibility),

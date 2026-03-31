@@ -41,6 +41,7 @@ function sanitizeProfile(input: ProfileData | undefined): ProfileData {
   const crop = source.profileImage?.crop ?? base.profileImage.crop;
 
   return {
+    deaktiviert: typeof source.deaktiviert === "boolean" ? source.deaktiviert : false,
     profileImage: {
       value: (source.profileImage?.value ?? "").trim().slice(0, 500),
       visibility: sanitizeVisibility(source.profileImage?.visibility, base.profileImage.visibility),

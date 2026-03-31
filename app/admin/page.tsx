@@ -16,6 +16,8 @@ type UserListEntry = {
   hasProfile?: boolean;
   hasSpeakerProfile?: boolean;
   hasBloggerProfile?: boolean;
+  hasTestleserProfile?: boolean;
+  hasLektorenProfile?: boolean;
   bookCount?: number;
   createdAt?: string | null;
   lastOnline?: string | null;
@@ -82,6 +84,11 @@ export default function AdminPage() {
 
   /* ── Haupt-Reiter ── */
   const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "users" | "newsletter">("bdw");
+
+  /* ── User-Suche & Paginierung ── */
+  const [userSearch, setUserSearch] = useState("");
+  const [userPage, setUserPage] = useState(1);
+  const usersPerPage = 25;
 
   /* ── Benutzername ändern ── */
   const [renameTarget, setRenameTarget] = useState<string | null>(null);
@@ -647,8 +654,30 @@ export default function AdminPage() {
           <p>Lade Benutzer ...</p>
         ) : (account.role !== "SUPERADMIN" && account.role !== "ADMIN") ? (
           <p className="text-red-700">Nur Admins dürfen diese Seite sehen.</p>
-        ) : (
+        ) : (() => {
+          const searchLower = userSearch.toLowerCase();
+          const filteredUsers = searchLower
+            ? users.filter((u) => u.username.toLowerCase().includes(searchLower) || u.email.toLowerCase().includes(searchLower))
+            : users;
+          const totalPages = Math.max(1, Math.ceil(filteredUsers.length / usersPerPage));
+          const clampedPage = Math.min(userPage, totalPages);
+          const pagedUsers = filteredUsers.slice((clampedPage - 1) * usersPerPage, clampedPage * usersPerPage);
+
+          return (
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            {/* Suchfeld */}
+            <div className="mb-3 flex gap-2 items-center flex-wrap">
+              <input
+                type="text"
+                className="input-base flex-1"
+                placeholder="Benutzer suchen (Name oder E-Mail) …"
+                value={userSearch}
+                onChange={(e) => { setUserSearch(e.target.value); setUserPage(1); }}
+                style={{ minWidth: 200, maxWidth: 400 }}
+              />
+              <span className="text-xs text-arena-muted">{filteredUsers.length} von {users.length} Benutzern</span>
+            </div>
+
             {/* Desktop-Tabelle */}
             <table className="hidden sm:table w-full border-collapse text-[0.85rem]" style={{ minWidth: "900px" }}>
               <thead>
@@ -662,7 +691,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => {
+                {pagedUsers.map((user) => {
                   const isDeactivated = user.status === "deactivated";
                   const isSuperAdmin = user.role === "SUPERADMIN";
                   const isAdmin = user.role === "ADMIN";
@@ -723,6 +752,28 @@ export default function AdminPage() {
                             title={user.hasBloggerProfile ? "Bloggerprofil ausgefüllt" : "Bloggerprofil leer"}
                           >
                             📝 Blogger {user.hasBloggerProfile ? "✓" : "✗"}
+                          </Link>
+                          <Link
+                            href={`/profil?user=${encodeURIComponent(user.username)}&tab=testleser`}
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                              user.hasTestleserProfile
+                                ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            }`}
+                            title={user.hasTestleserProfile ? "Testleserprofil ausgefüllt" : "Testleserprofil leer"}
+                          >
+                            📖 Testleser {user.hasTestleserProfile ? "✓" : "✗"}
+                          </Link>
+                          <Link
+                            href={`/profil?user=${encodeURIComponent(user.username)}&tab=lektoren`}
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                              user.hasLektorenProfile
+                                ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            }`}
+                            title={user.hasLektorenProfile ? "Lektorenprofil ausgefüllt" : "Lektorenprofil leer"}
+                          >
+                            🔍 Lektor {user.hasLektorenProfile ? "✓" : "✗"}
                           </Link>
                           <Link
                             href={`/profil?user=${encodeURIComponent(user.username)}&tab=buecher`}
@@ -815,7 +866,7 @@ export default function AdminPage() {
 
             {/* Mobile Card-Liste */}
             <div className="sm:hidden grid gap-2.5">
-              {users.map((user) => {
+              {pagedUsers.map((user) => {
                 const isDeactivated = user.status === "deactivated";
                 const isSuperAdmin = user.role === "SUPERADMIN";
                 const isAdmin = user.role === "ADMIN";
@@ -869,6 +920,26 @@ export default function AdminPage() {
                         }`}
                       >
                         📝 Blogger {user.hasBloggerProfile ? "✓" : "✗"}
+                      </Link>
+                      <Link
+                        href={`/profil?user=${encodeURIComponent(user.username)}&tab=testleser`}
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                          user.hasTestleserProfile
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        📖 Testleser {user.hasTestleserProfile ? "✓" : "✗"}
+                      </Link>
+                      <Link
+                        href={`/profil?user=${encodeURIComponent(user.username)}&tab=lektoren`}
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium no-underline ${
+                          user.hasLektorenProfile
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        🔍 Lektor {user.hasLektorenProfile ? "✓" : "✗"}
                       </Link>
                       <Link
                         href={`/profil?user=${encodeURIComponent(user.username)}&tab=buecher`}
@@ -953,8 +1024,18 @@ export default function AdminPage() {
                 );
               })}
             </div>
+
+            {/* Paginierung */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <button type="button" className="btn btn-sm" disabled={clampedPage <= 1} onClick={() => setUserPage(clampedPage - 1)}>← Zurück</button>
+                <span className="text-sm text-arena-muted">Seite {clampedPage} / {totalPages}</span>
+                <button type="button" className="btn btn-sm" disabled={clampedPage >= totalPages} onClick={() => setUserPage(clampedPage + 1)}>Weiter →</button>
+              </div>
+            )}
           </div>
-        )}
+          );
+        })()}
           </>
         )}
 

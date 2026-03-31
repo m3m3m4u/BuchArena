@@ -118,6 +118,53 @@ function ProfilPageInner() {
     startCropY: number;
   } | null>(null);
 
+  /* ── Dirty-Tracking: Snapshots nach Laden/Speichern ── */
+  const savedProfileSnap = useRef("");
+  const savedSpeakerSnap = useRef("");
+  const savedBloggerSnap = useRef("");
+  const savedTestleserSnap = useRef("");
+  const savedLektorenSnap = useRef("");
+
+  function isCurrentTabDirty(): boolean {
+    switch (activeTab) {
+      case "autor":    return JSON.stringify(profile) !== savedProfileSnap.current;
+      case "sprecher": return JSON.stringify(speakerProfile) !== savedSpeakerSnap.current;
+      case "blogger":  return JSON.stringify(bloggerProfile) !== savedBloggerSnap.current;
+      case "testleser":return JSON.stringify(testleserProfile) !== savedTestleserSnap.current;
+      case "lektoren": return JSON.stringify(lektorenProfile) !== savedLektorenSnap.current;
+      default:         return false;
+    }
+  }
+
+  function isAnyTabDirty(): boolean {
+    return (
+      JSON.stringify(profile) !== savedProfileSnap.current ||
+      JSON.stringify(speakerProfile) !== savedSpeakerSnap.current ||
+      JSON.stringify(bloggerProfile) !== savedBloggerSnap.current ||
+      JSON.stringify(testleserProfile) !== savedTestleserSnap.current ||
+      JSON.stringify(lektorenProfile) !== savedLektorenSnap.current
+    );
+  }
+
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (isAnyTabDirty()) {
+        e.preventDefault();
+      }
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  });
+
+  function handleTabSwitch(tab: ProfileTab) {
+    if (tab === activeTab) return;
+    if (isCurrentTabDirty()) {
+      if (!confirm("Du hast ungespeicherte Änderungen. Trotzdem wechseln?")) return;
+    }
+    setActiveTab(tab);
+    setMessage("");
+  }
+
   const targetUsername =
     account?.role === "SUPERADMIN" && requestedUser ? requestedUser : account?.username ?? "";
 
@@ -170,11 +217,21 @@ function ProfilPageInner() {
           throw new Error("Profil konnte nicht geladen werden.");
         }
 
-        setProfile({ ...createDefaultProfile(), ...data.profile });
-        setSpeakerProfile({ ...createDefaultSpeakerProfile(), ...data.speakerProfile });
-        setBloggerProfile({ ...createDefaultBloggerProfile(), ...data.bloggerProfile });
-        setTestleserProfile({ ...createDefaultTestleserProfile(), ...data.testleserProfile });
-        setLektorenProfile({ ...createDefaultLektorenProfile(), ...data.lektorenProfile });
+        const loadedProfile = { ...createDefaultProfile(), ...data.profile };
+        const loadedSpeaker = { ...createDefaultSpeakerProfile(), ...data.speakerProfile };
+        const loadedBlogger = { ...createDefaultBloggerProfile(), ...data.bloggerProfile };
+        const loadedTestleser = { ...createDefaultTestleserProfile(), ...data.testleserProfile };
+        const loadedLektoren = { ...createDefaultLektorenProfile(), ...data.lektorenProfile };
+        setProfile(loadedProfile);
+        setSpeakerProfile(loadedSpeaker);
+        setBloggerProfile(loadedBlogger);
+        setTestleserProfile(loadedTestleser);
+        setLektorenProfile(loadedLektoren);
+        savedProfileSnap.current = JSON.stringify(loadedProfile);
+        savedSpeakerSnap.current = JSON.stringify(loadedSpeaker);
+        savedBloggerSnap.current = JSON.stringify(loadedBlogger);
+        savedTestleserSnap.current = JSON.stringify(loadedTestleser);
+        savedLektorenSnap.current = JSON.stringify(loadedLektoren);
         setNewsletterOptIn(!!data.newsletterOptIn);
         setDisplayName(data.displayName ?? "");
       } catch {
@@ -214,9 +271,8 @@ function ProfilPageInner() {
 
       if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
       setMessage(data.message ?? "Profil gespeichert.");
+      savedProfileSnap.current = JSON.stringify(profile);
     } catch {
-      setIsError(true);
-      setMessage("Profil konnte nicht gespeichert werden.");
     } finally {
       setIsSaving(false);
     }
@@ -245,6 +301,7 @@ function ProfilPageInner() {
       }
 
       setMessage(data.message ?? "Sprecherprofil gespeichert.");
+      savedSpeakerSnap.current = JSON.stringify(speakerProfile);
     } catch {
       setIsError(true);
       setMessage("Sprecherprofil konnte nicht gespeichert werden.");
@@ -276,6 +333,7 @@ function ProfilPageInner() {
       }
 
       setMessage(data.message ?? "Bloggerprofil gespeichert.");
+      savedBloggerSnap.current = JSON.stringify(bloggerProfile);
     } catch {
       setIsError(true);
       setMessage("Bloggerprofil konnte nicht gespeichert werden.");
@@ -307,6 +365,7 @@ function ProfilPageInner() {
       }
 
       setMessage(data.message ?? "Testleserprofil gespeichert.");
+      savedTestleserSnap.current = JSON.stringify(testleserProfile);
     } catch {
       setIsError(true);
       setMessage("Testleserprofil konnte nicht gespeichert werden.");
@@ -338,6 +397,7 @@ function ProfilPageInner() {
       }
 
       setMessage(data.message ?? "Lektorenprofil gespeichert.");
+      savedLektorenSnap.current = JSON.stringify(lektorenProfile);
     } catch {
       setIsError(true);
       setMessage("Lektorenprofil konnte nicht gespeichert werden.");
@@ -736,7 +796,7 @@ function ProfilPageInner() {
     if (lektorenDragStateRef.current?.pointerId === event.pointerId) { lektorenDragStateRef.current = null; event.currentTarget.releasePointerCapture(event.pointerId); }
   }
 
-  function updateVisibility(field: keyof ProfileData, visibility: Visibility) {
+  function updateVisibility(field: keyof Omit<ProfileData, "deaktiviert">, visibility: Visibility) {
     setProfile((current) => ({
       ...current,
       [field]: {
@@ -873,49 +933,49 @@ function ProfilPageInner() {
           <button
             type="button"
             className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "autor" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
-            onClick={() => { setActiveTab("autor"); setMessage(""); }}
+            onClick={() => handleTabSwitch("autor")}
           >
             Autor
           </button>
           <button
             type="button"
             className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "sprecher" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
-            onClick={() => { setActiveTab("sprecher"); setMessage(""); }}
+            onClick={() => handleTabSwitch("sprecher")}
           >
             Sprecher
           </button>
           <button
             type="button"
             className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "blogger" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
-            onClick={() => { setActiveTab("blogger"); setMessage(""); }}
+            onClick={() => handleTabSwitch("blogger")}
           >
             Blogger
           </button>
           <button
             type="button"
             className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "testleser" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
-            onClick={() => { setActiveTab("testleser"); setMessage(""); }}
+            onClick={() => handleTabSwitch("testleser")}
           >
             Testleser
           </button>
           <button
             type="button"
             className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "lektoren" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
-            onClick={() => { setActiveTab("lektoren"); setMessage(""); }}
+            onClick={() => handleTabSwitch("lektoren")}
           >
             Lektoren
           </button>
           <button
             type="button"
             className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "buecher" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
-            onClick={() => { setActiveTab("buecher"); setMessage(""); }}
+            onClick={() => handleTabSwitch("buecher")}
           >
             Bücher
           </button>
           <button
             type="button"
             className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "konto" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
-            onClick={() => { setActiveTab("konto"); setMessage(""); }}
+            onClick={() => handleTabSwitch("konto")}
           >
             Konto
           </button>
@@ -927,6 +987,39 @@ function ProfilPageInner() {
         <p className="text-arena-muted text-[0.95rem]">
           Fülle dein Autorenprofil aus. Öffentlich sichtbare Felder werden auf deiner Autorenseite angezeigt.
         </p>
+
+        {/* Profil deaktivieren */}
+        <div style={{ background: profile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+          <div>
+            <span className="text-sm font-semibold">{profile.deaktiviert ? "🚫 Autorenprofil ist deaktiviert" : "✅ Autorenprofil wird angezeigt"}</span>
+            <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: profile.deaktiviert ? "#dc2626" : "#16a34a" }}>
+              {profile.deaktiviert ? "Dein Autorenprofil ist momentan nicht sichtbar." : "Dein Autorenprofil ist in der Übersicht sichtbar."}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!profile.deaktiviert}
+            className="toggle-switch"
+            style={{
+              width: 48, height: 26, borderRadius: 13, border: "none",
+              background: profile.deaktiviert ? "#dc2626" : "#ccc",
+              position: "relative", cursor: "pointer", flexShrink: 0,
+              transition: "background 0.2s",
+            }}
+            onClick={() => setProfile((c) => ({ ...c, deaktiviert: !c.deaktiviert }))}
+          >
+            <span style={{
+              position: "absolute", top: 3, left: profile.deaktiviert ? 24 : 3,
+              width: 20, height: 20, borderRadius: "50%", background: "#fff",
+              transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+            }} />
+          </button>
+        </div>
+
+        <button type="button" className="btn" onClick={saveProfile} disabled={isSaving}>
+          {isSaving ? "Speichern ..." : "Profil speichern"}
+        </button>
 
         <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
           <button
@@ -940,18 +1033,12 @@ function ProfilPageInner() {
           </button>
         </div>
 
-        <FieldWithVisibility
-          label="Name oder Pseudonym"
-          value={profile.name.value}
-          visibility={profile.name.visibility}
-          onValueChange={(value) =>
-            setProfile((current) => ({
-              ...current,
-              name: { ...current.name, value },
-            }))
-          }
-          onVisibilityChange={(visibility) => updateVisibility("name", visibility)}
-        />
+        <label className="grid gap-1 text-[0.95rem]">
+          Name oder Pseudonym <span className="text-xs text-arena-muted">(immer öffentlich)</span>
+          <input className="input-base" value={profile.name.value} onChange={(e) =>
+            setProfile((current) => ({ ...current, name: { value: e.target.value, visibility: "public" } }))
+          } />
+        </label>
 
         <FieldWithVisibility
           label="Motto"
@@ -1221,6 +1308,39 @@ function ProfilPageInner() {
           Fülle dein Profil als Hörbuchsprecher aus. Öffentlich sichtbare Felder werden auf deiner Sprecherseite angezeigt.
         </p>
 
+        {/* Profil deaktivieren */}
+        <div style={{ background: speakerProfile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+          <div>
+            <span className="text-sm font-semibold">{speakerProfile.deaktiviert ? "🚫 Sprecherprofil ist deaktiviert" : "✅ Sprecherprofil wird angezeigt"}</span>
+            <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: speakerProfile.deaktiviert ? "#dc2626" : "#16a34a" }}>
+              {speakerProfile.deaktiviert ? "Dein Sprecherprofil ist momentan nicht sichtbar." : "Dein Sprecherprofil ist in der Übersicht sichtbar."}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!speakerProfile.deaktiviert}
+            className="toggle-switch"
+            style={{
+              width: 48, height: 26, borderRadius: 13, border: "none",
+              background: speakerProfile.deaktiviert ? "#dc2626" : "#ccc",
+              position: "relative", cursor: "pointer", flexShrink: 0,
+              transition: "background 0.2s",
+            }}
+            onClick={() => setSpeakerProfile((c) => ({ ...c, deaktiviert: !c.deaktiviert }))}
+          >
+            <span style={{
+              position: "absolute", top: 3, left: speakerProfile.deaktiviert ? 24 : 3,
+              width: 20, height: 20, borderRadius: "50%", background: "#fff",
+              transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+            }} />
+          </button>
+        </div>
+
+        <button type="button" className="btn" onClick={saveSpeakerProfile} disabled={isSavingSpeaker}>
+          {isSavingSpeaker ? "Speichern ..." : "Sprecherprofil speichern"}
+        </button>
+
         <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
           <button
             type="button"
@@ -1233,17 +1353,12 @@ function ProfilPageInner() {
           </button>
         </div>
 
-        <FieldWithVisibility
-          label="Name"
-          value={speakerProfile.name.value}
-          visibility={speakerProfile.name.visibility}
-          onValueChange={(value) =>
-            setSpeakerProfile((c) => ({ ...c, name: { ...c.name, value } }))
-          }
-          onVisibilityChange={(visibility) =>
-            setSpeakerProfile((c) => ({ ...c, name: { ...c.name, visibility } }))
-          }
-        />
+        <label className="grid gap-1 text-[0.95rem]">
+          Name <span className="text-xs text-arena-muted">(immer öffentlich)</span>
+          <input className="input-base" value={speakerProfile.name.value} onChange={(e) =>
+            setSpeakerProfile((c) => ({ ...c, name: { value: e.target.value, visibility: "public" } }))
+          } />
+        </label>
 
         <FieldWithVisibility
           label="Ort"
@@ -1469,6 +1584,39 @@ function ProfilPageInner() {
           Fülle dein Profil als Buchblogger aus. Öffentlich sichtbare Felder werden auf deiner Bloggerseite angezeigt.
         </p>
 
+        {/* Profil deaktivieren */}
+        <div style={{ background: bloggerProfile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+          <div>
+            <span className="text-sm font-semibold">{bloggerProfile.deaktiviert ? "🚫 Bloggerprofil ist deaktiviert" : "✅ Bloggerprofil wird angezeigt"}</span>
+            <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: bloggerProfile.deaktiviert ? "#dc2626" : "#16a34a" }}>
+              {bloggerProfile.deaktiviert ? "Dein Bloggerprofil ist momentan nicht sichtbar." : "Dein Bloggerprofil ist in der Übersicht sichtbar."}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!bloggerProfile.deaktiviert}
+            className="toggle-switch"
+            style={{
+              width: 48, height: 26, borderRadius: 13, border: "none",
+              background: bloggerProfile.deaktiviert ? "#dc2626" : "#ccc",
+              position: "relative", cursor: "pointer", flexShrink: 0,
+              transition: "background 0.2s",
+            }}
+            onClick={() => setBloggerProfile((c) => ({ ...c, deaktiviert: !c.deaktiviert }))}
+          >
+            <span style={{
+              position: "absolute", top: 3, left: bloggerProfile.deaktiviert ? 24 : 3,
+              width: 20, height: 20, borderRadius: "50%", background: "#fff",
+              transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+            }} />
+          </button>
+        </div>
+
+        <button type="button" className="btn" onClick={saveBloggerProfile} disabled={isSavingBlogger}>
+          {isSavingBlogger ? "Speichern ..." : "Bloggerprofil speichern"}
+        </button>
+
         <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
           <button
             type="button"
@@ -1481,17 +1629,12 @@ function ProfilPageInner() {
           </button>
         </div>
 
-        <FieldWithVisibility
-          label="Name"
-          value={bloggerProfile.name.value}
-          visibility={bloggerProfile.name.visibility}
-          onValueChange={(value) =>
-            setBloggerProfile((c) => ({ ...c, name: { ...c.name, value } }))
-          }
-          onVisibilityChange={(visibility) =>
-            setBloggerProfile((c) => ({ ...c, name: { ...c.name, visibility } }))
-          }
-        />
+        <label className="grid gap-1 text-[0.95rem]">
+          Name <span className="text-xs text-arena-muted">(immer öffentlich)</span>
+          <input className="input-base" value={bloggerProfile.name.value} onChange={(e) =>
+            setBloggerProfile((c) => ({ ...c, name: { value: e.target.value, visibility: "public" } }))
+          } />
+        </label>
 
         <FieldWithVisibility
           label="Motto"
@@ -1698,6 +1841,39 @@ function ProfilPageInner() {
           Fülle dein Profil als Testleser aus. Öffentlich sichtbare Felder werden auf deiner Testleserseite angezeigt.
         </p>
 
+        {/* Profil deaktivieren */}
+        <div style={{ background: testleserProfile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+          <div>
+            <span className="text-sm font-semibold">{testleserProfile.deaktiviert ? "🚫 Testleserprofil ist deaktiviert" : "✅ Testleserprofil wird angezeigt"}</span>
+            <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: testleserProfile.deaktiviert ? "#dc2626" : "#16a34a" }}>
+              {testleserProfile.deaktiviert ? "Dein Testleserprofil ist momentan nicht sichtbar." : "Dein Testleserprofil ist in der Übersicht sichtbar."}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!testleserProfile.deaktiviert}
+            className="toggle-switch"
+            style={{
+              width: 48, height: 26, borderRadius: 13, border: "none",
+              background: testleserProfile.deaktiviert ? "#dc2626" : "#ccc",
+              position: "relative", cursor: "pointer", flexShrink: 0,
+              transition: "background 0.2s",
+            }}
+            onClick={() => setTestleserProfile((c) => ({ ...c, deaktiviert: !c.deaktiviert }))}
+          >
+            <span style={{
+              position: "absolute", top: 3, left: testleserProfile.deaktiviert ? 24 : 3,
+              width: 20, height: 20, borderRadius: "50%", background: "#fff",
+              transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+            }} />
+          </button>
+        </div>
+
+        <button type="button" className="btn" onClick={saveTestleserProfile} disabled={isSavingTestleser}>
+          {isSavingTestleser ? "Speichern ..." : "Testleserprofil speichern"}
+        </button>
+
         <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
           <button type="button" className="border-0 bg-transparent p-0 m-0 cursor-pointer" onClick={() => setIsTestleserImageOverlayOpen(true)}>
             <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border" style={testleserImagePreviewStyle}>
@@ -1706,13 +1882,12 @@ function ProfilPageInner() {
           </button>
         </div>
 
-        <FieldWithVisibility
-          label="Name"
-          value={testleserProfile.name.value}
-          visibility={testleserProfile.name.visibility}
-          onValueChange={(value) => setTestleserProfile((c) => ({ ...c, name: { ...c.name, value } }))}
-          onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, name: { ...c.name, visibility } }))}
-        />
+        <label className="grid gap-1 text-[0.95rem]">
+          Name <span className="text-xs text-arena-muted">(immer öffentlich)</span>
+          <input className="input-base" value={testleserProfile.name.value} onChange={(e) =>
+            setTestleserProfile((c) => ({ ...c, name: { value: e.target.value, visibility: "public" } }))
+          } />
+        </label>
 
         <div className="grid gap-1">
           <label className="text-sm font-semibold">Zu mir</label>
@@ -1792,6 +1967,39 @@ function ProfilPageInner() {
           Fülle dein Profil als Lektor aus. Öffentlich sichtbare Felder werden auf deiner Lektorenseite angezeigt.
         </p>
 
+        {/* Profil deaktivieren */}
+        <div style={{ background: lektorenProfile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+          <div>
+            <span className="text-sm font-semibold">{lektorenProfile.deaktiviert ? "🚫 Lektorenprofil ist deaktiviert" : "✅ Lektorenprofil wird angezeigt"}</span>
+            <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: lektorenProfile.deaktiviert ? "#dc2626" : "#16a34a" }}>
+              {lektorenProfile.deaktiviert ? "Dein Lektorenprofil ist momentan nicht sichtbar." : "Dein Lektorenprofil ist in der Übersicht sichtbar."}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!lektorenProfile.deaktiviert}
+            className="toggle-switch"
+            style={{
+              width: 48, height: 26, borderRadius: 13, border: "none",
+              background: lektorenProfile.deaktiviert ? "#dc2626" : "#ccc",
+              position: "relative", cursor: "pointer", flexShrink: 0,
+              transition: "background 0.2s",
+            }}
+            onClick={() => setLektorenProfile((c) => ({ ...c, deaktiviert: !c.deaktiviert }))}
+          >
+            <span style={{
+              position: "absolute", top: 3, left: lektorenProfile.deaktiviert ? 24 : 3,
+              width: 20, height: 20, borderRadius: "50%", background: "#fff",
+              transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+            }} />
+          </button>
+        </div>
+
+        <button type="button" className="btn" onClick={saveLektorenProfile} disabled={isSavingLektoren}>
+          {isSavingLektoren ? "Speichern ..." : "Lektorenprofil speichern"}
+        </button>
+
         <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
           <button type="button" className="border-0 bg-transparent p-0 m-0 cursor-pointer" onClick={() => setIsLektorenImageOverlayOpen(true)}>
             <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border" style={lektorenImagePreviewStyle}>
@@ -1800,13 +2008,12 @@ function ProfilPageInner() {
           </button>
         </div>
 
-        <FieldWithVisibility
-          label="Name"
-          value={lektorenProfile.name.value}
-          visibility={lektorenProfile.name.visibility}
-          onValueChange={(value) => setLektorenProfile((c) => ({ ...c, name: { ...c.name, value } }))}
-          onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, name: { ...c.name, visibility } }))}
-        />
+        <label className="grid gap-1 text-[0.95rem]">
+          Name <span className="text-xs text-arena-muted">(immer öffentlich)</span>
+          <input className="input-base" value={lektorenProfile.name.value} onChange={(e) =>
+            setLektorenProfile((c) => ({ ...c, name: { value: e.target.value, visibility: "public" } }))
+          } />
+        </label>
 
         <div className="grid gap-1">
           <label className="text-sm font-semibold">Zu mir</label>

@@ -20,6 +20,18 @@ function hasFilledBloggerProfile(bp: Record<string, unknown> | undefined | null)
   return !!(name?.value?.trim());
 }
 
+function hasFilledTestleserProfile(tp: Record<string, unknown> | undefined | null): boolean {
+  if (!tp) return false;
+  const name = tp.name as { value?: string } | undefined;
+  return !!(name?.value?.trim());
+}
+
+function hasFilledLektorenProfile(lp: Record<string, unknown> | undefined | null): boolean {
+  if (!lp) return false;
+  const name = lp.name as { value?: string } | undefined;
+  return !!(name?.value?.trim());
+}
+
 export async function POST() {
   try {
     const admin = await requireAdmin();
@@ -33,7 +45,7 @@ export async function POST() {
     const users = await getUsersCollection();
 
     const list = await users
-      .find({}, { projection: { _id: 0, username: 1, email: 1, role: 1, status: 1, createdAt: 1, lastOnline: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, newsletterOptIn: 1 } })
+      .find({}, { projection: { _id: 0, username: 1, email: 1, role: 1, status: 1, createdAt: 1, lastOnline: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, testleserProfile: 1, lektorenProfile: 1, newsletterOptIn: 1 } })
       .sort({ username: 1 })
       .limit(2000)
       .toArray();
@@ -55,6 +67,8 @@ export async function POST() {
       hasProfile: hasFilledProfile(u.profile as Record<string, unknown> | undefined),
       hasSpeakerProfile: hasFilledSpeakerProfile(u.speakerProfile as Record<string, unknown> | undefined),
       hasBloggerProfile: hasFilledBloggerProfile(u.bloggerProfile as Record<string, unknown> | undefined),
+      hasTestleserProfile: hasFilledTestleserProfile(u.testleserProfile as Record<string, unknown> | undefined),
+      hasLektorenProfile: hasFilledLektorenProfile(u.lektorenProfile as Record<string, unknown> | undefined),
       bookCount: bookCountMap.get(u.username) ?? 0,
       newsletterOptIn: !!(u as Record<string, unknown>).newsletterOptIn,
     }));

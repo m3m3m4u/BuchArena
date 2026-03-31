@@ -47,6 +47,8 @@ export async function GET() {
     for (const user of users) {
       // Solange der Name ausgefüllt ist, gilt das Profil als ausgefüllt
       if (!user.profile?.name?.value) continue;
+      // Deaktivierte Profile ausblenden
+      if (user.profile?.deaktiviert) continue;
 
       const displayName =
         user.displayName

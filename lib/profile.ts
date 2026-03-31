@@ -12,6 +12,7 @@ export type ProfileImageCrop = {
 };
 
 export type ProfileData = {
+  deaktiviert?: boolean;
   profileImage: {
     value: string;
     visibility: Visibility;
@@ -43,6 +44,7 @@ export type Sprechprobe = {
 };
 
 export type SpeakerProfileData = {
+  deaktiviert?: boolean;
   profileImage: {
     value: string;
     visibility: Visibility;
@@ -146,6 +148,7 @@ export function createDefaultProfile(): ProfileData {
 }
 
 export type BloggerProfileData = {
+  deaktiviert?: boolean;
   profileImage: {
     value: string;
     visibility: Visibility;
@@ -223,6 +226,7 @@ export function createDefaultBloggerProfile(): BloggerProfileData {
 }
 
 export type TestleserProfileData = {
+  deaktiviert?: boolean;
   profileImage: {
     value: string;
     visibility: Visibility;
@@ -271,6 +275,7 @@ export function createDefaultTestleserProfile(): TestleserProfileData {
 }
 
 export type LektorenProfileData = {
+  deaktiviert?: boolean;
   profileImage: {
     value: string;
     visibility: Visibility;

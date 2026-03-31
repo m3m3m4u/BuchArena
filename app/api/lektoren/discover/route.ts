@@ -31,6 +31,8 @@ export async function GET() {
       const lp = user.lektorenProfile ?? createDefaultLektorenProfile();
 
       if (!lp.name.value) continue;
+      // Deaktivierte Profile ausblenden
+      if (lp.deaktiviert) continue;
 
       const displayName =
         user.displayName

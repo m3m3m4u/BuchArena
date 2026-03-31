@@ -33,6 +33,8 @@ export async function GET() {
       const tp = user.testleserProfile ?? createDefaultTestleserProfile();
 
       if (!tp.name.value) continue;
+      // Deaktivierte Profile ausblenden
+      if (tp.deaktiviert) continue;
 
       const displayName =
         user.displayName

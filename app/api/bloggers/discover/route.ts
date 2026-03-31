@@ -36,6 +36,8 @@ export async function GET() {
 
       // Nur Blogger anzeigen, die mindestens den Namen ausgefüllt haben
       if (!bp.name.value) continue;
+      // Deaktivierte Profile ausblenden
+      if (bp.deaktiviert) continue;
 
       const displayName =
         user.displayName

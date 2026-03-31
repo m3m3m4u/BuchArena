@@ -34,6 +34,8 @@ export async function GET() {
 
       // Nur Sprecher anzeigen, die mindestens den Namen ausgefüllt haben
       if (!sp.name.value) continue;
+      // Deaktivierte Profile ausblenden
+      if (sp.deaktiviert) continue;
 
       const displayName =
         user.displayName
