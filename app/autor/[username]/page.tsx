@@ -253,7 +253,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
                     <article className="rounded-lg border border-arena-border p-3 hover:border-gray-500">
                       <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[600px]:grid-cols-1">
                         <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[120px]">
-                          {book.coverImageUrl ? <Image src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" /> : <span>Kein Cover</span>}
+                          {book.coverImageUrl ? <Image src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" unoptimized /> : <span>Kein Cover</span>}
                         </div>
                         <div className="min-w-0">
                           <h3 className="mb-1.5 mt-0">{book.title}</h3>
