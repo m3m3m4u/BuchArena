@@ -96,7 +96,7 @@ async function initializeDatabase(db: Db) {
     { projection: { _id: 1, passwordHash: 1, role: 1 } }
   );
 
-  const defaultPassword = "BuchArena!2024#Secure";
+  const defaultPassword = process.env.SUPERADMIN_PASSWORD ?? "BuchArena!2024#Secure";
 
   if (!existingSuperAdmin) {
     const passwordHash = await bcrypt.hash(defaultPassword, 12);
