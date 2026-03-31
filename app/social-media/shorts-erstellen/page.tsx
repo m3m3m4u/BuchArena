@@ -222,8 +222,12 @@ export default function ShortsErstellenPage() {
       return;
     }
     setError("");
-    const b64 = await compressImage(file);
-    setter(b64);
+    try {
+      const b64 = await compressImage(file);
+      setter(b64);
+    } catch {
+      setError("Das Bild konnte nicht verarbeitet werden. Bitte versuche ein anderes Format (JPEG oder PNG).");
+    }
   }
 
   /* ═══ SAVE / LOAD / SUBMIT ═══ */

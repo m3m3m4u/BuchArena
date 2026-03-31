@@ -306,9 +306,13 @@ export default function VorlageErstellenPage() {
       return;
     }
     setError("");
-    const b64 = await compressImage(file);
-    setter(b64);
-    setDirty(true);
+    try {
+      const b64 = await compressImage(file);
+      setter(b64);
+      setDirty(true);
+    } catch {
+      setError("Das Bild konnte nicht verarbeitet werden. Bitte versuche ein anderes Format (JPEG oder PNG).");
+    }
   }
 
   /* ═══ SAVE / LOAD / SUBMIT ═══ */
