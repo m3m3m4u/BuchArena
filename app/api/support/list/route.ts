@@ -4,7 +4,7 @@ import { getSupportCollection } from "@/lib/mongodb";
 export async function GET() {
   try {
     const support = await getSupportCollection();
-    const posts = await support.find({}).sort({ createdAt: -1 }).toArray();
+    const posts = await support.find({}).sort({ createdAt: -1 }).limit(200).toArray();
 
     const list = posts.map((p) => ({
       id: p._id.toString(),

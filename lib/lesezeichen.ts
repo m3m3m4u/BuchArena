@@ -277,13 +277,14 @@ export async function getLesezeichenHighscores(
   const userDocs = await users
     .find(
       { username: { $in: rows.map((r) => r.username) } },
-      { projection: { username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1 } },
+      { projection: { username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, displayName: 1 } },
     )
     .toArray();
 
   const nameMap = new Map<string, string>();
   for (const u of userDocs) {
     const name =
+      u.displayName ||
       u.profile?.name?.value ||
       u.speakerProfile?.name?.value ||
       u.bloggerProfile?.name?.value ||

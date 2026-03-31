@@ -15,6 +15,7 @@ export async function GET() {
         lastActivityAt: 1,
         createdAt: 1,
       })
+      .limit(500)
       .toArray();
 
     // Collect unique author usernames and look up their profiles
@@ -22,10 +23,10 @@ export async function GET() {
     const users = await getUsersCollection();
     const authorDocs = await users
       .find({ username: { $in: authorNames } })
-      .project({ username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1 })
+      .project({ username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, displayName: 1 })
       .toArray();
 
-    const profileMap = new Map<string, { hasProfile: boolean; hasSpeakerProfile: boolean; hasBloggerProfile: boolean }>();
+    const profileMap = new Map<string, { hasProfile: boolean; hasSpeakerProfile: boolean; hasBloggerProfile: boolean; displayName: string }>();
     for (const u of authorDocs) {
       const p = u.profile as Record<string, unknown> | undefined;
       const sp = u.speakerProfile as Record<string, unknown> | undefined;
@@ -34,6 +35,7 @@ export async function GET() {
         hasProfile: !!(p?.name as { value?: string } | undefined)?.value?.trim(),
         hasSpeakerProfile: !!(sp?.name as { value?: string } | undefined)?.value?.trim(),
         hasBloggerProfile: !!(bp?.name as { value?: string } | undefined)?.value?.trim(),
+        displayName: (u.displayName as string) || "",
       });
     }
 
@@ -42,6 +44,7 @@ export async function GET() {
       return {
         id: d._id.toString(),
         authorUsername: d.authorUsername,
+        displayName: profiles?.displayName ?? "",
         title: d.title,
         body: d.body,
         replyCount: d.replyCount ?? 0,

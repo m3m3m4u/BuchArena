@@ -39,6 +39,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Dateigröße begrenzen (50 MB)
+    if (file.size > 50 * 1024 * 1024) {
+      return NextResponse.json(
+        { message: "Die Datei darf maximal 50 MB groß sein." },
+        { status: 400 }
+      );
+    }
+
     const username = sanitizeUsername(account.username);
 
     // Store as sprechproben sub-directory

@@ -68,10 +68,9 @@ export async function POST(request: Request) {
       total: totalChunks,
     });
   } catch (error) {
-    const detail =
-      error instanceof Error ? error.message : "unbekannter Fehler";
+    console.error("Chunk-Upload error:", error instanceof Error ? error.message : error);
     return NextResponse.json(
-      { message: `Chunk-Upload fehlgeschlagen: ${detail}` },
+      { message: "Chunk-Upload fehlgeschlagen." },
       { status: 500 },
     );
   }
@@ -140,10 +139,9 @@ async function assembleVideo(uploadId: string, totalChunks: number) {
     });
   } catch (error) {
     await cleanupTemp(uploadId, totalChunks);
-    const detail =
-      error instanceof Error ? error.message : "unbekannter Fehler";
+    console.error("Video-Zusammenführung error:", error instanceof Error ? error.message : error);
     return NextResponse.json(
-      { message: `Video-Zusammenführung fehlgeschlagen: ${detail}` },
+      { message: "Video-Zusammenführung fehlgeschlagen." },
       { status: 500 },
     );
   }

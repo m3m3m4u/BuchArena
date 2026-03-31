@@ -6,6 +6,7 @@ import {
 } from "@/lib/bucharena-db";
 import { davPut } from "@/lib/bucharena-webdav";
 import { getServerAccount } from "@/lib/server-auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { ObjectId } from "mongodb";
 
 export const runtime = "nodejs";

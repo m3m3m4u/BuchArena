@@ -52,6 +52,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Ungültige Daten." }, { status: 400 });
     }
 
+    if (score < 0 || score > total || total > 1000) {
+      return NextResponse.json({ message: "Ungültige Punktzahl." }, { status: 400 });
+    }
+
     const db = await getDatabase();
     const col = db.collection<HighscoreDoc>("quiz_highscores");
 

@@ -24,8 +24,9 @@ export async function GET() {
           bloggerProfile: { $exists: true },
           $or: [{ status: { $exists: false } }, { status: "active" }],
         },
-        { projection: { username: 1, profile: 1, bloggerProfile: 1 } }
+        { projection: { username: 1, profile: 1, bloggerProfile: 1, displayName: 1 } }
       )
+      .limit(500)
       .toArray();
 
     const bloggers: BloggerDiscoverItem[] = [];
@@ -37,9 +38,11 @@ export async function GET() {
       if (!bp.name.value) continue;
 
       const displayName =
-        bp.name.visibility === "public" && bp.name.value
-          ? bp.name.value
-          : user.username;
+        user.displayName
+          ? user.displayName
+          : bp.name.visibility === "public" && bp.name.value
+            ? bp.name.value
+            : user.username;
 
       // Prefer blogger-specific image; fall back to general profile image
       let profileImageUrl = "";

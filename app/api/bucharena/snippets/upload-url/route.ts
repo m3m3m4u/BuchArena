@@ -5,11 +5,29 @@
  * niemals auf dem Client sichtbar.
  */
 import { NextResponse } from "next/server";
+import { getServerAccount } from "@/lib/server-auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json(
+        { success: false, error: "Nicht eingeloggt" },
+        { status: 401 },
+      );
+    }
+
+    // Rate-Limiting: max 20 Uploads pro Stunde
+    if (!checkRateLimit(`snippet-upload:${account.username}`, 20, 60 * 60 * 1000)) {
+      return NextResponse.json(
+        { success: false, error: "Zu viele Uploads. Bitte warte etwas." },
+        { status: 429 },
+      );
+    }
+
     const formData = await request.formData();
     const bookTitle = formData.get("bookTitle") as string | null;
     const file = formData.get("file") as File | null;

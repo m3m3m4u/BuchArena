@@ -9,6 +9,7 @@ import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 type DiscussionItem = {
   id: string;
   authorUsername: string;
+  displayName?: string;
   title: string;
   body: string;
   replyCount: number;
@@ -24,6 +25,7 @@ type PollVoteItem = { username: string; optionIndex: number };
 type PollItem = {
   id: string;
   authorUsername: string;
+  displayName?: string;
   question: string;
   options: string[];
   votes: PollVoteItem[];
@@ -284,7 +286,7 @@ export default function DiskussionenPage() {
                       </div>
                       <div className="flex items-center justify-between gap-2 text-sm text-arena-muted mt-1">
                         <span>
-                          von {d.authorUsername}{" "}
+                          von {d.displayName || d.authorUsername}{" "}
                           <RoleBadges username={d.authorUsername} hasProfile={d.hasProfile} hasSpeakerProfile={d.hasSpeakerProfile} hasBloggerProfile={d.hasBloggerProfile} />
                         </span>
                         <span className="text-xs text-arena-muted">
@@ -312,7 +314,7 @@ export default function DiskussionenPage() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-2 text-sm text-arena-muted mt-1">
-                      <span>von {poll.authorUsername}</span>
+                      <span>von {poll.displayName || poll.authorUsername}</span>
                       <span className="text-xs text-arena-muted">{timeAgo(poll.createdAt)}</span>
                     </div>
                   </div>
@@ -337,7 +339,7 @@ export default function DiskussionenPage() {
               <div>
                 <h2 className="m-0 mb-1">{poll.question}</h2>
                 <p className="text-sm text-arena-muted m-0">
-                  von {poll.authorUsername} · {timeAgo(poll.createdAt)} · {total} {total === 1 ? "Stimme" : "Stimmen"}
+                  von {poll.displayName || poll.authorUsername} · {timeAgo(poll.createdAt)} · {total} {total === 1 ? "Stimme" : "Stimmen"}
                 </p>
               </div>
 

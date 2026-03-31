@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getBucharenaSnippetsCollection } from "@/lib/bucharena-db";
 import { getServerAccount } from "@/lib/server-auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { davPut } from "@/lib/bucharena-webdav";
 
 export const runtime = "nodejs";
@@ -14,6 +15,15 @@ function sanitizeFileName(name: string): string {
 export async function POST(request: Request) {
   try {
     const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ success: false, error: "Nicht eingeloggt" }, { status: 401 });
+    }
+
+    // Rate-Limiting: max 10 Schnipsel pro Stunde
+    if (!checkRateLimit(`snippet:${account.username}`, 10, 60 * 60 * 1000)) {
+      return NextResponse.json({ success: false, error: "Zu viele Einreichungen. Bitte warte etwas." }, { status: 429 });
+    }
+
     const formData = await request.formData();
 
     const bookTitle = formData.get("bookTitle") as string;
@@ -85,6 +95,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Fehler beim Erstellen des Schnipsels:", error);
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unbekannter Fehler" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Schnipsel konnte nicht erstellt werden." }, { status: 500 });
   }
 }

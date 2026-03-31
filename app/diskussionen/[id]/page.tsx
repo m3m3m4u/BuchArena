@@ -14,6 +14,7 @@ type ReactionItem = {
 type ReplyItem = {
   id: string;
   authorUsername: string;
+  displayName?: string;
   body: string;
   createdAt: string;
   reactions: ReactionItem[];
@@ -26,6 +27,7 @@ type ReplyItem = {
 type DiscussionDetail = {
   id: string;
   authorUsername: string;
+  displayName?: string;
   title: string;
   body: string;
   replyCount: number;
@@ -438,7 +440,7 @@ export default function DiskussionDetailPage() {
                 <h1>{discussion.title}</h1>
                 <div className="flex items-center justify-between gap-2 text-sm text-arena-muted">
                   <span>
-                    von <strong>{discussion.authorUsername}</strong>{" "}
+                    von <strong>{discussion.displayName || discussion.authorUsername}</strong>{" "}
                     <RoleBadges username={discussion.authorUsername} hasProfile={discussion.hasProfile} hasSpeakerProfile={discussion.hasSpeakerProfile} hasBloggerProfile={discussion.hasBloggerProfile} />
                   </span>
                   <span className="text-xs text-arena-muted">
@@ -512,7 +514,7 @@ export default function DiskussionDetailPage() {
                           <article className="rounded-lg border border-arena-border-light p-3 ml-3 sm:ml-6">
                             <div className="flex items-center justify-between gap-2 mb-2">
                               <span>
-                                <strong>{reply.authorUsername}</strong>{" "}
+                                <strong>{reply.displayName || reply.authorUsername}</strong>{" "}
                                 <RoleBadges username={reply.authorUsername} hasProfile={reply.hasProfile} hasSpeakerProfile={reply.hasSpeakerProfile} hasBloggerProfile={reply.hasBloggerProfile} />
                               </span>
                               <span className="text-xs text-arena-muted">

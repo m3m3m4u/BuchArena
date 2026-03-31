@@ -54,18 +54,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
+    if (user.status === "deactivated") {
       return NextResponse.json(
         { message: "Ungültige Anmeldedaten." },
         { status: 401 }
       );
     }
 
-    if (user.status === "deactivated") {
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
       return NextResponse.json(
-        { message: "Dein Konto ist deaktiviert. Bitte wende dich an den Support." },
-        { status: 403 }
+        { message: "Ungültige Anmeldedaten." },
+        { status: 401 }
       );
     }
 

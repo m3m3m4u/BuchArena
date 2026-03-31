@@ -24,8 +24,10 @@ export default function AnalyticsTracker() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ page: pathname, referrer, username: account?.username || "" }),
-    }).catch(() => {
-      /* Tracking-Fehler still ignorieren */
+    }).catch((err) => {
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[Analytics] Track failed:", err);
+      }
     });
   }, [pathname]);
 

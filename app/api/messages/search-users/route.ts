@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * GET /api/messages/search-users?q=abc
@@ -12,6 +13,11 @@ export async function GET(req: NextRequest) {
     const user = await getServerAccount();
     if (!user) {
       return NextResponse.json({ users: [] }, { status: 401 });
+    }
+
+    // Rate-Limiting: max 60 Suchen pro Minute pro User
+    if (!checkRateLimit(`search-users:${user.username}`, 60, 60 * 1000)) {
+      return NextResponse.json({ users: [] }, { status: 429 });
     }
 
     const q = req.nextUrl.searchParams.get("q")?.trim() ?? "";
@@ -27,7 +33,7 @@ export async function GET(req: NextRequest) {
           username: { $regex: `^${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, $options: "i" },
           $or: [{ status: { $exists: false } }, { status: "active" }],
         },
-        { projection: { _id: 0, username: 1, profile: 1 } },
+        { projection: { _id: 0, username: 1, profile: 1, displayName: 1 } },
       )
       .sort({ username: 1 })
       .limit(15)
@@ -35,14 +41,18 @@ export async function GET(req: NextRequest) {
 
     const users = list
       .filter((u) => u.username !== user.username)
-      .map((u) => ({
-        username: u.username,
-        displayName:
-          u.profile?.name?.visibility === "public" && u.profile?.name?.value
-            ? u.profile.name.value
-            : u.username,
-        profileImage: u.profile?.profileImage?.value ?? "",
-      }));
+      .map((u) => {
+        const dn = (u as unknown as { displayName?: string }).displayName;
+        return {
+          username: u.username,
+          displayName:
+            dn ||
+            (u.profile?.name?.visibility === "public" && u.profile?.name?.value
+              ? u.profile.name.value
+              : u.username),
+          profileImage: u.profile?.profileImage?.value ?? "",
+        };
+      });
 
     return NextResponse.json({ users });
   } catch {

@@ -27,7 +27,7 @@ export async function GET() {
     const users = await usersCollection
       .find(
         { $or: [{ status: { $exists: false } }, { status: "active" }], username: { $not: { $regex: /^kopernikus$/i } } },
-        { projection: { username: 1, profile: 1, lastOnline: 1, speakerProfile: 1 } }
+        { projection: { username: 1, displayName: 1, profile: 1, lastOnline: 1, speakerProfile: 1 } }
       )
       .toArray();
 
@@ -49,9 +49,11 @@ export async function GET() {
       if (!user.profile?.name?.value) continue;
 
       const displayName =
-        user.profile.name.visibility === "public" && user.profile.name.value
-          ? user.profile.name.value
-          : user.username;
+        user.displayName
+          ? user.displayName
+          : user.profile.name.visibility === "public" && user.profile.name.value
+            ? user.profile.name.value
+            : user.username;
 
       const imgData = profileByUser.get(user.username);
       grouped.set(user.username, {

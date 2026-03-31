@@ -56,6 +56,30 @@ export async function POST(request: Request) {
       );
     }
 
+    // Dateigröße begrenzen (5 MB)
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { message: "Die Datei darf maximal 5 MB groß sein." },
+        { status: 400 }
+      );
+    }
+
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+    // Magic-Bytes prüfen (JPEG, PNG, GIF, WebP)
+    const magicBytes = fileBuffer.subarray(0, 12);
+    const isJpeg = magicBytes[0] === 0xFF && magicBytes[1] === 0xD8;
+    const isPng = magicBytes[0] === 0x89 && magicBytes[1] === 0x50 && magicBytes[2] === 0x4E && magicBytes[3] === 0x47;
+    const isGif = magicBytes[0] === 0x47 && magicBytes[1] === 0x49 && magicBytes[2] === 0x46;
+    const isWebp = magicBytes[0] === 0x52 && magicBytes[1] === 0x49 && magicBytes[2] === 0x46 && magicBytes[3] === 0x46
+      && magicBytes[8] === 0x57 && magicBytes[9] === 0x45 && magicBytes[10] === 0x42 && magicBytes[11] === 0x50;
+    if (!isJpeg && !isPng && !isGif && !isWebp) {
+      return NextResponse.json(
+        { message: "Ungültiges Bildformat. Erlaubt: JPEG, PNG, GIF, WebP." },
+        { status: 400 }
+      );
+    }
+
     const username = sanitizeUsername(account.username);
 
     const extension = inferExtension(file.name, file.type);
@@ -67,7 +91,6 @@ export async function POST(request: Request) {
     const client = getWebdavClient();
     await client.createDirectory(remoteDirPath, { recursive: true });
 
-    const fileBuffer = Buffer.from(await file.arrayBuffer());
     await client.putFileContents(remoteFilePath, fileBuffer, {
       overwrite: true,
     });
@@ -78,9 +101,9 @@ export async function POST(request: Request) {
       remotePath: remoteFilePath,
     });
   } catch (error) {
-    const detail = error instanceof Error ? error.message : "unbekannter Fehler";
+    console.error("Bild-Upload error:", error instanceof Error ? error.message : error);
     return NextResponse.json(
-      { message: `Bild-Upload fehlgeschlagen: ${detail}` },
+      { message: "Bild-Upload fehlgeschlagen." },
       { status: 500 }
     );
   }

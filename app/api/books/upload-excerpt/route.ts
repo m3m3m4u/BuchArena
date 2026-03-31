@@ -132,9 +132,9 @@ export async function POST(request: Request) {
       excerpt,
     });
   } catch (error) {
-    const detail = error instanceof Error ? error.message : "unbekannter Fehler";
+    console.error("Upload-Excerpt error:", error instanceof Error ? error.message : error);
     return NextResponse.json(
-      { message: `Textausschnitt konnte nicht hochgeladen werden: ${detail}` },
+      { message: "Textausschnitt konnte nicht hochgeladen werden." },
       { status: 500 }
     );
   }

@@ -9,6 +9,7 @@
  * Entscheidungen basieren auf dem `auth_token`-JWT.
  */
 
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
 import { getUsersCollection, type UserRole } from "@/lib/mongodb";
@@ -27,8 +28,11 @@ const JWT_EXPIRY = "7d";
 function getJwtSecret(): Uint8Array {
   const raw = process.env.JWT_SECRET;
   if (!raw) {
-    console.warn("⚠ JWT_SECRET nicht gesetzt – verwende Fallback. Bitte JWT_SECRET als Umgebungsvariable setzen!");
-    return new TextEncoder().encode("bucharena-fallback-jwt-secret-CHANGE-ME");
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("KRITISCH: JWT_SECRET muss in Production als Umgebungsvariable gesetzt sein!");
+    }
+    console.warn("⚠ JWT_SECRET nicht gesetzt – verwende Fallback (nur für Entwicklung).");
+    return new TextEncoder().encode("bucharena-dev-only-jwt-secret-DO-NOT-USE-IN-PRODUCTION");
   }
   return new TextEncoder().encode(raw);
 }
@@ -55,42 +59,21 @@ export async function createAuthToken(account: ServerAccount): Promise<string> {
  * Verifiziert die Signatur und prüft den User in der DB.
  * Gibt null zurück, wenn kein/ungültiger Token oder User nicht existiert.
  */
-export async function getServerAccount(): Promise<ServerAccount | null> {
+export const getServerAccount = cache(async (): Promise<ServerAccount | null> => {
   try {
     const cookieStore = await cookies();
 
-    // Zuerst neues JWT prüfen
     const token = cookieStore.get("auth_token")?.value;
-    if (token) {
-      const { payload } = await jwtVerify(token, getJwtSecret(), { issuer: JWT_ISSUER });
-      const p = payload as AuthTokenPayload;
-      if (!p.sub) return null;
+    if (!token) return null;
 
-      // DB-Verifikation: User existiert und ist aktiv
-      const users = await getUsersCollection();
-      const dbUser = await users.findOne(
-        { username: p.sub, status: { $ne: "deactivated" } },
-        { projection: { username: 1, email: 1, role: 1 } },
-      );
-      if (!dbUser) return null;
+    const { payload } = await jwtVerify(token, getJwtSecret(), { issuer: JWT_ISSUER });
+    const p = payload as AuthTokenPayload;
+    if (!p.sub) return null;
 
-      return {
-        username: dbUser.username,
-        email: dbUser.email,
-        role: dbUser.role as UserRole,
-      };
-    }
-
-    // Fallback: Legacy-Cookie (wird in Zukunft entfernt)
-    const raw = cookieStore.get("logged_in_account")?.value;
-    if (!raw) return null;
-    const parsed = JSON.parse(decodeURIComponent(raw)) as ServerAccount;
-    if (!parsed?.username) return null;
-
-    // Auch beim Legacy-Cookie: DB-Verifikation
+    // DB-Verifikation: User existiert und ist aktiv
     const users = await getUsersCollection();
     const dbUser = await users.findOne(
-      { username: parsed.username, status: { $ne: "deactivated" } },
+      { username: p.sub, status: { $ne: "deactivated" } },
       { projection: { username: 1, email: 1, role: 1 } },
     );
     if (!dbUser) return null;
@@ -103,7 +86,7 @@ export async function getServerAccount(): Promise<ServerAccount | null> {
   } catch {
     return null;
   }
-}
+});
 
 /**
  * Prüft ob der aktuelle User ein SUPERADMIN ist.

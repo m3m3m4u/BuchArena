@@ -33,10 +33,10 @@ export async function POST(request: Request) {
     const users = await getUsersCollection();
     const authorDocs = await users
       .find({ username: { $in: [...allAuthors] } })
-      .project({ username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1 })
+      .project({ username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, displayName: 1 })
       .toArray();
 
-    const profileMap = new Map<string, { hasProfile: boolean; hasSpeakerProfile: boolean; hasBloggerProfile: boolean }>();
+    const profileMap = new Map<string, { hasProfile: boolean; hasSpeakerProfile: boolean; hasBloggerProfile: boolean; displayName: string }>();
     for (const u of authorDocs) {
       const p = u.profile as Record<string, unknown> | undefined;
       const sp = u.speakerProfile as Record<string, unknown> | undefined;
@@ -45,6 +45,7 @@ export async function POST(request: Request) {
         hasProfile: !!(p?.name as { value?: string } | undefined)?.value?.trim(),
         hasSpeakerProfile: !!(sp?.name as { value?: string } | undefined)?.value?.trim(),
         hasBloggerProfile: !!(bp?.name as { value?: string } | undefined)?.value?.trim(),
+        displayName: (u.displayName as string) || "",
       });
     }
 
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
       return {
         id: r._id?.toString() ?? "",
         authorUsername: r.authorUsername,
+        displayName: rProfiles?.displayName ?? "",
         body: r.body,
         createdAt: r.createdAt,
         reactions: r.reactions ?? [],
@@ -69,6 +71,7 @@ export async function POST(request: Request) {
       discussion: {
         id: doc._id.toString(),
         authorUsername: doc.authorUsername,
+        displayName: authorProfiles?.displayName ?? "",
         title: doc.title,
         body: doc.body,
         replyCount: doc.replyCount ?? 0,

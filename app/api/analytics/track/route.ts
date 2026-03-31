@@ -41,12 +41,16 @@ export async function POST(request: NextRequest) {
     const collection = db.collection("analytics");
 
     const sanitizedUsername = typeof username === "string" ? username.slice(0, 100) : "";
+    // Username hashen für DSGVO-Konformität
+    const usernameHash = sanitizedUsername
+      ? createHash("sha256").update(sanitizedUsername).digest("hex").slice(0, 16)
+      : "";
 
     await collection.insertOne({
       page: sanitizedPage,
       referrer: sanitizedReferrer,
       visitorId,
-      username: sanitizedUsername,
+      username: usernameHash,
       timestamp: new Date(),
     });
 

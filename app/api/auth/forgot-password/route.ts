@@ -6,6 +6,11 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 type ForgotPayload = { email?: string };
 
+/** Hash a reset token with SHA-256 for safe storage. */
+function hashToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
 export async function POST(request: Request) {
   try {
     const ip = request.headers.get("x-forwarded-for") ?? "unknown";
@@ -42,11 +47,12 @@ export async function POST(request: Request) {
 
     // Zufälligen Token erzeugen (URL-sicherer Hex-String)
     const token = crypto.randomBytes(32).toString("hex");
+    const tokenHash = hashToken(token);
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 Stunde
 
     await users.updateOne(
       { email },
-      { $set: { resetToken: token, resetTokenExpiresAt: expiresAt } },
+      { $set: { resetToken: tokenHash, resetTokenExpiresAt: expiresAt } },
     );
 
     // Konfigurierte App-URL verwenden (nicht origin – kann hinter Proxy falsch sein)

@@ -16,6 +16,7 @@ export async function GET() {
     const raw = await books
       .find({})
       .sort({ createdAt: -1 })
+      .limit(500)
       .toArray();
 
     const allUsers = await usersCol

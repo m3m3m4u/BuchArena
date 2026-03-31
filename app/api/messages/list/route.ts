@@ -104,16 +104,17 @@ export async function GET(request: Request) {
     const userDocs = await usersCol
       .find(
         { username: { $in: partnerUsernames } },
-        { projection: { username: 1, profile: 1 } },
+        { projection: { username: 1, profile: 1, displayName: 1 } },
       )
       .toArray();
     const displayNameMap = new Map<string, string>();
     const profileImageMap = new Map<string, string>();
     for (const u of userDocs) {
       const name =
-        u.profile?.name?.visibility === "public" && u.profile?.name?.value
+        u.displayName ||
+        (u.profile?.name?.visibility === "public" && u.profile?.name?.value
           ? u.profile.name.value
-          : "";
+          : "");
       displayNameMap.set(u.username, name);
       profileImageMap.set(u.username, u.profile?.profileImage?.value ?? "");
     }

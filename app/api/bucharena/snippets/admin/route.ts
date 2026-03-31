@@ -12,7 +12,7 @@ export async function GET() {
     if (!admin) return NextResponse.json({ success: false, error: "Keine Berechtigung" }, { status: 403 });
 
     const col = await getBucharenaSnippetsCollection();
-    const snippets = await col.find().sort({ createdAt: -1 }).toArray();
+    const snippets = await col.find().sort({ createdAt: -1 }).limit(1000).toArray();
 
     const formatted = snippets.map((s) => ({
       id: s._id.toHexString(),
@@ -33,7 +33,7 @@ export async function GET() {
     return NextResponse.json({ success: true, snippets: formatted, count: formatted.length });
   } catch (error) {
     console.error("Fehler beim Laden der Schnipsel:", error);
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unbekannter Fehler" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Schnipsel konnten nicht geladen werden." }, { status: 500 });
   }
 }
 
@@ -64,7 +64,7 @@ export async function PUT(request: Request) {
     });
   } catch (error) {
     console.error("Fehler beim Aktualisieren:", error);
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unbekannter Fehler" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Schnipsel konnte nicht aktualisiert werden." }, { status: 500 });
   }
 }
 
@@ -89,6 +89,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: true, message: "Schnipsel erfolgreich gelöscht" });
   } catch (error) {
     console.error("Fehler beim Löschen:", error);
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unbekannter Fehler" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Schnipsel konnte nicht gelöscht werden." }, { status: 500 });
   }
 }

@@ -15,7 +15,7 @@ export async function POST() {
     }
 
     const col = await getLesezeichenCollection();
-    const allDocs = await col.find({}).toArray();
+    const allDocs = await col.find({}).limit(10000).toArray();
 
     let usersFixed = 0;
 

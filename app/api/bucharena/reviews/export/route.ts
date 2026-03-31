@@ -10,7 +10,7 @@ export async function GET() {
     if (!admin) return NextResponse.json({ success: false, error: "Keine Berechtigung" }, { status: 403 });
 
     const col = await getBucharenaReviewsCollection();
-    const reviews = await col.find().sort({ createdAt: -1 }).toArray();
+    const reviews = await col.find().sort({ createdAt: -1 }).limit(5000).toArray();
 
     const headers = ["Buchtitel", "Autor", "Instagram", "Rezension"];
     const rows = reviews.map((r) => [
@@ -32,6 +32,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Fehler beim Exportieren:", error);
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unbekannter Fehler" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Export fehlgeschlagen." }, { status: 500 });
   }
 }

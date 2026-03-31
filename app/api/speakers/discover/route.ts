@@ -22,8 +22,9 @@ export async function GET() {
           speakerProfile: { $exists: true },
           $or: [{ status: { $exists: false } }, { status: "active" }],
         },
-        { projection: { username: 1, profile: 1, speakerProfile: 1 } }
+        { projection: { username: 1, profile: 1, speakerProfile: 1, displayName: 1 } }
       )
+      .limit(500)
       .toArray();
 
     const speakers: SpeakerDiscoverItem[] = [];
@@ -35,9 +36,11 @@ export async function GET() {
       if (!sp.name.value) continue;
 
       const displayName =
-        sp.name.visibility === "public" && sp.name.value
-          ? sp.name.value
-          : user.username;
+        user.displayName
+          ? user.displayName
+          : sp.name.visibility === "public" && sp.name.value
+            ? sp.name.value
+            : user.username;
 
       // Prefer speaker-specific image; fall back to general profile image
       let profileImageUrl = "";

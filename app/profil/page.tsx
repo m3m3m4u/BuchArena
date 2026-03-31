@@ -23,6 +23,7 @@ type GetProfileResponse = {
   speakerProfile?: SpeakerProfileData;
   bloggerProfile?: BloggerProfileData;
   newsletterOptIn?: boolean;
+  displayName?: string;
 };
 
 const visibilityOptions: Array<{ value: Visibility; label: string }> = [
@@ -76,6 +77,8 @@ function ProfilPageInner() {
   const [isSavingAccount, setIsSavingAccount] = useState(false);
   const [newsletterOptIn, setNewsletterOptIn] = useState(false);
   const [isSavingNewsletter, setIsSavingNewsletter] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const [isSavingDisplayName, setIsSavingDisplayName] = useState(false);
   const dragStateRef = useRef<{
     pointerId: number;
     startX: number;
@@ -147,6 +150,7 @@ function ProfilPageInner() {
         setSpeakerProfile({ ...createDefaultSpeakerProfile(), ...data.speakerProfile });
         setBloggerProfile({ ...createDefaultBloggerProfile(), ...data.bloggerProfile });
         setNewsletterOptIn(!!data.newsletterOptIn);
+        setDisplayName(data.displayName ?? "");
       } catch {
         setIsError(true);
         setMessage("Profil konnte nicht geladen werden.");
@@ -701,7 +705,7 @@ function ProfilPageInner() {
         </div>
 
         <FieldWithVisibility
-          label="Name"
+          label="Name oder Pseudonym"
           value={profile.name.value}
           visibility={profile.name.visibility}
           onValueChange={(value) =>
@@ -1516,6 +1520,52 @@ function ProfilPageInner() {
                 transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
               }} />
             </button>
+          </div>
+
+          {/* ── Angezeigter Name ── */}
+          <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem" }}>
+            <span className="text-sm font-semibold">📝 Angezeigter Name</span>
+            <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+              Dieser Name wird bei Nachrichten, Lesezeichen und im Treffpunkt angezeigt.
+            </p>
+            <div className="flex gap-2 items-end">
+              <input
+                type="text"
+                className="input-base flex-1"
+                placeholder="z.\u00a0B. Dein Vorname oder Spitzname"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                maxLength={120}
+              />
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={isSavingDisplayName}
+                onClick={async () => {
+                  setIsSavingDisplayName(true);
+                  setMessage("");
+                  setIsError(false);
+                  try {
+                    const res = await fetch("/api/profile/display-name", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ displayName, ...(requestedUser ? { username: requestedUser } : {}) }),
+                    });
+                    const data = (await res.json()) as { message?: string };
+                    if (!res.ok) throw new Error(data.message ?? "Fehler beim Speichern.");
+                    setMessage(data.message ?? "Angezeigter Name gespeichert.");
+                    setIsError(false);
+                  } catch (err) {
+                    setIsError(true);
+                    setMessage(err instanceof Error ? err.message : "Fehler beim Speichern.");
+                  } finally {
+                    setIsSavingDisplayName(false);
+                  }
+                }}
+              >
+                {isSavingDisplayName ? "Speichern …" : "Speichern"}
+              </button>
+            </div>
           </div>
 
           <hr className="my-2" />

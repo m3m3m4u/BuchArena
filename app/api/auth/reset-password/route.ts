@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 
@@ -6,6 +7,11 @@ type ResetPayload = {
   token?: string;
   password?: string;
 };
+
+/** Hash a reset token with SHA-256 to match stored hash. */
+function hashToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
 
 export async function POST(request: Request) {
   try {
@@ -28,9 +34,10 @@ export async function POST(request: Request) {
     }
 
     const users = await getUsersCollection();
+    const tokenHash = hashToken(token);
     const user = await users.findOne(
       {
-        resetToken: token,
+        resetToken: tokenHash,
         resetTokenExpiresAt: { $gt: new Date() },
       },
       { projection: { username: 1 } },

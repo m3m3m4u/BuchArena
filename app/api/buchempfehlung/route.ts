@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { getBooksCollection } from "@/lib/mongodb";
+import { getServerAccount } from "@/lib/server-auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 type Preferences = {
   genres: string[];
@@ -35,6 +37,16 @@ export async function POST(request: Request) {
       );
     }
 
+    // Rate-Limiting: max 5 Empfehlungen pro Stunde (OpenAI-Kosten)
+    const account = await getServerAccount();
+    const limitKey = account ? `buchempf:${account.username}` : `buchempf:anon`;
+    if (!checkRateLimit(limitKey, 5, 60 * 60 * 1000)) {
+      return NextResponse.json(
+        { message: "Zu viele Anfragen. Bitte warte etwas." },
+        { status: 429 },
+      );
+    }
+
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -45,7 +57,7 @@ export async function POST(request: Request) {
 
     // ── Bücher aus der Datenbank laden ──
     const booksCol = await getBooksCollection();
-    const dbBooks = await booksCol.find({}).toArray();
+    const dbBooks = await booksCol.find({}).limit(200).toArray();
 
     const bookList: BookSummary[] = dbBooks.map((b) => ({
       id: b._id.toString(),

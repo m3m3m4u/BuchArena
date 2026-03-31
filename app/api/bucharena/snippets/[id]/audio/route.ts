@@ -29,6 +29,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     });
   } catch (error) {
     console.error("Fehler:", error);
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unbekannter Fehler" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Audio konnte nicht geladen werden." }, { status: 500 });
   }
 }

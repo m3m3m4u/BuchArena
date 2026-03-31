@@ -35,6 +35,7 @@ export async function POST() {
     const list = await users
       .find({}, { projection: { _id: 0, username: 1, email: 1, role: 1, status: 1, createdAt: 1, lastOnline: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, newsletterOptIn: 1 } })
       .sort({ username: 1 })
+      .limit(2000)
       .toArray();
 
     // Count books per user in one aggregation

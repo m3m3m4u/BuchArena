@@ -46,18 +46,15 @@ export default function HomePage() {
     if (!account) return;
     fetch("/api/lesezeichen").then(r => r.json()).then(d => setLesezeichen(d)).catch(() => {});
     fetch("/api/messages/unread-count").then(r => r.json()).then(d => setUnreadMessages(d.count ?? 0)).catch(() => {});
-    fetch("/api/buch-der-woche").then(r => r.json()).then(d => setBdw(d.buchDerWoche ?? null)).catch(() => {});
     fetch("/api/profile/get", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
       .then(r => r.json()).then(d => setNewsletterOptIn(!!d.newsletterOptIn)).catch(() => {});
   }, [account]);
 
-  // Public data (stats + BdW für Gäste)
+  // Public data (stats + BdW)
   useEffect(() => {
     fetch("/api/stats").then(r => r.json()).then(d => setStats(d)).catch(() => {});
-    if (!account) {
-      fetch("/api/buch-der-woche").then(r => r.json()).then(d => setBdw(d.buchDerWoche ?? null)).catch(() => {});
-    }
-  }, [account]);
+    fetch("/api/buch-der-woche").then(r => r.json()).then(d => setBdw(d.buchDerWoche ?? null)).catch(() => {});
+  }, []);
 
   // Logged-in: Dashboard
   if (account) {

@@ -40,7 +40,7 @@ export async function GET() {
 
     const db = await getDatabase();
     const col = db.collection<SurveyDoc>("kurz_gefragt");
-    const docs = await col.find({}).sort({ username: 1 }).toArray();
+    const docs = await col.find({}).sort({ username: 1 }).limit(5000).toArray();
 
     // Header-Zeile
     const header = ["Benutzername", ...QUESTIONS];

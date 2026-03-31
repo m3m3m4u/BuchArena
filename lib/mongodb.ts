@@ -17,6 +17,7 @@ export type UserDocument = {
   passwordHash: string;
   role: UserRole;
   status?: UserStatus;
+  displayName?: string;
   createdAt: Date;
   lastOnline?: Date;
   profile?: ProfileData;

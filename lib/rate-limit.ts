@@ -5,6 +5,7 @@
 
 type Entry = { count: number; resetAt: number };
 const store = new Map<string, Entry>();
+const MAX_ENTRIES = 50_000;
 
 // Cleanup alle 5 Minuten
 setInterval(() => {
@@ -24,6 +25,18 @@ export function checkRateLimit(
   windowMs: number,
 ): boolean {
   const now = Date.now();
+
+  // Speicherlimit: bei Überschreitung abgelaufene Einträge sofort bereinigen
+  if (store.size >= MAX_ENTRIES) {
+    for (const [k, e] of store) {
+      if (e.resetAt <= now) store.delete(k);
+    }
+    // Falls immer noch zu voll, älteste Einträge verwerfen
+    if (store.size >= MAX_ENTRIES) {
+      store.clear();
+    }
+  }
+
   const entry = store.get(key);
 
   if (!entry || entry.resetAt <= now) {

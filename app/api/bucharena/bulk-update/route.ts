@@ -1,14 +1,21 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { getBucharenaBooksCollection } from "@/lib/bucharena-db";
 
 export const runtime = "nodejs";
+
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { apiKey, books } = body;
 
-    if (!apiKey || apiKey !== process.env.BUCHARENA_API_KEY) {
+    const expectedKey = process.env.BUCHARENA_API_KEY;
+    if (!apiKey || !expectedKey || !safeCompare(apiKey, expectedKey)) {
       return NextResponse.json({ success: false, error: "Ungültiger API-Key" }, { status: 401 });
     }
 
