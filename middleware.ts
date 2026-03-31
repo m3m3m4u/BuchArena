@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
   );
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://lernarena.org https://meridianbooks.at; connect-src 'self'; media-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'",
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://lernarena.org https://meridianbooks.at; connect-src 'self'; media-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'",
   );
 
   if (process.env.NODE_ENV === "production") {

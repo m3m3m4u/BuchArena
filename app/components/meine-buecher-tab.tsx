@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import GenrePicker, { parseGenres } from "@/app/components/genre-picker";
@@ -239,6 +240,12 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
   async function onUploadExcerpt() {
     if (!username || !editingBookId) return;
 
+    if (excerptType === "mp3" && excerptFile && excerptFile.size > 50 * 1024 * 1024) {
+      setIsError(true);
+      setMessage("Die MP3-Datei darf maximal 50 MB groß sein.");
+      return;
+    }
+
     setIsUploadingExcerpt(true);
     setMessage("");
     setIsError(false);
@@ -263,6 +270,10 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
         method: "POST",
         body: formData,
       });
+
+      if (response.status === 413) {
+        throw new Error("Die Datei ist zu groß. Bitte eine kleinere Datei wählen.");
+      }
 
       const data = (await response.json()) as { message?: string; excerpt?: BookExcerpt };
       if (!response.ok) {
@@ -320,6 +331,12 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
   async function onUploadCover(file: File) {
     if (!username) return;
 
+    if (file.size > 10 * 1024 * 1024) {
+      setIsError(true);
+      setMessage("Das Cover-Bild darf maximal 10 MB groß sein.");
+      return;
+    }
+
     setIsUploadingCover(true);
     setMessage("");
     setIsError(false);
@@ -333,6 +350,10 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
         method: "POST",
         body: formData,
       });
+
+      if (response.status === 413) {
+        throw new Error("Das Bild ist zu groß. Bitte ein kleineres Bild wählen (max. 10 MB).");
+      }
 
       const data = (await response.json()) as { message?: string; imageUrl?: string };
       if (!response.ok || !data.imageUrl) {
@@ -401,11 +422,11 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
             <article className="border border-arena-border rounded-lg p-3" key={`${book.title}-${book.createdAt}-${index}`}>
               <div className="grid grid-cols-[120px_1fr] gap-3.5 items-start max-[600px]:grid-cols-1">
                 <div
-                  className="w-[120px] border border-arena-border rounded-lg overflow-hidden bg-arena-bg grid place-items-center text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[180px]"
+                  className="relative w-[120px] border border-arena-border rounded-lg overflow-hidden bg-arena-bg grid place-items-center text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[180px]"
                   style={{ aspectRatio: "3/4" }}
                 >
                   {book.coverImageUrl ? (
-                    <img src={`${book.coverImageUrl}${book.coverImageUrl.includes('?') ? '&' : '?'}w=240`} alt={`Cover von ${book.title}`} className="h-full w-full object-contain" loading="lazy" />
+                    <Image src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain p-1" sizes="120px" />
                   ) : (
                     <span>Kein Cover</span>
                   )}

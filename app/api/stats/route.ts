@@ -14,7 +14,9 @@ export async function GET() {
       users.countDocuments({ "speakerProfile": { $exists: true } }),
     ]);
 
-    return NextResponse.json({ bookCount, authorCount, bloggerCount, speakerCount });
+    const res = NextResponse.json({ bookCount, authorCount, bloggerCount, speakerCount });
+    res.headers.set("Cache-Control", "public, s-maxage=120, stale-while-revalidate=600");
+    return res;
   } catch {
     return NextResponse.json({ error: "Fehler beim Laden" }, { status: 500 });
   }

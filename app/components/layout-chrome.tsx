@@ -17,7 +17,7 @@ export default function LayoutChrome({ children }: LayoutChromeProps) {
       {showHeader && <SiteHeader />}
       <AnalyticsTracker />
       <LesezeichenToast />
-      <div className="site-main">{children}</div>
+      <div id="main-content" className="site-main">{children}</div>
     </>
   );
 }

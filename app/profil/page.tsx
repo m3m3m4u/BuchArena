@@ -261,6 +261,12 @@ function ProfilPageInner() {
   async function uploadSample(file: File) {
     if (!targetUsername) return;
 
+    if (file.size > 50 * 1024 * 1024) {
+      setIsError(true);
+      setMessage("Die Datei darf maximal 50 MB groß sein.");
+      return;
+    }
+
     setIsUploadingSample(true);
     setMessage("");
     setIsError(false);
@@ -274,6 +280,10 @@ function ProfilPageInner() {
         method: "POST",
         body: formData,
       });
+
+      if (response.status === 413) {
+        throw new Error("Die Datei ist zu groß. Bitte eine kleinere Datei wählen.");
+      }
 
       const data = (await response.json()) as { message?: string; sample?: { id: string; filename: string; url: string; uploadedAt: string } };
       if (!response.ok || !data.sample) {
@@ -321,6 +331,12 @@ function ProfilPageInner() {
       return;
     }
 
+    if (file.size > 5 * 1024 * 1024) {
+      setIsError(true);
+      setMessage("Das Bild darf maximal 5 MB groß sein.");
+      return;
+    }
+
     setIsUploadingImage(true);
     setMessage("");
     setIsError(false);
@@ -334,6 +350,10 @@ function ProfilPageInner() {
         method: "POST",
         body: formData,
       });
+
+      if (response.status === 413) {
+        throw new Error("Das Bild ist zu groß. Bitte ein kleineres Bild wählen (max. 5 MB).");
+      }
 
       const data = (await response.json()) as { message?: string; imageUrl?: string };
       if (!response.ok || !data.imageUrl) {
@@ -360,6 +380,12 @@ function ProfilPageInner() {
   async function uploadSpeakerImage(file: File) {
     if (!targetUsername) return;
 
+    if (file.size > 5 * 1024 * 1024) {
+      setIsError(true);
+      setMessage("Das Bild darf maximal 5 MB groß sein.");
+      return;
+    }
+
     setIsUploadingSpeakerImage(true);
     setMessage("");
     setIsError(false);
@@ -373,6 +399,10 @@ function ProfilPageInner() {
         method: "POST",
         body: formData,
       });
+
+      if (response.status === 413) {
+        throw new Error("Das Bild ist zu groß. Bitte ein kleineres Bild wählen (max. 5 MB).");
+      }
 
       const data = (await response.json()) as { message?: string; imageUrl?: string };
       if (!response.ok || !data.imageUrl) {
@@ -437,6 +467,12 @@ function ProfilPageInner() {
   async function uploadBloggerImage(file: File) {
     if (!targetUsername) return;
 
+    if (file.size > 5 * 1024 * 1024) {
+      setIsError(true);
+      setMessage("Das Bild darf maximal 5 MB groß sein.");
+      return;
+    }
+
     setIsUploadingBloggerImage(true);
     setMessage("");
     setIsError(false);
@@ -450,6 +486,10 @@ function ProfilPageInner() {
         method: "POST",
         body: formData,
       });
+
+      if (response.status === 413) {
+        throw new Error("Das Bild ist zu groß. Bitte ein kleineres Bild wählen (max. 5 MB).");
+      }
 
       const data = (await response.json()) as { message?: string; imageUrl?: string };
       if (!response.ok || !data.imageUrl) {

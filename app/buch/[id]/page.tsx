@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { normalizeGenre } from "@/lib/genres";
@@ -184,10 +185,30 @@ export default function BookDetailPage({ params }: PageProps) {
           <p className="text-red-700">{message}</p>
         ) : book ? (
           <>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "Book",
+                  name: book.title,
+                  ...(author && { author: { "@type": "Person", name: author.name || author.username } }),
+                  ...(book.isbn && { isbn: book.isbn }),
+                  ...(book.publisher && { publisher: { "@type": "Organization", name: book.publisher } }),
+                  ...(book.publicationYear > 0 && { datePublished: String(book.publicationYear) }),
+                  ...(book.pageCount > 0 && { numberOfPages: book.pageCount }),
+                  ...(book.language && { inLanguage: book.language }),
+                  ...(book.description && { description: book.description }),
+                  ...(book.coverImageUrl && { image: book.coverImageUrl }),
+                  ...(book.genre && { genre: book.genre }),
+                  url: `https://bucharena.org/buch/${bookId}`,
+                }),
+              }}
+            />
             <div className="mb-6 grid grid-cols-[200px_1fr] items-start gap-6 max-[600px]:grid-cols-1 max-[600px]:gap-4">
-              <div className="w-[200px] overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-sm text-arena-muted max-[600px]:mx-auto max-[600px]:w-[150px] max-[380px]:w-[120px]">
+              <div className="relative w-[200px] aspect-[3/4] overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-sm text-arena-muted max-[600px]:mx-auto max-[600px]:w-[150px] max-[380px]:w-[120px]">
                 {book.coverImageUrl ? (
-                  <img src={book.coverImageUrl} alt={`Cover von ${book.title}`} className="w-full h-auto object-contain" />
+                  <Image src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain" sizes="200px" />
                 ) : (
                   <div className="grid place-items-center" style={{ aspectRatio: "3/4" }}>
                     <span>Kein Cover</span>

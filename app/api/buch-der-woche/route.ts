@@ -25,7 +25,9 @@ export async function GET(request: NextRequest) {
     if (!isAdmin && bdw.active === false) {
       return NextResponse.json({ buchDerWoche: null });
     }
-    return NextResponse.json({ buchDerWoche: bdw });
+    const res = NextResponse.json({ buchDerWoche: bdw });
+    res.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
+    return res;
   } catch {
     return NextResponse.json({ error: "Fehler beim Laden" }, { status: 500 });
   }
