@@ -10,6 +10,9 @@ export type BuchDerWoche = {
   buyUrl: string;
   active: boolean;
   updatedAt: string;
+  bookId?: string;
+  authorUsername?: string;
+  speakerUsername?: string;
 };
 
 /** GET – Buch der Woche laden (öffentlich) */
@@ -43,7 +46,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, author, speaker, youtubeUrl, buyUrl, active } = body as Partial<BuchDerWoche>;
+    const { title, author, speaker, youtubeUrl, buyUrl, active, bookId, authorUsername, speakerUsername } = body as Partial<BuchDerWoche>;
 
     if (!title || !author) {
       return NextResponse.json({ error: "Titel und Autor sind Pflichtfelder" }, { status: 400 });
@@ -57,6 +60,9 @@ export async function POST(request: NextRequest) {
       buyUrl: (buyUrl ?? "").trim().slice(0, 500),
       active: active ?? true,
       updatedAt: new Date().toISOString(),
+      bookId: (bookId ?? "").trim().slice(0, 100) || undefined,
+      authorUsername: (authorUsername ?? "").trim().slice(0, 100) || undefined,
+      speakerUsername: (speakerUsername ?? "").trim().slice(0, 100) || undefined,
     };
 
     const db = await getDatabase();

@@ -1054,6 +1054,21 @@ function ProfilPageInner() {
         />
 
         <FieldWithVisibility
+          label="Über mich"
+          value={profile.ueberMich.value}
+          visibility={profile.ueberMich.visibility}
+          multiline
+          maxLength={2000}
+          onValueChange={(value) =>
+            setProfile((current) => ({
+              ...current,
+              ueberMich: { ...current.ueberMich, value },
+            }))
+          }
+          onVisibilityChange={(visibility) => updateVisibility("ueberMich", visibility)}
+        />
+
+        <FieldWithVisibility
           label="Beruf"
           value={profile.beruf.value}
           visibility={profile.beruf.visibility}
@@ -1381,6 +1396,20 @@ function ProfilPageInner() {
           }
           onVisibilityChange={(visibility) =>
             setSpeakerProfile((c) => ({ ...c, motto: { ...c.motto, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Über mich"
+          value={speakerProfile.ueberMich.value}
+          visibility={speakerProfile.ueberMich.visibility}
+          multiline
+          maxLength={2000}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, ueberMich: { ...c.ueberMich, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, ueberMich: { ...c.ueberMich, visibility } }))
           }
         />
 
@@ -2686,6 +2715,8 @@ type FieldWithVisibilityProps = {
   visibility: Visibility;
   onValueChange: (value: string) => void;
   onVisibilityChange: (visibility: Visibility) => void;
+  multiline?: boolean;
+  maxLength?: number;
 };
 
 function FieldWithVisibility({
@@ -2694,18 +2725,30 @@ function FieldWithVisibility({
   visibility,
   onValueChange,
   onVisibilityChange,
+  multiline,
+  maxLength,
 }: FieldWithVisibilityProps) {
   return (
     <div className="grid grid-cols-[2fr_1fr] gap-3 max-[780px]:grid-cols-1">
       <label className="grid gap-1 text-[0.95rem]">
         {label}
-        <input className="input-base" value={value} onChange={(event) => {
-          const newValue = event.target.value;
-          onValueChange(newValue);
-          if (newValue.trim() && visibility === "hidden") {
-            onVisibilityChange("public");
-          }
-        }} />
+        {multiline ? (
+          <textarea className="input-base resize-y" rows={4} maxLength={maxLength} value={value} onChange={(event) => {
+            const newValue = event.target.value;
+            onValueChange(newValue);
+            if (newValue.trim() && visibility === "hidden") {
+              onVisibilityChange("public");
+            }
+          }} />
+        ) : (
+          <input className="input-base" value={value} onChange={(event) => {
+            const newValue = event.target.value;
+            onValueChange(newValue);
+            if (newValue.trim() && visibility === "hidden") {
+              onVisibilityChange("public");
+            }
+          }} />
+        )}
       </label>
 
       <div>

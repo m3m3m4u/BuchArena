@@ -112,6 +112,21 @@ export default function AdminPage() {
   const [bdwMsg, setBdwMsg] = useState("");
   const [bdwLoading, setBdwLoading] = useState(false);
   const [bdwLoaded, setBdwLoaded] = useState(false);
+  const [bdwBookId, setBdwBookId] = useState("");
+  const [bdwAuthorUsername, setBdwAuthorUsername] = useState("");
+  const [bdwSpeakerUsername, setBdwSpeakerUsername] = useState("");
+
+  /* ── Buch-Suche (BdW) ── */
+  type BookOption = { id: string; title: string; author: string; ownerUsername: string; buyLinks: string[] };
+  const [bdwBooks, setBdwBooks] = useState<BookOption[]>([]);
+  const [bdwBookQuery, setBdwBookQuery] = useState("");
+  const [bdwBookOpen, setBdwBookOpen] = useState(false);
+
+  /* ── Sprecher-Suche (BdW) ── */
+  type SpeakerOption = { username: string; displayName: string };
+  const [bdwSpeakers, setBdwSpeakers] = useState<SpeakerOption[]>([]);
+  const [bdwSpeakerQuery, setBdwSpeakerQuery] = useState("");
+  const [bdwSpeakerOpen, setBdwSpeakerOpen] = useState(false);
 
   /* ── Analytics ── */
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
@@ -188,7 +203,27 @@ export default function AdminPage() {
         setBdwYoutube(d.buchDerWoche.youtubeUrl ?? "");
         setBdwBuyUrl(d.buchDerWoche.buyUrl ?? "");
         setBdwActive(d.buchDerWoche.active ?? true);
+        setBdwBookId(d.buchDerWoche.bookId ?? "");
+        setBdwAuthorUsername(d.buchDerWoche.authorUsername ?? "");
+        setBdwSpeakerUsername(d.buchDerWoche.speakerUsername ?? "");
       }
+    }).catch(() => {});
+    // Bücher und Sprecher laden
+    fetch("/api/books/discover").then(r => r.json()).then(d => {
+      const books = (d.books ?? []).map((b: Record<string, unknown>) => ({
+        id: b.id as string,
+        title: b.title as string,
+        author: (b.authorDisplayName ?? b.ownerUsername) as string,
+        ownerUsername: b.ownerUsername as string,
+        buyLinks: (b.buyLinks ?? []) as string[],
+      }));
+      setBdwBooks(books);
+    }).catch(() => {});
+    fetch("/api/speakers/discover").then(r => r.json()).then(d => {
+      setBdwSpeakers((d.speakers ?? []).map((s: Record<string, unknown>) => ({
+        username: s.username as string,
+        displayName: s.displayName as string,
+      })));
     }).catch(() => {});
   }, [mainTab, bdwLoaded]);
 
@@ -224,7 +259,7 @@ export default function AdminPage() {
       const res = await fetch("/api/buch-der-woche", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: bdwTitle, author: bdwAuthor, speaker: bdwSpeaker, youtubeUrl: bdwYoutube, buyUrl: bdwBuyUrl, active: bdwActive }),
+        body: JSON.stringify({ title: bdwTitle, author: bdwAuthor, speaker: bdwSpeaker, youtubeUrl: bdwYoutube, buyUrl: bdwBuyUrl, active: bdwActive, bookId: bdwBookId, authorUsername: bdwAuthorUsername, speakerUsername: bdwSpeakerUsername }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Fehler"); }
       setBdwMsg("✅ Gespeichert!");
@@ -484,6 +519,48 @@ export default function AdminPage() {
               </button>
               <span className="text-xs text-arena-muted">{bdwActive ? "Wird angezeigt" : "Ausgeblendet"}</span>
             </label>
+
+            {/* Buch-Suche */}
+            <div className="block relative">
+              <span className="text-sm font-semibold">Buch auswählen</span>
+              <input
+                className="input-base w-full mt-1"
+                value={bdwBookQuery}
+                onChange={e => { setBdwBookQuery(e.target.value); setBdwBookOpen(true); }}
+                onFocus={() => setBdwBookOpen(true)}
+                placeholder="Buchtitel suchen…"
+              />
+              {bdwBookOpen && bdwBookQuery.trim().length > 0 && (() => {
+                const q = bdwBookQuery.toLowerCase();
+                const filtered = bdwBooks.filter(b =>
+                  b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)
+                ).slice(0, 10);
+                return filtered.length > 0 ? (
+                  <ul className="absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {filtered.map(b => (
+                      <li key={b.id}>
+                        <button
+                          type="button"
+                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                          onClick={() => {
+                            setBdwTitle(b.title);
+                            setBdwAuthor(b.author);
+                            setBdwBookId(b.id);
+                            setBdwAuthorUsername(b.ownerUsername);
+                            setBdwBookQuery("");
+                            setBdwBookOpen(false);
+                          }}
+                        >
+                          <strong>{b.title}</strong>{" "}
+                          <span className="text-arena-muted">von {b.author}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null;
+              })()}
+            </div>
+
             <label className="block">
               <span className="text-sm font-semibold">Buchtitel</span>
               <input className="input-base w-full mt-1" value={bdwTitle} onChange={e => setBdwTitle(e.target.value)} placeholder="z.B. Der Alchimist" />
@@ -492,10 +569,51 @@ export default function AdminPage() {
               <span className="text-sm font-semibold">Autor</span>
               <input className="input-base w-full mt-1" value={bdwAuthor} onChange={e => setBdwAuthor(e.target.value)} placeholder="z.B. Paulo Coelho" />
             </label>
+
+            {/* Sprecher-Suche */}
+            <div className="block relative">
+              <span className="text-sm font-semibold">Sprecher auswählen</span>
+              <input
+                className="input-base w-full mt-1"
+                value={bdwSpeakerQuery}
+                onChange={e => { setBdwSpeakerQuery(e.target.value); setBdwSpeakerOpen(true); }}
+                onFocus={() => setBdwSpeakerOpen(true)}
+                placeholder="Sprecher suchen…"
+              />
+              {bdwSpeakerOpen && bdwSpeakerQuery.trim().length > 0 && (() => {
+                const q = bdwSpeakerQuery.toLowerCase();
+                const filtered = bdwSpeakers.filter(s =>
+                  s.displayName.toLowerCase().includes(q) || s.username.toLowerCase().includes(q)
+                ).slice(0, 10);
+                return filtered.length > 0 ? (
+                  <ul className="absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {filtered.map(s => (
+                      <li key={s.username}>
+                        <button
+                          type="button"
+                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                          onClick={() => {
+                            setBdwSpeaker(s.displayName);
+                            setBdwSpeakerUsername(s.username);
+                            setBdwSpeakerQuery("");
+                            setBdwSpeakerOpen(false);
+                          }}
+                        >
+                          <strong>{s.displayName}</strong>{" "}
+                          <span className="text-arena-muted">@{s.username}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null;
+              })()}
+            </div>
+
             <label className="block">
               <span className="text-sm font-semibold">Sprecher</span>
               <input className="input-base w-full mt-1" value={bdwSpeaker} onChange={e => setBdwSpeaker(e.target.value)} placeholder="z.B. Max Mustermann" />
             </label>
+
             <label className="block">
               <span className="text-sm font-semibold">YouTube-Link</span>
               <input className="input-base w-full mt-1" value={bdwYoutube} onChange={e => setBdwYoutube(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." />

@@ -6,8 +6,8 @@ import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT, type LoggedInAccount } from "@/lib/client-account";
 import { extractYouTubeId } from "@/lib/bucharena-types";
 
-type BuchDerWoche = { title: string; author: string; speaker?: string; youtubeUrl: string; buyUrl: string; active?: boolean };
-type Stats = { bookCount: number; authorCount: number; bloggerCount: number; speakerCount: number };
+type BuchDerWoche = { title: string; author: string; speaker?: string; youtubeUrl: string; buyUrl: string; active?: boolean; bookId?: string; authorUsername?: string; speakerUsername?: string };
+type Stats = { bookCount: number; authorCount: number; bloggerCount: number; speakerCount: number; testleserCount: number; lektorenCount: number };
 
 
 
@@ -196,13 +196,14 @@ export default function HomePage() {
             <div>
               <p className="text-lg font-semibold m-0 flex items-center gap-2 flex-wrap">
                 <span>Buch der Woche:</span>
-                <span>{bdw.title} <span className="font-normal text-arena-muted">von {bdw.author}</span>{bdw.speaker && <span className="font-normal text-arena-muted"> · Sprecher: {bdw.speaker}</span>}</span>
+                <span>{bdw.bookId ? <Link href={`/buch/${bdw.bookId}`} className="hover:underline">{bdw.title}</Link> : bdw.title} <span className="font-normal text-arena-muted">von {bdw.authorUsername ? <Link href={`/autor/${bdw.authorUsername}`} className="hover:underline">{bdw.author}</Link> : bdw.author}</span>{bdw.speaker && <span className="font-normal text-arena-muted"> · Sprecher: {bdw.speakerUsername ? <Link href={`/sprecher/${bdw.speakerUsername}`} className="hover:underline">{bdw.speaker}</Link> : bdw.speaker}</span>}</span>
                 {bdw.buyUrl && (
-                  <a href={bdw.buyUrl} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm inline-flex items-center">
-                    HIER ERHÄLTLICH
+                  <a href={bdw.buyUrl} target="_blank" rel="noopener noreferrer nofollow" className="btn btn-primary btn-sm inline-flex items-center">
+                    HIER ERHÄLTLICH *
                   </a>
                 )}
               </p>
+              {bdw.buyUrl && <p className="text-xs text-arena-muted mt-1">* Affiliate-Link</p>}
               {bdw.youtubeUrl && (() => {
                 const ytId = extractYouTubeId(bdw.youtubeUrl);
                 return ytId ? (
@@ -315,13 +316,14 @@ export default function HomePage() {
         <section className="mx-auto px-4 py-10 text-center" style={{ width: "80%", maxWidth: "1100px" }}>
           <p className="text-xl m-0 flex items-center justify-center gap-2 flex-wrap">
             <span className="font-bold">Buch der Woche:</span>
-            <span><strong>{bdw.title}</strong> <span className="text-arena-muted">von {bdw.author}</span>{bdw.speaker && <span className="text-arena-muted"> · Sprecher: {bdw.speaker}</span>}</span>
+            <span><strong>{bdw.bookId ? <Link href={`/buch/${bdw.bookId}`} className="hover:underline">{bdw.title}</Link> : bdw.title}</strong> <span className="text-arena-muted">von {bdw.authorUsername ? <Link href={`/autor/${bdw.authorUsername}`} className="hover:underline">{bdw.author}</Link> : bdw.author}</span>{bdw.speaker && <span className="text-arena-muted"> · Sprecher: {bdw.speakerUsername ? <Link href={`/sprecher/${bdw.speakerUsername}`} className="hover:underline">{bdw.speaker}</Link> : bdw.speaker}</span>}</span>
             {bdw.buyUrl && (
-              <a href={bdw.buyUrl} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm inline-flex items-center gap-1">
-                HIER ERHÄLTLICH
+              <a href={bdw.buyUrl} target="_blank" rel="noopener noreferrer nofollow" className="btn btn-primary btn-sm inline-flex items-center gap-1">
+                HIER ERHÄLTLICH *
               </a>
             )}
           </p>
+          {bdw.buyUrl && <p className="text-xs text-arena-muted mt-1">* Affiliate-Link</p>}
           {bdw.youtubeUrl && (() => {
             const ytId = extractYouTubeId(bdw.youtubeUrl);
             return ytId ? (
@@ -342,12 +344,14 @@ export default function HomePage() {
       {/* Statistiken */}
       {stats && (
         <section className="bg-arena-bg py-10 px-4">
-          <div className="mx-auto max-w-[1100px] grid grid-cols-4 gap-4 max-sm:grid-cols-2">
+          <div className="mx-auto max-w-[1100px] grid grid-cols-6 gap-4 max-md:grid-cols-3 max-sm:grid-cols-2">
             {[
               { value: stats.bookCount, label: "Bücher", icon: "" },
               { value: stats.authorCount, label: "Autoren", icon: "" },
               { value: stats.bloggerCount, label: "Blogger", icon: "" },
               { value: stats.speakerCount, label: "Sprecher", icon: "" },
+              { value: stats.testleserCount, label: "Testleser", icon: "" },
+              { value: stats.lektorenCount, label: "Lektoren", icon: "" },
             ].map((s) => (
               <div key={s.label} className="rounded-xl bg-white border border-arena-border-light px-5 py-4 text-center">
                 <p className="text-2xl font-bold m-0 text-arena-blue">{s.value}</p>

@@ -20,6 +20,7 @@ export type ProfileData = {
   };
   name: ProfileField;
   motto: ProfileField;
+  ueberMich: ProfileField;
   beruf: ProfileField;
   city: ProfileField;
   country: ProfileField;
@@ -53,6 +54,7 @@ export type SpeakerProfileData = {
   name: ProfileField;
   ort: ProfileField;
   motto: ProfileField;
+  ueberMich: ProfileField;
   webseite: ProfileField;
   infovideo: ProfileField;
   sprechproben: Sprechprobe[];
@@ -85,6 +87,10 @@ export function createDefaultProfile(): ProfileData {
       visibility: "internal",
     },
     motto: {
+      value: "",
+      visibility: "internal",
+    },
+    ueberMich: {
       value: "",
       visibility: "internal",
     },
@@ -182,6 +188,7 @@ export function createDefaultSpeakerProfile(): SpeakerProfileData {
     name: { value: "", visibility: "internal" },
     ort: { value: "", visibility: "internal" },
     motto: { value: "", visibility: "internal" },
+    ueberMich: { value: "", visibility: "internal" },
     webseite: { value: "", visibility: "internal" },
     infovideo: { value: "", visibility: "internal" },
     sprechproben: [],

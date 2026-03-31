@@ -151,11 +151,31 @@ export default function ImpressumPage() {
             <li><strong>MongoDB, Inc.</strong> (MongoDB Atlas) – Datenbankhosting. Serverstandort: EU (Frankfurt). <a href="https://www.mongodb.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-arena-link no-underline hover:underline">Datenschutzrichtlinie</a></li>
             <li><strong>WebDAV-Hosting</strong> – Speicherung von Profilbildern, Buchcovern, Audiodateien und Medien. Serverstandort: EU.</li>
             <li><strong>Google LLC</strong> (YouTube) – Einbettung von Videos, nur nach Einwilligung. Datenübertragung in die USA möglich. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-arena-link no-underline hover:underline">Datenschutzrichtlinie</a></li>
+            <li><strong>Amazon Europe Core S.à r.l.</strong> – Teilnahme am Amazon EU-Partnerprogramm (Affiliate). Über Affiliate-Links können Provisionen verdient werden. Beim Klick auf einen solchen Link werden Daten an Amazon übermittelt (u.&nbsp;a. Referrer-URL, IP-Adresse, Zeitpunkt des Klicks). Amazon setzt ggf. Cookies, um die Zuordnung zum Partnerprogramm zu ermöglichen. <a href="https://www.amazon.de/gp/help/customer/display.html?nodeId=201909010" target="_blank" rel="noopener noreferrer" className="text-arena-link no-underline hover:underline">Datenschutzrichtlinie</a></li>
           </ul>
         </div>
 
         <div className="mb-8">
-          <h3 className="mb-3 text-xl text-arena-text">7. Datenübermittlung in Drittländer</h3>
+          <h3 className="mb-3 text-xl text-arena-text">7. Amazon Partnerprogramm (Affiliate)</h3>
+          <p className="my-2 leading-relaxed text-[#444]">
+            BuchArena ist Teilnehmer des Partnerprogramms von Amazon EU, das zur Bereitstellung eines
+            Mediums für Websites konzipiert wurde, mittels dessen durch die Platzierung von
+            Werbeanzeigen und Links zu amazon.de Werbekostenerstattung verdient werden kann.
+          </p>
+          <p className="my-2 leading-relaxed text-[#444]">
+            Amazon setzt Cookies ein, um die Herkunft der Bestellungen nachvollziehen zu können.
+            Dadurch kann Amazon erkennen, dass Sie den Partnerlink auf unserer Website geklickt haben.
+            Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO (berechtigtes Interesse an der
+            wirtschaftlichen Nutzung des Webangebots). Weitere Informationen zur Datennutzung durch
+            Amazon finden Sie in der{" "}
+            <a href="https://www.amazon.de/gp/help/customer/display.html?nodeId=201909010" target="_blank" rel="noopener noreferrer" className="text-arena-link no-underline hover:underline">
+              Datenschutzerklärung von Amazon
+            </a>.
+          </p>
+        </div>
+
+        <div className="mb-8">
+          <h3 className="mb-3 text-xl text-arena-text">8. Datenübermittlung in Drittländer</h3>
           <p className="my-2 leading-relaxed text-[#444]">
             Beim Abspielen von YouTube-Videos können Daten an Google LLC in den USA übermittelt werden.
             Die Übermittlung erfolgt auf Basis Ihrer Einwilligung (Art.&nbsp;49 Abs.&nbsp;1 lit.&nbsp;a DSGVO) und des
@@ -167,7 +187,7 @@ export default function ImpressumPage() {
         </div>
 
         <div className="mb-8">
-          <h3 className="mb-3 text-xl text-arena-text">8. Ihre Rechte</h3>
+          <h3 className="mb-3 text-xl text-arena-text">9. Ihre Rechte</h3>
           <p className="my-2 leading-relaxed text-[#444]">
             Nach der DSGVO stehen Ihnen folgende Rechte zu:
           </p>
@@ -183,7 +203,7 @@ export default function ImpressumPage() {
         </div>
 
         <div className="mb-8">
-          <h3 className="mb-3 text-xl text-arena-text">9. Beschwerderecht</h3>
+          <h3 className="mb-3 text-xl text-arena-text">10. Beschwerderecht</h3>
           <p className="my-2 leading-relaxed text-[#444]">
             Sie haben das Recht, eine Beschwerde bei der zuständigen Aufsichtsbehörde einzureichen:
           </p>
@@ -200,7 +220,7 @@ export default function ImpressumPage() {
         </div>
 
         <div className="mb-8">
-          <h3 className="mb-3 text-xl text-arena-text">10. Kontakt für Datenschutzanfragen</h3>
+          <h3 className="mb-3 text-xl text-arena-text">11. Kontakt für Datenschutzanfragen</h3>
           <p className="my-2 leading-relaxed text-[#444]">
             Bei Fragen zum Datenschutz oder zur Ausübung Ihrer Rechte wenden Sie sich bitte an:{" "}
             <a href="mailto:info@erklaerung-und-mehr.org" className="text-arena-link no-underline hover:underline">
@@ -210,7 +230,7 @@ export default function ImpressumPage() {
         </div>
 
         <div className="mb-8">
-          <h3 className="mb-3 text-xl text-arena-text">11. Änderungen</h3>
+          <h3 className="mb-3 text-xl text-arena-text">12. Änderungen</h3>
           <p className="my-2 leading-relaxed text-[#444]">
             Wir behalten uns vor, diese Datenschutzerklärung bei Bedarf anzupassen, um sie an geänderte
             Rechtslagen oder Änderungen des Dienstes anzupassen. Die aktuelle Version gilt ab dem Datum

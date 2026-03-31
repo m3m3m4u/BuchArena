@@ -109,6 +109,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
     return [city, country].filter(Boolean).join(", ");
   }, [profile.city, profile.country]);
   const visibleMotto = useMemo(() => profile.motto?.visibility === "public" ? profile.motto.value : "", [profile.motto]);
+  const visibleUeberMich = useMemo(() => profile.ueberMich?.visibility === "public" ? profile.ueberMich.value : "", [profile.ueberMich]);
   const visibleBeruf = useMemo(() => profile.beruf?.visibility === "public" ? profile.beruf.value : "", [profile.beruf]);
 
   const socialLinks = useMemo(() => {
@@ -180,6 +181,10 @@ export default function AuthorProfilePage({ params }: PageProps) {
                 {visibleMotto && <p className="mt-0.5 italic">„{visibleMotto}"</p>}
               </div>
             </div>
+
+            {visibleUeberMich && (
+              <div className="mt-4 text-sm whitespace-pre-line">{visibleUeberMich}</div>
+            )}
 
             {socialLinks.length > 0 && (
               <div className="my-3 flex flex-wrap gap-3">

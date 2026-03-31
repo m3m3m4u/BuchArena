@@ -55,6 +55,7 @@ function sanitizeSpeakerProfile(
     name: sanitizeField(source.name, base.name, 120),
     ort: sanitizeField(source.ort, base.ort, 120),
     motto: sanitizeField(source.motto, base.motto, 300),
+    ueberMich: sanitizeField(source.ueberMich, base.ueberMich, 2000),
     webseite: sanitizeField(source.webseite, base.webseite, 500),
     infovideo: sanitizeField(source.infovideo, base.infovideo, 500),
     sprechproben: Array.isArray(source.sprechproben) ? source.sprechproben : [],

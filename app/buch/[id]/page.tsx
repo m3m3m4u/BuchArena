@@ -11,6 +11,44 @@ import {
 } from "@/lib/client-account";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
+/** Erkennt den Shop-Namen und ob es ein Affiliate-Link ist. */
+function parseBuyLink(url: string): { label: string; isAffiliate: boolean } {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.toLowerCase();
+    const search = u.search.toLowerCase();
+
+    // Amazon
+    if (host.includes("amazon") || host.includes("amzn.to") || host.includes("amzn.eu")) {
+      const isAff = search.includes("tag=") || host.includes("amzn.to") || host.includes("amzn.eu");
+      return { label: "Amazon", isAffiliate: isAff };
+    }
+    // Thalia
+    if (host.includes("thalia")) {
+      const isAff = search.includes("affiliate") || search.includes("partner") || search.includes("ref=");
+      return { label: "Thalia", isAffiliate: isAff };
+    }
+    // Hugendubel
+    if (host.includes("hugendubel")) return { label: "Hugendubel", isAffiliate: search.includes("partner") || search.includes("affiliate") };
+    // BoD
+    if (host.includes("bod.de") || host.includes("bod.com")) return { label: "BoD", isAffiliate: false };
+    // Tolino
+    if (host.includes("tolino")) return { label: "Tolino", isAffiliate: false };
+    // Apple Books
+    if (host.includes("apple.com") || host.includes("books.apple")) return { label: "Apple Books", isAffiliate: search.includes("at=") };
+    // Kobo
+    if (host.includes("kobo.com")) return { label: "Kobo", isAffiliate: false };
+    // Generische Affiliate-Erkennung
+    const genericAff = search.includes("tag=") || search.includes("ref=") || search.includes("affiliate") || search.includes("partner_id") || search.includes("aff_id");
+    // Domain als Label
+    const domainParts = host.replace(/^www\./, "").split(".");
+    const label = domainParts.length >= 2 ? domainParts.slice(0, -1).join(".") : host;
+    return { label: label.charAt(0).toUpperCase() + label.slice(1), isAffiliate: genericAff };
+  } catch {
+    return { label: "Jetzt kaufen", isAffiliate: false };
+  }
+}
+
 type BookExcerpt = {
   id: string;
   type: "text" | "mp3";
@@ -253,12 +291,19 @@ export default function BookDetailPage({ params }: PageProps) {
               <div className="mb-4">
                 <h2 className="mb-2 text-lg">Kaufen</h2>
                 <div className="flex flex-wrap gap-2">
-                  {book.buyLinks.map((link) => (
-                    <a key={link} href={link} target="_blank" rel="noreferrer" className="btn">
-                      Jetzt kaufen
-                    </a>
-                  ))}
+                  {book.buyLinks.map((link) => {
+                    const { label, isAffiliate } = parseBuyLink(link);
+                    return (
+                      <a key={link} href={link} target="_blank" rel={isAffiliate ? "noreferrer sponsored" : "noreferrer"} className="btn inline-flex items-center gap-1.5">
+                        {label}
+                        {isAffiliate && <span className="text-[0.7rem] opacity-70" title="Affiliate-Link – bei einem Kauf über diesen Link erhalten wir eine kleine Provision">*</span>}
+                      </a>
+                    );
+                  })}
                 </div>
+                {book.buyLinks.some((l) => parseBuyLink(l).isAffiliate) && (
+                  <p className="text-xs text-arena-muted mt-1.5">* Affiliate-Link – bei einem Kauf über diesen Link erhalten wir eine kleine Provision, ohne Mehrkosten für dich.</p>
+                )}
               </div>
             )}
 

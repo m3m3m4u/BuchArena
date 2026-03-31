@@ -111,6 +111,10 @@ export default function SpeakerProfilePage({ params }: PageProps) {
     speakerProfile.motto?.visibility === "public" ? speakerProfile.motto.value : "",
   [speakerProfile.motto]);
 
+  const visibleUeberMich = useMemo(() =>
+    speakerProfile.ueberMich?.visibility === "public" ? speakerProfile.ueberMich.value : "",
+  [speakerProfile.ueberMich]);
+
   const visibleWebseite = useMemo(() =>
     speakerProfile.webseite?.visibility === "public" ? speakerProfile.webseite.value : "",
   [speakerProfile.webseite]);
@@ -186,6 +190,10 @@ export default function SpeakerProfilePage({ params }: PageProps) {
                 {visibleMotto && <p className="mt-0.5 italic">„{visibleMotto}"</p>}
               </div>
             </div>
+
+            {visibleUeberMich && (
+              <div className="mt-4 text-sm whitespace-pre-line">{visibleUeberMich}</div>
+            )}
 
             {visibleWebseite && (
               <div className="my-2">
