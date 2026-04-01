@@ -1,14 +1,18 @@
-"use client";
+﻿"use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
-import { useEffect, useState, useCallback } from "react";
+import Image from "@tiptap/extension-image";
+import Youtube from "@tiptap/extension-youtube";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { getStoredAccount } from "@/lib/client-account";
 
-/* ── Toolbar ── */
+/* ══════════════════════════════════════════════════════════════
+   Toolbar
+══════════════════════════════════════════════════════════════ */
 
 function ToolbarButton({
   onClick,
@@ -41,9 +45,10 @@ function ToolbarButton({
 }
 
 function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
-  if (!editor) return null;
+  const imgInputRef = useRef<HTMLInputElement>(null);
 
   const setLink = useCallback(() => {
+    if (!editor) return;
     const prev = editor.getAttributes("link").href as string | undefined;
     const url = window.prompt("URL eingeben:", prev ?? "https://");
     if (url === null) return;
@@ -53,6 +58,35 @@ function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
     }
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   }, [editor]);
+
+  const insertYoutube = useCallback(() => {
+    if (!editor) return;
+    const url = window.prompt("YouTube-URL eingeben:", "https://www.youtube.com/watch?v=");
+    if (!url) return;
+    editor.chain().focus().setYoutubeVideo({ src: url, width: 640, height: 360 }).run();
+  }, [editor]);
+
+  const handleImageFile = useCallback(
+    async (file: File) => {
+      if (!editor) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const src = reader.result as string;
+        editor.chain().focus().setImage({ src }).run();
+      };
+      reader.readAsDataURL(file);
+    },
+    [editor]
+  );
+
+  const insertImageUrl = useCallback(() => {
+    if (!editor) return;
+    const url = window.prompt("Bild-URL eingeben:", "https://");
+    if (!url) return;
+    editor.chain().focus().setImage({ src: url }).run();
+  }, [editor]);
+
+  if (!editor) return null;
 
   return (
     <div className="flex flex-wrap gap-1 p-2 border border-b-0 border-gray-300 rounded-t-lg bg-gray-50">
@@ -81,15 +115,42 @@ function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
       <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Zitat">❝</ToolbarButton>
       <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} active={false} title="Trennlinie">—</ToolbarButton>
       <span className="border-l border-gray-300 mx-1" />
+      <ToolbarButton onClick={() => imgInputRef.current?.click()} active={false} title="Bild hochladen">🖼 Bild</ToolbarButton>
+      <ToolbarButton onClick={insertImageUrl} active={false} title="Bild per URL">🔗 Bild-URL</ToolbarButton>
+      <ToolbarButton onClick={insertYoutube} active={editor.isActive("youtube")} title="YouTube-Video einbetten">▶ YouTube</ToolbarButton>
+      <span className="border-l border-gray-300 mx-1" />
       <ToolbarButton onClick={() => editor.chain().focus().undo().run()} active={false} title="Rückgängig">↩</ToolbarButton>
       <ToolbarButton onClick={() => editor.chain().focus().redo().run()} active={false} title="Wiederholen">↪</ToolbarButton>
+      <input
+        ref={imgInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void handleImageFile(file);
+          e.target.value = "";
+        }}
+      />
     </div>
   );
 }
 
-/* ── Haupt-Komponente ── */
+/* ══════════════════════════════════════════════════════════════
+   Haupt-Komponente
+══════════════════════════════════════════════════════════════ */
+
+type ArchiveEntry = {
+  _id: string;
+  subject: string;
+  batchId: string;
+  recipientCount: number;
+  sentBy: string;
+  createdAt: string;
+};
 
 export default function NewsletterAdminPage() {
+  const [tab, setTab] = useState<"erstellen" | "archiv" | "abonnenten">("erstellen");
   const [subject, setSubject] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [statusMessage, setStatusMessage] = useState("");
@@ -100,10 +161,29 @@ export default function NewsletterAdminPage() {
   const [testStatus, setTestStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [testMessage, setTestMessage] = useState("");
 
+  const [archive, setArchive] = useState<ArchiveEntry[]>([]);
+  const [archiveLoading, setArchiveLoading] = useState(false);
+  const [previewEntry, setPreviewEntry] = useState<{ subject: string; htmlContent: string } | null>(null);
+
   useEffect(() => {
     const acc = getStoredAccount();
     setIsAdmin(acc?.role === "ADMIN" || acc?.role === "SUPERADMIN");
   }, []);
+
+  const loadArchive = useCallback(async () => {
+    setArchiveLoading(true);
+    try {
+      const res = await fetch("/api/newsletter/archive");
+      const data = (await res.json()) as { archive?: ArchiveEntry[] };
+      setArchive(data.archive ?? []);
+    } finally {
+      setArchiveLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tab === "archiv") void loadArchive();
+  }, [tab, loadArchive]);
 
   const editor = useEditor({
     extensions: [
@@ -111,12 +191,13 @@ export default function NewsletterAdminPage() {
       Underline,
       Link.configure({ openOnClick: false, HTMLAttributes: { rel: "noopener noreferrer" } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Image.configure({ inline: false, allowBase64: true }),
+      Youtube.configure({ controls: true, nocookie: true }),
     ],
     content: "",
     editorProps: {
       attributes: {
-        class:
-          "prose prose-sm max-w-none min-h-[320px] p-4 focus:outline-none",
+        class: "prose prose-sm max-w-none min-h-[400px] p-4 focus:outline-none",
       },
     },
   });
@@ -124,41 +205,23 @@ export default function NewsletterAdminPage() {
   const handleSend = useCallback(async () => {
     if (!editor) return;
     const htmlContent = editor.getHTML();
-
-    if (!subject.trim()) {
-      setStatus("error");
-      setStatusMessage("Bitte gib einen Betreff ein.");
-      return;
-    }
-    if (!htmlContent || editor.isEmpty) {
-      setStatus("error");
-      setStatusMessage("Der Newsletter-Inhalt darf nicht leer sein.");
-      return;
-    }
-
-    const confirmed = window.confirm(
-      "Newsletter wirklich an alle aktiven Abonnenten senden? Diese Aktion kann nicht rückgängig gemacht werden."
-    );
+    if (!subject.trim()) { setStatus("error"); setStatusMessage("Bitte gib einen Betreff ein."); return; }
+    if (!htmlContent || editor.isEmpty) { setStatus("error"); setStatusMessage("Der Newsletter-Inhalt darf nicht leer sein."); return; }
+    const confirmed = window.confirm("Newsletter wirklich an alle aktiven Abonnenten senden? Diese Aktion kann nicht rückgängig gemacht werden.");
     if (!confirmed) return;
-
     setStatus("sending");
     setStatusMessage("");
     setSendProgress(null);
-
     try {
       const res = await fetch("/api/newsletter/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subject: subject.trim(), htmlContent }),
       });
-
       const data = (await res.json()) as { message?: string; queued?: number; batchId?: string };
-
       if (res.ok) {
         const total = data.queued ?? 0;
         setSendProgress({ sent: 0, failed: 0, total });
-
-        // Progress pollen bis alles versendet
         if (data.batchId && total > 0) {
           const batchId = data.batchId;
           const poll = setInterval(async () => {
@@ -174,7 +237,7 @@ export default function NewsletterAdminPage() {
                 setSubject("");
                 editor.commands.clearContent();
               }
-            } catch { /* ignore polling error */ }
+            } catch { /* ignore */ }
           }, 5000);
         } else {
           setStatus("success");
@@ -195,26 +258,11 @@ export default function NewsletterAdminPage() {
   const handleTestSend = useCallback(async () => {
     if (!editor) return;
     const htmlContent = editor.getHTML();
-
-    if (!subject.trim()) {
-      setTestStatus("error");
-      setTestMessage("Bitte zuerst einen Betreff eingeben.");
-      return;
-    }
-    if (!htmlContent || editor.isEmpty) {
-      setTestStatus("error");
-      setTestMessage("Der Newsletter-Inhalt darf nicht leer sein.");
-      return;
-    }
-    if (!testEmail.trim()) {
-      setTestStatus("error");
-      setTestMessage("Bitte eine Test-E-Mail-Adresse eingeben.");
-      return;
-    }
-
+    if (!subject.trim()) { setTestStatus("error"); setTestMessage("Bitte zuerst einen Betreff eingeben."); return; }
+    if (!htmlContent || editor.isEmpty) { setTestStatus("error"); setTestMessage("Der Newsletter-Inhalt darf nicht leer sein."); return; }
+    if (!testEmail.trim()) { setTestStatus("error"); setTestMessage("Bitte eine Test-E-Mail-Adresse eingeben."); return; }
     setTestStatus("sending");
     setTestMessage("");
-
     try {
       const res = await fetch("/api/newsletter/test", {
         method: "POST",
@@ -222,144 +270,208 @@ export default function NewsletterAdminPage() {
         body: JSON.stringify({ testEmail: testEmail.trim(), subject: subject.trim(), htmlContent }),
       });
       const data = (await res.json()) as { message?: string };
-      if (res.ok) {
-        setTestStatus("success");
-        setTestMessage(data.message ?? "Testzusendung gesendet.");
-      } else {
-        setTestStatus("error");
-        setTestMessage(data.message ?? "Unbekannter Fehler.");
-      }
+      if (res.ok) { setTestStatus("success"); setTestMessage(data.message ?? "Testzusendung gesendet."); }
+      else { setTestStatus("error"); setTestMessage(data.message ?? "Unbekannter Fehler."); }
     } catch {
       setTestStatus("error");
       setTestMessage("Netzwerkfehler – bitte versuche es erneut.");
     }
   }, [editor, subject, testEmail]);
 
-  if (isAdmin === null) {
-    return <div className="p-8 text-gray-500">Lade…</div>;
-  }
-  if (!isAdmin) {
-    return (
-      <div className="p-8 text-red-600 font-semibold">
-        Kein Zugriff. Diese Seite ist nur für Admins.
-      </div>
-    );
-  }
+  const loadPreview = useCallback(async (id: string) => {
+    const res = await fetch(`/api/newsletter/archive/${id}`);
+    const data = (await res.json()) as { entry?: { subject: string; htmlContent: string } };
+    if (data.entry) setPreviewEntry(data.entry);
+  }, []);
+
+  const loadIntoEditor = useCallback(async (id: string) => {
+    const res = await fetch(`/api/newsletter/archive/${id}`);
+    const data = (await res.json()) as { entry?: { subject: string; htmlContent: string } };
+    if (data.entry && editor) {
+      setSubject(data.entry.subject);
+      editor.commands.setContent(data.entry.htmlContent);
+      setTab("erstellen");
+    }
+  }, [editor]);
+
+  const deleteArchiveEntry = useCallback(async (id: string) => {
+    if (!window.confirm("Archiv-Eintrag wirklich löschen?")) return;
+    await fetch(`/api/newsletter/archive/${id}`, { method: "DELETE" });
+    setArchive((prev) => prev.filter((e) => e._id !== id));
+  }, []);
+
+  if (isAdmin === null) return <div className="p-8 text-gray-500">Lade…</div>;
+  if (!isAdmin) return <div className="p-8 text-red-600 font-semibold">Kein Zugriff.</div>;
+
+  const tabs: { id: "erstellen" | "archiv" | "abonnenten"; label: string }[] = [
+    { id: "erstellen", label: "✏️ Erstellen" },
+    { id: "archiv", label: "📦 Archiv" },
+    { id: "abonnenten", label: "👥 Abonnenten" },
+  ];
 
   return (
     <main className="w-full px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Newsletter verfassen</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Newsletter</h1>
 
-      {/* Betreff */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nl-subject">
-          Betreff
-        </label>
-        <input
-          id="nl-subject"
-          type="text"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          placeholder="Betreff des Newsletters…"
-          maxLength={300}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      {/* Editor */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Inhalt</label>
-        <div className="border border-gray-300 rounded-lg overflow-hidden shadow-sm">
-          <EditorToolbar editor={editor} />
-          <EditorContent editor={editor} className="bg-white" />
-        </div>
-        <p className="text-xs text-gray-400 mt-1">
-          Ein Abmelde-Link wird automatisch an das Ende jeder E-Mail angehängt.
-        </p>
-      </div>
-
-      {/* Testzusendung */}
-      <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <h2 className="text-sm font-semibold text-yellow-800 mb-2">🧪 Testzusendung</h2>
-        <p className="text-xs text-yellow-700 mb-3">
-          Sendet den aktuellen Entwurf direkt (ohne Queue) an eine einzelne Adresse zur Vorschau.
-          Die E-Mail enthält einen gelben Testhinweis-Banner.
-        </p>
-        <div className="flex gap-2">
-          <input
-            type="email"
-            value={testEmail}
-            onChange={(e) => setTestEmail(e.target.value)}
-            placeholder="test@beispiel.de"
-            className="flex-1 border border-yellow-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            onKeyDown={(e) => { if (e.key === "Enter") void handleTestSend(); }}
-          />
+      <div className="flex gap-1 border-b border-gray-200 mb-6">
+        {tabs.map((t) => (
           <button
+            key={t.id}
             type="button"
-            onClick={handleTestSend}
-            disabled={testStatus === "sending"}
-            className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+            onClick={() => setTab(t.id)}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors border-b-2 -mb-px ${
+              tab === t.id
+                ? "border-blue-600 text-blue-600 bg-white"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+            }`}
           >
-            {testStatus === "sending" ? "Wird gesendet…" : "Test senden"}
+            {t.label}
           </button>
-        </div>
-        {testStatus === "success" && (
-          <p className="mt-2 text-sm text-green-700">✓ {testMessage}</p>
-        )}
-        {testStatus === "error" && (
-          <p className="mt-2 text-sm text-red-600">✗ {testMessage}</p>
-        )}
+        ))}
       </div>
 
-      {/* Status / Fortschritt */}
-      {status === "sending" && sendProgress && sendProgress.total > 0 && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-sm">
-          <div className="flex justify-between mb-1">
-            <span>Wird versendet…</span>
-            <span className="font-semibold">{sendProgress.sent + sendProgress.failed} / {sendProgress.total}</span>
-          </div>
-          <div className="w-full bg-blue-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${Math.round(((sendProgress.sent + sendProgress.failed) / sendProgress.total) * 100)}%` }}
+      {tab === "erstellen" && (
+        <div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nl-subject">Betreff</label>
+            <input
+              id="nl-subject"
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Betreff des Newsletters…"
+              maxLength={300}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          {sendProgress.failed > 0 && (
-            <p className="mt-1 text-xs text-red-600">{sendProgress.failed} fehlgeschlagen</p>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Inhalt</label>
+            <div className="border border-gray-300 rounded-lg overflow-hidden shadow-sm">
+              <EditorToolbar editor={editor} />
+              <EditorContent editor={editor} className="bg-white" />
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              Abmelde-Link wird automatisch angehängt. Bilder werden als Base64 eingebettet.
+            </p>
+          </div>
+
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <h2 className="text-sm font-semibold text-yellow-800 mb-2">🧪 Testzusendung</h2>
+            <p className="text-xs text-yellow-700 mb-3">Sendet den Entwurf direkt (ohne Queue) an eine Adresse zur Vorschau.</p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="test@beispiel.de"
+                className="flex-1 border border-yellow-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                onKeyDown={(e) => { if (e.key === "Enter") void handleTestSend(); }}
+              />
+              <button type="button" onClick={handleTestSend} disabled={testStatus === "sending"}
+                className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap">
+                {testStatus === "sending" ? "Wird gesendet…" : "Test senden"}
+              </button>
+            </div>
+            {testStatus === "success" && <p className="mt-2 text-sm text-green-700">✓ {testMessage}</p>}
+            {testStatus === "error" && <p className="mt-2 text-sm text-red-600">✗ {testMessage}</p>}
+          </div>
+
+          {status === "sending" && sendProgress && sendProgress.total > 0 && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-sm">
+              <div className="flex justify-between mb-1">
+                <span>Wird versendet…</span>
+                <span className="font-semibold">{sendProgress.sent + sendProgress.failed} / {sendProgress.total}</span>
+              </div>
+              <div className="w-full bg-blue-200 rounded-full h-2">
+                <div className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.round(((sendProgress.sent + sendProgress.failed) / sendProgress.total) * 100)}%` }} />
+              </div>
+              {sendProgress.failed > 0 && <p className="mt-1 text-xs text-red-600">{sendProgress.failed} fehlgeschlagen</p>}
+            </div>
+          )}
+          {status === "success" && <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">✓ {statusMessage}</div>}
+          {status === "error" && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">✗ {statusMessage}</div>}
+
+          <button type="button" onClick={handleSend} disabled={status === "sending"}
+            className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            {status === "sending" ? "Wird versendet…" : "Newsletter senden"}
+          </button>
+        </div>
+      )}
+
+      {tab === "archiv" && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">Gesendete Newsletter</h2>
+            <button type="button" onClick={loadArchive} className="text-sm text-blue-600 hover:underline">Aktualisieren</button>
+          </div>
+          {archiveLoading ? (
+            <p className="text-gray-400 text-sm">Lade Archiv…</p>
+          ) : archive.length === 0 ? (
+            <p className="text-gray-400 text-sm">Noch keine Newsletter verschickt.</p>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-600 font-medium">
+                  <tr>
+                    <th className="px-4 py-2 text-left">Betreff</th>
+                    <th className="px-4 py-2 text-left">Empfänger</th>
+                    <th className="px-4 py-2 text-left">Gesendet von</th>
+                    <th className="px-4 py-2 text-left">Datum</th>
+                    <th className="px-4 py-2 text-left">Aktionen</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {archive.map((entry) => (
+                    <tr key={entry._id} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 font-medium text-gray-800 max-w-xs truncate">{entry.subject}</td>
+                      <td className="px-4 py-2 text-gray-600">{entry.recipientCount}</td>
+                      <td className="px-4 py-2 text-gray-500">{entry.sentBy}</td>
+                      <td className="px-4 py-2 text-gray-500 whitespace-nowrap">
+                        {new Date(entry.createdAt).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => void loadPreview(entry._id)} className="text-blue-600 hover:underline text-xs">Vorschau</button>
+                          <button type="button" onClick={() => void loadIntoEditor(entry._id)} className="text-green-600 hover:underline text-xs">Wiederverwenden</button>
+                          <button type="button" onClick={() => void deleteArchiveEntry(entry._id)} className="text-red-500 hover:underline text-xs">Löschen</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {previewEntry && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setPreviewEntry(null)}>
+              <div className="bg-white rounded-xl shadow-2xl w-[min(860px,95vw)] max-h-[90vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200">
+                  <h3 className="font-semibold text-gray-800 truncate">{previewEntry.subject}</h3>
+                  <button type="button" onClick={() => setPreviewEntry(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-5 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: previewEntry.htmlContent }} />
+              </div>
+            </div>
           )}
         </div>
       )}
-      {status === "success" && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
-          ✓ {statusMessage}
+
+      {tab === "abonnenten" && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Abonnenten verwalten</h2>
+          <SubscriberManager />
         </div>
       )}
-      {status === "error" && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
-          ✗ {statusMessage}
-        </div>
-      )}
-
-      {/* Senden-Button */}
-      <button
-        type="button"
-        onClick={handleSend}
-        disabled={status === "sending"}
-        className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        {status === "sending" ? "Wird in Warteschlange aufgenommen…" : "Newsletter senden"}
-      </button>
-
-      {/* Abonnenten-Verwaltung */}
-      <section className="mt-12">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Abonnenten verwalten</h2>
-        <SubscriberManager />
-      </section>
     </main>
   );
 }
 
-/* ── Abonnenten-Verwaltung ── */
+/* ══════════════════════════════════════════════════════════════
+   Abonnenten-Verwaltung
+══════════════════════════════════════════════════════════════ */
 
 type Subscriber = {
   _id: string;
@@ -385,9 +497,7 @@ function SubscriberManager() {
     }
   }, []);
 
-  useEffect(() => {
-    void fetchSubscribers();
-  }, [fetchSubscribers]);
+  useEffect(() => { void fetchSubscribers(); }, [fetchSubscribers]);
 
   const handleAdd = async () => {
     if (!newEmail.trim()) return;
@@ -398,18 +508,13 @@ function SubscriberManager() {
     });
     const data = (await res.json()) as { message?: string };
     setAddStatus(data.message ?? "");
-    if (res.ok || res.status === 201) {
-      setNewEmail("");
-      void fetchSubscribers();
-    }
+    if (res.ok || res.status === 201) { setNewEmail(""); void fetchSubscribers(); }
   };
 
   const activeCount = subscribers.filter((s) => s.status === "active").length;
-  const totalCount = subscribers.length;
 
   return (
     <div>
-      {/* E-Mail hinzufügen */}
       <div className="flex gap-2 mb-4">
         <input
           type="email"
@@ -419,22 +524,15 @@ function SubscriberManager() {
           className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           onKeyDown={(e) => { if (e.key === "Enter") void handleAdd(); }}
         />
-        <button
-          type="button"
-          onClick={handleAdd}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-        >
+        <button type="button" onClick={handleAdd}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
           Hinzufügen
         </button>
       </div>
       {addStatus && <p className="text-sm text-gray-600 mb-3">{addStatus}</p>}
-
-      {/* Statistik */}
       <p className="text-sm text-gray-500 mb-3">
-        <strong>{activeCount}</strong> aktive · <strong>{totalCount - activeCount}</strong> abgemeldet · <strong>{totalCount}</strong> gesamt
+        <strong>{activeCount}</strong> aktive · <strong>{subscribers.length - activeCount}</strong> abgemeldet · <strong>{subscribers.length}</strong> gesamt
       </p>
-
-      {/* Liste */}
       {loading ? (
         <p className="text-gray-400 text-sm">Lade Abonnenten…</p>
       ) : subscribers.length === 0 ? (
@@ -454,19 +552,13 @@ function SubscriberManager() {
                 <tr key={sub._id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 text-gray-800">{sub.email}</td>
                   <td className="px-4 py-2">
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                        sub.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-500"
-                      }`}
-                    >
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                      sub.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                    }`}>
                       {sub.status === "active" ? "Aktiv" : "Abgemeldet"}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-gray-500">
-                    {new Date(sub.createdAt).toLocaleDateString("de-DE")}
-                  </td>
+                  <td className="px-4 py-2 text-gray-500">{new Date(sub.createdAt).toLocaleDateString("de-DE")}</td>
                 </tr>
               ))}
             </tbody>
