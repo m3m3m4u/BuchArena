@@ -1793,19 +1793,25 @@ export default function VorlageErstellenPage() {
               <p className="text-arena-muted text-sm">Noch keine Vorlagen gespeichert.</p>
             ) : (
               <div className="grid gap-2">
-                {savedVorlagen.map((v) => (
-                  <div key={v._id} className="flex items-center gap-3 rounded-lg border border-arena-border bg-white px-3 py-2">
+                {savedVorlagen.map((v) => {
+                  const isActive = v._id === savedId;
+                  return (
+                  <div key={v._id} className={`flex items-center gap-3 rounded-lg border px-3 py-2 ${isActive ? "border-arena-blue bg-blue-50" : "border-arena-border bg-white"}`}>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{v.buchtitel || "Unbenannt"}</p>
+                      <p className="font-medium text-sm truncate">
+                        {isActive && <span className="inline-block w-2 h-2 rounded-full bg-arena-blue mr-1.5 align-middle" title="Aktuell geöffnet" />}
+                        {v.buchtitel || "Unbenannt"}
+                      </p>
                       <p className="text-xs text-arena-muted truncate">
                         {v.autorName || "–"}
                         {" · "}
                         {new Date(v.updatedAt).toLocaleDateString("de-DE")}
                         {v.submissionId && <span className="ml-1 text-green-600">(eingereicht)</span>}
+                        {isActive && <span className="ml-1 font-medium text-arena-blue">· geöffnet</span>}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                    <button type="button" className="btn btn-sm" onClick={() => loadVorlage(v._id)}>Laden</button>
+                    {!isActive && <button type="button" className="btn btn-sm" onClick={() => loadVorlage(v._id)}>Laden</button>}
                     {v.submissionId && (
                       <button type="button" className="btn btn-sm text-orange-600 border-orange-300 hover:bg-orange-50" onClick={() => withdrawSubmission(v._id)}><span className="hidden sm:inline">Zurückziehen</span><span className="sm:hidden text-xs">✕</span></button>
                     )}
@@ -1814,7 +1820,8 @@ export default function VorlageErstellenPage() {
                     </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
