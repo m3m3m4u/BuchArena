@@ -446,6 +446,30 @@ export default function AdminPage() {
     }
   }
 
+  /* ── Als Benutzer einloggen ── */
+  async function handleImpersonate(targetUsername: string) {
+    if (!account || account.role !== "SUPERADMIN") return;
+    if (!confirm(`Als „${targetUsername}" einloggen? Du kannst danach über den Banner oben zurückkehren.`)) return;
+    setBusyUser(targetUsername);
+    try {
+      const res = await fetch("/api/admin/users/impersonate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUsername }),
+      });
+      const data = (await res.json()) as { message?: string; user?: { username: string; email: string; role: string } };
+      if (!res.ok) throw new Error(data.message ?? "Imitation fehlgeschlagen.");
+      if (data.user) {
+        const { setStoredAccount } = await import("@/lib/client-account");
+        setStoredAccount(data.user as import("@/lib/client-account").LoggedInAccount);
+      }
+      window.location.href = "/profil";
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Imitation fehlgeschlagen.");
+      setBusyUser(null);
+    }
+  }
+
   if (!account) {
     return (
       <main className="centered-main">
@@ -908,6 +932,18 @@ export default function AdminPage() {
                       </td>
                       <td className="p-2 border-b border-arena-border-light">
                         <div className="flex gap-1 flex-wrap">
+                          {/* SuperAdmin: Als Benutzer einloggen */}
+                          {!isSuperAdmin && account.role === "SUPERADMIN" && (
+                            <button
+                              type="button"
+                              className="btn btn-sm"
+                              disabled={isBusy}
+                              title={`Als ${user.username} einloggen`}
+                              onClick={() => handleImpersonate(user.username)}
+                            >
+                              👤 Als User
+                            </button>
+                          )}
                           {/* SuperAdmin: Rolle umschalten */}
                           {!isSuperAdmin && account.role === "SUPERADMIN" && (
                             <button
@@ -1071,6 +1107,18 @@ export default function AdminPage() {
                       </Link>
                     </div>
                     <div className="flex gap-1.5 flex-wrap">
+                      {/* SuperAdmin: Als Benutzer einloggen */}
+                      {!isSuperAdmin && account.role === "SUPERADMIN" && (
+                        <button
+                          type="button"
+                          className="btn btn-sm"
+                          disabled={isBusy}
+                          title={`Als ${user.username} einloggen`}
+                          onClick={() => handleImpersonate(user.username)}
+                        >
+                          👤 Als User
+                        </button>
+                      )}
                       {/* SuperAdmin: Rolle umschalten */}
                       {!isSuperAdmin && account.role === "SUPERADMIN" && (
                         <button

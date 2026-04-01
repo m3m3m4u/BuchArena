@@ -10,10 +10,15 @@ export default function SiteHeader() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [impersonating, setImpersonating] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    const sync = () => setLoggedIn(!!getStoredAccount());
+    const sync = () => {
+      setLoggedIn(!!getStoredAccount());
+      const match = document.cookie.match(/(?:^|;\s*)impersonating_as=([^;]+)/);
+      setImpersonating(match ? decodeURIComponent(match[1]) : null);
+    };
     sync();
     window.addEventListener(ACCOUNT_CHANGED_EVENT, sync);
     window.addEventListener("storage", sync);
@@ -49,6 +54,17 @@ export default function SiteHeader() {
 
   const toggle = useCallback(() => setMenuOpen((v) => !v), []);
 
+  async function stopImpersonate() {
+    const res = await fetch("/api/admin/users/stop-impersonate", { method: "POST" });
+    const data = await res.json() as { user?: { username: string; email: string; role: string } };
+    if (res.ok && data.user) {
+      const { setStoredAccount } = await import("@/lib/client-account");
+      setStoredAccount(data.user as import("@/lib/client-account").LoggedInAccount);
+      setImpersonating(null);
+      window.location.href = "/admin";
+    }
+  }
+
   const publicLinks = (
     <>
       <Link href="/buecher" className="header-link-public w-full sm:w-auto">Bücher</Link>
@@ -79,6 +95,19 @@ export default function SiteHeader() {
 
   return (
     <header className="flex-shrink-0 z-50">
+      {/* Impersonation-Banner */}
+      {impersonating && (
+        <div style={{ background: "#f59e0b", color: "#1e1b4b" }} className="flex items-center justify-between px-4 py-1.5 text-sm font-medium">
+          <span>👤 Du siehst die Seite als <strong>{impersonating}</strong></span>
+          <button
+            type="button"
+            onClick={stopImpersonate}
+            className="ml-4 px-3 py-0.5 rounded text-xs font-bold border border-[#1e1b4b]/30 hover:bg-[#d97706] transition-colors"
+          >
+            ← Zurück zu Admin
+          </button>
+        </div>
+      )}
       {/* Obere Zeile – für alle sichtbar (blau) */}
       <div className="border-b border-[var(--color-arena-blue-light)]" style={{ background: "var(--color-arena-blue)", color: "#fff" }}>
         <div className="site-shell flex items-center justify-between">
