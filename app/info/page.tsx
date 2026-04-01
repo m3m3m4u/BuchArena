@@ -122,6 +122,77 @@ const bucharenaFaq: FaqItem[] = [
       </p>
     ),
   },
+  {
+    question: "Was ist die Tauschbörse?",
+    answer: (
+      <p>
+        In der <strong>Tauschbörse</strong> können Mitglieder Bücher, Hörbücher, E-Books und andere
+        buchbezogene Gegenstände zum Tausch anbieten. Du erstellst ein Angebot mit Titel und Beschreibung,
+        andere Mitglieder können dich direkt per Nachricht anfragen.
+      </p>
+    ),
+  },
+  {
+    question: "Was sind Lektoren auf der BuchArena?",
+    answer: (
+      <p>
+        Professionelle Lektorinnen und Lektoren können ein eigenes Profil anlegen, ihre Dienstleistungen
+        und freien Kapazitäten eintragen sowie Kontaktdaten hinterlegen. Autorinnen und Autoren können die
+        Lektoren-Übersicht durchsuchen und Lektoren direkt über die Nachrichtenfunktion kontaktieren.
+      </p>
+    ),
+  },
+  {
+    question: "Was sind Testleser und wie funktioniert das?",
+    answer: (
+      <p>
+        Autorinnen und Autoren können auf der BuchArena nach <strong>Testleserinnen und Testlesern</strong> suchen.
+        Dafür können sich interessierte Leserinnen und Leser als Testleser registrieren und ihr Profil
+        mit Vorlieben und Interessen ausfüllen. Autorinnen und Autoren können passende Testleser finden
+        und über die Nachrichtenfunktion Kontakt aufnehmen.
+      </p>
+    ),
+  },
+  {
+    question: "Was sind Lesezeichen?",
+    answer: (
+      <p>
+        Mit der <strong>Lesezeichen-Funktion</strong> kannst du Bücher, die dich interessieren, auf einer
+        persönlichen Merkliste speichern. So behältst du den Überblick über Bücher, die du lesen möchtest
+        oder die dir besonders gut gefallen haben.
+      </p>
+    ),
+  },
+  {
+    question: "Was ist die Buchempfehlung?",
+    answer: (
+      <p>
+        Unter <strong>Buchempfehlungen</strong> kannst du Bücher empfehlen, die dir besonders gut gefallen
+        haben – auch Bücher anderer Autorinnen und Autoren. So entsteht eine Community-kuratierte
+        Empfehlungsliste für alle Mitglieder.
+      </p>
+    ),
+  },
+  {
+    question: "Was ist das Buch der Woche?",
+    answer: (
+      <p>
+        Jede Woche wird ein <strong>Buch der Woche</strong> auf der Startseite hervorgehoben. Das gibt
+        Autorinnen und Autoren besondere Sichtbarkeit und zeigt der Community interessante neue Titel.
+      </p>
+    ),
+  },
+  {
+    question: "Was sind Schnipsel und Rezensionen?",
+    answer: (
+      <p>
+        <strong>Schnipsel</strong> sind kurze Textausschnitte aus Büchern, die Autorinnen und Autoren
+        teilen können, um Lust auf mehr zu machen.{" "}
+        <strong>Rezensionen</strong> sind ausführlichere Bewertungen und Besprechungen von Büchern.
+        Beides hilft dabei, Bücher bekannter zu machen und der Community einen Einblick zu geben.
+      </p>
+    ),
+  },
 ];
 
 const lernarenaFaq: FaqItem[] = [
@@ -224,6 +295,45 @@ const allgemeinFaq: FaqItem[] = [
         Ja. Wir verarbeiten nur die für den Betrieb notwendigen Daten und halten uns an die geltenden
         Datenschutzbestimmungen. Weitere Informationen findest du in unserer{" "}
         <Link href="/datenschutz" className="text-arena-link hover:underline">Datenschutzerklärung</Link>.
+      </p>
+    ),
+  },
+  {
+    question: "Ich habe mein Passwort vergessen. Was kann ich tun?",
+    answer: (
+      <p>
+        Auf der{" "}
+        <Link href="/passwort-vergessen" className="text-arena-link hover:underline">Passwort-vergessen-Seite</Link>{" "}
+        kannst du deine E-Mail-Adresse eingeben und erhältst einen Link zum Zurücksetzen deines Passworts.
+      </p>
+    ),
+  },
+  {
+    question: "Kann ich mein Konto löschen?",
+    answer: (
+      <p>
+        Ja. Du kannst dein Konto jederzeit in deinen <Link href="/profil" className="text-arena-link hover:underline">Profileinstellungen</Link> löschen.
+        Dabei werden alle deine Daten dauerhaft entfernt. Alternativ kannst du uns auch direkt per E-Mail
+        an{" "}
+        <a href="mailto:info@erklaerung-und-mehr.org" className="text-arena-link hover:underline">
+          info@erklaerung-und-mehr.org
+        </a>{" "}
+        kontaktieren.
+      </p>
+    ),
+  },
+  {
+    question: "Wie melde ich unangemessene Inhalte?",
+    answer: (
+      <p>
+        Solltest du unangemessene Inhalte oder Verstöße gegen unsere Nutzungsbedingungen entdecken,
+        nutze bitte die{" "}
+        <Link href="/support" className="text-arena-link hover:underline">Support-Seite</Link>{" "}
+        oder schreibe direkt an{" "}
+        <a href="mailto:info@erklaerung-und-mehr.org" className="text-arena-link hover:underline">
+          info@erklaerung-und-mehr.org
+        </a>.
+        Wir nehmen jede Meldung ernst und handeln schnell.
       </p>
     ),
   },
