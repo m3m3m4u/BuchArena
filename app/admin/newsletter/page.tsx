@@ -571,7 +571,7 @@ function SubscriberManager() {
     try {
       const [subRes, userRes] = await Promise.all([
         fetch("/api/newsletter/subscribers"),
-        fetch("/api/admin/users"),
+        fetch("/api/admin/users", { method: "POST" }),
       ]);
       const subData = (await subRes.json()) as { subscribers?: Subscriber[] };
       const userData = (await userRes.json()) as { users?: RegisteredOptIn[] };
