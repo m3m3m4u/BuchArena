@@ -533,6 +533,12 @@ export default function AdminPage() {
           >
             📬 Newsletter
           </button>
+          <button
+            className="btn btn-sm"
+            onClick={() => router.push("/admin/musik")}
+          >
+            🎵 Musik
+          </button>
         </div>
 
         {/* ══ Tab: Buch der Woche ══ */}

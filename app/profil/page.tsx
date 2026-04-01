@@ -1942,11 +1942,11 @@ function ProfilPageInner() {
         </div>
 
         {/* Verfügbarkeits-Schalter */}
-        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+        <div style={{ background: testleserProfile.verfuegbar ? "#f0fdf4" : "#fef2f2", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
           <div>
-            <span className="text-sm font-semibold">📖 Freie Kapazitäten</span>
-            <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0" }}>
-              Zeige an, ob du aktuell als Testleser verfügbar bist.
+            <span className="text-sm font-semibold">{testleserProfile.verfuegbar ? "✅ Freie Kapazitäten: Verfügbar" : "🚫 Freie Kapazitäten: Nicht verfügbar"}</span>
+            <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: testleserProfile.verfuegbar ? "#16a34a" : "#dc2626" }}>
+              {testleserProfile.verfuegbar ? "Du bist aktuell als Testleser verfügbar." : "Du bist aktuell nicht als Testleser verfügbar."}
             </p>
           </div>
           <button
@@ -1956,7 +1956,7 @@ function ProfilPageInner() {
             className="toggle-switch"
             style={{
               width: 48, height: 26, borderRadius: 13, border: "none",
-              background: testleserProfile.verfuegbar ? "var(--color-arena-blue)" : "#ccc",
+              background: testleserProfile.verfuegbar ? "#16a34a" : "#dc2626",
               position: "relative", cursor: "pointer", flexShrink: 0,
               transition: "background 0.2s",
             }}

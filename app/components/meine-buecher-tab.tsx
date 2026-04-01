@@ -409,7 +409,21 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
         Neues Buch anlegen
       </button>
 
-      <p className={isError ? "text-red-700" : ""}>{message}</p>
+      {message && !isError && <p className="text-sm text-green-700 mt-2">{message}</p>}
+      {isError && message && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-xl mx-4">
+            <p className="text-red-700 font-medium mb-4">{message}</p>
+            <button
+              type="button"
+              className="btn w-full"
+              onClick={() => { setMessage(""); setIsError(false); }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
 
       <h2>Meine angelegten Bücher</h2>
       {isLoading ? (

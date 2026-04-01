@@ -42,7 +42,7 @@ export default function TestleserPage() {
   ).sort((a, b) => a.localeCompare(b, "de"));
 
   const filtered = filterGenre
-    ? testleser.filter((t) => t.genres.includes(filterGenre))
+    ? testleser.filter((t) => t.genres.includes(filterGenre) || t.genres.length === 0)
     : testleser;
 
   return (
@@ -111,7 +111,7 @@ export default function TestleserPage() {
                           </span>
                         )}
                       </h2>
-                      {tl.genres.length > 0 && (
+                      {tl.genres.length > 0 ? (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {tl.genres.slice(0, 4).map((g) => (
                             <span
@@ -127,6 +127,8 @@ export default function TestleserPage() {
                             </span>
                           )}
                         </div>
+                      ) : (
+                        <p className="text-[11px] text-arena-muted mt-1 m-0">Hat kein bevorzugtes Genre angegeben.</p>
                       )}
                     </div>
                   </div>

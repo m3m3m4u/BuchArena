@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
-type Platform = "intro" | "instagram" | "youtube" | "reddit" | "tiktok" | "facebook" | "pinterest" | "linkedin";
+type Platform = "intro" | "instagram" | "youtube" | "reddit" | "tiktok" | "facebook" | "pinterest" | "linkedin" | "musik";
 
 const TABS: { key: Platform; label: string; icon: string }[] = [
   { key: "intro", label: "Überblick", icon: "🚀" },
@@ -14,6 +14,7 @@ const TABS: { key: Platform; label: string; icon: string }[] = [
   { key: "facebook", label: "Facebook", icon: "👥" },
   { key: "pinterest", label: "Pinterest", icon: "📌" },
   { key: "linkedin", label: "LinkedIn", icon: "💼" },
+  { key: "musik", label: "Musik", icon: "🎶" },
 ];
 
 function ChecklistItem({ title, children }: { title: string; children: React.ReactNode }) {
@@ -57,6 +58,20 @@ function PlatformLink({ platform }: { platform: string }) {
 
 export default function TippsPage() {
   const [tab, setTab] = useState<Platform>("intro");
+
+  type Track = { id: string; title: string; style: string; description: string; fileUrl: string; fileName: string; fileSize: number | null };
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [tracksLoading, setTracksLoading] = useState(false);
+
+  useEffect(() => {
+    if (tab !== "musik") return;
+    setTracksLoading(true);
+    fetch("/api/musik")
+      .then((r) => r.json())
+      .then((d: { tracks?: Track[] }) => setTracks(d.tracks ?? []))
+      .catch(() => {})
+      .finally(() => setTracksLoading(false));
+  }, [tab]);
 
   return (
     <main className="centered-main">
@@ -326,6 +341,55 @@ export default function TippsPage() {
               <p className="m-0"><strong>Der Effekt:</strong> LinkedIn zeigt deinen Kontakten: „[Dein Name] hat einen Beitrag von BuchArena kommentiert." Das erzeugt organische Reichweite ohne Werbung.</p>
             </ChecklistItem>
             <PlatformLink platform="linkedin" />
+          </div>
+        )}
+
+        {/* ── Musik ── */}
+        {tab === "musik" && (
+          <div className="space-y-5">
+            <div className="rounded-xl border-2 border-arena-blue/30 bg-arena-blue/5 p-6">
+              <h2 className="text-xl font-bold m-0 mb-3">🎶 Musik für deine Social-Media-Beiträge</h2>
+              <p className="m-0 text-[0.95rem] leading-relaxed">
+                Hier findest du kostenlose MP3-Dateien, die du in deinen Videos und Reels verwenden kannst.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-[0.9rem] leading-relaxed text-amber-900">
+              <p className="m-0 font-semibold mb-1">🖥️ Nutzungshinweis</p>
+              <p className="m-0">
+                Die Musik darf frei verwendet werden – für private und kommerzielle Beiträge.
+                Wir freuen uns, wenn du in der Beschreibung{" "}
+                <strong>bucharena.org</strong> als Quelle erwähnst – eine Verpflichtung dazu gibt es aber nicht.
+              </p>
+            </div>
+
+            {tracksLoading ? (
+              <p className="text-[#888] text-sm">Lade Tracks…</p>
+            ) : tracks.length === 0 ? (
+              <p className="text-[#888] text-sm">Aktuell sind keine Tracks verfügbar. Schau bald wieder vorbei!</p>
+            ) : (
+              <div className="grid gap-4">
+                {tracks.map((track) => (
+                  <div key={track.id} className="rounded-xl border border-arena-border-light bg-white p-5 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-bold text-arena-text text-base m-0">{track.title}</p>
+                        <span className="inline-block mt-1 text-xs bg-arena-blue/10 text-arena-blue px-2 py-0.5 rounded-full">{track.style}</span>
+                      </div>
+                      <a
+                        href={track.fileUrl}
+                        download={track.fileName}
+                        className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-arena-blue text-white text-sm font-medium hover:bg-arena-blue-light transition-colors no-underline"
+                      >
+                        ↓ Download
+                      </a>
+                    </div>
+                    <p className="text-[0.9rem] text-[#555] m-0">{track.description}</p>
+                    <audio controls className="w-full h-10" src={track.fileUrl} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
