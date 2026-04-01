@@ -356,6 +356,25 @@ export default function VorlageErstellenPage() {
       setError("Buchtitel ist erforderlich zum Speichern.");
       return;
     }
+
+    // Duplikat-Check: nur bei neuer Vorlage (kein savedId)
+    if (!savedId) {
+      const duplicate = savedVorlagen.find(
+        (v) => v.buchtitel?.trim().toLowerCase() === form.buchtitel.trim().toLowerCase()
+      );
+      if (duplicate) {
+        const load = confirm(
+          `Eine Vorlage für „${duplicate.buchtitel}" existiert bereits.\n\nMöchtest du die bestehende Vorlage laden statt eine neue zu erstellen?`
+        );
+        if (load) {
+          await loadVorlage(duplicate._id);
+          return;
+        }
+        // Nutzer wählt bewusst "Abbrechen" → kein Speichern
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const payload = { ...form, coverImg, autorImg };
