@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   experimental: {
     proxyClientMaxBodySize: "50mb",
+    instrumentationHook: true,
   },
   images: {
     remotePatterns: [

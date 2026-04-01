@@ -99,6 +99,14 @@ async function initializeDatabase(db: Db) {
   const submissions = db.collection("bucharenasubmissions");
   await submissions.createIndex({ submittedBy: 1, createdAt: -1 });
 
+  const nlSubscribers = db.collection("newsletter_subscribers");
+  await nlSubscribers.createIndex({ email: 1 }, { unique: true });
+  await nlSubscribers.createIndex({ status: 1 });
+
+  const nlQueue = db.collection("newsletter_queue");
+  await nlQueue.createIndex({ status: 1, createdAt: 1 });
+  await nlQueue.createIndex({ subscriberId: 1 });
+
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
     { projection: { _id: 1, passwordHash: 1, role: 1 } }
