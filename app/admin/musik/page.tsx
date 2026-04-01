@@ -94,7 +94,8 @@ export default function AdminMusikPage() {
   if (!isAdmin) return <div className="p-8 text-red-600 font-semibold">Kein Zugriff.</div>;
 
   return (
-    <main className="w-[min(900px,100%)] mx-auto px-4 py-8">
+    <main className="top-centered-main">
+      <div className="w-full">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">🎵 Musik für Social Media</h1>
 
       {/* Upload-Formular */}
@@ -192,6 +193,7 @@ export default function AdminMusikPage() {
           ))}
         </div>
       )}
+      </div>
     </main>
   );
 }
