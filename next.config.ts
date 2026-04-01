@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     proxyClientMaxBodySize: "50mb",
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
