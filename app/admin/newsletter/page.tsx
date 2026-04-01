@@ -221,8 +221,17 @@ type ArchiveEntry = {
   createdAt: string;
 };
 
+type DraftEntry = {
+  _id: string;
+  subject: string;
+  savedBy: string;
+  note: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export default function NewsletterAdminPage() {
-  const [tab, setTab] = useState<"erstellen" | "archiv" | "abonnenten">("erstellen");
+  const [tab, setTab] = useState<"erstellen" | "entwürfe" | "archiv" | "abonnenten">("erstellen");
   const [subject, setSubject] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [statusMessage, setStatusMessage] = useState("");
@@ -236,6 +245,13 @@ export default function NewsletterAdminPage() {
   const [archive, setArchive] = useState<ArchiveEntry[]>([]);
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [previewEntry, setPreviewEntry] = useState<{ subject: string; htmlContent: string } | null>(null);
+
+  const [drafts, setDrafts] = useState<DraftEntry[]>([]);
+  const [draftsLoading, setDraftsLoading] = useState(false);
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
+  const [draftNote, setDraftNote] = useState("");
+  const [draftStatusMsg, setDraftStatusMsg] = useState("");
+  const [draftSaving, setDraftSaving] = useState(false);
 
   useEffect(() => {
     const acc = getStoredAccount();
@@ -253,9 +269,21 @@ export default function NewsletterAdminPage() {
     }
   }, []);
 
+  const loadDrafts = useCallback(async () => {
+    setDraftsLoading(true);
+    try {
+      const res = await fetch("/api/newsletter/drafts");
+      const data = (await res.json()) as { drafts?: DraftEntry[] };
+      setDrafts(data.drafts ?? []);
+    } finally {
+      setDraftsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (tab === "archiv") void loadArchive();
-  }, [tab, loadArchive]);
+    if (tab === "entwürfe") void loadDrafts();
+  }, [tab, loadArchive, loadDrafts]);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -309,6 +337,8 @@ export default function NewsletterAdminPage() {
                 setStatusMessage(`Versand abgeschlossen: ${pd.sent} gesendet, ${pd.failed} fehlgeschlagen.`);
                 setSubject("");
                 editor.commands.clearContent();
+                setCurrentDraftId(null);
+                setDraftNote("");
               }
             } catch { /* ignore */ }
           }, 5000);
@@ -317,6 +347,8 @@ export default function NewsletterAdminPage() {
           setStatusMessage(data.message ?? `${total} Einträge in der Warteschlange.`);
           setSubject("");
           editor.commands.clearContent();
+          setCurrentDraftId(null);
+          setDraftNote("");
         }
       } else {
         setStatus("error");
@@ -357,6 +389,60 @@ export default function NewsletterAdminPage() {
     if (data.entry) setPreviewEntry(data.entry);
   }, []);
 
+  const handleSaveDraft = useCallback(async () => {
+    if (!editor) return;
+    const htmlContent = editor.getHTML();
+    if (!subject.trim() && editor.isEmpty) {
+      setDraftStatusMsg("Bitte Betreff oder Inhalt eingeben.");
+      return;
+    }
+    setDraftSaving(true);
+    setDraftStatusMsg("");
+    try {
+      const res = await fetch("/api/newsletter/drafts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: currentDraftId ?? undefined,
+          subject: subject.trim(),
+          htmlContent,
+          note: draftNote.trim(),
+        }),
+      });
+      const data = (await res.json()) as { message?: string; id?: string };
+      if (res.ok) {
+        if (!currentDraftId && data.id) setCurrentDraftId(data.id);
+        setDraftStatusMsg("✓ Entwurf gespeichert");
+        setTimeout(() => setDraftStatusMsg(""), 3000);
+      } else {
+        setDraftStatusMsg(data.message ?? "Fehler beim Speichern.");
+      }
+    } catch {
+      setDraftStatusMsg("Netzwerkfehler.");
+    } finally {
+      setDraftSaving(false);
+    }
+  }, [editor, subject, currentDraftId, draftNote]);
+
+  const loadDraftIntoEditor = useCallback(async (id: string) => {
+    const res = await fetch(`/api/newsletter/drafts/${id}`);
+    const data = (await res.json()) as { draft?: { subject: string; htmlContent: string; note: string } };
+    if (data.draft && editor) {
+      setSubject(data.draft.subject);
+      editor.commands.setContent(data.draft.htmlContent);
+      setDraftNote(data.draft.note);
+      setCurrentDraftId(id);
+      setTab("erstellen");
+    }
+  }, [editor]);
+
+  const deleteDraft = useCallback(async (id: string) => {
+    if (!window.confirm("Entwurf wirklich löschen?")) return;
+    await fetch(`/api/newsletter/drafts?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    setDrafts((prev) => prev.filter((d) => d._id !== id));
+    if (currentDraftId === id) setCurrentDraftId(null);
+  }, [currentDraftId]);
+
   const loadIntoEditor = useCallback(async (id: string) => {
     const res = await fetch(`/api/newsletter/archive/${id}`);
     const data = (await res.json()) as { entry?: { subject: string; htmlContent: string } };
@@ -376,8 +462,9 @@ export default function NewsletterAdminPage() {
   if (isAdmin === null) return <div className="p-8 text-gray-500">Lade…</div>;
   if (!isAdmin) return <div className="p-8 text-red-600 font-semibold">Kein Zugriff.</div>;
 
-  const tabs: { id: "erstellen" | "archiv" | "abonnenten"; label: string }[] = [
+  const tabs: { id: "erstellen" | "entwürfe" | "archiv" | "abonnenten"; label: string }[] = [
     { id: "erstellen", label: "✏️ Erstellen" },
+    { id: "entwürfe", label: `📝 Entwürfe${drafts.length > 0 ? ` (${drafts.length})` : ""}` },
     { id: "archiv", label: "📦 Archiv" },
     { id: "abonnenten", label: "👥 Abonnenten" },
   ];
@@ -405,6 +492,18 @@ export default function NewsletterAdminPage() {
 
       {tab === "erstellen" && (
         <div>
+          {currentDraftId && (
+            <div className="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg flex items-center justify-between text-sm">
+              <span className="text-indigo-700">Du bearbeitest einen gespeicherten Entwurf.</span>
+              <button
+                type="button"
+                onClick={() => { setCurrentDraftId(null); setDraftNote(""); }}
+                className="text-indigo-500 hover:text-indigo-700 underline text-xs"
+              >
+                Entwurf trennen
+              </button>
+            </div>
+          )}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nl-subject">Betreff</label>
             <input
@@ -427,6 +526,32 @@ export default function NewsletterAdminPage() {
             <p className="text-xs text-gray-400 mt-1">
               Abmelde-Link wird automatisch angehängt. Bilder werden als Base64 eingebettet.
             </p>
+          </div>
+
+          {/* Entwurf speichern */}
+          <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <h2 className="text-sm font-semibold text-indigo-800 mb-2">&#128452; Entwurf speichern</h2>
+            <p className="text-xs text-indigo-700 mb-3">Speichert den aktuellen Stand in der Datenbank, damit andere Admins weiterarbeiten können.</p>
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={draftNote}
+                onChange={(e) => setDraftNote(e.target.value)}
+                placeholder="Optionale Notiz für das Team (z. B. „wartet noch auf Grafik“)"
+                className="flex-1 border border-indigo-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={draftSaving}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+              >
+                {draftSaving ? "Speichert…" : currentDraftId ? "Entwurf aktualisieren" : "Als Entwurf speichern"}
+              </button>
+            </div>
+            {draftStatusMsg && (
+              <p className={`text-sm ${ draftStatusMsg.startsWith("✓") ? "text-green-700" : "text-red-600" }`}>{draftStatusMsg}</p>
+            )}
           </div>
 
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -470,6 +595,55 @@ export default function NewsletterAdminPage() {
             className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {status === "sending" ? "Wird versendet…" : "Newsletter senden"}
           </button>
+        </div>
+      )}
+
+      {tab === "entwürfe" && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">Gespeicherte Entwürfe</h2>
+            <button type="button" onClick={loadDrafts} className="text-sm text-blue-600 hover:underline">Aktualisieren</button>
+          </div>
+          {draftsLoading ? (
+            <p className="text-gray-400 text-sm">Lade Entwürfe…</p>
+          ) : drafts.length === 0 ? (
+            <p className="text-gray-400 text-sm">Noch keine Entwürfe gespeichert.</p>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-600 font-medium">
+                  <tr>
+                    <th className="px-4 py-2 text-left">Betreff</th>
+                    <th className="px-4 py-2 text-left">Notiz</th>
+                    <th className="px-4 py-2 text-left">Zuletzt von</th>
+                    <th className="px-4 py-2 text-left">Geändert</th>
+                    <th className="px-4 py-2 text-left">Aktionen</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {drafts.map((draft) => (
+                    <tr key={draft._id} className={`hover:bg-gray-50 ${currentDraftId === draft._id ? "bg-indigo-50" : ""}`}>
+                      <td className="px-4 py-2 font-medium text-gray-800 max-w-xs truncate">
+                        {draft.subject || <span className="text-gray-400 italic">Kein Betreff</span>}
+                        {currentDraftId === draft._id && <span className="ml-2 text-xs text-indigo-600 font-normal">(in Bearbeitung)</span>}
+                      </td>
+                      <td className="px-4 py-2 text-gray-500 max-w-xs truncate">{draft.note || "—"}</td>
+                      <td className="px-4 py-2 text-gray-500">{draft.savedBy}</td>
+                      <td className="px-4 py-2 text-gray-500 whitespace-nowrap">
+                        {new Date(draft.updatedAt).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => void loadDraftIntoEditor(draft._id)} className="text-indigo-600 hover:underline text-xs">Bearbeiten</button>
+                          <button type="button" onClick={() => void deleteDraft(draft._id)} className="text-red-500 hover:underline text-xs">Löschen</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

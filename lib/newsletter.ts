@@ -41,6 +41,18 @@ export type NewsletterArchiveDocument = {
   createdAt: Date;
 };
 
+export type NewsletterDraftDocument = {
+  _id?: ObjectId;
+  subject: string;
+  htmlContent: string;
+  /** Wer den Entwurf zuletzt gespeichert hat */
+  savedBy: string;
+  /** Freitext-Notiz für das Team */
+  note?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 /* ── Collection-Helpers ── */
 
 export async function getSubscribersCollection(): Promise<Collection<SubscriberDocument>> {
@@ -56,6 +68,11 @@ export async function getNewsletterQueueCollection(): Promise<Collection<Newslet
 export async function getNewsletterArchiveCollection(): Promise<Collection<NewsletterArchiveDocument>> {
   const db = await getDatabase();
   return db.collection<NewsletterArchiveDocument>("newsletter_archive");
+}
+
+export async function getNewsletterDraftsCollection(): Promise<Collection<NewsletterDraftDocument>> {
+  const db = await getDatabase();
+  return db.collection<NewsletterDraftDocument>("newsletter_drafts");
 }
 
 /* ── Indexes (beim Server-Start aufrufen) ── */
@@ -74,6 +91,9 @@ export async function initNewsletterIndexes(): Promise<void> {
 
   const archive = db.collection<NewsletterArchiveDocument>("newsletter_archive");
   await archive.createIndex({ createdAt: -1 });
+
+  const drafts = db.collection<NewsletterDraftDocument>("newsletter_drafts");
+  await drafts.createIndex({ updatedAt: -1 });
 }
 
 /* ── Helfer: Unsubscribe-Token ── */
