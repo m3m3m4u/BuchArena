@@ -149,6 +149,12 @@ ${bookContext}`,
       recommendations = [];
     }
 
+    // Nur Empfehlungen zurückgeben, deren bookId tatsächlich in der DB existiert
+    const validIds = new Set(bookList.map((b) => b.id));
+    recommendations = (recommendations as Array<Record<string, unknown>>).filter(
+      (r) => typeof r.bookId === "string" && validIds.has(r.bookId),
+    );
+
     return NextResponse.json({ recommendations });
   } catch (error) {
     console.error("Buchempfehlung Fehler:", error);

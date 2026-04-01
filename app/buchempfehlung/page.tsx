@@ -512,6 +512,8 @@ export default function BuchempfehlungPage() {
                   {rec.bookId && (
                     <Link
                       href={`/buch/${rec.bookId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-sm text-arena-link hover:underline"
                     >
                       → Zum Buch in der BuchArena
