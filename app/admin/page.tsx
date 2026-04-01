@@ -85,7 +85,7 @@ export default function AdminPage() {
 
   /* ── Haupt-Reiter ── */
   const router = useRouter();
-  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "users" | "newsletter-anmeldungen" | "newsletter-erstellen">("bdw");
+  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "users">("bdw");
 
   /* ── User-Suche & Paginierung ── */
   const [userSearch, setUserSearch] = useState("");
@@ -517,23 +517,21 @@ export default function AdminPage() {
             { key: "bdw" as const, label: "📖 Buch der Woche" },
             { key: "analytics" as const, label: "📊 Analyse" },
             { key: "users" as const, label: "👥 User-Übersicht" },
-            { key: "newsletter-anmeldungen" as const, label: "📬 Newsletter Anmeldungen" },
-            { key: "newsletter-erstellen" as const, label: "✉ Newsletter erstellen" },
-          ]).map((t) => (
+          ] as { key: "bdw" | "analytics" | "users"; label: string }[]).map((t) => (
             <button
               key={t.key}
               className={`btn btn-sm${mainTab === t.key ? " btn-primary" : ""}`}
-              onClick={() => {
-                if (t.key === "newsletter-erstellen") {
-                  router.push("/admin/newsletter");
-                } else {
-                  setMainTab(t.key);
-                }
-              }}
+              onClick={() => setMainTab(t.key)}
             >
               {t.label}
             </button>
           ))}
+          <button
+            className="btn btn-sm"
+            onClick={() => router.push("/admin/newsletter")}
+          >
+            📬 Newsletter
+          </button>
         </div>
 
         {/* ══ Tab: Buch der Woche ══ */}
@@ -1213,52 +1211,6 @@ export default function AdminPage() {
         })()}
           </>
         )}
-
-        {/* ══ Tab: Newsletter Anmeldungen ══ */}
-        {mainTab === "newsletter-anmeldungen" && (() => {
-          const subscribers = users.filter((u) => u.newsletterOptIn);
-          return (
-            <div className="grid gap-3">
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.5rem" }}>
-                <div style={{ background: "var(--color-arena-blue)", color: "#fff", borderRadius: 8, padding: "0.6rem 0.4rem", textAlign: "center" }}>
-                  <div style={{ fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.1 }}>{subscribers.length}</div>
-                  <div style={{ fontSize: "0.72rem", opacity: 0.85 }}>Angemeldet</div>
-                </div>
-                <div style={{ background: "var(--color-arena-blue-mid)", color: "#fff", borderRadius: 8, padding: "0.6rem 0.4rem", textAlign: "center" }}>
-                  <div style={{ fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.1 }}>{users.length}</div>
-                  <div style={{ fontSize: "0.72rem", opacity: 0.85 }}>User gesamt</div>
-                </div>
-              </div>
-
-              {subscribers.length === 0 ? (
-                <p style={{ color: "var(--color-arena-muted)", fontSize: "0.9rem" }}>Noch keine Newsletter-Anmeldungen.</p>
-              ) : (
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
-                    <thead>
-                      <tr style={{ borderBottom: "2px solid var(--color-arena-border)", textAlign: "left" }}>
-                        <th style={{ padding: "0.4rem 0.5rem" }}>#</th>
-                        <th style={{ padding: "0.4rem 0.5rem" }}>Benutzername</th>
-                        <th style={{ padding: "0.4rem 0.5rem" }}>E-Mail</th>
-                        <th style={{ padding: "0.4rem 0.5rem" }}>Registriert</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {subscribers.map((u, i) => (
-                        <tr key={u.username} style={{ borderBottom: "1px solid var(--color-arena-border-light)" }}>
-                          <td style={{ padding: "0.35rem 0.5rem", color: "var(--color-arena-muted)" }}>{i + 1}</td>
-                          <td style={{ padding: "0.35rem 0.5rem", fontWeight: 600 }}>{u.username}</td>
-                          <td style={{ padding: "0.35rem 0.5rem", wordBreak: "break-all" }}>{u.email}</td>
-                          <td style={{ padding: "0.35rem 0.5rem", whiteSpace: "nowrap", color: "var(--color-arena-muted)" }}>{formatDate(u.createdAt)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          );
-        })()}
 
         {message && <p className="text-red-700">{message}</p>}
 
