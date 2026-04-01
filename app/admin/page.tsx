@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import {
   ACCOUNT_CHANGED_EVENT,
@@ -83,7 +84,8 @@ export default function AdminPage() {
   const [busyUser, setBusyUser] = useState<string | null>(null);
 
   /* ── Haupt-Reiter ── */
-  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "users" | "newsletter">("bdw");
+  const router = useRouter();
+  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "users" | "newsletter-anmeldungen" | "newsletter-erstellen">("bdw");
 
   /* ── User-Suche & Paginierung ── */
   const [userSearch, setUserSearch] = useState("");
@@ -515,12 +517,19 @@ export default function AdminPage() {
             { key: "bdw" as const, label: "📖 Buch der Woche" },
             { key: "analytics" as const, label: "📊 Analyse" },
             { key: "users" as const, label: "👥 User-Übersicht" },
-            { key: "newsletter" as const, label: "📬 Newsletter" },
+            { key: "newsletter-anmeldungen" as const, label: "📬 Newsletter Anmeldungen" },
+            { key: "newsletter-erstellen" as const, label: "✉ Newsletter erstellen" },
           ]).map((t) => (
             <button
               key={t.key}
               className={`btn btn-sm${mainTab === t.key ? " btn-primary" : ""}`}
-              onClick={() => setMainTab(t.key)}
+              onClick={() => {
+                if (t.key === "newsletter-erstellen") {
+                  router.push("/admin/newsletter");
+                } else {
+                  setMainTab(t.key);
+                }
+              }}
             >
               {t.label}
             </button>
@@ -1205,29 +1214,11 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* ══ Tab: Newsletter ══ */}
-        {mainTab === "newsletter" && (() => {
+        {/* ══ Tab: Newsletter Anmeldungen ══ */}
+        {mainTab === "newsletter-anmeldungen" && (() => {
           const subscribers = users.filter((u) => u.newsletterOptIn);
           return (
             <div className="grid gap-3">
-              <Link
-                href="/admin/newsletter"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.4rem",
-                  background: "var(--color-arena-blue)",
-                  color: "#fff",
-                  borderRadius: 8,
-                  padding: "0.6rem 1rem",
-                  fontWeight: 600,
-                  fontSize: "0.9rem",
-                  textDecoration: "none",
-                  width: "fit-content",
-                }}
-              >
-                ✉ Newsletter erstellen &amp; versenden →
-              </Link>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.5rem" }}>
                 <div style={{ background: "var(--color-arena-blue)", color: "#fff", borderRadius: 8, padding: "0.6rem 0.4rem", textAlign: "center" }}>
                   <div style={{ fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.1 }}>{subscribers.length}</div>

@@ -310,7 +310,7 @@ export default function NewsletterAdminPage() {
   ];
 
   return (
-    <main className="w-full px-4 py-8">
+    <main className="w-[min(1100px,100%)] mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Newsletter</h1>
 
       <div className="flex gap-1 border-b border-gray-200 mb-6">
