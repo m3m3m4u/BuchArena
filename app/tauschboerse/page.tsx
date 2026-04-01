@@ -4,14 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 
-const CATEGORIES = ["Buch", "Hörbuch", "E-Book", "Lesezeichen", "Sonstiges"];
-
 type TauschItem = {
   id: string;
   authorUsername: string;
   title: string;
   description: string;
-  category: string;
   status: string;
   createdAt: string;
 };
@@ -47,10 +44,8 @@ export default function TauschboersePage() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Buch");
   const [isSaving, setIsSaving] = useState(false);
 
-  const [filterCategory, setFilterCategory] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
 
   useEffect(() => {
@@ -85,13 +80,12 @@ export default function TauschboersePage() {
       const res = await fetch("/api/tausch/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim(), description: description.trim(), category }),
+        body: JSON.stringify({ title: title.trim(), description: description.trim() }),
       });
       const data = (await res.json()) as { message?: string };
       if (!res.ok) throw new Error(data.message ?? "Fehler");
       setTitle("");
       setDescription("");
-      setCategory("Buch");
       setShowOverlay(false);
       await loadItems();
     } catch (err) {
@@ -133,7 +127,6 @@ export default function TauschboersePage() {
   }
 
   const filtered = items.filter((item) => {
-    if (filterCategory && item.category !== filterCategory) return false;
     if (filterStatus && item.status !== filterStatus) return false;
     return true;
   });
@@ -162,10 +155,6 @@ export default function TauschboersePage() {
 
         {/* Filter */}
         <div className="flex flex-wrap gap-2 my-2">
-          <select className="input-base text-sm" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-            <option value="">Alle Kategorien</option>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
           <select className="input-base text-sm" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             <option value="">Alle Status</option>
             <option value="offen">Offen</option>
@@ -190,9 +179,7 @@ export default function TauschboersePage() {
                     <span className={`ml-2 inline-block text-xs font-medium px-2 py-0.5 rounded-full ${statusColors[item.status] ?? ""}`}>
                       {item.status}
                     </span>
-                    <span className="ml-2 inline-block text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">
-                      {item.category}
-                    </span>
+
                   </div>
                 </div>
                 <p className="text-sm mt-1.5 whitespace-pre-line">{item.description}</p>
@@ -236,13 +223,6 @@ export default function TauschboersePage() {
             <label className="grid gap-1 text-[0.95rem]">
               Titel
               <input className="input-base" type="text" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} placeholder="Was möchtest du tauschen?" />
-            </label>
-
-            <label className="grid gap-1 text-[0.95rem]">
-              Kategorie
-              <select className="input-base" value={category} onChange={(e) => setCategory(e.target.value)}>
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
             </label>
 
             <label className="grid gap-1 text-[0.95rem]">
