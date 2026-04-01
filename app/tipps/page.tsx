@@ -60,7 +60,7 @@ export default function TippsPage() {
   const [tab, setTab] = useState<Platform>("intro");
   const [mainTab, setMainTab] = useState<MainTab>("social");
 
-  type Track = { id: string; title: string; style: string; description: string; fileUrl: string; fileName: string; fileSize: number | null };
+  type Track = { id: string; title: string; style: string; description: string; fileUrl: string; fileName: string; fileSize: number | null; soundcloudUrl: string | null };
   const [tracks, setTracks] = useState<Track[]>([]);
   const [tracksLoading, setTracksLoading] = useState(false);
 
@@ -78,11 +78,12 @@ export default function TippsPage() {
     <main className="centered-main">
       <section className="w-full max-w-[1100px] rounded-[14px] bg-white px-12 py-10 box-border max-sm:px-4 max-sm:py-6">
         <h1 className="mb-2 text-3xl font-extrabold max-sm:text-2xl">
-          💡 Support-Tipps für Autoren
+          {mainTab === "musik" ? "🎵 Hintergrundmusik" : "💡 Support-Tipps für Autoren"}
         </h1>
         <p className="text-[0.95rem] text-[#555] leading-relaxed mb-6">
-          Wir übernehmen die Video-Erstellung, das Design und den Upload.
-          Dein Job ist es, den „Motor" zu starten. Hier erfährst du, wie du das Beste aus jeder Plattform herausholst.
+          {mainTab === "musik"
+            ? "Kostenlose MP3-Tracks für deine Videos und Reels – von BuchArena für dich bereitgestellt."
+            : "Wir übernehmen die Video-Erstellung, das Design und den Upload. Dein Job ist es, den „Motor" zu starten. Hier erfährst du, wie du das Beste aus jeder Plattform herausholst."}
         </p>
 
         {/* Haupt-Tabs */}
@@ -406,15 +407,28 @@ export default function TippsPage() {
                         <span className="inline-block mt-1 text-xs bg-arena-blue/10 text-arena-blue px-2 py-0.5 rounded-full">{track.style}</span>
                       </div>
                       <a
-                        href={track.fileUrl}
-                        download={track.fileName}
+                        href={track.soundcloudUrl ?? track.fileUrl}
+                        target={track.soundcloudUrl ? "_blank" : undefined}
+                        rel={track.soundcloudUrl ? "noreferrer" : undefined}
+                        download={track.soundcloudUrl ? undefined : track.fileName}
                         className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-arena-blue text-white text-sm font-medium hover:bg-arena-blue-light transition-colors no-underline"
                       >
-                        ↓ Download
+                        {track.soundcloudUrl ? "🔗 SoundCloud" : "↓ Download"}
                       </a>
                     </div>
                     <p className="text-[0.9rem] text-[#555] m-0">{track.description}</p>
-                    <audio controls className="w-full h-10" src={track.fileUrl} />
+                    {track.soundcloudUrl ? (
+                      <iframe
+                        width="100%"
+                        height="80"
+                        scrolling="no"
+                        frameBorder="no"
+                        src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(track.soundcloudUrl)}&auto_play=false&show_artwork=false&show_comments=false&buying=false&liking=false&download=false&sharing=false`}
+                        className="rounded"
+                      />
+                    ) : (
+                      <audio controls className="w-full h-10" src={track.fileUrl} />
+                    )}
                   </div>
                 ))}
               </div>

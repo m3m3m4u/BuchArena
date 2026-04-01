@@ -12,6 +12,8 @@ export type MusikTrack = {
   fileName: string;
   /** Dateigröße in Bytes */
   fileSize?: number;
+  /** Optionale SoundCloud-Track-URL */
+  soundcloudUrl?: string;
   createdAt: Date;
   uploadedBy: string;
 };
@@ -34,6 +36,7 @@ export async function GET() {
       fileUrl: t.fileUrl,
       fileName: t.fileName,
       fileSize: t.fileSize ?? null,
+      soundcloudUrl: t.soundcloudUrl ?? null,
       createdAt: t.createdAt,
     })),
   });

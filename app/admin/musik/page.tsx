@@ -11,6 +11,7 @@ type Track = {
   fileUrl: string;
   fileName: string;
   fileSize: number | null;
+  soundcloudUrl: string | null;
   createdAt: string;
 };
 
@@ -30,6 +31,14 @@ export default function AdminMusikPage() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState("");
+
+  // SoundCloud-Formular
+  const [scTitle, setScTitle] = useState("");
+  const [scStyle, setScStyle] = useState("");
+  const [scDescription, setScDescription] = useState("");
+  const [scUrl, setScUrl] = useState("");
+  const [scSaving, setScSaving] = useState(false);
+  const [scMsg, setScMsg] = useState("");
 
   useEffect(() => {
     const acc = getStoredAccount();
@@ -76,6 +85,35 @@ export default function AdminMusikPage() {
       setMsg("Netzwerkfehler.");
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function handleSoundcloud(e: React.FormEvent) {
+    e.preventDefault();
+    if (!scTitle.trim() || !scStyle.trim() || !scDescription.trim() || !scUrl.trim()) {
+      setScMsg("Bitte alle Felder ausfüllen.");
+      return;
+    }
+    setScSaving(true);
+    setScMsg("");
+    try {
+      const res = await fetch("/api/musik/soundcloud", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: scTitle.trim(), style: scStyle.trim(), description: scDescription.trim(), soundcloudUrl: scUrl.trim() }),
+      });
+      const data = (await res.json()) as { message?: string };
+      if (res.ok) {
+        setScMsg("✓ " + (data.message ?? "Gespeichert."));
+        setScTitle(""); setScStyle(""); setScDescription(""); setScUrl("");
+        await loadTracks();
+      } else {
+        setScMsg(data.message ?? "Fehler.");
+      }
+    } catch {
+      setScMsg("Netzwerkfehler.");
+    } finally {
+      setScSaving(false);
     }
   }
 
@@ -161,6 +199,38 @@ export default function AdminMusikPage() {
         </form>
       </div>
 
+      {/* SoundCloud-Formular */}
+      <div className="mb-8 p-5 bg-white rounded-xl border border-gray-200 shadow-sm">
+        <h2 className="text-base font-semibold text-gray-800 mb-1">Track via SoundCloud hinzufügen</h2>
+        <p className="text-sm text-gray-500 mb-4">Direkt eine SoundCloud-Track-URL eintragen – kein Datei-Upload nötig.</p>
+        <form onSubmit={handleSoundcloud} className="grid gap-3">
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Titel *</label>
+              <input type="text" value={scTitle} onChange={(e) => setScTitle(e.target.value)} placeholder="z. B. Lyric Breeze" maxLength={200} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Stil / Genre *</label>
+              <input type="text" value={scStyle} onChange={(e) => setScStyle(e.target.value)} placeholder="z. B. Ambient, Pop" maxLength={100} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Beschreibung *</label>
+            <textarea value={scDescription} onChange={(e) => setScDescription(e.target.value)} placeholder="Wofür eignet sich der Track?" rows={2} maxLength={500} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">SoundCloud-URL *</label>
+            <input type="url" value={scUrl} onChange={(e) => setScUrl(e.target.value)} placeholder="https://soundcloud.com/lyberamusic/track-name" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div className="flex items-center gap-4">
+            <button type="submit" disabled={scSaving} className="bg-orange-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              {scSaving ? "Wird gespeichert…" : "SoundCloud-Track hinzufügen"}
+            </button>
+            {scMsg && <p className={`text-sm ${scMsg.startsWith("✓") ? "text-green-700" : "text-red-600"}`}>{scMsg}</p>}
+          </div>
+        </form>
+      </div>
+
       {/* Track-Liste */}
       <h2 className="text-base font-semibold text-gray-800 mb-3">
         Vorhandene Tracks ({tracks.length})
@@ -180,7 +250,18 @@ export default function AdminMusikPage() {
                   {track.fileSize && <span className="text-xs text-gray-400 shrink-0">{formatBytes(track.fileSize)}</span>}
                 </div>
                 <p className="text-sm text-gray-500 mb-2">{track.description}</p>
-                <audio controls className="w-full max-w-md h-9" src={track.fileUrl} />
+                {track.soundcloudUrl ? (
+                  <iframe
+                    width="100%"
+                    height="80"
+                    scrolling="no"
+                    frameBorder="no"
+                    src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(track.soundcloudUrl)}&auto_play=false&show_artwork=false&show_comments=false&buying=false&liking=false&download=false&sharing=false`}
+                    className="rounded"
+                  />
+                ) : (
+                  <audio controls className="w-full max-w-md h-9" src={track.fileUrl} />
+                )}
               </div>
               <button
                 type="button"
