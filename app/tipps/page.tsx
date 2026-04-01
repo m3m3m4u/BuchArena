@@ -83,7 +83,7 @@ export default function TippsPage() {
         <p className="text-[0.95rem] text-[#555] leading-relaxed mb-6">
           {mainTab === "musik"
             ? "Kostenlose MP3-Tracks für deine Videos und Reels – von BuchArena für dich bereitgestellt."
-            : "Wir übernehmen die Video-Erstellung, das Design und den Upload. Dein Job ist es, den „Motor" zu starten. Hier erfährst du, wie du das Beste aus jeder Plattform herausholst."}
+            : "Wir übernehmen die Video-Erstellung, das Design und den Upload. Dein Job ist es, den \u201EMotor\u201C zu starten. Hier erfährst du, wie du das Beste aus jeder Plattform herausholst."}
         </p>
 
         {/* Haupt-Tabs */}
