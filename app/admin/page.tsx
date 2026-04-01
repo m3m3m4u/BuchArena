@@ -85,7 +85,7 @@ export default function AdminPage() {
 
   /* ── Haupt-Reiter ── */
   const router = useRouter();
-  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "users">("bdw");
+  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "nachrichten" | "users">("bdw");
 
   /* ── User-Suche & Paginierung ── */
   const [userSearch, setUserSearch] = useState("");
@@ -516,8 +516,9 @@ export default function AdminPage() {
           {([
             { key: "bdw" as const, label: "📖 Buch der Woche" },
             { key: "analytics" as const, label: "📊 Analyse" },
-            { key: "users" as const, label: "👥 User-Übersicht" },
-          ] as { key: "bdw" | "analytics" | "users"; label: string }[]).map((t) => (
+            { key: "nachrichten" as const, label: "✉ Nachrichten" },
+          { key: "users" as const, label: "👥 User-Übersicht" },
+          ] as { key: "bdw" | "analytics" | "nachrichten" | "users"; label: string }[]).map((t) => (
             <button
               key={t.key}
               className={`btn btn-sm${mainTab === t.key ? " btn-primary" : ""}`}
@@ -1214,6 +1215,9 @@ export default function AdminPage() {
 
         {message && <p className="text-red-700">{message}</p>}
 
+        {/* ══ Tab: Nachrichten ══ */}
+        {mainTab === "nachrichten" && <BroadcastMessagePanel adminUsername={account.username} />}
+
         {/* ══ Overlay: Benutzername ändern ══ */}
         {renameTarget && (
           <div className="overlay-backdrop" onClick={() => setRenameTarget(null)}>
@@ -1310,5 +1314,139 @@ export default function AdminPage() {
         )}
       </section>
     </main>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Gruppen-Broadcast-Komponente
+══════════════════════════════════════════════════════════════ */
+
+type BroadcastGroup = "all" | "autoren" | "sprecher" | "blogger" | "testleser" | "lektoren";
+
+const GROUP_LABELS: Record<BroadcastGroup, string> = {
+  all: "🌐 Alle Nutzer",
+  autoren: "✍️ Autoren",
+  sprecher: "🎙️ Sprecher",
+  blogger: "📝 Blogger",
+  testleser: "📖 Testleser",
+  lektoren: "✏️ Lektoren",
+};
+
+function BroadcastMessagePanel({ adminUsername }: { adminUsername: string }) {
+  const [group, setGroup] = useState<BroadcastGroup>("all");
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [resultMessage, setResultMessage] = useState("");
+
+  // suppress unused warning – adminUsername is available for future use (e.g. display)
+  void adminUsername;
+
+  const handleSend = async () => {
+    if (!subject.trim() || !body.trim()) {
+      setStatus("error");
+      setResultMessage("Bitte Betreff und Nachricht ausfüllen.");
+      return;
+    }
+    const label = GROUP_LABELS[group];
+    if (!window.confirm(`Nachricht wirklich an alle „${label}" senden? Das kann nicht rückgängig gemacht werden.`)) return;
+
+    setStatus("sending");
+    setResultMessage("");
+    try {
+      const res = await fetch("/api/messages/broadcast-group", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ group, subject: subject.trim(), body: body.trim() }),
+      });
+      const data = (await res.json()) as { message?: string };
+      if (res.ok) {
+        setStatus("success");
+        setResultMessage(data.message ?? "Gesendet.");
+        setSubject("");
+        setBody("");
+      } else {
+        setStatus("error");
+        setResultMessage(data.message ?? "Unbekannter Fehler.");
+      }
+    } catch {
+      setStatus("error");
+      setResultMessage("Netzwerkfehler – bitte erneut versuchen.");
+    }
+  };
+
+  return (
+    <div className="grid gap-4">
+      <h2 className="text-base font-semibold text-gray-800 m-0">Nachricht an Gruppe senden</h2>
+      <p className="text-sm text-arena-muted" style={{ marginTop: 0 }}>
+        Sendet eine direkte Nachricht (Posteingang) an alle aktiven Nutzer der gewählten Gruppe.
+      </p>
+
+      {/* Gruppen-Auswahl */}
+      <div className="flex flex-wrap gap-2">
+        {(Object.keys(GROUP_LABELS) as BroadcastGroup[]).map((g) => (
+          <button
+            key={g}
+            type="button"
+            className={`btn btn-sm${group === g ? " btn-primary" : ""}`}
+            onClick={() => setGroup(g)}
+          >
+            {GROUP_LABELS[g]}
+          </button>
+        ))}
+      </div>
+
+      {/* Betreff */}
+      <div>
+        <label className="block text-sm font-semibold mb-1" htmlFor="broadcast-subject">
+          Betreff
+        </label>
+        <input
+          id="broadcast-subject"
+          type="text"
+          className="input-base w-full"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          placeholder="Betreff der Nachricht…"
+          maxLength={200}
+        />
+      </div>
+
+      {/* Nachrichtentext */}
+      <div>
+        <label className="block text-sm font-semibold mb-1" htmlFor="broadcast-body">
+          Nachricht
+        </label>
+        <textarea
+          id="broadcast-body"
+          className="input-base w-full"
+          rows={8}
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="Nachrichtentext…"
+          maxLength={5000}
+          style={{ resize: "vertical", fontFamily: "inherit" }}
+        />
+        <p className="text-xs text-arena-muted mt-1">{body.length} / 5000 Zeichen</p>
+      </div>
+
+      {/* Status */}
+      {status === "success" && (
+        <div className="p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">✓ {resultMessage}</div>
+      )}
+      {status === "error" && (
+        <div className="p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">✗ {resultMessage}</div>
+      )}
+
+      <button
+        type="button"
+        onClick={handleSend}
+        disabled={status === "sending" || !subject.trim() || !body.trim()}
+        className="btn btn-primary"
+        style={{ width: "fit-content" }}
+      >
+        {status === "sending" ? "Wird gesendet…" : `An „${GROUP_LABELS[group]}" senden`}
+      </button>
+    </div>
   );
 }
