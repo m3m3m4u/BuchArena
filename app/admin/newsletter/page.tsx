@@ -93,6 +93,7 @@ export default function NewsletterAdminPage() {
   const [subject, setSubject] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [statusMessage, setStatusMessage] = useState("");
+  const [sendProgress, setSendProgress] = useState<{ sent: number; failed: number; total: number } | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   const [testEmail, setTestEmail] = useState("");
@@ -142,6 +143,7 @@ export default function NewsletterAdminPage() {
 
     setStatus("sending");
     setStatusMessage("");
+    setSendProgress(null);
 
     try {
       const res = await fetch("/api/newsletter/send", {
@@ -150,13 +152,36 @@ export default function NewsletterAdminPage() {
         body: JSON.stringify({ subject: subject.trim(), htmlContent }),
       });
 
-      const data = (await res.json()) as { message?: string; queued?: number };
+      const data = (await res.json()) as { message?: string; queued?: number; batchId?: string };
 
       if (res.ok) {
-        setStatus("success");
-        setStatusMessage(data.message ?? `${data.queued ?? 0} Einträge in der Warteschlange.`);
-        setSubject("");
-        editor.commands.clearContent();
+        const total = data.queued ?? 0;
+        setSendProgress({ sent: 0, failed: 0, total });
+
+        // Progress pollen bis alles versendet
+        if (data.batchId && total > 0) {
+          const batchId = data.batchId;
+          const poll = setInterval(async () => {
+            try {
+              const pr = await fetch(`/api/newsletter/progress?batchId=${encodeURIComponent(batchId)}`);
+              if (!pr.ok) return;
+              const pd = (await pr.json()) as { sent: number; failed: number; pending: number; total: number };
+              setSendProgress({ sent: pd.sent, failed: pd.failed, total: pd.total });
+              if (pd.pending === 0) {
+                clearInterval(poll);
+                setStatus("success");
+                setStatusMessage(`Versand abgeschlossen: ${pd.sent} gesendet, ${pd.failed} fehlgeschlagen.`);
+                setSubject("");
+                editor.commands.clearContent();
+              }
+            } catch { /* ignore polling error */ }
+          }, 5000);
+        } else {
+          setStatus("success");
+          setStatusMessage(data.message ?? `${total} Einträge in der Warteschlange.`);
+          setSubject("");
+          editor.commands.clearContent();
+        }
       } else {
         setStatus("error");
         setStatusMessage(data.message ?? "Unbekannter Fehler.");
@@ -222,7 +247,7 @@ export default function NewsletterAdminPage() {
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
+    <main className="w-full px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Newsletter verfassen</h1>
 
       {/* Betreff */}
@@ -286,7 +311,24 @@ export default function NewsletterAdminPage() {
         )}
       </div>
 
-      {/* Status */}
+      {/* Status / Fortschritt */}
+      {status === "sending" && sendProgress && sendProgress.total > 0 && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-sm">
+          <div className="flex justify-between mb-1">
+            <span>Wird versendet…</span>
+            <span className="font-semibold">{sendProgress.sent + sendProgress.failed} / {sendProgress.total}</span>
+          </div>
+          <div className="w-full bg-blue-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+              style={{ width: `${Math.round(((sendProgress.sent + sendProgress.failed) / sendProgress.total) * 100)}%` }}
+            />
+          </div>
+          {sendProgress.failed > 0 && (
+            <p className="mt-1 text-xs text-red-600">{sendProgress.failed} fehlgeschlagen</p>
+          )}
+        </div>
+      )}
       {status === "success" && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
           ✓ {statusMessage}

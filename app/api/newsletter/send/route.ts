@@ -44,6 +44,7 @@ export async function POST(request: Request) {
     // Für jeden Abonnenten einen Queue-Eintrag erstellen
     const queueCol = await getNewsletterQueueCollection();
     const now = new Date();
+    const batchId = `batch_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     const queueEntries = activeSubscribers.map((sub) => ({
       subscriberId: sub._id!,
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
       subject,
       htmlContent,
       status: "pending" as const,
+      batchId,
       createdAt: now,
     }));
 
@@ -59,6 +61,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       message: `Newsletter für ${queueEntries.length} Abonnenten in die Warteschlange aufgenommen.`,
       queued: queueEntries.length,
+      batchId,
     });
   } catch (err) {
     console.error("[Newsletter API] Fehler:", err);

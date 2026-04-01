@@ -23,6 +23,7 @@ export type NewsletterQueueDocument = {
   subject: string;
   htmlContent: string;
   status: NewsletterQueueStatus;
+  batchId: string;
   createdAt: Date;
   sentAt?: Date;
   failedAt?: Date;
@@ -53,6 +54,7 @@ export async function initNewsletterIndexes(): Promise<void> {
   const queue = db.collection<NewsletterQueueDocument>("newsletter_queue");
   await queue.createIndex({ status: 1, createdAt: 1 });
   await queue.createIndex({ subscriberId: 1 });
+  await queue.createIndex({ batchId: 1 });
 }
 
 /* ── Helfer: Unsubscribe-Token ── */
