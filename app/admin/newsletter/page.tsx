@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
@@ -44,95 +44,167 @@ function ToolbarButton({
   );
 }
 
-function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
-  const imgInputRef = useRef<HTMLInputElement>(null);
+/* ── URL-Input-Overlay ── */
+type UrlModalConfig = {
+  title: string;
+  placeholder: string;
+  initial: string;
+  onConfirm: (url: string) => void;
+};
 
-  const setLink = useCallback(() => {
+function UrlInputModal({ config, onClose }: { config: UrlModalConfig; onClose: () => void }) {
+  const [value, setValue] = useState(config.initial);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+
+  const confirm = () => {
+    if (value.trim()) config.onConfirm(value.trim());
+    onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50"
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-white rounded-xl shadow-2xl w-[min(480px,95vw)] p-5">
+        <h3 className="text-base font-semibold text-gray-800 mb-3">{config.title}</h3>
+        <input
+          ref={inputRef}
+          type="url"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={config.placeholder}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") confirm();
+            if (e.key === "Escape") onClose();
+          }}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+        />
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose}
+            className="px-4 py-1.5 rounded-lg text-sm border border-gray-300 text-gray-600 hover:bg-gray-50">
+            Abbrechen
+          </button>
+          <button type="button" onClick={confirm}
+            className="px-4 py-1.5 rounded-lg text-sm bg-blue-600 text-white font-medium hover:bg-blue-700">
+            Einfügen
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditorToolbar({ editor }: { editor: Editor | null }) {
+  const imgInputRef = useRef<HTMLInputElement>(null);
+  const [urlModal, setUrlModal] = useState<UrlModalConfig | null>(null);
+
+  const openLinkModal = useCallback(() => {
     if (!editor) return;
     const prev = editor.getAttributes("link").href as string | undefined;
-    const url = window.prompt("URL eingeben:", prev ?? "https://");
-    if (url === null) return;
-    if (url === "") {
-      editor.chain().focus().extendMarkRange("link").unsetLink().run();
-      return;
-    }
-    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+    setUrlModal({
+      title: "Link einfügen",
+      placeholder: "https://",
+      initial: prev ?? "https://",
+      onConfirm: (url) => {
+        if (url === "") {
+          editor.chain().focus().extendMarkRange("link").unsetLink().run();
+        } else {
+          editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+        }
+      },
+    });
   }, [editor]);
 
-  const insertYoutube = useCallback(() => {
+  const openYoutubeModal = useCallback(() => {
     if (!editor) return;
-    const url = window.prompt("YouTube-URL eingeben:", "https://www.youtube.com/watch?v=");
-    if (!url) return;
-    editor.chain().focus().setYoutubeVideo({ src: url, width: 640, height: 360 }).run();
+    setUrlModal({
+      title: "YouTube-Video einbetten",
+      placeholder: "https://www.youtube.com/watch?v=...",
+      initial: "https://www.youtube.com/watch?v=",
+      onConfirm: (url) => {
+        editor.chain().focus().setYoutubeVideo({ src: url, width: 640, height: 360 }).run();
+      },
+    });
   }, [editor]);
 
-  const handleImageFile = useCallback(
-    async (file: File) => {
-      if (!editor) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const src = reader.result as string;
-        editor.chain().focus().setImage({ src }).run();
-      };
-      reader.readAsDataURL(file);
-    },
-    [editor]
-  );
-
-  const insertImageUrl = useCallback(() => {
+  const openImageUrlModal = useCallback(() => {
     if (!editor) return;
-    const url = window.prompt("Bild-URL eingeben:", "https://");
-    if (!url) return;
-    editor.chain().focus().setImage({ src: url }).run();
+    setUrlModal({
+      title: "Bild-URL einfügen",
+      placeholder: "https://beispiel.de/bild.jpg",
+      initial: "https://",
+      onConfirm: (url) => {
+        editor.chain().focus().setImage({ src: url }).run();
+      },
+    });
+  }, [editor]);
+
+  const handleImageFile = useCallback(async (file: File) => {
+    if (!editor) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const src = reader.result as string;
+      editor.chain().focus().setImage({ src }).run();
+    };
+    reader.readAsDataURL(file);
   }, [editor]);
 
   if (!editor) return null;
 
   return (
-    <div className="flex flex-wrap gap-1 p-2 border border-b-0 border-gray-300 rounded-t-lg bg-gray-50">
-      <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Fett">
-        <strong>B</strong>
-      </ToolbarButton>
-      <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Kursiv">
-        <em>I</em>
-      </ToolbarButton>
-      <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Unterstrichen">
-        <span className="underline">U</span>
-      </ToolbarButton>
-      <span className="border-l border-gray-300 mx-1" />
-      <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="Überschrift 1">H1</ToolbarButton>
-      <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="Überschrift 2">H2</ToolbarButton>
-      <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="Überschrift 3">H3</ToolbarButton>
-      <span className="border-l border-gray-300 mx-1" />
-      <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Aufzählung">• Liste</ToolbarButton>
-      <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Nummerierte Liste">1. Liste</ToolbarButton>
-      <span className="border-l border-gray-300 mx-1" />
-      <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title="Linksbündig">⬱</ToolbarButton>
-      <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title="Zentriert">≡</ToolbarButton>
-      <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Rechtsbündig">⬰</ToolbarButton>
-      <span className="border-l border-gray-300 mx-1" />
-      <ToolbarButton onClick={setLink} active={editor.isActive("link")} title="Link einfügen">🔗 Link</ToolbarButton>
-      <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Zitat">❝</ToolbarButton>
-      <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} active={false} title="Trennlinie">—</ToolbarButton>
-      <span className="border-l border-gray-300 mx-1" />
-      <ToolbarButton onClick={() => imgInputRef.current?.click()} active={false} title="Bild hochladen">🖼 Bild</ToolbarButton>
-      <ToolbarButton onClick={insertImageUrl} active={false} title="Bild per URL">🔗 Bild-URL</ToolbarButton>
-      <ToolbarButton onClick={insertYoutube} active={editor.isActive("youtube")} title="YouTube-Video einbetten">▶ YouTube</ToolbarButton>
-      <span className="border-l border-gray-300 mx-1" />
-      <ToolbarButton onClick={() => editor.chain().focus().undo().run()} active={false} title="Rückgängig">↩</ToolbarButton>
-      <ToolbarButton onClick={() => editor.chain().focus().redo().run()} active={false} title="Wiederholen">↪</ToolbarButton>
-      <input
-        ref={imgInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) void handleImageFile(file);
-          e.target.value = "";
-        }}
-      />
-    </div>
+    <>
+      {urlModal && <UrlInputModal config={urlModal} onClose={() => setUrlModal(null)} />}
+      <div className="flex flex-wrap gap-1 p-2 border border-b-0 border-gray-300 rounded-t-lg bg-gray-50">
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Fett">
+          <strong>B</strong>
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Kursiv">
+          <em>I</em>
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Unterstrichen">
+          <span className="underline">U</span>
+        </ToolbarButton>
+        <span className="border-l border-gray-300 mx-1" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="Überschrift 1">H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="Überschrift 2">H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="Überschrift 3">H3</ToolbarButton>
+        <span className="border-l border-gray-300 mx-1" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Aufzählung">• Liste</ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Nummerierte Liste">1. Liste</ToolbarButton>
+        <span className="border-l border-gray-300 mx-1" />
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title="Linksbündig">⬱</ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title="Zentriert">≡</ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Rechtsbündig">⬰</ToolbarButton>
+        <span className="border-l border-gray-300 mx-1" />
+        <ToolbarButton onClick={openLinkModal} active={editor.isActive("link")} title="Link einfügen">🔗 Link</ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Zitat">❝</ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} active={false} title="Trennlinie">—</ToolbarButton>
+        <span className="border-l border-gray-300 mx-1" />
+        <ToolbarButton onClick={() => imgInputRef.current?.click()} active={false} title="Bild hochladen">🖼 Bild</ToolbarButton>
+        <ToolbarButton onClick={openImageUrlModal} active={false} title="Bild per URL">🔗 Bild-URL</ToolbarButton>
+        <ToolbarButton onClick={openYoutubeModal} active={editor.isActive("youtube")} title="YouTube-Video einbetten">▶ YouTube</ToolbarButton>
+        <span className="border-l border-gray-300 mx-1" />
+        <ToolbarButton onClick={() => editor.chain().focus().undo().run()} active={false} title="Rückgängig">↩</ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().redo().run()} active={false} title="Wiederholen">↪</ToolbarButton>
+        <input
+          ref={imgInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void handleImageFile(file);
+            e.target.value = "";
+          }}
+        />
+      </div>
+    </>
   );
 }
 
