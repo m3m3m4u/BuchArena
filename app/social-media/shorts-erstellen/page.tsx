@@ -232,11 +232,23 @@ export default function ShortsErstellenPage() {
 
   /* ═══ SAVE / LOAD / SUBMIT ═══ */
 
+  const VORLAGEN_CACHE_KEY = "bucharena_shorts_vorlagen_cache";
+
   const loadVorlagen = useCallback(async () => {
+    // Aus Cache sofort laden (kein Flackern)
+    try {
+      const cached = sessionStorage.getItem(VORLAGEN_CACHE_KEY);
+      if (cached) setSavedVorlagen(JSON.parse(cached));
+    } catch { /* ignore */ }
+
+    // Dann frisch laden und Cache aktualisieren
     try {
       const res = await fetch("/api/bucharena/vorlagen");
       const data = await res.json();
-      if (data.success) setSavedVorlagen(data.vorlagen);
+      if (data.success) {
+        setSavedVorlagen(data.vorlagen);
+        sessionStorage.setItem(VORLAGEN_CACHE_KEY, JSON.stringify(data.vorlagen));
+      }
     } catch { /* ignore */ }
   }, []);
 
