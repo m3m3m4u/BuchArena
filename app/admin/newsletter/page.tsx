@@ -534,7 +534,6 @@ export default function NewsletterAdminPage() {
 
       {tab === "abonnenten" && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Abonnenten verwalten</h2>
           <SubscriberManager />
         </div>
       )}
@@ -543,7 +542,7 @@ export default function NewsletterAdminPage() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Abonnenten-Verwaltung
+   Abonnenten-Verwaltung (extern + registrierte Nutzer)
 ══════════════════════════════════════════════════════════════ */
 
 type Subscriber = {
@@ -553,18 +552,31 @@ type Subscriber = {
   createdAt: string;
 };
 
+type RegisteredOptIn = {
+  username: string;
+  email: string;
+  createdAt?: string | null;
+};
+
 function SubscriberManager() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [registeredOptIns, setRegisteredOptIns] = useState<RegisteredOptIn[]>([]);
   const [loading, setLoading] = useState(true);
   const [newEmail, setNewEmail] = useState("");
   const [addStatus, setAddStatus] = useState("");
+  const [activeSection, setActiveSection] = useState<"extern" | "registriert">("extern");
 
   const fetchSubscribers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/newsletter/subscribers");
-      const data = (await res.json()) as { subscribers?: Subscriber[] };
-      setSubscribers(data.subscribers ?? []);
+      const [subRes, userRes] = await Promise.all([
+        fetch("/api/newsletter/subscribers"),
+        fetch("/api/admin/users"),
+      ]);
+      const subData = (await subRes.json()) as { subscribers?: Subscriber[] };
+      const userData = (await userRes.json()) as { users?: RegisteredOptIn[] };
+      setSubscribers(subData.subscribers ?? []);
+      setRegisteredOptIns((userData.users ?? []).filter((u) => (u as { newsletterOptIn?: boolean }).newsletterOptIn));
     } finally {
       setLoading(false);
     }
@@ -584,59 +596,130 @@ function SubscriberManager() {
     if (res.ok || res.status === 201) { setNewEmail(""); void fetchSubscribers(); }
   };
 
-  const activeCount = subscribers.filter((s) => s.status === "active").length;
+  const activeExt = subscribers.filter((s) => s.status === "active").length;
+  const totalAll = activeExt + registeredOptIns.length;
 
   return (
     <div>
-      <div className="flex gap-2 mb-4">
-        <input
-          type="email"
-          value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
-          placeholder="neue@email.de"
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onKeyDown={(e) => { if (e.key === "Enter") void handleAdd(); }}
-        />
-        <button type="button" onClick={handleAdd}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
-          Hinzufügen
+      {/* Zusammenfassung */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="bg-blue-600 text-white rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold leading-tight">{totalAll}</div>
+          <div className="text-xs opacity-85">Gesamt aktiv</div>
+        </div>
+        <div className="bg-blue-500 text-white rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold leading-tight">{activeExt}</div>
+          <div className="text-xs opacity-85">Externe Anmeldungen</div>
+        </div>
+        <div className="bg-blue-400 text-white rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold leading-tight">{registeredOptIns.length}</div>
+          <div className="text-xs opacity-85">Registrierte Nutzer</div>
+        </div>
+      </div>
+
+      {/* Tabs zwischen den zwei Quellen */}
+      <div className="flex gap-1 border-b border-gray-200 mb-4">
+        <button
+          type="button"
+          onClick={() => setActiveSection("extern")}
+          className={`px-4 py-2 text-sm font-medium rounded-t border-b-2 -mb-px transition-colors ${
+            activeSection === "extern" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Externe Anmeldungen ({subscribers.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveSection("registriert")}
+          className={`px-4 py-2 text-sm font-medium rounded-t border-b-2 -mb-px transition-colors ${
+            activeSection === "registriert" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Registrierte Nutzer ({registeredOptIns.length})
         </button>
       </div>
-      {addStatus && <p className="text-sm text-gray-600 mb-3">{addStatus}</p>}
-      <p className="text-sm text-gray-500 mb-3">
-        <strong>{activeCount}</strong> aktive · <strong>{subscribers.length - activeCount}</strong> abgemeldet · <strong>{subscribers.length}</strong> gesamt
-      </p>
+
       {loading ? (
         <p className="text-gray-400 text-sm">Lade Abonnenten…</p>
-      ) : subscribers.length === 0 ? (
-        <p className="text-gray-400 text-sm">Noch keine Abonnenten vorhanden.</p>
+      ) : activeSection === "extern" ? (
+        <>
+          {/* Neue externe E-Mail hinzufügen */}
+          <div className="flex gap-2 mb-3">
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="neue@email.de"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onKeyDown={(e) => { if (e.key === "Enter") void handleAdd(); }}
+            />
+            <button type="button" onClick={handleAdd}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors whitespace-nowrap">
+              Hinzufügen
+            </button>
+          </div>
+          {addStatus && <p className="text-sm text-gray-600 mb-3">{addStatus}</p>}
+          {subscribers.length === 0 ? (
+            <p className="text-gray-400 text-sm">Noch keine externen Anmeldungen.</p>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-600 font-medium">
+                  <tr>
+                    <th className="px-4 py-2 text-left">E-Mail</th>
+                    <th className="px-4 py-2 text-left">Status</th>
+                    <th className="px-4 py-2 text-left">Angemeldet</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {subscribers.map((sub) => (
+                    <tr key={sub._id} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-gray-800">{sub.email}</td>
+                      <td className="px-4 py-2">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                          sub.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                        }`}>
+                          {sub.status === "active" ? "Aktiv" : "Abgemeldet"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-gray-500">{new Date(sub.createdAt).toLocaleDateString("de-DE")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-gray-600 font-medium">
-              <tr>
-                <th className="px-4 py-2 text-left">E-Mail</th>
-                <th className="px-4 py-2 text-left">Status</th>
-                <th className="px-4 py-2 text-left">Registriert</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {subscribers.map((sub) => (
-                <tr key={sub._id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 text-gray-800">{sub.email}</td>
-                  <td className="px-4 py-2">
-                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                      sub.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-                    }`}>
-                      {sub.status === "active" ? "Aktiv" : "Abgemeldet"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-gray-500">{new Date(sub.createdAt).toLocaleDateString("de-DE")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <p className="text-xs text-gray-400 mb-3">Registrierte Nutzer, die Newsletter-Benachrichtigungen in ihrem Profil aktiviert haben.</p>
+          {registeredOptIns.length === 0 ? (
+            <p className="text-gray-400 text-sm">Keine registrierten Nutzer mit Newsletter-Opt-in.</p>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-600 font-medium">
+                  <tr>
+                    <th className="px-4 py-2 text-left">Benutzername</th>
+                    <th className="px-4 py-2 text-left">E-Mail</th>
+                    <th className="px-4 py-2 text-left">Registriert</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {registeredOptIns.map((u) => (
+                    <tr key={u.username} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 font-medium text-gray-800">{u.username}</td>
+                      <td className="px-4 py-2 text-gray-600 break-all">{u.email}</td>
+                      <td className="px-4 py-2 text-gray-500">
+                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString("de-DE") : "–"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
