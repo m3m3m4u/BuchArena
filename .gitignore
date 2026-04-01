@@ -35,6 +35,9 @@ pnpm-debug.log*
 backup_db.py
 /backups
 
+# local media (auf WebDAV gespeichert)
+/public/mp3/
+
 # vercel
 .vercel
 
