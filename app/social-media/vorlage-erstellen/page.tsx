@@ -1485,6 +1485,30 @@ export default function VorlageErstellenPage() {
     }
   }
 
+  async function withdrawSubmissionById(submissionId: string, linkedVorlageId?: string) {
+    if (!confirm("Einreichung wirklich zurückziehen?")) return;
+    setError("");
+    setSuccessMsg("");
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/bucharena/submissions/${submissionId}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.error || "Fehler beim Zurückziehen");
+        return;
+      }
+      if (linkedVorlageId === savedId) setSubmissionId(null);
+      setSuccessMsg("Einreichung wurde zurückgezogen.");
+      loadVorlagen();
+      loadSubmissions();
+    } catch (err) {
+      console.error(err);
+      setError("Fehler beim Zurückziehen: " + (err instanceof Error ? err.message : "Unbekannter Fehler"));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
     /* ═══ AUTH GUARDS ═══ */
 
   if (!accountLoaded) {
@@ -1848,11 +1872,11 @@ export default function VorlageErstellenPage() {
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${st.cls}`}>{st.label}</span>
-                      {sub.status === "pending" && linkedVorlage && (
+                      {sub.status === "pending" && (
                         <button
                           type="button"
                           className="btn btn-sm text-orange-600 border-orange-300 hover:bg-orange-50"
-                          onClick={() => withdrawSubmission(linkedVorlage._id)}
+                          onClick={() => withdrawSubmissionById(sub._id, linkedVorlage?._id)}
                           disabled={submitting}
                         >
                           <span className="hidden sm:inline">Zurückziehen</span><span className="sm:hidden text-xs">✕</span>
