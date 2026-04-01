@@ -569,17 +569,20 @@ function SubscriberManager() {
   const fetchSubscribers = useCallback(async () => {
     setLoading(true);
     try {
-      const [subRes, userRes] = await Promise.all([
-        fetch("/api/newsletter/subscribers"),
-        fetch("/api/admin/users", { method: "POST" }),
-      ]);
-      const subData = (await subRes.json()) as { subscribers?: Subscriber[] };
-      const userData = (await userRes.json()) as { users?: RegisteredOptIn[] };
-      setSubscribers(subData.subscribers ?? []);
-      setRegisteredOptIns((userData.users ?? []).filter((u) => (u as { newsletterOptIn?: boolean }).newsletterOptIn));
-    } finally {
-      setLoading(false);
-    }
+      const subRes = await fetch("/api/newsletter/subscribers");
+      if (subRes.ok) {
+        const subData = (await subRes.json()) as { subscribers?: Subscriber[] };
+        setSubscribers(subData.subscribers ?? []);
+      }
+    } catch { /* ignore */ }
+    try {
+      const userRes = await fetch("/api/admin/users", { method: "POST" });
+      if (userRes.ok) {
+        const userData = (await userRes.json()) as { users?: (RegisteredOptIn & { newsletterOptIn?: boolean })[] };
+        setRegisteredOptIns((userData.users ?? []).filter((u) => u.newsletterOptIn));
+      }
+    } catch { /* ignore */ }
+    setLoading(false);
   }, []);
 
   useEffect(() => { void fetchSubscribers(); }, [fetchSubscribers]);
