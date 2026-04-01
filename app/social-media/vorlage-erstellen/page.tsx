@@ -1485,19 +1485,20 @@ export default function VorlageErstellenPage() {
     }
   }
 
-  async function withdrawSubmissionById(submissionId: string, linkedVorlageId?: string) {
+  async function withdrawSubmissionById(subId: string, linkedVorlageId?: string) {
     if (!confirm("Einreichung wirklich zurückziehen?")) return;
     setError("");
     setSuccessMsg("");
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/bucharena/submissions/${submissionId}`, { method: "DELETE" });
+      const res = await fetch(`/api/bucharena/submissions/${subId}`, { method: "DELETE" });
       const data = await res.json();
       if (!data.success) {
         setError(data.error || "Fehler beim Zurückziehen");
         return;
       }
-      if (linkedVorlageId === savedId) setSubmissionId(null);
+      // State leeren wenn die aktive Vorlage diese Einreichung hatte
+      if (linkedVorlageId === savedId || submissionId === subId) setSubmissionId(null);
       setSuccessMsg("Einreichung wurde zurückgezogen.");
       loadVorlagen();
       loadSubmissions();
