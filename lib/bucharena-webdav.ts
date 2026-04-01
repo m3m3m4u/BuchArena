@@ -5,6 +5,8 @@
 
 export const runtime = "nodejs";
 
+const WEBDAV_TIMEOUT_MS = 30_000;
+
 function b64(str: string) {
   try {
     const g = globalThis as Record<string, unknown>;
@@ -47,11 +49,13 @@ async function ensureParentDir(
     const pf = await fetch(uri, {
       method: "PROPFIND",
       headers: { Authorization: auth, Depth: "0" },
+      signal: AbortSignal.timeout(WEBDAV_TIMEOUT_MS),
     });
     if (force || !pf.ok) {
       await fetch(uri, {
         method: "MKCOL",
         headers: { Authorization: auth },
+        signal: AbortSignal.timeout(WEBDAV_TIMEOUT_MS),
       }).catch(() => undefined);
     }
   }
@@ -68,6 +72,7 @@ export async function davList(prefix: string) {
     method: "PROPFIND",
     headers: { Authorization: c.auth, Depth: "1", "Content-Type": "text/xml" },
     body,
+    signal: AbortSignal.timeout(WEBDAV_TIMEOUT_MS),
   });
   if (res.status === 404) {
     return [];
@@ -133,6 +138,7 @@ export async function davPut(
       ...(contentType ? { "Content-Type": contentType } : {}),
     },
     body: blobBody,
+    signal: AbortSignal.timeout(WEBDAV_TIMEOUT_MS),
   });
   if (res.status === 409) {
     await ensureParentDir(key, c.url, c.auth, true);
@@ -143,11 +149,12 @@ export async function davPut(
         ...(contentType ? { "Content-Type": contentType } : {}),
       },
       body: blobBody,
+      signal: AbortSignal.timeout(WEBDAV_TIMEOUT_MS),
     });
   }
   if (!res.ok) {
     const exists = await davExists(key).catch(() => false);
-    if (exists) throw new Error("PUT failed: 409");
+    if (exists) return { url: webdavPublicUrl(key), key };
     throw new Error("PUT failed: " + res.status);
   }
   return { url: webdavPublicUrl(key), key };
@@ -160,6 +167,7 @@ export async function davDelete(key: string) {
   const res = await fetch(target, {
     method: "DELETE",
     headers: { Authorization: c.auth },
+    signal: AbortSignal.timeout(WEBDAV_TIMEOUT_MS),
   });
   if (!res.ok && res.status !== 404)
     throw new Error("DELETE failed: " + res.status);
@@ -171,7 +179,7 @@ export async function davGet(key: string): Promise<Uint8Array | null> {
   const target = `${c.url}/${encodeURIComponent(key).replace(/%2F/g, "/")}`;
   let res: Response | null = null;
   try {
-    res = await fetch(target, { headers: { Authorization: c.auth } });
+    res = await fetch(target, { headers: { Authorization: c.auth }, signal: AbortSignal.timeout(WEBDAV_TIMEOUT_MS) });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     console.warn("[davGet] Fetch Fehler", { target, err: msg });
@@ -191,11 +199,13 @@ export async function davExists(key: string) {
   const head = await fetch(target, {
     method: "HEAD",
     headers: { Authorization: c.auth },
+    signal: AbortSignal.timeout(WEBDAV_TIMEOUT_MS),
   });
   if (head.status === 200) return true;
   const pf = await fetch(target, {
     method: "PROPFIND",
     headers: { Authorization: c.auth, Depth: "0" },
+    signal: AbortSignal.timeout(WEBDAV_TIMEOUT_MS),
   });
   return pf.ok;
 }

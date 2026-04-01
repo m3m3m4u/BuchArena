@@ -4,6 +4,7 @@ import { davPut } from "@/lib/bucharena-webdav";
 import { getServerAccount } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
@@ -52,9 +53,13 @@ export async function POST(request: Request) {
       ? "application/vnd.openxmlformats-officedocument.presentationml.presentation"
       : "application/vnd.ms-powerpoint";
 
-    const uploadResult = await davPut(webdavKey, new Uint8Array(bytes), contentType);
-    if (!uploadResult) {
-      return NextResponse.json({ success: false, error: "Fehler beim Hochladen der Datei." }, { status: 500 });
+    let filePath = `local:${uniqueFileName}`;
+    try {
+      const uploadResult = await davPut(webdavKey, new Uint8Array(bytes), contentType);
+      if (uploadResult) filePath = webdavKey;
+    } catch (uploadErr) {
+      console.error("WebDAV-Upload fehlgeschlagen:", uploadErr);
+      // Einreichung trotzdem in DB speichern
     }
 
     const col = await getBucharenaSubmissionsCollection();
@@ -67,7 +72,7 @@ export async function POST(request: Request) {
       ageRange: ageRange.trim(),
       fileName: generatedName,
       fileSize: file.size,
-      filePath: webdavKey,
+      filePath: filePath,
       notes: notes?.trim() || undefined,
       contact: contact?.trim() || undefined,
       contactType: contact?.trim() ? ((contactType as "email" | "instagram") || "email") : undefined,

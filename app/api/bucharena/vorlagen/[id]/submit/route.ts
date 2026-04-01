@@ -10,6 +10,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { ObjectId } from "mongodb";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 

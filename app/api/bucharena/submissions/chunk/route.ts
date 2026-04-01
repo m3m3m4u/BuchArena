@@ -4,6 +4,7 @@ import { davPut, davGet, davDelete, davList } from "@/lib/bucharena-webdav";
 import { getServerAccount } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
+export const maxDuration = 120;
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
