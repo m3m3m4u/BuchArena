@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
 
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = { status: { $ne: "withdrawn" } };
     if (status && ["pending", "approved", "rejected", "done"].includes(status)) query.status = status;
 
     const col = await getBucharenaSubmissionsCollection();

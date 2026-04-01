@@ -1821,7 +1821,7 @@ export default function VorlageErstellenPage() {
                     <div className="flex items-center gap-1 shrink-0">
                     {!isActive && <button type="button" className="btn btn-sm" onClick={() => loadVorlage(v._id)}>Laden</button>}
                     {v.submissionId && (
-                      <button type="button" className="btn btn-sm text-orange-600 border-orange-300 hover:bg-orange-50" onClick={() => withdrawSubmission(v._id)}><span className="hidden sm:inline">Zurückziehen</span><span className="sm:hidden text-xs">✕</span></button>
+                      <button type="button" className="btn btn-sm text-orange-600 border-orange-300 hover:bg-orange-50" disabled={submitting} onClick={() => withdrawSubmission(v._id)}><span className="hidden sm:inline">Zurückziehen</span><span className="sm:hidden text-xs">✕</span></button>
                     )}
                     <button type="button" className="btn btn-sm btn-danger" onClick={() => setDeleteConfirmId(v._id)}>
                       <TrashIcon className="size-4" />

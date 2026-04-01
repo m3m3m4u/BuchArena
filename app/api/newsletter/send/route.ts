@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
-import { getSubscribersCollection, getNewsletterQueueCollection } from "@/lib/newsletter";
+import { getSubscribersCollection, getNewsletterQueueCollection, getNewsletterArchiveCollection } from "@/lib/newsletter";
 
 export async function POST(request: Request) {
   try {
@@ -57,6 +57,17 @@ export async function POST(request: Request) {
     }));
 
     await queueCol.insertMany(queueEntries);
+
+    // Im Archiv speichern
+    const archiveCol = await getNewsletterArchiveCollection();
+    await archiveCol.insertOne({
+      subject,
+      htmlContent,
+      batchId,
+      recipientCount: queueEntries.length,
+      sentBy: account.username,
+      createdAt: now,
+    });
 
     return NextResponse.json({
       message: `Newsletter für ${queueEntries.length} Abonnenten in die Warteschlange aufgenommen.`,

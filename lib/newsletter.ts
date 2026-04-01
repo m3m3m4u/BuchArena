@@ -30,6 +30,17 @@ export type NewsletterQueueDocument = {
   errorMessage?: string;
 };
 
+export type NewsletterArchiveDocument = {
+  _id?: ObjectId;
+  subject: string;
+  htmlContent: string;
+  batchId: string;
+  /** Anzahl Empfänger beim Versand */
+  recipientCount: number;
+  sentBy: string;
+  createdAt: Date;
+};
+
 /* ── Collection-Helpers ── */
 
 export async function getSubscribersCollection(): Promise<Collection<SubscriberDocument>> {
@@ -40,6 +51,11 @@ export async function getSubscribersCollection(): Promise<Collection<SubscriberD
 export async function getNewsletterQueueCollection(): Promise<Collection<NewsletterQueueDocument>> {
   const db = await getDatabase();
   return db.collection<NewsletterQueueDocument>("newsletter_queue");
+}
+
+export async function getNewsletterArchiveCollection(): Promise<Collection<NewsletterArchiveDocument>> {
+  const db = await getDatabase();
+  return db.collection<NewsletterArchiveDocument>("newsletter_archive");
 }
 
 /* ── Indexes (beim Server-Start aufrufen) ── */
@@ -55,6 +71,9 @@ export async function initNewsletterIndexes(): Promise<void> {
   await queue.createIndex({ status: 1, createdAt: 1 });
   await queue.createIndex({ subscriberId: 1 });
   await queue.createIndex({ batchId: 1 });
+
+  const archive = db.collection<NewsletterArchiveDocument>("newsletter_archive");
+  await archive.createIndex({ createdAt: -1 });
 }
 
 /* ── Helfer: Unsubscribe-Token ── */
