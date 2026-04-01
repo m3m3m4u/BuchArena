@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEditor, EditorContent, type Editor } from "@tiptap/react";
+import { useEditor, EditorContent, useEditorState, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
@@ -9,6 +9,33 @@ import Image from "@tiptap/extension-image";
 import Youtube from "@tiptap/extension-youtube";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { getStoredAccount } from "@/lib/client-account";
+
+/* ══════════════════════════════════════════════════════════════
+   Erweitertes Image-Node mit width-Attribut
+══════════════════════════════════════════════════════════════ */
+
+const ResizableImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: null,
+        parseHTML: (element: HTMLElement) => {
+          const sw = element.style.width;
+          if (sw.endsWith("%")) return sw;
+          if (sw.endsWith("px")) return sw.slice(0, -2);
+          return element.getAttribute("width") ?? null;
+        },
+        renderHTML: (attrs: { width?: string | null }) => {
+          if (!attrs.width) return {};
+          const w = String(attrs.width);
+          if (w.endsWith("%")) return { style: `width: ${w}; max-width: 100%;` };
+          return { width: w, style: `width: ${w}px; max-width: 100%;` };
+        },
+      },
+    };
+  },
+});
 
 /* ══════════════════════════════════════════════════════════════
    Toolbar
@@ -103,6 +130,42 @@ function UrlInputModal({ config, onClose }: { config: UrlModalConfig; onClose: (
 function EditorToolbar({ editor }: { editor: Editor | null }) {
   const imgInputRef = useRef<HTMLInputElement>(null);
   const [urlModal, setUrlModal] = useState<UrlModalConfig | null>(null);
+
+  const [imgWidthInput, setImgWidthInput] = useState("");
+  const [ytWidthInput, setYtWidthInput] = useState("640");
+  const [ytHeightInput, setYtHeightInput] = useState("360");
+
+  const editorState = useEditorState({
+    editor,
+    selector: (ctx) => ({
+      isImage: ctx.editor?.isActive("image") ?? false,
+      isYoutube: ctx.editor?.isActive("youtube") ?? false,
+      imgWidth: (ctx.editor?.getAttributes("image").width as string | null) ?? "",
+      ytWidth: String((ctx.editor?.getAttributes("youtube").width as number | null) ?? 640),
+      ytHeight: String((ctx.editor?.getAttributes("youtube").height as number | null) ?? 360),
+    }),
+  });
+
+  useEffect(() => {
+    if (editorState?.isImage) setImgWidthInput(editorState.imgWidth);
+  }, [editorState?.isImage, editorState?.imgWidth]);
+
+  useEffect(() => {
+    if (editorState?.isYoutube) {
+      setYtWidthInput(editorState.ytWidth);
+      setYtHeightInput(editorState.ytHeight);
+    }
+  }, [editorState?.isYoutube, editorState?.ytWidth, editorState?.ytHeight]);
+
+  function applyImageWidth(w: string) {
+    if (!editor) return;
+    editor.chain().focus().updateAttributes("image", { width: w || null }).run();
+  }
+
+  function applyYtSize(w: number, h: number) {
+    if (!editor) return;
+    editor.chain().focus().updateAttributes("youtube", { width: w, height: h }).run();
+  }
 
   const openLinkModal = useCallback(() => {
     if (!editor) return;
@@ -204,6 +267,102 @@ function EditorToolbar({ editor }: { editor: Editor | null }) {
           }}
         />
       </div>
+
+      {/* Größensteuerung für Bilder und YouTube */}
+      {(editorState?.isImage || editorState?.isYoutube) && (
+        <div className="flex flex-wrap items-center gap-2 px-3 py-1.5 bg-blue-50 border border-b-0 border-blue-200 text-xs">
+          {editorState.isImage && (
+            <>
+              <span className="text-blue-700 font-medium">🖼️ Bildgröße:</span>
+              <input
+                type="text"
+                value={imgWidthInput}
+                onChange={(e) => setImgWidthInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { applyImageWidth(imgWidthInput); } }}
+                onBlur={() => applyImageWidth(imgWidthInput)}
+                placeholder="400"
+                className="w-16 border border-blue-300 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+              />
+              <span className="text-blue-500">px</span>
+              <span className="border-l border-blue-200 h-4 mx-0.5" />
+              {(["200", "400", "600"] as const).map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  onMouseDown={(e) => { e.preventDefault(); setImgWidthInput(val); applyImageWidth(val); }}
+                  className={`px-2 py-0.5 rounded border text-xs transition-colors ${
+                    imgWidthInput === val
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"
+                  }`}
+                >
+                  {val}
+                </button>
+              ))}
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); setImgWidthInput("100%"); applyImageWidth("100%"); }}
+                className={`px-2 py-0.5 rounded border text-xs transition-colors ${
+                  imgWidthInput === "100%"
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"
+                }`}
+              >
+                Voll
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); setImgWidthInput(""); applyImageWidth(""); }}
+                className="px-2 py-0.5 rounded border text-xs bg-white text-gray-500 border-gray-300 hover:bg-gray-100 transition-colors"
+              >
+                Original
+              </button>
+            </>
+          )}
+          {editorState.isYoutube && (
+            <>
+              <span className="text-blue-700 font-medium">▶️ Videogröße:</span>
+              <input
+                type="number"
+                min={100}
+                max={1920}
+                value={ytWidthInput}
+                onChange={(e) => setYtWidthInput(e.target.value)}
+                onBlur={() => { if (ytWidthInput && ytHeightInput) applyYtSize(Number(ytWidthInput), Number(ytHeightInput)); }}
+                onKeyDown={(e) => { if (e.key === "Enter" && ytWidthInput && ytHeightInput) applyYtSize(Number(ytWidthInput), Number(ytHeightInput)); }}
+                className="w-16 border border-blue-300 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+              />
+              <span className="text-blue-500">×</span>
+              <input
+                type="number"
+                min={56}
+                max={1080}
+                value={ytHeightInput}
+                onChange={(e) => setYtHeightInput(e.target.value)}
+                onBlur={() => { if (ytWidthInput && ytHeightInput) applyYtSize(Number(ytWidthInput), Number(ytHeightInput)); }}
+                onKeyDown={(e) => { if (e.key === "Enter" && ytWidthInput && ytHeightInput) applyYtSize(Number(ytWidthInput), Number(ytHeightInput)); }}
+                className="w-16 border border-blue-300 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+              />
+              <span className="text-blue-500">px</span>
+              <span className="border-l border-blue-200 h-4 mx-0.5" />
+              {([[640, 360], [800, 450], [1024, 576]] as const).map(([w, h]) => (
+                <button
+                  key={`${w}x${h}`}
+                  type="button"
+                  onMouseDown={(e) => { e.preventDefault(); setYtWidthInput(String(w)); setYtHeightInput(String(h)); applyYtSize(w, h); }}
+                  className={`px-2 py-0.5 rounded border text-xs transition-colors ${
+                    ytWidthInput === String(w) && ytHeightInput === String(h)
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"
+                  }`}
+                >
+                  {w}×{h}
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+      )}
     </>
   );
 }
@@ -292,7 +451,7 @@ export default function NewsletterAdminPage() {
       Underline,
       Link.configure({ openOnClick: false, HTMLAttributes: { rel: "noopener noreferrer" } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Image.configure({ inline: false, allowBase64: true }),
+      ResizableImage.configure({ inline: false, allowBase64: true }),
       Youtube.configure({ controls: true, nocookie: true }),
     ],
     content: "",
