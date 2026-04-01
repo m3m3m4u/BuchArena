@@ -186,6 +186,7 @@ export default function NewsletterAdminPage() {
   }, [tab, loadArchive]);
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Underline,
