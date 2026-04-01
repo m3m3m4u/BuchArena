@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-type Platform = "intro" | "instagram" | "youtube" | "reddit" | "tiktok" | "facebook" | "pinterest" | "linkedin" | "musik";
+type Platform = "intro" | "instagram" | "youtube" | "reddit" | "tiktok" | "facebook" | "pinterest" | "linkedin";
+type MainTab = "social" | "musik";
 
 const TABS: { key: Platform; label: string; icon: string }[] = [
   { key: "intro", label: "Überblick", icon: "🚀" },
@@ -14,7 +15,6 @@ const TABS: { key: Platform; label: string; icon: string }[] = [
   { key: "facebook", label: "Facebook", icon: "👥" },
   { key: "pinterest", label: "Pinterest", icon: "📌" },
   { key: "linkedin", label: "LinkedIn", icon: "💼" },
-  { key: "musik", label: "Musik", icon: "🎶" },
 ];
 
 function ChecklistItem({ title, children }: { title: string; children: React.ReactNode }) {
@@ -58,20 +58,21 @@ function PlatformLink({ platform }: { platform: string }) {
 
 export default function TippsPage() {
   const [tab, setTab] = useState<Platform>("intro");
+  const [mainTab, setMainTab] = useState<MainTab>("social");
 
   type Track = { id: string; title: string; style: string; description: string; fileUrl: string; fileName: string; fileSize: number | null };
   const [tracks, setTracks] = useState<Track[]>([]);
   const [tracksLoading, setTracksLoading] = useState(false);
 
   useEffect(() => {
-    if (tab !== "musik") return;
+    if (mainTab !== "musik") return;
     setTracksLoading(true);
     fetch("/api/musik")
       .then((r) => r.json())
       .then((d: { tracks?: Track[] }) => setTracks(d.tracks ?? []))
       .catch(() => {})
       .finally(() => setTracksLoading(false));
-  }, [tab]);
+  }, [mainTab]);
 
   return (
     <main className="centered-main">
@@ -84,22 +85,50 @@ export default function TippsPage() {
           Dein Job ist es, den „Motor" zu starten. Hier erfährst du, wie du das Beste aus jeder Plattform herausholst.
         </p>
 
-        {/* Tabs */}
-        <div className="flex gap-1.5 flex-wrap mb-6">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer border-none transition-colors ${tab === t.key ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text hover:bg-gray-200"}`}
-              onClick={() => setTab(t.key)}
-            >
-              {t.icon} {t.label}
-            </button>
-          ))}
+        {/* Haupt-Tabs */}
+        <div className="flex gap-2 mb-5 border-b border-gray-200">
+          <button
+            type="button"
+            className={`px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
+              mainTab === "social"
+                ? "bg-white border border-b-white border-gray-200 text-arena-blue"
+                : "bg-gray-50 text-[#666] hover:bg-gray-100 border border-transparent"
+            }`}
+            onClick={() => setMainTab("social")}
+          >
+            📢 Social Media Tipps
+          </button>
+          <button
+            type="button"
+            className={`px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
+              mainTab === "musik"
+                ? "bg-white border border-b-white border-gray-200 text-arena-blue"
+                : "bg-gray-50 text-[#666] hover:bg-gray-100 border border-transparent"
+            }`}
+            onClick={() => setMainTab("musik")}
+          >
+            🎵 Hintergrundmusik
+          </button>
         </div>
 
-        {/* ── Überblick ── */}
-        {tab === "intro" && (
+        {/* Plattform-Tabs (nur bei Social Media) */}
+        {mainTab === "social" && (
+          <div className="flex gap-1.5 flex-wrap mb-6">
+            {TABS.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer border-none transition-colors ${tab === t.key ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text hover:bg-gray-200"}`}
+                onClick={() => setTab(t.key)}
+              >
+                {t.icon} {t.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* ── Social Media Content ── */}
+        {mainTab === "social" && tab === "intro" && (
           <div className="space-y-5">
             <div className="rounded-xl border-2 border-arena-blue/30 bg-arena-blue/5 p-6">
               <h2 className="text-xl font-bold m-0 mb-3">🤝 Der Community-Effekt</h2>
@@ -172,7 +201,7 @@ export default function TippsPage() {
         )}
 
         {/* ── Instagram ── */}
-        {tab === "instagram" && (
+        {mainTab === "social" && tab === "instagram" && (
           <div className="space-y-4">
             <SectionIntro
               icon="📸"
@@ -197,7 +226,7 @@ export default function TippsPage() {
         )}
 
         {/* ── YouTube ── */}
-        {tab === "youtube" && (
+        {mainTab === "social" && tab === "youtube" && (
           <div className="space-y-4">
             <SectionIntro
               icon="▶️"
@@ -221,7 +250,7 @@ export default function TippsPage() {
         )}
 
         {/* ── Reddit ── */}
-        {tab === "reddit" && (
+        {mainTab === "social" && tab === "reddit" && (
           <div className="space-y-4">
             <SectionIntro
               icon="🧠"
@@ -246,7 +275,7 @@ export default function TippsPage() {
         )}
 
         {/* ── TikTok ── */}
-        {tab === "tiktok" && (
+        {mainTab === "social" && tab === "tiktok" && (
           <div className="space-y-4">
             <SectionIntro
               icon="🎵"
@@ -268,7 +297,7 @@ export default function TippsPage() {
         )}
 
         {/* ── Facebook ── */}
-        {tab === "facebook" && (
+        {mainTab === "social" && tab === "facebook" && (
           <div className="space-y-4">
             <SectionIntro
               icon="👥"
@@ -288,7 +317,7 @@ export default function TippsPage() {
         )}
 
         {/* ── Pinterest ── */}
-        {tab === "pinterest" && (
+        {mainTab === "social" && tab === "pinterest" && (
           <div className="space-y-4">
             <SectionIntro
               icon="📌"
@@ -316,7 +345,7 @@ export default function TippsPage() {
         )}
 
         {/* ── LinkedIn ── */}
-        {tab === "linkedin" && (
+        {mainTab === "social" && tab === "linkedin" && (
           <div className="space-y-4">
             <SectionIntro
               icon="💼"
@@ -344,8 +373,8 @@ export default function TippsPage() {
           </div>
         )}
 
-        {/* ── Musik ── */}
-        {tab === "musik" && (
+        {/* ── Hintergrundmusik ── */}
+        {mainTab === "musik" && (
           <div className="space-y-5">
             <div className="rounded-xl border-2 border-arena-blue/30 bg-arena-blue/5 p-6">
               <h2 className="text-xl font-bold m-0 mb-3">🎶 Musik für deine Social-Media-Beiträge</h2>

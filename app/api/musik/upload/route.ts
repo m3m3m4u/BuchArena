@@ -4,11 +4,15 @@ import { getDatabase } from "@/lib/mongodb";
 import {
   getWebdavClient,
   getWebdavUploadDir,
-  toInternalImageUrl,
 } from "@/lib/webdav-storage";
 import { getServerAccount } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
+
+/** Interne (öffentlich zugängliche) URL für einen Musik-Pfad */
+function toMusikUrl(remotePath: string): string {
+  return `/api/musik/audio?path=${encodeURIComponent(remotePath)}`;
+}
 
 export async function POST(request: Request) {
   try {
@@ -51,7 +55,7 @@ export async function POST(request: Request) {
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     await client.putFileContents(remoteFilePath, fileBuffer, { overwrite: true });
 
-    const fileUrl = toInternalImageUrl(remoteFilePath);
+    const fileUrl = toMusikUrl(remoteFilePath);
 
     const db = await getDatabase();
     const col = db.collection("musik_tracks");

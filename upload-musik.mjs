@@ -138,8 +138,8 @@ async function main() {
     console.log(`  Lade hoch: ${remotePath}`);
     await putWebdav(remotePath, buffer);
 
-    // Öffentliche URL zusammenbauen
-    const fileUrl = `${WEBDAV_PUBLIC_BASE}${remotePath}`;
+    // Öffentliche URL über interne Next.js-Route (kein Passwort nötig)
+    const fileUrl = `/api/musik/audio?path=${encodeURIComponent(remotePath)}`;
 
     // MongoDB-Eintrag
     await col.insertOne({
