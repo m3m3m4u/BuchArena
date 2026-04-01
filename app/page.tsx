@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT, type LoggedInAccount } from "@/lib/client-account";
 import { extractYouTubeId } from "@/lib/bucharena-types";
@@ -236,12 +235,11 @@ export default function HomePage() {
       {/* Hero */}
       <section className="bg-linear-to-br from-arena-blue via-arena-blue-mid to-arena-blue-light px-4 py-16 text-center text-white">
         <div className="mx-auto max-w-[1100px]">
-          <Image
+          <img
             src="/logo.png"
             alt="BuchArena Logo"
             width={140}
             height={140}
-            priority
             className="mx-auto mb-6 block rounded-full"
           />
           <h1 className="mb-2 text-[2.4rem] font-extrabold leading-tight max-sm:text-[1.7rem]">
@@ -271,10 +269,10 @@ export default function HomePage() {
             </p>
             <div className="flex items-center justify-center gap-10 flex-wrap">
               <a href="https://lernarena.org" target="_blank" rel="noopener noreferrer">
-                <Image src="/logolang.png" alt="LernArena" width={240} height={75} />
+                <img src="/logolang.png" alt="LernArena" width={240} height={75} />
               </a>
               <a href="https://meridianbooks.at" target="_blank" rel="noopener noreferrer">
-                <Image src="/logoweiss.png" alt="meridianbooks" width={192} height={60} />
+                <img src="/logoweiss.png" alt="meridianbooks" width={192} height={60} />
               </a>
             </div>
           </div>
