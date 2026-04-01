@@ -7,13 +7,15 @@ export async function GET() {
     const db = await getDatabase();
     const users = db.collection("users");
 
+    const notDeactivated = { status: { $ne: "deactivated" } };
+
     const [bookCount, authorCount, bloggerCount, speakerCount, testleserCount, lektorenCount] = await Promise.all([
       db.collection("books").countDocuments({}),
-      users.countDocuments({ "profile": { $exists: true } }),
-      users.countDocuments({ "bloggerProfile": { $exists: true } }),
-      users.countDocuments({ "speakerProfile": { $exists: true } }),
-      users.countDocuments({ "testleserProfile": { $exists: true } }),
-      users.countDocuments({ "lektorenProfile": { $exists: true } }),
+      users.countDocuments({ ...notDeactivated, "profile.name.value": { $exists: true, $ne: "" } }),
+      users.countDocuments({ ...notDeactivated, "bloggerProfile.name.value": { $exists: true, $ne: "" } }),
+      users.countDocuments({ ...notDeactivated, "speakerProfile.name.value": { $exists: true, $ne: "" } }),
+      users.countDocuments({ ...notDeactivated, "testleserProfile.name.value": { $exists: true, $ne: "" } }),
+      users.countDocuments({ ...notDeactivated, "lektorenProfile.name.value": { $exists: true, $ne: "" } }),
     ]);
 
     const res = NextResponse.json({ bookCount, authorCount, bloggerCount, speakerCount, testleserCount, lektorenCount });
