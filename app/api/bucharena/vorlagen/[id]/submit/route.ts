@@ -8,11 +8,10 @@ import { davPut } from "@/lib/bucharena-webdav";
 import { getServerAccount } from "@/lib/server-auth";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { ObjectId } from "mongodb";
+import { buildVorlagePptx, buildShortsVorlagePptx, getAutorFull } from "@/lib/pptx-vorlage";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
-
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
+export const maxDuration = 120;
 
 function sanitizeFileName(name: string): string {
   return name.replace(/[<>:"/\\|?*]/g, "").replace(/\s+/g, " ").trim();
@@ -20,9 +19,9 @@ function sanitizeFileName(name: string): string {
 
 /**
  * POST /api/bucharena/vorlagen/[id]/submit
- * Receives the generated PPTX as a file upload and creates a submission entry.
+ * Generates the PPTX server-side from the stored vorlage and creates a submission entry.
  */
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const account = await getServerAccount();
@@ -31,6 +30,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
     if (!ObjectId.isValid(id) || new ObjectId(id).toHexString() !== id) {
       return NextResponse.json({ success: false, error: "Ungültige ID" }, { status: 400 });
+    }
+
+    // Rate limiting
+    const allowed = checkRateLimit(`submit:${account.username}`, 5, 60_000);
+    if (!allowed) {
+      return NextResponse.json({ success: false, error: "Zu viele Einreichungen. Bitte warte etwas." }, { status: 429 });
     }
 
     // Verify vorlage belongs to user
@@ -45,47 +50,36 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: false, error: "Diese Vorlage wurde bereits eingereicht" }, { status: 400 });
     }
 
-    // Parse multipart form data
-    const formData = await request.formData();
-    const files = formData.getAll("file") as File[];
-    if (files.length === 0) {
-      return NextResponse.json({ success: false, error: "PPTX-Datei fehlt" }, { status: 400 });
-    }
-    for (const file of files) {
-      if (file.size > MAX_FILE_SIZE) {
-        return NextResponse.json({ success: false, error: "Die Datei darf maximal 50 MB groß sein" }, { status: 400 });
-      }
-    }
+    // Generate PPTX files server-side
+    const autorFull = getAutorFull(vorlage);
+    const [pptxQuer, pptxHoch] = await Promise.all([
+      buildVorlagePptx(vorlage),
+      buildShortsVorlagePptx(vorlage),
+    ]);
 
-    // Upload all files to WebDAV
-    const autorFull = vorlage.autorName || [vorlage.autorVorname, vorlage.autorNachname].filter(Boolean).join(" ") || "Unbekannt";
+    // Upload to WebDAV
     const timestamp = Date.now();
     const contentType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
     const uploadedFiles: { fileName: string; fileSize: number; filePath: string }[] = [];
 
-    for (const file of files) {
-      const isShorts = file.name.startsWith("Shorts_");
-      const generatedName = isShorts
-        ? `Shorts ${sanitizeFileName(vorlage.buchtitel)} von ${sanitizeFileName(autorFull)}.pptx`
-        : `${sanitizeFileName(vorlage.buchtitel)} von ${sanitizeFileName(autorFull)}.pptx`;
+    const filesToUpload: [Buffer, string][] = [
+      [pptxQuer, `${sanitizeFileName(vorlage.buchtitel)} von ${sanitizeFileName(autorFull)}.pptx`],
+      [pptxHoch, `Shorts ${sanitizeFileName(vorlage.buchtitel)} von ${sanitizeFileName(autorFull)}.pptx`],
+    ];
+
+    for (const [bytes, generatedName] of filesToUpload) {
       const safeFileName = generatedName.replace(/[^a-zA-Z0-9äöüÄÖÜß .-]/g, "_");
       const uniqueFileName = `${timestamp}_${safeFileName}`;
       const webdavKey = `bucharena-submissions/${uniqueFileName}`;
 
-      const bytes = await file.arrayBuffer();
       let filePath = `local:${uniqueFileName}`;
       try {
         const uploadResult = await davPut(webdavKey, new Uint8Array(bytes), contentType);
         if (uploadResult) filePath = webdavKey;
       } catch (uploadErr) {
-        console.error("WebDAV-Upload fehlgeschlagen, speichere Referenz:", uploadErr);
-        // Continue with submission even if upload failed
+        console.error("WebDAV-Upload fehlgeschlagen:", uploadErr);
       }
-      uploadedFiles.push({
-        fileName: generatedName,
-        fileSize: file.size,
-        filePath,
-      });
+      uploadedFiles.push({ fileName: generatedName, fileSize: bytes.length, filePath });
     }
 
     // Create submission

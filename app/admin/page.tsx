@@ -1210,6 +1210,24 @@ export default function AdminPage() {
           const subscribers = users.filter((u) => u.newsletterOptIn);
           return (
             <div className="grid gap-3">
+              <Link
+                href="/admin/newsletter"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.4rem",
+                  background: "var(--color-arena-blue)",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "0.6rem 1rem",
+                  fontWeight: 600,
+                  fontSize: "0.9rem",
+                  textDecoration: "none",
+                  width: "fit-content",
+                }}
+              >
+                ✉ Newsletter erstellen &amp; versenden →
+              </Link>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.5rem" }}>
                 <div style={{ background: "var(--color-arena-blue)", color: "#fff", borderRadius: 8, padding: "0.6rem 0.4rem", textAlign: "center" }}>
                   <div style={{ fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.1 }}>{subscribers.length}</div>

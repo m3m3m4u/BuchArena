@@ -1427,26 +1427,9 @@ export default function VorlageErstellenPage() {
         }
       }
 
-      // Generate PPTX (both formats)
-      const blobQuer = await buildPptxBlob();
-      const blobHoch = await buildShortsPptxBlob();
-
-      // Upload as submission
-      const fd = new window.FormData();
-      const safeTitel = form.buchtitel
-        .replace(/[^a-zA-Z0-9äöüÄÖÜß _-]/g, "")
-        .replace(/\s+/g, "_")
-        .slice(0, 60);
-      const safeAutor = autorFull
-        .replace(/[^a-zA-Z0-9äöüÄÖÜß _-]/g, "")
-        .replace(/\s+/g, "_")
-        .slice(0, 40);
-      fd.append("file", blobQuer, `${safeTitel}_von_${safeAutor}.pptx`);
-      fd.append("file", blobHoch, `Shorts_${safeTitel}_von_${safeAutor}.pptx`);
-
+      // Submit – PPTX wird serverseitig generiert
       const res = await fetch(`/api/bucharena/vorlagen/${currentId}/submit`, {
         method: "POST",
-        body: fd,
       });
       if (!res.ok) {
         let errMsg = "Fehler beim Einreichen (HTTP " + res.status + ")";

@@ -489,7 +489,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
 
       {isBookOverlayOpen && (
         <div className="overlay-backdrop" onClick={resetForm}>
-          <section className="w-[min(760px,100%)] bg-white rounded-xl p-4 box-border grid gap-2.5" onClick={(event) => event.stopPropagation()}>
+          <section className="w-[min(960px,100%)] bg-white rounded-xl p-4 box-border grid gap-2.5" onClick={(event) => event.stopPropagation()}>
             <h2>{editingBookId ? "Buch bearbeiten" : "Neues Buch"}</h2>
 
             <div className="grid grid-cols-[2fr_1fr] gap-4 items-start max-[900px]:grid-cols-1">
