@@ -98,6 +98,42 @@ const TRACKS = [
     style: "Acoustic / Folk",
     description: "Ein warmer, rustikaler Sound mit detailliertem Fingerpicking auf der Akustikgitarre und intimen, naturverbundenen Vocals.",
   },
+  {
+    fileName: "Weight_of_the_Tide.mp3",
+    title: "Weight of the Tide",
+    style: "Ambient / Minimalist",
+    description: "Ein meditativer Ambient-Sound ohne traditionellen Rhythmus, mit tiefen Bässen und ätherischen Synthesizern.",
+  },
+  {
+    fileName: "Asphalt_Crown.mp3",
+    title: "Asphalt Crown",
+    style: "Rock / Indie",
+    description: "Ein explosiver Indie-Rock-Track mit roher Energie, verzerrten E-Gitarren und treibendem Schlagzeug.",
+  },
+  {
+    fileName: "Blue_Grey_Hush.mp3",
+    title: "Blue Grey Hush",
+    style: "Neo-Soul",
+    description: "Ein warmer, entspannter Neo-Soul-Track, ideal als Hintergrundmusik für ruhige und stylische Videos.",
+  },
+  {
+    fileName: "Chipped_Paint_Mug.mp3",
+    title: "Chipped Paint Mug",
+    style: "Bedroom Pop",
+    description: "Ein warmer, nostalgischer Bedroom-Pop-Sound mit Lo-Fi-Ästhetik, sanfter E-Gitarre und intimen Vocals.",
+  },
+  {
+    fileName: "Crown_from_the_Concrete.mp3",
+    title: "Crown from the Concrete",
+    style: "Modern Trap",
+    description: "Ein dunkler, atmosphärischer Trap-Track mit dröhnendem Sub-Bass, schnellen Hi-Hats und rhythmischen Vocals.",
+  },
+  {
+    fileName: "Pulso_en_la_Vena.mp3",
+    title: "Pulso en la Vena",
+    style: "Reggaeton / Neoperreo",
+    description: "Ein energiegeladener Reggaeton-Track mit treibendem Dembow-Rhythmus und spanischen Vocals.",
+  },
 ];
 
 const REMOTE_DIR = `/${WEBDAV_UPLOAD_DIR}/musik`;

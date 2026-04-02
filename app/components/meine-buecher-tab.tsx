@@ -432,69 +432,45 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
         <p>Noch keine Bücher angelegt.</p>
       ) : (
         <div className="grid gap-3 min-[1200px]:grid-cols-2">
-          {books.map((book, index) => (
-            <article className="border border-arena-border rounded-lg p-3" key={`${book.title}-${book.createdAt}-${index}`}>
-              <div className="grid grid-cols-[120px_1fr] gap-3.5 items-start max-[600px]:grid-cols-1">
-                <div
-                  className="relative w-[120px] border border-arena-border rounded-lg overflow-hidden bg-arena-bg grid place-items-center text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[180px]"
-                  style={{ aspectRatio: "3/4" }}
-                >
-                  {book.coverImageUrl ? (
-                    <Image src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain p-1" sizes="120px" unoptimized />
-                  ) : (
-                    <span>Kein Cover</span>
-                  )}
-                </div>
-
-                <div className="min-w-0">
-                  <h3>Titel: {book.title}</h3>
-                  <p>Erscheinungsjahr: {book.publicationYear}</p>
-                  <p>Genre: {parseGenres(book.genre).join(", ") || book.genre}</p>
-                  {(book.ageFrom > 0 || book.ageTo > 0) && (
-                    <p>Alter: {book.ageFrom} bis {book.ageTo}</p>
-                  )}
-                  {book.publisher && <p>Verlag: {book.publisher}</p>}
-                  {book.isbn && <p>ISBN: {book.isbn}</p>}
-                  {book.pageCount !== undefined && book.pageCount > 0 && <p>Seitenanzahl: {book.pageCount}</p>}
-                  {book.description && <p>Beschreibung: {book.description}</p>}
-                  {book.buyLinks.length > 0 && (
-                    <div className="mt-1.5 grid grid-cols-[120px_1fr] gap-2 items-start max-[600px]:grid-cols-1">
-                      <strong>Kauf-Links:</strong>
-                      <div className="min-w-0 break-all grid gap-1">
-                        {book.buyLinks.map((link) => (
-                          <a key={link} href={link} target="_blank" rel="noreferrer">
-                            {link}
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {book.presentationVideoUrl && (
-                    <div className="mt-1.5 grid grid-cols-[120px_1fr] gap-2 items-start max-[600px]:grid-cols-1">
-                      <strong>YouTube-Link:</strong>
-                      <div className="min-w-0">
-                        <Link
-                          href={`/video?url=${encodeURIComponent(book.presentationVideoUrl)}&title=${encodeURIComponent(book.title)}`}
-                        >
-                          {book.presentationVideoUrl}
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2 flex-wrap">
-                    <button type="button" className="btn" onClick={() => onEditBook(book)}>
-                      Bearbeiten
-                    </button>
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => onDeleteBook(book.id)}
-                    >
-                      Löschen
-                    </button>
+          {[...books].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((book, index) => (
+            <article className="rounded-lg border border-arena-border p-3" key={`${book.title}-${book.createdAt}-${index}`}>
+              <Link href={`/buch/${book.id}`} className="block no-underline text-inherit hover:opacity-90">
+                <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[400px]:grid-cols-1">
+                  <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px]">
+                    {book.coverImageUrl ? (
+                      <Image src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" unoptimized />
+                    ) : (
+                      <span className="px-6 py-10">Kein Cover</span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="mb-1 mt-0 truncate">{book.title}</h3>
+                    {(() => {
+                      const lines: { label: string; value: string }[] = [];
+                      if (book.genre) lines.push({ label: "Genre", value: parseGenres(book.genre).join(", ") || book.genre });
+                      if (book.ageFrom > 0 || book.ageTo > 0) lines.push({ label: "Alter", value: `${book.ageFrom} bis ${book.ageTo}` });
+                      if (book.publicationYear) lines.push({ label: "Erscheinungsjahr", value: String(book.publicationYear) });
+                      if (book.publisher) lines.push({ label: "Verlag", value: book.publisher });
+                      if (book.isbn) lines.push({ label: "ISBN", value: book.isbn });
+                      if (book.pageCount && book.pageCount > 0) lines.push({ label: "Seitenanzahl", value: String(book.pageCount) });
+                      return lines.slice(0, 5).map((l) => (
+                        <p key={l.label} className="my-0.5 truncate">{l.label}: {l.value}</p>
+                      ));
+                    })()}
                   </div>
                 </div>
+              </Link>
+              <div className="flex gap-2 flex-wrap mt-3">
+                <button type="button" className="btn btn-sm" onClick={() => onEditBook(book)}>
+                  Bearbeiten
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={() => onDeleteBook(book.id)}
+                >
+                  Löschen
+                </button>
               </div>
             </article>
           ))}

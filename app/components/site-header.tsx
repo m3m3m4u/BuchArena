@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
+import NewsBar from "@/app/components/news-bar";
 
 export default function SiteHeader() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -132,6 +133,9 @@ export default function SiteHeader() {
           </button>
         </div>
       </div>
+
+      {/* News-Leiste */}
+      <NewsBar />
 
       {/* Untere Zeile – nur für eingeloggte (gelb) */}
       {loggedIn && (

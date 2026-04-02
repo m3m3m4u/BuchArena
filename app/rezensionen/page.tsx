@@ -44,11 +44,20 @@ export default function BucharenaReviewsPage() {
 
   return (
     <main className="top-centered-main">
-      <section className="card gap-[1.2rem] max-w-[700px]">
+      <section className="card gap-[1.2rem]">
         {/* Header */}
         <div className="text-center">
-          <h1>Rezension einreichen</h1>
-          <p className="mt-1 text-sm text-arena-muted">Wir sammeln deine Rezensionen und veröffentlichen Ausschnitte davon.</p>
+          <h1>Rezensionen einreichen</h1>
+          <p className="mt-2 text-[0.95rem] text-arena-muted leading-relaxed">
+            Kopiere einfach alle Rezensionen über dein Buch hier rein – alles, was du hast.
+          </p>
+          <p className="mt-1 text-sm text-arena-muted leading-relaxed">
+            Wir nehmen einzelne Sätze daraus und gestalten daraus Social-Media-Posts –{" "}
+            <a href="https://www.instagram.com/p/DUfwZzcDJtI/?img_index=1" target="_blank" rel="noopener noreferrer" className="text-arena-link">
+              zum Beispiel so
+            </a>
+            .
+          </p>
         </div>
 
         {/* Message */}
@@ -93,11 +102,11 @@ export default function BucharenaReviewsPage() {
           </label>
 
           <label className="grid gap-1 text-[0.95rem]">
-            Rezension <span className="text-red-600">*</span>
+            Rezensionen <span className="text-red-600">*</span>
             <textarea
               value={review} onChange={e => setReview(e.target.value)}
               className="input-base min-h-[200px] resize-y"
-              placeholder="Schreibe hier deine Rezension..."
+              placeholder="Füge hier alle Rezensionen ein, die du über dein Buch hast – einfach alles rein ..."
               required maxLength={5000} disabled={submitting}
             />
             <span className="text-xs text-[#888]">{review.length}/5000 Zeichen (mindestens 10 Zeichen erforderlich)</span>

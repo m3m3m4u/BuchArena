@@ -107,6 +107,9 @@ async function initializeDatabase(db: Db) {
   await nlQueue.createIndex({ status: 1, createdAt: 1 });
   await nlQueue.createIndex({ subscriberId: 1 });
 
+  const newsPosts = db.collection("news_posts");
+  await newsPosts.createIndex({ active: 1, createdAt: -1 });
+
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
     { projection: { _id: 1, passwordHash: 1, role: 1 } }
