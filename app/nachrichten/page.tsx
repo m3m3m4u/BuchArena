@@ -97,6 +97,7 @@ export default function NachrichtenPage() {
 
   // Broadcast (Admin)
   const [showBroadcast, setShowBroadcast] = useState(false);
+  const [broadcastGroup, setBroadcastGroup] = useState<"all" | "autoren" | "sprecher" | "lektoren" | "testleser" | "blogger">("all");
   const [broadcastSubject, setBroadcastSubject] = useState("");
   const [broadcastBody, setBroadcastBody] = useState("");
   const [broadcastSending, setBroadcastSending] = useState(false);
@@ -289,17 +290,18 @@ export default function NachrichtenPage() {
     }
   }
 
-  /* ── Broadcast: Nachricht an alle senden (nur Admin) ── */
+  /* ── Broadcast: Nachricht an Gruppe senden (nur Admin) ── */
   async function handleBroadcast() {
     if (!broadcastSubject.trim() || !broadcastBody.trim()) return;
     setBroadcastSending(true);
     setBroadcastMessage("");
 
     try {
-      const res = await fetch("/api/messages/broadcast", {
+      const res = await fetch("/api/messages/broadcast-group", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          group: broadcastGroup,
           subject: broadcastSubject.trim(),
           body: broadcastBody.trim(),
         }),
@@ -421,6 +423,7 @@ export default function NachrichtenPage() {
                     className="btn btn-sm !py-1 !px-2.5 text-[0.85rem]"
                     onClick={() => {
                       setShowBroadcast(true);
+                      setBroadcastGroup("all");
                       setBroadcastSubject("");
                       setBroadcastBody("");
                       setBroadcastMessage("");
@@ -702,10 +705,26 @@ export default function NachrichtenPage() {
               style={{ maxWidth: 450 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-lg m-0 mb-3">📢 Nachricht an alle</h2>
-              <p className="text-sm text-arena-muted mb-3">
-                Die Nachricht wird an alle aktiven Benutzer gesendet. Antworten kommen direkt an dich zurück.
-              </p>
+              <h2 className="text-lg m-0 mb-3">📢 Nachricht senden</h2>
+              <div className="mb-3">
+                <span className="text-sm font-semibold block mb-1.5">Empfänger</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(["all", "autoren", "sprecher", "lektoren", "testleser", "blogger"] as const).map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setBroadcastGroup(g)}
+                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                        broadcastGroup === g
+                          ? "bg-arena-blue text-white border-arena-blue"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                      }`}
+                    >
+                      {g === "all" ? "Alle" : g.charAt(0).toUpperCase() + g.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <label className="block">
                 <span className="text-sm font-semibold">Betreff</span>
                 <input
@@ -739,7 +758,7 @@ export default function NachrichtenPage() {
                   disabled={!broadcastSubject.trim() || !broadcastBody.trim() || broadcastSending}
                   onClick={() => void handleBroadcast()}
                 >
-                  {broadcastSending ? "Sende …" : "An alle senden"}
+                  {broadcastSending ? "Sende …" : `An ${broadcastGroup === "all" ? "alle" : broadcastGroup.charAt(0).toUpperCase() + broadcastGroup.slice(1)} senden`}
                 </button>
                 <button className="btn" onClick={() => setShowBroadcast(false)}>
                   Abbrechen
