@@ -30,6 +30,7 @@ export default function AdminMusikPage() {
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [msg, setMsg] = useState("");
 
   // SoundCloud-Formular
@@ -58,34 +59,62 @@ export default function AdminMusikPage() {
 
   useEffect(() => { void loadTracks(); }, [loadTracks]);
 
-  async function handleUpload(e: React.FormEvent) {
+  function handleUpload(e: React.FormEvent) {
     e.preventDefault();
     if (!file || !title.trim() || !style.trim() || !description.trim()) {
       setMsg("Bitte alle Felder ausfüllen und eine MP3-Datei wählen.");
       return;
     }
     setUploading(true);
+    setUploadProgress(0);
     setMsg("");
-    try {
-      const fd = new FormData();
-      fd.append("title", title.trim());
-      fd.append("style", style.trim());
-      fd.append("description", description.trim());
-      fd.append("file", file);
-      const res = await fetch("/api/musik/upload", { method: "POST", body: fd });
-      const data = (await res.json()) as { message?: string };
-      if (res.ok) {
-        setMsg("✓ " + (data.message ?? "Hochgeladen."));
-        setTitle(""); setStyle(""); setDescription(""); setFile(null);
-        await loadTracks();
-      } else {
-        setMsg(data.message ?? "Fehler beim Hochladen.");
+
+    const fd = new FormData();
+    fd.append("title", title.trim());
+    fd.append("style", style.trim());
+    fd.append("description", description.trim());
+    fd.append("file", file);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/musik/upload");
+
+    xhr.upload.addEventListener("progress", (ev) => {
+      if (ev.lengthComputable) {
+        setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
       }
-    } catch {
-      setMsg("Netzwerkfehler.");
-    } finally {
+    });
+
+    xhr.addEventListener("load", () => {
       setUploading(false);
-    }
+      setUploadProgress(0);
+      try {
+        const data = JSON.parse(xhr.responseText) as { message?: string };
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setMsg("✓ " + (data.message ?? "Hochgeladen."));
+          setTitle(""); setStyle(""); setDescription(""); setFile(null);
+          void loadTracks();
+        } else {
+          setMsg(data.message ?? "Fehler beim Hochladen.");
+        }
+      } catch {
+        setMsg("Ungültige Serverantwort.");
+      }
+    });
+
+    xhr.addEventListener("error", () => {
+      setUploading(false);
+      setUploadProgress(0);
+      setMsg("Netzwerkfehler – bitte erneut versuchen.");
+    });
+
+    xhr.addEventListener("timeout", () => {
+      setUploading(false);
+      setUploadProgress(0);
+      setMsg("Timeout – Verbindung zu langsam. Bitte erneut versuchen.");
+    });
+
+    xhr.timeout = 10 * 60 * 1000; // 10 Minuten
+    xhr.send(fd);
   }
 
   async function handleSoundcloud(e: React.FormEvent) {
@@ -190,12 +219,20 @@ export default function AdminMusikPage() {
               disabled={uploading}
               className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {uploading ? "Wird hochgeladen…" : "Hochladen"}
+              {uploading ? `Hochladen… ${uploadProgress}%` : "Hochladen"}
             </button>
             {msg && (
               <p className={`text-sm ${msg.startsWith("✓") ? "text-green-700" : "text-red-600"}`}>{msg}</p>
             )}
           </div>
+          {uploading && (
+            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          )}
         </form>
       </div>
 
