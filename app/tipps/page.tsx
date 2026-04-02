@@ -88,7 +88,7 @@ export default function TippsPage() {
             }`}
             onClick={() => setMainTab("social")}
           >
-            📢 Social Media Tipps
+            Social Media Tipps
           </button>
           <button
             type="button"
@@ -99,12 +99,12 @@ export default function TippsPage() {
             }`}
             onClick={() => setMainTab("musik")}
           >
-            🎵 Hintergrundmusik
+            Hintergrundmusik
           </button>
         </div>
 
         <h1 className="mb-2 text-3xl font-extrabold max-sm:text-2xl">
-          {mainTab === "musik" ? "🎵 Hintergrundmusik" : "💡 Support-Tipps für Autoren"}
+          {mainTab === "musik" ? "Hintergrundmusik" : "Support-Tipps für Autoren"}
         </h1>
         <p className="text-[0.95rem] text-[#555] leading-relaxed mb-6">
           {mainTab === "musik"
@@ -132,27 +132,27 @@ export default function TippsPage() {
         {mainTab === "social" && tab === "intro" && (
           <div className="space-y-5">
             <div className="rounded-xl border-2 border-arena-blue/30 bg-arena-blue/5 p-6">
-              <h2 className="text-xl font-bold m-0 mb-3">🤝 Der Community-Effekt</h2>
+              <h2 className="text-xl font-bold m-0 mb-3">Der Community-Effekt</h2>
               <p className="m-0 mb-3 text-[0.95rem] leading-relaxed">
                 Der größte Fehler, den du machen kannst, ist nur deinen eigenen Beitrag zu supporten („Post &amp; Run").
               </p>
               <div className="space-y-3">
                 <div className="flex gap-3 items-start">
-                  <span className="text-xl flex-shrink-0">📊</span>
+                  <span className="text-xl flex-shrink-0 text-arena-blue font-bold">1.</span>
                   <div>
                     <p className="font-semibold m-0">Die Mathematik</p>
                     <p className="text-[0.9rem] text-[#555] m-0">Wenn wir 100 Autoren sind und jeder nur sich selbst liked, hat jeder 1 Like. Wenn jeder auch die Beiträge der anderen supportet, hat jeder 100 Likes.</p>
                   </div>
                 </div>
                 <div className="flex gap-3 items-start">
-                  <span className="text-xl flex-shrink-0">⚙️</span>
+                  <span className="text-xl flex-shrink-0 text-arena-blue font-bold">2.</span>
                   <div>
                     <p className="font-semibold m-0">Der Algorithmus</p>
                     <p className="text-[0.9rem] text-[#555] m-0">Plattformen erkennen Nutzer, die nur online kommen, wenn es um sie selbst geht. Wer regelmäßig bei anderen interagiert, wird als „wertvolles Community-Mitglied" eingestuft – deine eigenen Beiträge werden höher gerankt.</p>
                   </div>
                 </div>
                 <div className="flex gap-3 items-start">
-                  <span className="text-xl flex-shrink-0">🌐</span>
+                  <span className="text-xl flex-shrink-0 text-arena-blue font-bold">3.</span>
                   <div>
                     <p className="font-semibold m-0">Nicht nur Instagram!</p>
                     <p className="text-[0.9rem] text-[#555] m-0">Es gibt Plattformen, die für die Auffindbarkeit auf Suchmaschinen und KI-Systemen wie ChatGPT viel wichtiger sind. Deshalb: Wende die folgenden Tipps bei deinem Post an UND regelmäßig bei Posts anderer Autorinnen und Autoren.</p>
@@ -162,14 +162,14 @@ export default function TippsPage() {
             </div>
 
             <div className="rounded-xl border border-arena-border-light bg-white p-6">
-              <h2 className="text-lg font-bold m-0 mb-4">🔗 Wichtige Links</h2>
+              <h2 className="text-lg font-bold m-0 mb-4">Wichtige Links</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <a href="https://www.youtube.com/@BuchArena" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
                   <span className="text-xl">▶️</span>
                   <span className="font-medium text-[0.95rem]">YouTube-Kanal</span>
                 </a>
                 <a href="https://www.youtube.com/@BuchArena/playlists" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-                  <span className="text-xl">📋</span>
+                  <span className="text-xl">▶️</span>
                   <span className="font-medium text-[0.95rem]">YouTube Playlist</span>
                 </a>
                 <a href="https://www.reddit.com/user/BuchArena/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
@@ -268,7 +268,7 @@ export default function TippsPage() {
               <p className="m-0"><strong>Der Effekt:</strong> KIs scannen diese Konversationen, um den Kontext und Inhalt des Buches zu verstehen. Je mehr Text du lieferst, desto präziser kann eine KI dein Buch später empfehlen.</p>
             </ChecklistItem>
             <div className="rounded-xl border-2 border-red-200 bg-red-50 p-5">
-              <h3 className="text-[1rem] font-bold m-0 mb-2 text-red-700">🚫 Absolute No-Gos</h3>
+              <h3 className="text-[1rem] font-bold m-0 mb-2 text-red-700">Absolute No-Gos</h3>
               <p className="m-0 text-[0.9rem]"><strong>Brigading (Vote-Manipulation):</strong> Rufe niemals öffentlich (z.&nbsp;B. in deiner Insta-Story) dazu auf: „Geht alle auf Reddit und votet hoch!". Reddit erkennt, wenn viele User von extern kommen und nur voten. Das führt zur Löschung des Posts oder Sperrung unseres Accounts. Die Interaktion muss organisch wirken.</p>
             </div>
             <PlatformLink platform="reddit" />
@@ -378,14 +378,14 @@ export default function TippsPage() {
         {mainTab === "musik" && (
           <div className="space-y-5">
             <div className="rounded-xl border-2 border-arena-blue/30 bg-arena-blue/5 p-6">
-              <h2 className="text-xl font-bold m-0 mb-3">🎶 Musik für deine Social-Media-Beiträge</h2>
+              <h2 className="text-xl font-bold m-0 mb-3">Musik für deine Social-Media-Beiträge</h2>
               <p className="m-0 text-[0.95rem] leading-relaxed">
                 Hier findest du kostenlose MP3-Dateien, die du in deinen Videos und Reels verwenden kannst.
               </p>
             </div>
 
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-[0.9rem] leading-relaxed text-amber-900">
-              <p className="m-0 font-semibold mb-1">🖥️ Nutzungshinweis</p>
+              <p className="m-0 font-semibold mb-1">Nutzungshinweis</p>
               <p className="m-0">
                 Die Musik darf frei verwendet werden – für private und kommerzielle Beiträge.
                 Wir freuen uns, wenn du in der Beschreibung{" "}
@@ -413,7 +413,7 @@ export default function TippsPage() {
                         download={track.soundcloudUrl ? undefined : track.fileName}
                         className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-arena-blue text-white text-sm font-medium hover:bg-arena-blue-light transition-colors no-underline"
                       >
-                        {track.soundcloudUrl ? "🔗 SoundCloud" : "↓ Download"}
+                        {track.soundcloudUrl ? "SoundCloud →" : "↓ Download"}
                       </a>
                     </div>
                     <p className="text-[0.9rem] text-[#555] m-0">{track.description}</p>
