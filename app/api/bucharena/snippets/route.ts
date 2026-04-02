@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const trimmedText = text.trim();
 
     if (trimmedTitle.length < 2) return NextResponse.json({ success: false, error: "Buchtitel ist zu kurz (mindestens 2 Zeichen)" }, { status: 400 });
-    if (trimmedText.length < 10) return NextResponse.json({ success: false, error: "Text ist zu kurz (mindestens 10 Zeichen)" }, { status: 400 });
+    if (trimmedText.length < 1) return NextResponse.json({ success: false, error: "Text darf nicht leer sein" }, { status: 400 });
 
     let audioFileNameFinal: string | undefined;
     let audioFilePathFinal: string | undefined;

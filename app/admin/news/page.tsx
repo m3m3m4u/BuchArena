@@ -24,14 +24,39 @@ const ResizableImage = Image.extend({
           if (sw.endsWith("px")) return sw.slice(0, -2);
           return element.getAttribute("width") ?? null;
         },
-        renderHTML: (attrs: { width?: string | null }) => {
-          if (!attrs.width) return {};
-          const w = String(attrs.width);
-          if (w.endsWith("%")) return { style: `width: ${w}; max-width: 100%;` };
-          return { width: w, style: `width: ${w}px; max-width: 100%;` };
+        renderHTML: () => ({}), // merged in node renderHTML below
+      },
+      align: {
+        default: null,
+        parseHTML: (element: HTMLElement) => {
+          const s = element.style;
+          if (s.marginLeft === "auto" && s.marginRight === "auto") return "center";
+          if (s.float === "left") return "left";
+          if (s.float === "right") return "right";
+          return (element.getAttribute("data-align") as string | null) ?? null;
         },
+        renderHTML: () => ({}), // merged in node renderHTML below
       },
     };
+  },
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
+    const { width, align, ...rest } = HTMLAttributes as {
+      width?: string | null;
+      align?: string | null;
+      [key: string]: unknown;
+    };
+    const styles: string[] = [];
+    if (width) {
+      const w = String(width);
+      styles.push(w.endsWith("%") ? `width: ${w}; max-width: 100%` : `width: ${w}px; max-width: 100%`);
+    }
+    if (align === "center") styles.push("display: block; margin-left: auto; margin-right: auto");
+    else if (align === "left") styles.push("float: left; margin-right: 1rem; margin-bottom: 0.5rem");
+    else if (align === "right") styles.push("float: right; margin-left: 1rem; margin-bottom: 0.5rem");
+    const attrs: Record<string, unknown> = { ...rest };
+    if (align) attrs["data-align"] = align;
+    if (styles.length) attrs.style = styles.join("; ");
+    return ["img", attrs];
   },
 });
 
@@ -87,21 +112,33 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
   const [urlModal, setUrlModal] = useState<UrlModalConfig | null>(null);
   const [imgWidthInput, setImgWidthInput] = useState("");
 
+  const [imgAlignActive, setImgAlignActive] = useState<string | null>(null);
+
   const editorState = useEditorState({
     editor,
     selector: (ctx) => ({
       isImage: ctx.editor?.isActive("image") ?? false,
       imgWidth: (ctx.editor?.getAttributes("image").width as string | null) ?? "",
+      imgAlign: (ctx.editor?.getAttributes("image").align as string | null) ?? null,
     }),
   });
 
   useEffect(() => {
-    if (editorState?.isImage) setImgWidthInput(editorState.imgWidth);
-  }, [editorState?.isImage, editorState?.imgWidth]);
+    if (editorState?.isImage) {
+      setImgWidthInput(editorState.imgWidth);
+      setImgAlignActive(editorState.imgAlign);
+    }
+  }, [editorState?.isImage, editorState?.imgWidth, editorState?.imgAlign]);
 
   function applyImageWidth(w: string) {
     if (!editor) return;
     editor.chain().focus().updateAttributes("image", { width: w || null }).run();
+  }
+
+  function applyImageAlign(a: string | null) {
+    if (!editor) return;
+    setImgAlignActive(a);
+    editor.chain().focus().updateAttributes("image", { align: a }).run();
   }
 
   const openLinkModal = useCallback(() => {
@@ -192,6 +229,17 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
             className={`px-2 py-0.5 rounded border text-xs transition-colors ${imgWidthInput === "100%" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"}`}>
             Voll
           </button>
+          <span className="border-l border-blue-200 mx-1 self-stretch" />
+          <span className="text-blue-700 font-medium">Ausrichtung:</span>
+          {(["left", "center", "right", null] as const).map((a) => (
+            <button key={String(a)} type="button"
+              onMouseDown={(e) => { e.preventDefault(); applyImageAlign(a); }}
+              className={`px-2 py-0.5 rounded border text-xs transition-colors ${
+                imgAlignActive === a ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"
+              }`}>
+              {a === "left" ? "Links" : a === "center" ? "Mitte" : a === "right" ? "Rechts" : "Normal"}
+            </button>
+          ))}
         </div>
       )}
     </>
@@ -324,6 +372,14 @@ export default function NewsAdminPage() {
       setHtmlSource(editor.getHTML());
       setHtmlMode(true);
     } else {
+      if (
+        /<div[\s>]/i.test(htmlSource) &&
+        !window.confirm(
+          "Beim Wechsel in den visuellen Modus gehen <div>-Elemente und spezielles HTML verloren.\nNur im HTML-Modus speichern, um sie zu behalten.\nTrotzdem wechseln?"
+        )
+      ) {
+        return;
+      }
       editor.commands.setContent(htmlSource);
       setHtmlMode(false);
     }

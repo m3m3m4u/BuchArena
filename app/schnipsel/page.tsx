@@ -116,7 +116,7 @@ export default function BucharenaSnippetsPage() {
           <label className="grid gap-1 text-[0.95rem]">
             Text-Schnipsel <span className="text-red-600">*</span>
             <textarea value={text} onChange={e => setText(e.target.value)} className="input-base min-h-[150px] resize-y" placeholder="Schreibe hier deinen Lieblings-Schnipsel aus dem Buch..." required maxLength={3000} disabled={submitting} />
-            <span className="text-xs text-[#888]">{text.length}/3000 Zeichen (mindestens 10 Zeichen erforderlich)</span>
+            <span className="text-xs text-[#888]">{text.length}/3000 Zeichen</span>
           </label>
 
           <div>
