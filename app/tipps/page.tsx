@@ -77,15 +77,6 @@ export default function TippsPage() {
   return (
     <main className="centered-main">
       <section className="w-full max-w-[1100px] rounded-[14px] bg-white px-12 py-10 box-border max-sm:px-4 max-sm:py-6">
-        <h1 className="mb-2 text-3xl font-extrabold max-sm:text-2xl">
-          {mainTab === "musik" ? "🎵 Hintergrundmusik" : "💡 Support-Tipps für Autoren"}
-        </h1>
-        <p className="text-[0.95rem] text-[#555] leading-relaxed mb-6">
-          {mainTab === "musik"
-            ? "Kostenlose MP3-Tracks für deine Videos und Reels – von BuchArena für dich bereitgestellt."
-            : "Wir übernehmen die Video-Erstellung, das Design und den Upload. Dein Job ist es, den \u201EMotor\u201C zu starten. Hier erfährst du, wie du das Beste aus jeder Plattform herausholst."}
-        </p>
-
         {/* Haupt-Tabs */}
         <div className="flex gap-2 mb-5 border-b border-gray-200">
           <button
@@ -111,6 +102,15 @@ export default function TippsPage() {
             🎵 Hintergrundmusik
           </button>
         </div>
+
+        <h1 className="mb-2 text-3xl font-extrabold max-sm:text-2xl">
+          {mainTab === "musik" ? "🎵 Hintergrundmusik" : "💡 Support-Tipps für Autoren"}
+        </h1>
+        <p className="text-[0.95rem] text-[#555] leading-relaxed mb-6">
+          {mainTab === "musik"
+            ? "Kostenlose MP3-Tracks für deine Videos und Reels – von BuchArena für dich bereitgestellt."
+            : "Wir übernehmen die Video-Erstellung, das Design und den Upload. Dein Job ist es, den \u201EMotor\u201C zu starten. Hier erfährst du, wie du das Beste aus jeder Plattform herausholst."}
+        </p>
 
         {/* Plattform-Tabs (nur bei Social Media) */}
         {mainTab === "social" && (
