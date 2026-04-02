@@ -127,7 +127,7 @@ function UrlInputModal({ config, onClose }: { config: UrlModalConfig; onClose: (
   );
 }
 
-function EditorToolbar({ editor }: { editor: Editor | null }) {
+function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | null; htmlMode: boolean; onToggleHtml: () => void }) {
   const imgInputRef = useRef<HTMLInputElement>(null);
   const [urlModal, setUrlModal] = useState<UrlModalConfig | null>(null);
 
@@ -255,6 +255,8 @@ function EditorToolbar({ editor }: { editor: Editor | null }) {
         <span className="border-l border-gray-300 mx-1" />
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} active={false} title="Rückgängig">↩</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().redo().run()} active={false} title="Wiederholen">↪</ToolbarButton>
+        <span className="border-l border-gray-300 mx-1" />
+        <ToolbarButton onClick={onToggleHtml} active={htmlMode} title="HTML-Quelltext bearbeiten">&lt;/&gt; HTML</ToolbarButton>
         <input
           ref={imgInputRef}
           type="file"
@@ -397,6 +399,9 @@ export default function NewsletterAdminPage() {
   const [sendProgress, setSendProgress] = useState<{ sent: number; failed: number; total: number } | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
+  const [htmlMode, setHtmlMode] = useState(false);
+  const [htmlSource, setHtmlSource] = useState("");
+
   const [testEmail, setTestEmail] = useState("");
   const [testStatus, setTestStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [testMessage, setTestMessage] = useState("");
@@ -462,11 +467,22 @@ export default function NewsletterAdminPage() {
     },
   });
 
+  const toggleHtmlMode = useCallback(() => {
+    if (!editor) return;
+    if (!htmlMode) {
+      setHtmlSource(editor.getHTML());
+      setHtmlMode(true);
+    } else {
+      editor.commands.setContent(htmlSource);
+      setHtmlMode(false);
+    }
+  }, [editor, htmlMode, htmlSource]);
+
   const handleSend = useCallback(async () => {
     if (!editor) return;
-    const htmlContent = editor.getHTML();
+    const htmlContent = htmlMode ? htmlSource : editor.getHTML();
     if (!subject.trim()) { setStatus("error"); setStatusMessage("Bitte gib einen Betreff ein."); return; }
-    if (!htmlContent || editor.isEmpty) { setStatus("error"); setStatusMessage("Der Newsletter-Inhalt darf nicht leer sein."); return; }
+    if (!htmlContent || (htmlMode ? !htmlSource.trim() : editor.isEmpty)) { setStatus("error"); setStatusMessage("Der Newsletter-Inhalt darf nicht leer sein."); return; }
     const confirmed = window.confirm("Newsletter wirklich an alle aktiven Abonnenten senden? Diese Aktion kann nicht rückgängig gemacht werden.");
     if (!confirmed) return;
     setStatus("sending");
@@ -517,13 +533,13 @@ export default function NewsletterAdminPage() {
       setStatus("error");
       setStatusMessage("Netzwerkfehler – bitte versuche es erneut.");
     }
-  }, [editor, subject]);
+  }, [editor, subject, htmlMode, htmlSource]);
 
   const handleTestSend = useCallback(async () => {
     if (!editor) return;
-    const htmlContent = editor.getHTML();
+    const htmlContent = htmlMode ? htmlSource : editor.getHTML();
     if (!subject.trim()) { setTestStatus("error"); setTestMessage("Bitte zuerst einen Betreff eingeben."); return; }
-    if (!htmlContent || editor.isEmpty) { setTestStatus("error"); setTestMessage("Der Newsletter-Inhalt darf nicht leer sein."); return; }
+    if (!htmlContent || (htmlMode ? !htmlSource.trim() : editor.isEmpty)) { setTestStatus("error"); setTestMessage("Der Newsletter-Inhalt darf nicht leer sein."); return; }
     if (!testEmail.trim()) { setTestStatus("error"); setTestMessage("Bitte eine Test-E-Mail-Adresse eingeben."); return; }
     setTestStatus("sending");
     setTestMessage("");
@@ -540,7 +556,7 @@ export default function NewsletterAdminPage() {
       setTestStatus("error");
       setTestMessage("Netzwerkfehler – bitte versuche es erneut.");
     }
-  }, [editor, subject, testEmail]);
+  }, [editor, subject, testEmail, htmlMode, htmlSource]);
 
   const loadPreview = useCallback(async (id: string) => {
     const res = await fetch(`/api/newsletter/archive/${id}`);
@@ -550,8 +566,8 @@ export default function NewsletterAdminPage() {
 
   const handleSaveDraft = useCallback(async () => {
     if (!editor) return;
-    const htmlContent = editor.getHTML();
-    if (!subject.trim() && editor.isEmpty) {
+    const htmlContent = htmlMode ? htmlSource : editor.getHTML();
+    if (!subject.trim() && (htmlMode ? !htmlSource.trim() : editor.isEmpty)) {
       setDraftStatusMsg("Bitte Betreff oder Inhalt eingeben.");
       return;
     }
@@ -581,7 +597,7 @@ export default function NewsletterAdminPage() {
     } finally {
       setDraftSaving(false);
     }
-  }, [editor, subject, currentDraftId, draftNote]);
+  }, [editor, subject, currentDraftId, draftNote, htmlMode, htmlSource]);
 
   const loadDraftIntoEditor = useCallback(async (id: string) => {
     const res = await fetch(`/api/newsletter/drafts/${id}`);
@@ -591,6 +607,7 @@ export default function NewsletterAdminPage() {
       editor.commands.setContent(data.draft.htmlContent);
       setDraftNote(data.draft.note);
       setCurrentDraftId(id);
+      setHtmlMode(false);
       setTab("erstellen");
     }
   }, [editor]);
@@ -608,6 +625,7 @@ export default function NewsletterAdminPage() {
     if (data.entry && editor) {
       setSubject(data.entry.subject);
       editor.commands.setContent(data.entry.htmlContent);
+      setHtmlMode(false);
       setTab("erstellen");
     }
   }, [editor]);
@@ -679,8 +697,17 @@ export default function NewsletterAdminPage() {
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">Inhalt</label>
             <div className="border border-gray-300 rounded-lg overflow-hidden shadow-sm">
-              <EditorToolbar editor={editor} />
-              <EditorContent editor={editor} className="bg-white" />
+              <EditorToolbar editor={editor} htmlMode={htmlMode} onToggleHtml={toggleHtmlMode} />
+              {htmlMode ? (
+                <textarea
+                  value={htmlSource}
+                  onChange={(e) => setHtmlSource(e.target.value)}
+                  className="w-full min-h-[400px] p-4 font-mono text-sm bg-white focus:outline-none resize-y"
+                  spellCheck={false}
+                />
+              ) : (
+                <EditorContent editor={editor} className="bg-white" />
+              )}
             </div>
             <p className="text-xs text-gray-400 mt-1">
               Abmelde-Link wird automatisch angehängt. Bilder werden als Base64 eingebettet.
