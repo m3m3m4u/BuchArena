@@ -82,6 +82,7 @@ export default function SiteHeader() {
     <>
       <Link href="/lesezeichen" className="header-link-member w-full sm:w-auto">Lesezeichen</Link>
       <Link href="/diskussionen" className="header-link-member w-full sm:w-auto">Treffpunkt</Link>
+      <Link href="/kalender" className="header-link-member w-full sm:w-auto">Kalender</Link>
       <Link href="/tipps" className="header-link-member w-full sm:w-auto">Tipps</Link>
       <Link href="/nachrichten" className="header-link-member w-full sm:w-auto">
         Nachrichten{unreadCount > 0 && <span className="ml-1 inline-flex items-center justify-center rounded-full bg-[var(--color-arena-blue)] text-[var(--color-arena-yellow)] text-[0.65rem] font-bold min-w-[18px] h-[18px] px-1 leading-none">{unreadCount}</span>}

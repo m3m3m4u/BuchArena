@@ -1,0 +1,117 @@
+import { NextResponse } from "next/server";
+import { getKalenderCollection } from "@/lib/mongodb";
+import { getServerAccount } from "@/lib/server-auth";
+import type { KalenderCategory } from "@/lib/kalender";
+
+export async function POST(request: Request) {
+  try {
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
+    const body = (await request.json()) as {
+      title?: string;
+      description?: string;
+      category?: string;
+      date?: string;
+      timeFrom?: string;
+      timeTo?: string;
+      locationStreet?: string;
+      locationCity?: string;
+      locationZipCode?: string;
+      locationCountry?: string;
+    };
+
+    const title = body.title?.trim();
+    const description = body.description?.trim();
+    const category = body.category?.trim();
+    const date = body.date?.trim();
+    const timeFrom = body.timeFrom?.trim() || undefined;
+    const timeTo = body.timeTo?.trim() || undefined;
+
+    if (!title || !description || !date || !category) {
+      return NextResponse.json(
+        { message: "Titel, Beschreibung, Kategorie und Datum sind erforderlich." },
+        { status: 400 }
+      );
+    }
+
+    const validCategories: KalenderCategory[] = ["Buchmesse", "Lesung", "Release", "Sonstiges"];
+    if (!validCategories.includes(category as KalenderCategory)) {
+      return NextResponse.json(
+        { message: "Ungültige Kategorie." },
+        { status: 400 }
+      );
+    }
+
+    if (title.length > 200) {
+      return NextResponse.json(
+        { message: "Titel darf maximal 200 Zeichen lang sein." },
+        { status: 400 }
+      );
+    }
+
+    if (description.length > 3000) {
+      return NextResponse.json(
+        { message: "Beschreibung darf maximal 3000 Zeichen lang sein." },
+        { status: 400 }
+      );
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return NextResponse.json(
+        { message: "Ungültiges Datumsformat (YYYY-MM-DD erwartet)." },
+        { status: 400 }
+      );
+    }
+
+    if (timeFrom && !/^\d{2}:\d{2}$/.test(timeFrom)) {
+      return NextResponse.json({ message: "Ungültiges Zeitformat für 'von'." }, { status: 400 });
+    }
+
+    if (timeTo && !/^\d{2}:\d{2}$/.test(timeTo)) {
+      return NextResponse.json({ message: "Ungültiges Zeitformat für 'bis'." }, { status: 400 });
+    }
+
+    const location = {
+      street: body.locationStreet?.trim() || undefined,
+      city: body.locationCity?.trim() || undefined,
+      zipCode: body.locationZipCode?.trim() || undefined,
+      country: body.locationCountry?.trim() || undefined,
+    };
+
+    // Remove undefined values
+    if (!location.street) delete location.street;
+    if (!location.city) delete location.city;
+    if (!location.zipCode) delete location.zipCode;
+    if (!location.country) delete location.country;
+
+    const now = new Date();
+    const col = await getKalenderCollection();
+
+    const doc = {
+      title,
+      description,
+      category: category as KalenderCategory,
+      date,
+      timeFrom,
+      timeTo,
+      location: Object.keys(location).length > 0 ? location : undefined,
+      createdBy: account.username,
+      participants: [account.username],
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const result = await col.insertOne(doc);
+
+    return NextResponse.json({
+      success: true,
+      id: result.insertedId.toString(),
+    });
+  } catch (err) {
+    console.error("Kalender create error:", err);
+    return NextResponse.json({ message: "Serverfehler." }, { status: 500 });
+  }
+}

@@ -6,6 +6,7 @@ import type { SupportPost } from "@/lib/support";
 import type { DiscussionDocument } from "@/lib/discussions";
 import type { PollDocument, TauschDocument } from "@/lib/discussions";
 import type { MessageDocument } from "@/lib/messages";
+import type { KalenderEvent } from "@/lib/kalender";
 
 export type UserRole = "USER" | "ADMIN" | "SUPERADMIN";
 
@@ -110,6 +111,10 @@ async function initializeDatabase(db: Db) {
   const newsPosts = db.collection("news_posts");
   await newsPosts.createIndex({ active: 1, createdAt: -1 });
 
+  const kalender = db.collection("kalender_events");
+  await kalender.createIndex({ date: 1 });
+  await kalender.createIndex({ createdBy: 1 });
+
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
     { projection: { _id: 1, passwordHash: 1, role: 1 } }
@@ -193,6 +198,11 @@ export async function getMessagesCollection(): Promise<Collection<MessageDocumen
 export async function getTauschCollection(): Promise<Collection<TauschDocument>> {
   const db = await getDatabase();
   return db.collection<TauschDocument>("tausch");
+}
+
+export async function getKalenderCollection(): Promise<Collection<KalenderEvent>> {
+  const db = await getDatabase();
+  return db.collection<KalenderEvent>("kalender_events");
 }
 
 export function isDuplicateKeyError(error: unknown) {
