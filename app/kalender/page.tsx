@@ -860,7 +860,7 @@ export default function KalenderPage() {
               <>
                 <div
                   ref={mapContainer}
-                  className="h-[350px] sm:h-[600px]"
+                  className="relative z-0 h-[350px] sm:h-[600px]"
                   style={{
                     width: "100%",
                     borderRadius: "8px",
