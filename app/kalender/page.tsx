@@ -596,7 +596,7 @@ export default function KalenderPage() {
         </section>
 
         {showForm && loggedIn && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4" style={{ zIndex: 10000 }} onClick={() => setShowForm(false)}>
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4" style={{ zIndex: 10000 }}>
             <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="sticky top-0 bg-white border-b border-[var(--color-arena-border)] p-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold" style={{ color: "var(--color-arena-blue)" }}>
@@ -880,7 +880,7 @@ export default function KalenderPage() {
 
       {/* Event Detail Modal */}
       {selectedEvent && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4" style={{ zIndex: 10000 }} onClick={() => closeEventDetail()}>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4" style={{ zIndex: 10000 }}>
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b border-[var(--color-arena-border)] p-4 flex items-center justify-between">
               <h2 className="text-xl font-bold" style={{ color: "var(--color-arena-blue)" }}>
