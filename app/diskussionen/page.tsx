@@ -240,15 +240,15 @@ export default function DiskussionenPage() {
   return (
     <main className="top-centered-main">
       <section className="card">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1>Diskussionen</h1>
-          <div className="flex gap-2">
-            <Link href="/quiz" className="btn">Quiz</Link>
-            <Link href="/tauschboerse" className="btn">Tauschbörse</Link>
-            <button className="btn" onClick={() => setShowPollOverlay(true)}>
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <h1 className="text-xl sm:text-2xl">Diskussionen</h1>
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            <Link href="/quiz" className="btn text-sm sm:text-base">Quiz</Link>
+            <Link href="/tauschboerse" className="btn text-sm sm:text-base">Tauschbörse</Link>
+            <button className="btn text-sm sm:text-base" onClick={() => setShowPollOverlay(true)}>
               Neue Abstimmung
             </button>
-            <button className="btn" onClick={() => setShowOverlay(true)}>
+            <button className="btn text-sm sm:text-base" onClick={() => setShowOverlay(true)}>
               Neues Thema
             </button>
           </div>
@@ -277,21 +277,21 @@ export default function DiskussionenPage() {
                     <div
                       key={`d-${d.id}`}
                       onClick={() => router.push(`/diskussionen/${d.id}`)}
-                      className="rounded-lg border border-arena-border p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit"
+                      className="rounded-lg border border-arena-border p-3 sm:p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit"
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <strong>{d.title}</strong>
-                        <span className="text-xs text-arena-muted">
+                      <div className="flex items-start justify-between gap-2 sm:gap-3">
+                        <strong className="text-sm sm:text-base line-clamp-2">{d.title}</strong>
+                        <span className="text-xs text-arena-muted whitespace-nowrap flex-shrink-0">
                           {d.replyCount} {d.replyCount === 1 ? "Antwort" : "Antworten"}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between gap-2 text-sm text-arena-muted mt-1">
-                        <span>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5 sm:gap-2 text-xs sm:text-sm text-arena-muted mt-1">
+                        <span className="truncate">
                           von {d.displayName || d.authorUsername}{" "}
                           <RoleBadges username={d.authorUsername} hasProfile={d.hasProfile} hasSpeakerProfile={d.hasSpeakerProfile} hasBloggerProfile={d.hasBloggerProfile} />
                         </span>
-                        <span className="text-xs text-arena-muted">
-                          Letzte Aktivität: {timeAgo(d.lastActivityAt)}
+                        <span className="text-xs text-arena-muted flex-shrink-0">
+                          {timeAgo(d.lastActivityAt)}
                         </span>
                       </div>
                     </div>
@@ -336,9 +336,9 @@ export default function DiskussionenPage() {
 
         return (
           <div className="overlay-backdrop" onClick={() => setOpenPollId(null)}>
-            <div className="w-[min(560px,100%)] bg-white rounded-xl p-5 box-border grid gap-4" onClick={(e) => e.stopPropagation()}>
+            <div className="w-[min(560px,100%)] bg-white rounded-xl p-4 sm:p-5 box-border grid gap-3 sm:gap-4" onClick={(e) => e.stopPropagation()}>
               <div>
-                <h2 className="m-0 mb-1">{poll.question}</h2>
+                <h2 className="m-0 mb-1 text-lg sm:text-xl">{poll.question}</h2>
                 <p className="text-sm text-arena-muted m-0">
                   von {poll.displayName || poll.authorUsername} · {timeAgo(poll.createdAt)} · {total} {total === 1 ? "Stimme" : "Stimmen"}
                 </p>

@@ -23,6 +23,7 @@ interface KalenderEvent {
   timeFrom: string | null;
   timeTo: string | null;
   location: KalenderLocation | null;
+  link: string | null;
   createdBy: string;
   participantCount: number;
   participants: string[];
@@ -124,6 +125,7 @@ export default function KalenderPage() {
     locationCity: "",
     locationZipCode: "",
     locationCountry: "",
+    link: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -373,6 +375,7 @@ export default function KalenderPage() {
         locationCity: "",
         locationZipCode: "",
         locationCountry: "",
+        link: "",
       });
       setShowForm(false);
       await loadEvents();
@@ -403,6 +406,7 @@ export default function KalenderPage() {
       locationCity: event.location?.city ?? "",
       locationZipCode: event.location?.zipCode ?? "",
       locationCountry: event.location?.country ?? "",
+      link: event.link ?? "",
     });
   };
 
@@ -544,54 +548,56 @@ export default function KalenderPage() {
       <div className="w-full space-y-6">
         {/* Header mit View Toggle */}
         <section className="card">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
+          <div className="flex flex-col items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full justify-center">
               <button
                 onClick={goToPreviousMonth}
-                className="w-28 px-4 py-2 bg-[var(--color-arena-blue)] text-white rounded hover:bg-[var(--color-arena-blue-mid)]"
+                className="px-2.5 py-2 sm:w-28 sm:px-4 text-sm sm:text-base bg-[var(--color-arena-blue)] text-white rounded hover:bg-[var(--color-arena-blue-mid)]"
               >
-                ← Zurück
+                ← <span className="hidden sm:inline">Zurück</span>
               </button>
-              <h1 className="text-2xl font-bold text-center min-w-[14rem]" style={{ color: "var(--color-arena-blue)" }}>
+              <h1 className="text-lg sm:text-2xl font-bold text-center flex-1 sm:flex-none sm:min-w-[14rem]" style={{ color: "var(--color-arena-blue)" }}>
                 {getMonthLabel(year, month)}
               </h1>
               <button
                 onClick={goToNextMonth}
-                className="w-28 px-4 py-2 bg-[var(--color-arena-blue)] text-white rounded hover:bg-[var(--color-arena-blue-mid)]"
+                className="px-2.5 py-2 sm:w-28 sm:px-4 text-sm sm:text-base bg-[var(--color-arena-blue)] text-white rounded hover:bg-[var(--color-arena-blue-mid)]"
               >
-                Weiter →
+                <span className="hidden sm:inline">Weiter </span>→
               </button>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => setViewMode("list")}
-                className={`px-4 py-2 rounded font-semibold transition ${
-                  viewMode === "list"
-                    ? "bg-[var(--color-arena-blue)] text-white"
-                    : "border border-[var(--color-arena-blue)] text-[var(--color-arena-blue)] hover:bg-blue-50"
-                }`}
-              >
-                📅 Kalender
-              </button>
-              <button
-                onClick={() => setViewMode("map")}
-                className={`px-4 py-2 rounded font-semibold transition ${
-                  viewMode === "map"
-                    ? "bg-[var(--color-arena-blue)] text-white"
-                    : "border border-[var(--color-arena-blue)] text-[var(--color-arena-blue)] hover:bg-blue-50"
-                }`}
-              >
-                🗺️ Karte
-              </button>
+            <div className="flex flex-wrap items-center justify-center gap-2 w-full">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded font-semibold text-sm sm:text-base transition ${
+                    viewMode === "list"
+                      ? "bg-[var(--color-arena-blue)] text-white"
+                      : "border border-[var(--color-arena-blue)] text-[var(--color-arena-blue)] hover:bg-blue-50"
+                  }`}
+                >
+                  📅 Kalender
+                </button>
+                <button
+                  onClick={() => setViewMode("map")}
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded font-semibold text-sm sm:text-base transition ${
+                    viewMode === "map"
+                      ? "bg-[var(--color-arena-blue)] text-white"
+                      : "border border-[var(--color-arena-blue)] text-[var(--color-arena-blue)] hover:bg-blue-50"
+                  }`}
+                >
+                  🗺️ Karte
+                </button>
+              </div>
+              {loggedIn && (
+                <button
+                  onClick={() => setShowForm(!showForm)}
+                  className="px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base bg-[var(--color-arena-yellow)] text-[var(--color-arena-blue)] font-bold rounded hover:bg-yellow-400"
+                >
+                  + Termin erstellen
+                </button>
+              )}
             </div>
-            {loggedIn && (
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="px-6 py-2 bg-[var(--color-arena-yellow)] text-[var(--color-arena-blue)] font-bold rounded hover:bg-yellow-400"
-              >
-                + Termin erstellen
-              </button>
-            )}
           </div>
         </section>
 
@@ -731,6 +737,18 @@ export default function KalenderPage() {
                 </div>
               </fieldset>
 
+              <div>
+                <label className="block font-semibold mb-1">Link (optional)</label>
+                <input
+                  type="url"
+                  maxLength={500}
+                  value={formData.link}
+                  onChange={(e) => handleFormChange("link", e.target.value)}
+                  className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                  placeholder="https://beispiel.de/event"
+                />
+              </div>
+
               {message && <div className="p-3 bg-green-100 text-green-800 rounded">{message}</div>}
 
               <div className="flex gap-3">
@@ -778,25 +796,25 @@ export default function KalenderPage() {
                           onClick={() => openEventDetail(event)}
                           className="p-4 border-2 border-[var(--color-arena-border)] rounded cursor-pointer hover:shadow-lg transition-shadow"
                         >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <span
-                                  className={`px-3 py-1 text-sm font-bold rounded border ${CATEGORY_COLORS[event.category]}`}
+                                  className={`px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-bold rounded border ${CATEGORY_COLORS[event.category]}`}
                                 >
                                   {event.category}
                                 </span>
                                 {event.timeFrom && (
-                                  <span className="text-sm text-[var(--color-arena-muted)] font-semibold">
+                                  <span className="text-xs sm:text-sm text-[var(--color-arena-muted)] font-semibold">
                                     {event.timeFrom}
                                     {event.timeTo ? ` - ${event.timeTo}` : ""}
                                   </span>
                                 )}
                               </div>
-                              <h4 className="font-bold text-lg mb-1">{event.title}</h4>
-                              <p className="text-sm text-[var(--color-arena-muted)] line-clamp-2">{event.description}</p>
+                              <h4 className="font-bold text-base sm:text-lg mb-1">{event.title}</h4>
+                              <p className="text-xs sm:text-sm text-[var(--color-arena-muted)] line-clamp-2">{event.description}</p>
                               {event.location && (
-                                <p className="text-sm mt-2" style={{ color: "var(--color-arena-muted)" }}>
+                                <p className="text-xs sm:text-sm mt-2" style={{ color: "var(--color-arena-muted)" }}>
                                   📍{" "}
                                   {[event.location.street, event.location.zipCode, event.location.city, event.location.country]
                                     .filter(Boolean)
@@ -804,12 +822,12 @@ export default function KalenderPage() {
                                 </p>
                               )}
                             </div>
-                            <div className="flex flex-col items-end gap-2 shrink-0">
+                            <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 shrink-0 flex-wrap">
                               <div className="text-xs text-[var(--color-arena-muted)]">von {event.createdBy}</div>
                               {event.participants.length > 0 && (
-                                <div className="text-right">
+                                <div className="sm:text-right">
                                   <div className="text-xs text-[var(--color-arena-muted)] mb-1">Dabei ({event.participants.length}):</div>
-                                  <div className="flex flex-wrap justify-end gap-1">
+                                  <div className="flex flex-wrap sm:justify-end gap-1">
                                     {event.participants.map((p) => (
                                       <Link
                                         key={p}
@@ -842,9 +860,9 @@ export default function KalenderPage() {
               <>
                 <div
                   ref={mapContainer}
+                  className="h-[350px] sm:h-[600px]"
                   style={{
                     width: "100%",
-                    height: "600px",
                     borderRadius: "8px",
                     border: "2px solid var(--color-arena-border)",
                     backgroundColor: "#f0f0f0",
@@ -882,19 +900,19 @@ export default function KalenderPage() {
       {selectedEvent && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4" style={{ zIndex: 10000 }}>
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-white border-b border-[var(--color-arena-border)] p-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold" style={{ color: "var(--color-arena-blue)" }}>
+            <div className="sticky top-0 bg-white border-b border-[var(--color-arena-border)] p-3 sm:p-4 flex items-center justify-between gap-2">
+              <h2 className="text-base sm:text-xl font-bold line-clamp-2" style={{ color: "var(--color-arena-blue)" }}>
                 {selectedEvent.title}
               </h2>
               <button
                 onClick={() => closeEventDetail()}
-                className="text-2xl leading-none hover:text-[var(--color-arena-muted)]"
+                className="text-2xl leading-none hover:text-[var(--color-arena-muted)] flex-shrink-0"
               >
                 ×
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               {!isEditMode ? (
                 <>
                   <div>
@@ -947,6 +965,22 @@ export default function KalenderPage() {
                     </div>
                   )}
 
+                  {selectedEvent.link && (
+                    <div>
+                      <label className="block font-semibold mb-1">Link</label>
+                      <p>
+                        <a
+                          href={selectedEvent.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[var(--color-arena-link)] hover:underline break-all"
+                        >
+                          {selectedEvent.link}
+                        </a>
+                      </p>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block font-semibold mb-1">Erstellt von</label>
                     <p>
@@ -971,11 +1005,11 @@ export default function KalenderPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-3 pt-4 border-t border-[var(--color-arena-border)]">
+                  <div className="flex flex-wrap gap-2 sm:gap-3 pt-4 border-t border-[var(--color-arena-border)]">
                     {loggedIn && !selectedEvent.participants.includes(username) && (
                       <button
                         onClick={handleJoinEvent}
-                        className="flex-1 px-4 py-2 bg-[var(--color-arena-yellow)] text-[var(--color-arena-blue)] font-bold rounded hover:bg-yellow-400"
+                        className="flex-1 min-w-[120px] px-3 py-2 sm:px-4 text-sm sm:text-base bg-[var(--color-arena-yellow)] text-[var(--color-arena-blue)] font-bold rounded hover:bg-yellow-400"
                       >
                         ✓ Ich bin dabei
                       </button>
@@ -983,15 +1017,15 @@ export default function KalenderPage() {
                     {loggedIn && selectedEvent.participants.includes(username) && (
                       <button
                         onClick={handleJoinEvent}
-                        className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 font-bold rounded hover:bg-gray-400"
+                        className="flex-1 min-w-[120px] px-3 py-2 sm:px-4 text-sm sm:text-base bg-gray-300 text-gray-700 font-bold rounded hover:bg-gray-400"
                       >
-                        ✓ Teilnahme absagen
+                        ✓ Absagen
                       </button>
                     )}
                     {(isUserRole === "user" || isUserRole === "admin") && (
                       <button
                         onClick={handleStartEdit}
-                        className="px-4 py-2 border border-[var(--color-arena-blue)] text-[var(--color-arena-blue)] font-bold rounded hover:bg-blue-50"
+                        className="px-3 py-2 sm:px-4 text-sm sm:text-base border border-[var(--color-arena-blue)] text-[var(--color-arena-blue)] font-bold rounded hover:bg-blue-50"
                       >
                         ✎ Bearbeiten
                       </button>
@@ -1128,6 +1162,18 @@ export default function KalenderPage() {
                       </div>
                     </div>
                   </fieldset>
+
+                  <div>
+                    <label className="block font-semibold mb-1">Link (optional)</label>
+                    <input
+                      type="url"
+                      maxLength={500}
+                      value={editFormData.link}
+                      onChange={(e) => handleEditFormChange("link", e.target.value)}
+                      className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                      placeholder="https://beispiel.de/event"
+                    />
+                  </div>
 
                   {message && <div className="p-3 bg-green-100 text-green-800 rounded">{message}</div>}
 

@@ -93,4 +93,16 @@ export function clearStoredAccount() {
   emitAccountChanged();
 }
 
+/**
+ * Prüft eine fetch-Response auf 401 und räumt ggf. den Client-State auf.
+ * Gibt `true` zurück wenn die Session ungültig war (Caller sollte abbrechen).
+ */
+export function handleAuthError(res: Response): boolean {
+  if (res.status === 401) {
+    clearStoredAccount();
+    return true;
+  }
+  return false;
+}
+
 export { ACCOUNT_CHANGED_EVENT };

@@ -84,25 +84,25 @@ export default function LesezeichenPage() {
         {/* Eigener Stand */}
         {loggedIn && myStats && (
           <section className="card flex-shrink-0">
-            <h1 className="text-xl flex items-center gap-2">
+            <h1 className="text-lg sm:text-xl flex items-center gap-2">
               🔖 Deine Lesezeichen
             </h1>
-            <div className="rounded-lg bg-arena-bg border border-arena-border-light p-5 text-center">
-              <p className="text-4xl font-bold m-0">{myStats.total}</p>
-              <p className="text-arena-muted text-sm mt-1 m-0">Lesezeichen gesammelt</p>
+            <div className="rounded-lg bg-arena-bg border border-arena-border-light p-3 sm:p-5 text-center">
+              <p className="text-3xl sm:text-4xl font-bold m-0">{myStats.total}</p>
+              <p className="text-arena-muted text-xs sm:text-sm mt-1 m-0">Lesezeichen gesammelt</p>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-center text-sm max-[360px]:grid-cols-1">
-              <div className="rounded-lg bg-arena-bg border border-arena-border-light p-3">
-                <p className="font-bold text-lg m-0">{myStats.loginDays}</p>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center text-xs sm:text-sm max-[360px]:grid-cols-1">
+              <div className="rounded-lg bg-arena-bg border border-arena-border-light p-2 sm:p-3">
+                <p className="font-bold text-base sm:text-lg m-0">{myStats.loginDays}</p>
                 <p className="text-arena-muted m-0">Login-Tage</p>
               </div>
-              <div className="rounded-lg bg-arena-bg border border-arena-border-light p-3">
-                <p className="font-bold text-lg m-0">{myStats.quizDays}</p>
+              <div className="rounded-lg bg-arena-bg border border-arena-border-light p-2 sm:p-3">
+                <p className="font-bold text-base sm:text-lg m-0">{myStats.quizDays}</p>
                 <p className="text-arena-muted m-0">Quiz-Tage</p>
               </div>
-              <div className="rounded-lg bg-arena-bg border border-arena-border-light p-3">
-                <p className="font-bold text-lg m-0">{myStats.treffpunktDays}</p>
-                <p className="text-arena-muted m-0">Treffpunkt-Tage</p>
+              <div className="rounded-lg bg-arena-bg border border-arena-border-light p-2 sm:p-3">
+                <p className="font-bold text-base sm:text-lg m-0">{myStats.treffpunktDays}</p>
+                <p className="text-arena-muted m-0">Treffpunkt</p>
               </div>
             </div>
           </section>
@@ -120,14 +120,14 @@ export default function LesezeichenPage() {
             {LESEZEICHEN_RULES.map((rule) => (
               <div
                 key={rule.reason}
-                className="flex items-start gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 min-w-0"
+                className="flex items-start gap-2 sm:gap-3 rounded-lg border border-arena-border-light bg-white px-3 py-2 sm:px-4 sm:py-3 min-w-0"
               >
-                <span className="text-2xl flex-shrink-0 mt-0.5">
+                <span className="text-xl sm:text-2xl flex-shrink-0 mt-0.5">
                   {REASON_ICONS[rule.reason] ?? "🔖"}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold m-0">{rule.label}</p>
-                  <p className="text-arena-muted text-sm m-0">{rule.description}</p>
+                  <p className="font-semibold text-sm sm:text-base m-0">{rule.label}</p>
+                  <p className="text-arena-muted text-xs sm:text-sm m-0">{rule.description}</p>
                 </div>
                 <span className="badge bg-yellow-100 text-yellow-800 flex-shrink-0 whitespace-nowrap text-xs">
                   {rule.amount}
@@ -175,7 +175,7 @@ export default function LesezeichenPage() {
                 return (
                   <div
                     key={`${entry.username}-${i}`}
-                    className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 min-w-0 ${
+                    className={`flex items-center gap-2 sm:gap-3 rounded-lg border px-3 py-2 sm:px-4 sm:py-2.5 min-w-0 ${
                       isMe
                         ? "bg-yellow-50 border-yellow-300"
                         : i === 0

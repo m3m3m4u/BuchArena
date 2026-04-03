@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import SiteHeader from "./site-header";
 import AnalyticsTracker from "./analytics-tracker";
 import LesezeichenToast from "./lesezeichen-toast";
+import SessionGuard from "./session-guard";
 
 type LayoutChromeProps = { children: ReactNode };
 
@@ -14,6 +15,7 @@ export default function LayoutChrome({ children }: LayoutChromeProps) {
 
   return (
     <>
+      <SessionGuard />
       {showHeader && <SiteHeader />}
       <AnalyticsTracker />
       <LesezeichenToast />

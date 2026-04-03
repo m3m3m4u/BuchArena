@@ -72,10 +72,10 @@ export default function FuerAutorenPage() {
         <div className="rounded-lg border border-arena-border bg-[#f8fafc] p-4 text-[0.9rem] leading-relaxed grid gap-2">
           <p className="m-0">
             Hier kannst du Daten für Social Media eingeben, aus denen wir Reels und Beiträge erstellen.
-            Wir veröffentlichen auf Instagram (dort verlinken wir dein Profil), Facebook, Reddit, YouTube, TikTok und Pinterest.
+            Wir veröffentlichen auf Instagram (dort verlinken wir dein Profil), Facebook, Reddit, YouTube, TikTok, Pinterest und LinkedIn.
           </p>
           <p className="m-0">
-            Die Texte für die Videos werden von Hörbuchsprechern gesprochen. Sie arbeiten ehrenamtlich
+            Die Texte für die Videos werden von <Link href="/sprecher" className="text-arena-blue hover:underline">Hörbuchsprechern</Link> gesprochen. Sie arbeiten ehrenamtlich
             für die BuchArena und machen damit Werbung für sich.
           </p>
           <p className="m-0">
@@ -84,7 +84,7 @@ export default function FuerAutorenPage() {
           </p>
           <p className="m-0">
             Supporte unsere Kanäle (mehr Infos dazu{" "}
-            <Link href="/tipps" className="text-arena-link hover:underline font-semibold">hier</Link>),
+            <Link href="/tipps" className="text-arena-blue hover:underline font-semibold">hier</Link>),
             damit auch die Inhalte zu dir und deinen Büchern sichtbarer werden.
           </p>
         </div>

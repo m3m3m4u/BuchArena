@@ -18,6 +18,7 @@ export interface KalenderEvent {
   timeFrom?: string;     // HH:mm (optional)
   timeTo?: string;       // HH:mm (optional)
   location?: KalenderLocation;
+  link?: string;         // optional URL
   createdBy: string;     // username
   participants: string[]; // usernames
   createdAt: Date;

@@ -23,6 +23,7 @@ export async function POST(request: Request) {
       locationCity?: string;
       locationZipCode?: string;
       locationCountry?: string;
+      link?: string;
     };
 
     if (!body.id || !ObjectId.isValid(body.id)) {
@@ -84,6 +85,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Ungültiges Zeitformat für 'bis'." }, { status: 400 });
     }
 
+    const link = body.link?.trim() || undefined;
+    if (link && link.length > 500) {
+      return NextResponse.json({ message: "Link darf maximal 500 Zeichen lang sein." }, { status: 400 });
+    }
+    if (link && !/^https?:\/\//i.test(link)) {
+      return NextResponse.json({ message: "Link muss mit http:// oder https:// beginnen." }, { status: 400 });
+    }
+
     const location = {
       street: body.locationStreet?.trim() || undefined,
       city: body.locationCity?.trim() || undefined,
@@ -97,21 +106,22 @@ export async function POST(request: Request) {
     if (!location.zipCode) delete location.zipCode;
     if (!location.country) delete location.country;
 
-    await col.updateOne(
-      { _id: new ObjectId(body.id) },
-      {
-        $set: {
-          title,
-          description,
-          category: category as KalenderCategory,
-          date,
-          timeFrom,
-          timeTo,
-          location: Object.keys(location).length > 0 ? location : undefined,
-          updatedAt: new Date(),
-        },
-      }
-    );
+    const $set: Record<string, unknown> = {
+      title,
+      description,
+      category: category as KalenderCategory,
+      date,
+      timeFrom,
+      timeTo,
+      location: Object.keys(location).length > 0 ? location : undefined,
+      updatedAt: new Date(),
+    };
+    if (link) $set.link = link;
+
+    const update: Record<string, unknown> = { $set };
+    if (!link) update.$unset = { link: "" };
+
+    await col.updateOne({ _id: new ObjectId(body.id) }, update);
 
     return NextResponse.json({ success: true });
   } catch (err) {
