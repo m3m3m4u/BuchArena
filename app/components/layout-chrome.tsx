@@ -6,6 +6,7 @@ import SiteHeader from "./site-header";
 import AnalyticsTracker from "./analytics-tracker";
 import LesezeichenToast from "./lesezeichen-toast";
 import SessionGuard from "./session-guard";
+import SettingsCheckOverlay from "./settings-check-overlay";
 
 type LayoutChromeProps = { children: ReactNode };
 
@@ -19,6 +20,7 @@ export default function LayoutChrome({ children }: LayoutChromeProps) {
       {showHeader && <SiteHeader />}
       <AnalyticsTracker />
       <LesezeichenToast />
+      <SettingsCheckOverlay />
       <div id="main-content" className="site-main">{children}</div>
     </>
   );

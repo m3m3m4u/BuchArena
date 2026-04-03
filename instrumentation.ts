@@ -11,5 +11,8 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { startNewsletterWorker } = await import("@/lib/newsletter-worker");
     startNewsletterWorker();
+
+    const { startUnreadNotifyWorker } = await import("@/lib/unread-notify-worker");
+    startUnreadNotifyWorker();
   }
 }

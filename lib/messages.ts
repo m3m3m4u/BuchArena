@@ -11,6 +11,7 @@ export type MessageDocument = {
   threadId?: ObjectId;
   deletedBySender: boolean;
   deletedByRecipient: boolean;
+  broadcast?: boolean;
   createdAt: Date;
 };
 

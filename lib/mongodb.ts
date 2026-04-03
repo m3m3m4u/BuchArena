@@ -27,6 +27,9 @@ export type UserDocument = {
   testleserProfile?: TestleserProfileData;
   lektorenProfile?: LektorenProfileData;
   newsletterOptIn?: boolean;
+  emailOnUnreadMessages?: boolean;
+  lastUnreadNotifiedAt?: Date;
+  lastSettingsCheckAt?: Date;
 };
 
 const dbName = process.env.MONGODB_DB_NAME ?? "bucharena";

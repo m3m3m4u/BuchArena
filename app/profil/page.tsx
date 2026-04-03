@@ -25,6 +25,7 @@ type GetProfileResponse = {
   testleserProfile?: TestleserProfileData;
   lektorenProfile?: LektorenProfileData;
   newsletterOptIn?: boolean;
+  emailOnUnreadMessages?: boolean;
   displayName?: string;
 };
 
@@ -101,6 +102,8 @@ function ProfilPageInner() {
   const [isSavingAccount, setIsSavingAccount] = useState(false);
   const [newsletterOptIn, setNewsletterOptIn] = useState(false);
   const [isSavingNewsletter, setIsSavingNewsletter] = useState(false);
+  const [emailOnUnreadMessages, setEmailOnUnreadMessages] = useState(false);
+  const [isSavingUnreadMail, setIsSavingUnreadMail] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [isSavingDisplayName, setIsSavingDisplayName] = useState(false);
   const dragStateRef = useRef<{
@@ -233,6 +236,7 @@ function ProfilPageInner() {
         savedTestleserSnap.current = JSON.stringify(loadedTestleser);
         savedLektorenSnap.current = JSON.stringify(loadedLektoren);
         setNewsletterOptIn(!!data.newsletterOptIn);
+        setEmailOnUnreadMessages(!!data.emailOnUnreadMessages);
         setDisplayName(data.displayName ?? "");
       } catch {
         setIsError(true);
@@ -2124,11 +2128,11 @@ function ProfilPageInner() {
           <h2 className="text-lg mt-0">Kontoeinstellungen</h2>
 
           {/* ── Newsletter Opt-In ── */}
-          <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+          <div style={{ background: newsletterOptIn ? "#f0fdf4" : "#f7f7fa", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", transition: "background 0.2s" }}>
             <div>
-              <span className="text-sm font-semibold">📬 Newsletter</span>
-              <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0" }}>
-                Erhalte Neuigkeiten und Updates per E-Mail.
+              <span className="text-sm font-semibold">{newsletterOptIn ? "✅ Newsletter aktiv" : "📬 Newsletter"}</span>
+              <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: newsletterOptIn ? "#16a34a" : "#6b7280" }}>
+                {newsletterOptIn ? "Du erhältst Neuigkeiten und Updates per E-Mail." : "Erhalte Neuigkeiten und Updates per E-Mail."}
               </p>
             </div>
             <button
@@ -2139,7 +2143,7 @@ function ProfilPageInner() {
               className="toggle-switch"
               style={{
                 width: 48, height: 26, borderRadius: 13, border: "none",
-                background: newsletterOptIn ? "var(--color-arena-blue)" : "#ccc",
+                background: newsletterOptIn ? "#16a34a" : "#ccc",
                 position: "relative", cursor: "pointer", flexShrink: 0,
                 transition: "background 0.2s",
               }}
@@ -2170,6 +2174,59 @@ function ProfilPageInner() {
             >
               <span style={{
                 position: "absolute", top: 3, left: newsletterOptIn ? 24 : 3,
+                width: 20, height: 20, borderRadius: "50%", background: "#fff",
+                transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+              }} />
+            </button>
+          </div>
+
+          {/* ── E-Mail bei ungelesenen Nachrichten ── */}
+          <div style={{ background: emailOnUnreadMessages ? "#f0fdf4" : "#f7f7fa", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", transition: "background 0.2s" }}>
+            <div>
+              <span className="text-sm font-semibold">{emailOnUnreadMessages ? "✅ Nachrichteninfo aktiv" : "🔔 Nachrichteninfo"}</span>
+              <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: emailOnUnreadMessages ? "#16a34a" : "#6b7280" }}>
+                {emailOnUnreadMessages ? "Du wirst per E-Mail benachrichtigt, wenn Nachrichten 24 h ungelesen bleiben." : "Per E-Mail benachrichtigt werden, wenn Nachrichten 24 h ungelesen bleiben."}
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={emailOnUnreadMessages}
+              disabled={isSavingUnreadMail}
+              className="toggle-switch"
+              style={{
+                width: 48, height: 26, borderRadius: 13, border: "none",
+                background: emailOnUnreadMessages ? "#16a34a" : "#ccc",
+                position: "relative", cursor: "pointer", flexShrink: 0,
+                transition: "background 0.2s",
+              }}
+              onClick={async () => {
+                setIsSavingUnreadMail(true);
+                const newVal = !emailOnUnreadMessages;
+                try {
+                  const res = await fetch("/api/profile/email-on-unread", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ emailOnUnreadMessages: newVal }),
+                  });
+                  if (res.ok) {
+                    setEmailOnUnreadMessages(newVal);
+                    setMessage(newVal ? "E-Mail-Benachrichtigung aktiviert." : "E-Mail-Benachrichtigung deaktiviert.");
+                    setIsError(false);
+                  } else {
+                    setIsError(true);
+                    setMessage("Einstellung konnte nicht gespeichert werden.");
+                  }
+                } catch {
+                  setIsError(true);
+                  setMessage("Einstellung konnte nicht gespeichert werden.");
+                } finally {
+                  setIsSavingUnreadMail(false);
+                }
+              }}
+            >
+              <span style={{
+                position: "absolute", top: 3, left: emailOnUnreadMessages ? 24 : 3,
                 width: 20, height: 20, borderRadius: "50%", background: "#fff",
                 transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
               }} />

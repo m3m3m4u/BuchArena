@@ -91,6 +91,7 @@ export async function POST(request: Request) {
       read: false,
       deletedBySender: false,
       deletedByRecipient: false,
+      broadcast: true,
       createdAt: now,
     }));
 
