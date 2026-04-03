@@ -105,7 +105,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ message: "Lektorenprofil gespeichert." });
-  } catch {
+  } catch (err) {
+    console.error("Lektorenprofil speichern fehlgeschlagen:", err);
     return NextResponse.json(
       { message: "Lektorenprofil konnte nicht gespeichert werden." },
       { status: 500 }

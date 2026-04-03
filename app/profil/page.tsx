@@ -375,7 +375,11 @@ function ProfilPageInner() {
   }
 
   async function saveLektorenProfile() {
-    if (!account || !targetUsername) return;
+    if (!account || !targetUsername) {
+      setIsError(true);
+      setMessage("Nicht angemeldet oder Benutzername fehlt.");
+      return;
+    }
 
     setIsSavingLektoren(true);
     setMessage("");
@@ -398,9 +402,10 @@ function ProfilPageInner() {
 
       setMessage(data.message ?? "Lektorenprofil gespeichert.");
       savedLektorenSnap.current = JSON.stringify(lektorenProfile);
-    } catch {
+    } catch (err) {
+      console.error("Lektorenprofil speichern fehlgeschlagen:", err);
       setIsError(true);
-      setMessage("Lektorenprofil konnte nicht gespeichert werden.");
+      setMessage(err instanceof Error ? err.message : "Lektorenprofil konnte nicht gespeichert werden.");
     } finally {
       setIsSavingLektoren(false);
     }
