@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getKalenderCollection } from "@/lib/mongodb";
 import { getServerAccount, requireAdmin } from "@/lib/server-auth";
+import { removeTerminErstellt } from "@/lib/lesezeichen";
 
 export async function POST(request: Request) {
   try {
@@ -30,6 +31,9 @@ export async function POST(request: Request) {
     }
 
     await col.deleteOne({ _id: new ObjectId(body.id) });
+
+    // Lesezeichen zurücknehmen
+    await removeTerminErstellt(existing.createdBy);
 
     return NextResponse.json({ success: true });
   } catch (err) {

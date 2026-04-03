@@ -23,6 +23,8 @@ export type LesezeichenDocument = {
   treffpunktDays: string[];
   /** Empfehlungen pro Tag: key = YYYY-MM-DD, value = Anzahl */
   empfehlungenHeute: Record<string, number>;
+  /** Termine pro Tag: key = YYYY-MM-DD, value = Anzahl */
+  termineHeute: Record<string, number>;
   /** Nicht in der Highscore-Rangliste anzeigen */
   hideFromHighscores?: boolean;
   updatedAt: Date;
@@ -73,6 +75,7 @@ export async function getOrCreateDoc(
     quizDays: [],
     treffpunktDays: [],
     empfehlungenHeute: {},
+    termineHeute: {},
     updatedAt: new Date(),
   };
   await col.insertOne(newDoc);
@@ -247,6 +250,49 @@ export async function awardBuchempfehlung(username: string): Promise<boolean> {
 export async function awardBuchempfehlungErhalten(username: string): Promise<number> {
   await addLesezeichen(username, "buchempfehlung_erhalten", 1);
   return 1;
+}
+
+/** Termin erstellt: +1 Lesezeichen, max. 5 pro Tag */
+export async function awardTerminErstellt(username: string): Promise<boolean> {
+  const today = todayKey();
+  const col = await getLesezeichenCollection();
+  await getOrCreateDoc(username);
+
+  // Atomar: Zähler nur erhöhen wenn < 5
+  const result = await col.updateOne(
+    { username, [`termineHeute.${today}`]: { $lt: 5 } },
+    {
+      $inc: { [`termineHeute.${today}`]: 1 },
+      $set: { updatedAt: new Date() },
+    },
+  );
+
+  // Falls kein Match (noch kein Key oder >= 5), prüfen ob Key fehlt
+  if (result.modifiedCount === 0) {
+    const setResult = await col.updateOne(
+      { username, [`termineHeute.${today}`]: { $exists: false } },
+      {
+        $set: { [`termineHeute.${today}`]: 1, updatedAt: new Date() },
+      },
+    );
+    if (setResult.modifiedCount === 0) return false; // Tageslimit erreicht
+  }
+
+  await addLesezeichen(username, "termin_erstellt", 1);
+  return true;
+}
+
+/** Termin gelöscht: −1 Lesezeichen zurücknehmen */
+export async function removeTerminErstellt(username: string): Promise<void> {
+  const col = await getLesezeichenCollection();
+  await col.updateOne(
+    { username, total: { $gte: 1 } },
+    {
+      $inc: { total: -1 },
+      $push: { entries: { reason: "termin_erstellt" as const, amount: -1, date: new Date() } },
+      $set: { updatedAt: new Date() },
+    },
+  );
 }
 
 /* ── Abfragen ── */

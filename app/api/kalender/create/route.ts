@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getKalenderCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import type { KalenderCategory } from "@/lib/kalender";
+import { awardTerminErstellt } from "@/lib/lesezeichen";
 
 export async function POST(request: Request) {
   try {
@@ -105,6 +106,9 @@ export async function POST(request: Request) {
     };
 
     const result = await col.insertOne(doc);
+
+    // Lesezeichen vergeben (max. 5 pro Tag)
+    await awardTerminErstellt(account.username);
 
     return NextResponse.json({
       success: true,
