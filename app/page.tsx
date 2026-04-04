@@ -342,7 +342,7 @@ export default function HomePage() {
       {/* Statistiken */}
       {stats && (
         <section className="bg-arena-bg py-10 px-4">
-          <div className="mx-auto max-w-[1100px] grid gap-4 grid-cols-2 min-[600px]:grid-cols-3 min-[900px]:grid-cols-6">
+          <div className="mx-auto max-w-[1100px] grid gap-4 grid-cols-2 min-[600px]:grid-cols-3 min-[900px]:grid-cols-7">
             {[
               { value: stats.bookCount, label: "Bücher" },
               { value: stats.authorCount, label: "Autoren" },
