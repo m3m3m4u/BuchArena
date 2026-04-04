@@ -213,6 +213,11 @@ export default function KalenderPage() {
   const [editFormData, setEditFormData] = useState(formData);
   const [isEditSubmitting, setIsEditSubmitting] = useState(false);
 
+  // Report modal state
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportText, setReportText] = useState("");
+  const [isReportSubmitting, setIsReportSubmitting] = useState(false);
+
   // Map state
   const [eventCoords, setEventCoords] = useState<Record<string, [number, number]>>({});
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -430,6 +435,11 @@ export default function KalenderPage() {
       return;
     }
 
+    if ((formData.category === "Buchmesse" || formData.category === "Lesung") && (!formData.locationCity.trim() || !formData.locationCountry.trim())) {
+      setMessage("Bei Buchmessen und Lesungen sind Stadt und Land Pflichtfelder.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/kalender/create", {
@@ -552,6 +562,11 @@ export default function KalenderPage() {
       return;
     }
 
+    if ((editFormData.category === "Buchmesse" || editFormData.category === "Lesung") && (!editFormData.locationCity.trim() || !editFormData.locationCountry.trim())) {
+      setMessage("Bei Buchmessen und Lesungen sind Stadt und Land Pflichtfelder.");
+      return;
+    }
+
     setIsEditSubmitting(true);
     try {
       const response = await fetch("/api/kalender/update", {
@@ -606,6 +621,30 @@ export default function KalenderPage() {
     } catch (err) {
       console.error("Error:", err);
       setMessage("Fehler beim Löschen.");
+    }
+  };
+
+  const handleReportSubmit = async () => {
+    if (!selectedEvent || !reportText.trim()) return;
+    setIsReportSubmitting(true);
+    try {
+      const response = await fetch("/api/kalender/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: selectedEvent.id, text: reportText.trim() }),
+      });
+      const data = (await response.json()) as { success?: boolean; message?: string };
+      if (response.ok && data.success) {
+        setMessage("Fehler wurde gemeldet. Danke!");
+        setShowReportModal(false);
+        setReportText("");
+      } else {
+        setMessage(data.message || "Fehler beim Melden.");
+      }
+    } catch {
+      setMessage("Fehler beim Melden.");
+    } finally {
+      setIsReportSubmitting(false);
     }
   };
 
@@ -795,7 +834,7 @@ export default function KalenderPage() {
               </div>
 
               <fieldset className="border border-[var(--color-arena-border)] rounded p-4">
-                <legend className="font-semibold">Ort (optional)</legend>
+                <legend className="font-semibold">Ort {formData.category === "Buchmesse" || formData.category === "Lesung" ? "(Stadt + Land Pflicht)" : "(optional)"}</legend>
                 <div className="space-y-3 mt-3">
                   <div>
                     <label className="block text-sm mb-1">Straße</label>
@@ -819,7 +858,7 @@ export default function KalenderPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-1">Stadt</label>
+                      <label className="block text-sm mb-1">Stadt {formData.category === "Buchmesse" || formData.category === "Lesung" ? "*" : ""}</label>
                       <input
                         type="text"
                         value={formData.locationCity}
@@ -829,7 +868,7 @@ export default function KalenderPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-1">Land</label>
+                      <label className="block text-sm mb-1">Land {formData.category === "Buchmesse" || formData.category === "Lesung" ? "*" : ""}</label>
                       <CountryAutocomplete
                         value={formData.locationCountry}
                         onChange={(v) => handleFormChange("locationCountry", v)}
@@ -1160,6 +1199,14 @@ export default function KalenderPage() {
                         🗑 Löschen
                       </button>
                     )}
+                    {loggedIn && selectedEvent.createdBy !== username && (
+                      <button
+                        onClick={() => { setReportText(""); setShowReportModal(true); }}
+                        className="px-3 py-2 sm:px-4 text-sm sm:text-base border border-orange-400 text-orange-600 rounded hover:bg-orange-50"
+                      >
+                        ⚠ Fehler melden
+                      </button>
+                    )}
                     <button
                       onClick={() => closeEventDetail()}
                       className="px-4 py-2 border border-[var(--color-arena-border)] rounded hover:bg-gray-100"
@@ -1167,6 +1214,36 @@ export default function KalenderPage() {
                       Schließen
                     </button>
                   </div>
+
+                  {/* Fehler melden Modal */}
+                  {showReportModal && (
+                    <div className="mt-4 p-4 border border-orange-300 rounded bg-orange-50">
+                      <h4 className="font-bold mb-2 text-orange-800">Fehler melden</h4>
+                      <textarea
+                        value={reportText}
+                        onChange={(e) => setReportText(e.target.value)}
+                        maxLength={2000}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                        placeholder="Beschreibe den Fehler (mind. 5 Zeichen)..."
+                      />
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          onClick={handleReportSubmit}
+                          disabled={isReportSubmitting || reportText.trim().length < 5}
+                          className="px-4 py-2 bg-orange-500 text-white font-bold rounded hover:bg-orange-600 disabled:opacity-50 text-sm"
+                        >
+                          {isReportSubmitting ? "Wird gesendet..." : "Absenden"}
+                        </button>
+                        <button
+                          onClick={() => setShowReportModal(false)}
+                          className="px-4 py-2 border border-[var(--color-arena-border)] rounded hover:bg-gray-100 text-sm"
+                        >
+                          Abbrechen
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
@@ -1253,7 +1330,7 @@ export default function KalenderPage() {
                   </div>
 
                   <fieldset className="border border-[var(--color-arena-border)] rounded p-4">
-                    <legend className="font-semibold">Ort (optional)</legend>
+                    <legend className="font-semibold">Ort {editFormData.category === "Buchmesse" || editFormData.category === "Lesung" ? "(Stadt + Land Pflicht)" : "(optional)"}</legend>
                     <div className="space-y-3 mt-3">
                       <div>
                         <label className="block text-sm mb-1">Straße</label>
@@ -1275,7 +1352,7 @@ export default function KalenderPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm mb-1">Stadt</label>
+                          <label className="block text-sm mb-1">Stadt {editFormData.category === "Buchmesse" || editFormData.category === "Lesung" ? "*" : ""}</label>
                           <input
                             type="text"
                             value={editFormData.locationCity}
@@ -1284,7 +1361,7 @@ export default function KalenderPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm mb-1">Land</label>
+                          <label className="block text-sm mb-1">Land {editFormData.category === "Buchmesse" || editFormData.category === "Lesung" ? "*" : ""}</label>
                           <CountryAutocomplete
                             value={editFormData.locationCountry}
                             onChange={(v) => handleEditFormChange("locationCountry", v)}

@@ -6,7 +6,7 @@ import { getStoredAccount, ACCOUNT_CHANGED_EVENT, type LoggedInAccount } from "@
 import { extractYouTubeId } from "@/lib/bucharena-types";
 
 type BuchDerWoche = { title: string; author: string; speaker?: string; youtubeUrl: string; buyUrl: string; active?: boolean; bookId?: string; authorUsername?: string; speakerUsername?: string };
-type Stats = { bookCount: number; authorCount: number; bloggerCount: number; speakerCount: number; testleserCount: number; lektorenCount: number };
+type Stats = { bookCount: number; authorCount: number; bloggerCount: number; speakerCount: number; testleserCount: number; lektorenCount: number; verlageCount: number };
 
 
 
@@ -342,14 +342,15 @@ export default function HomePage() {
       {/* Statistiken */}
       {stats && (
         <section className="bg-arena-bg py-10 px-4">
-          <div className="mx-auto max-w-[1100px] grid grid-cols-6 gap-4 max-md:grid-cols-3 max-sm:grid-cols-2">
+          <div className="mx-auto max-w-[1100px] grid gap-4 grid-cols-2 min-[600px]:grid-cols-3 min-[900px]:grid-cols-6">
             {[
-              { value: stats.bookCount, label: "Bücher", icon: "" },
-              { value: stats.authorCount, label: "Autoren", icon: "" },
-              { value: stats.bloggerCount, label: "Blogger", icon: "" },
-              { value: stats.speakerCount, label: "Sprecher", icon: "" },
-              { value: stats.testleserCount, label: "Testleser", icon: "" },
-              { value: stats.lektorenCount, label: "Lektoren", icon: "" },
+              { value: stats.bookCount, label: "Bücher" },
+              { value: stats.authorCount, label: "Autoren" },
+              { value: stats.bloggerCount, label: "Blogger" },
+              { value: stats.speakerCount, label: "Sprecher" },
+              { value: stats.testleserCount, label: "Testleser" },
+              { value: stats.lektorenCount, label: "Lektoren" },
+              ...(stats.verlageCount > 0 ? [{ value: stats.verlageCount, label: "Verlage" }] : []),
             ].map((s) => (
               <div key={s.label} className="rounded-xl bg-white border border-arena-border-light px-5 py-4 text-center">
                 <p className="text-2xl font-bold m-0 text-arena-blue">{s.value}</p>

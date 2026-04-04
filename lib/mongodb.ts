@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { MongoClient, type Collection, type Db, MongoServerError } from "mongodb";
 import type { BookDocument } from "@/lib/books";
-import type { ProfileData, SpeakerProfileData, BloggerProfileData, TestleserProfileData, LektorenProfileData } from "@/lib/profile";
+import type { ProfileData, SpeakerProfileData, BloggerProfileData, TestleserProfileData, LektorenProfileData, VerlageProfileData } from "@/lib/profile";
 import type { SupportPost } from "@/lib/support";
 import type { DiscussionDocument } from "@/lib/discussions";
 import type { PollDocument, TauschDocument } from "@/lib/discussions";
@@ -26,6 +26,7 @@ export type UserDocument = {
   bloggerProfile?: BloggerProfileData;
   testleserProfile?: TestleserProfileData;
   lektorenProfile?: LektorenProfileData;
+  verlageProfile?: VerlageProfileData;
   newsletterOptIn?: boolean;
   emailOnUnreadMessages?: boolean;
   lastUnreadNotifiedAt?: Date;

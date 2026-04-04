@@ -327,3 +327,54 @@ export function createDefaultLektorenProfile(): LektorenProfileData {
     socialWhatsapp: { value: "", visibility: "hidden" },
   };
 }
+
+export type VerlageProfileData = {
+  deaktiviert?: boolean;
+  profileImage: {
+    value: string;
+    visibility: Visibility;
+    crop: ProfileImageCrop;
+  };
+  name: ProfileField;
+  beschreibung: string;
+  ansprechperson: string;
+  voraussetzungen: string;
+  kapazitaeten: number[]; // Monatsnummern 1–12 mit Kapazität
+  socialInstagram: ProfileField;
+  socialFacebook: ProfileField;
+  socialLinkedin: ProfileField;
+  socialTiktok: ProfileField;
+  socialYoutube: ProfileField;
+  socialPinterest: ProfileField;
+  socialReddit: ProfileField;
+  socialWebsite: ProfileField;
+  socialLinktree: ProfileField;
+  socialNewsletter: ProfileField;
+  socialWhatsapp: ProfileField;
+};
+
+export function createDefaultVerlageProfile(): VerlageProfileData {
+  return {
+    profileImage: {
+      value: "",
+      visibility: "hidden",
+      crop: { x: 50, y: 50, zoom: 1 },
+    },
+    name: { value: "", visibility: "internal" },
+    beschreibung: "",
+    ansprechperson: "",
+    voraussetzungen: "",
+    kapazitaeten: [],
+    socialInstagram: { value: "", visibility: "hidden" },
+    socialFacebook: { value: "", visibility: "hidden" },
+    socialLinkedin: { value: "", visibility: "hidden" },
+    socialTiktok: { value: "", visibility: "hidden" },
+    socialYoutube: { value: "", visibility: "hidden" },
+    socialPinterest: { value: "", visibility: "hidden" },
+    socialReddit: { value: "", visibility: "hidden" },
+    socialWebsite: { value: "", visibility: "hidden" },
+    socialLinktree: { value: "", visibility: "hidden" },
+    socialNewsletter: { value: "", visibility: "hidden" },
+    socialWhatsapp: { value: "", visibility: "hidden" },
+  };
+}

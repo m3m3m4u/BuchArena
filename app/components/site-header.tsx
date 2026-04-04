@@ -11,6 +11,7 @@ export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [impersonating, setImpersonating] = useState<string | null>(null);
+  const [verlageCount, setVerlageCount] = useState(0);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -26,6 +27,14 @@ export default function SiteHeader() {
       window.removeEventListener(ACCOUNT_CHANGED_EVENT, sync);
       window.removeEventListener("storage", sync);
     };
+  }, []);
+
+  // Verlage count (cached)
+  useEffect(() => {
+    fetch("/api/stats")
+      .then((r) => r.json())
+      .then((d: { verlageCount?: number }) => setVerlageCount(d.verlageCount ?? 0))
+      .catch(() => {});
   }, []);
 
   // Unread count polling
@@ -73,6 +82,7 @@ export default function SiteHeader() {
       <Link href="/blogger" className="header-link-public w-full sm:w-auto">Blogger</Link>
       <Link href="/testleser" className="header-link-public w-full sm:w-auto">Testleser</Link>
       <Link href="/lektoren" className="header-link-public w-full sm:w-auto">Lektoren</Link>
+      {verlageCount > 0 && <Link href="/verlage" className="header-link-public w-full sm:w-auto">Verlage</Link>}
       <Link href="/news" className="header-link-public w-full sm:w-auto">News</Link>
       <Link href="/kalender" className="header-link-public w-full sm:w-auto">Kalender</Link>
       {!loggedIn && <Link href="/auth" className="header-link-public w-full sm:w-auto font-bold">Anmelden</Link>}

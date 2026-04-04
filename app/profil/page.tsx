@@ -11,12 +11,12 @@ import {
   setStoredAccount,
   type LoggedInAccount,
 } from "@/lib/client-account";
-import { createDefaultProfile, createDefaultSpeakerProfile, createDefaultBloggerProfile, createDefaultTestleserProfile, createDefaultLektorenProfile, type ProfileData, type SpeakerProfileData, type BloggerProfileData, type TestleserProfileData, type LektorenProfileData, type Visibility } from "@/lib/profile";
+import { createDefaultProfile, createDefaultSpeakerProfile, createDefaultBloggerProfile, createDefaultTestleserProfile, createDefaultLektorenProfile, createDefaultVerlageProfile, type ProfileData, type SpeakerProfileData, type BloggerProfileData, type TestleserProfileData, type LektorenProfileData, type VerlageProfileData, type Visibility } from "@/lib/profile";
 import MeineBuecherTab from "@/app/components/meine-buecher-tab";
 import GenrePicker from "@/app/components/genre-picker";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
-type ProfileTab = "autor" | "sprecher" | "blogger" | "testleser" | "lektoren" | "buecher" | "konto";
+type ProfileTab = "autor" | "sprecher" | "blogger" | "testleser" | "lektoren" | "verlage" | "buecher" | "konto";
 
 type GetProfileResponse = {
   profile: ProfileData;
@@ -24,6 +24,7 @@ type GetProfileResponse = {
   bloggerProfile?: BloggerProfileData;
   testleserProfile?: TestleserProfileData;
   lektorenProfile?: LektorenProfileData;
+  verlageProfile?: VerlageProfileData;
   newsletterOptIn?: boolean;
   emailOnUnreadMessages?: boolean;
   displayName?: string;
@@ -59,6 +60,8 @@ function ProfilPageInner() {
   const [lektorenProfile, setLektorenProfile] = useState<LektorenProfileData>(createDefaultLektorenProfile());
   const [isSavingTestleser, setIsSavingTestleser] = useState(false);
   const [isSavingLektoren, setIsSavingLektoren] = useState(false);
+  const [verlageProfile, setVerlageProfile] = useState<VerlageProfileData>(createDefaultVerlageProfile());
+  const [isSavingVerlage, setIsSavingVerlage] = useState(false);
   const [isTestleserImageOverlayOpen, setIsTestleserImageOverlayOpen] = useState(false);
   const [isUploadingTestleserImage, setIsUploadingTestleserImage] = useState(false);
   const testleserDragStateRef = useRef<{
@@ -71,6 +74,15 @@ function ProfilPageInner() {
   const [isLektorenImageOverlayOpen, setIsLektorenImageOverlayOpen] = useState(false);
   const [isUploadingLektorenImage, setIsUploadingLektorenImage] = useState(false);
   const lektorenDragStateRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startCropX: number;
+    startCropY: number;
+  } | null>(null);
+  const [isVerlageImageOverlayOpen, setIsVerlageImageOverlayOpen] = useState(false);
+  const [isUploadingVerlageImage, setIsUploadingVerlageImage] = useState(false);
+  const verlageDragStateRef = useRef<{
     pointerId: number;
     startX: number;
     startY: number;
@@ -127,6 +139,7 @@ function ProfilPageInner() {
   const savedBloggerSnap = useRef("");
   const savedTestleserSnap = useRef("");
   const savedLektorenSnap = useRef("");
+  const savedVerlageSnap = useRef("");
 
   function isCurrentTabDirty(): boolean {
     switch (activeTab) {
@@ -135,6 +148,7 @@ function ProfilPageInner() {
       case "blogger":  return JSON.stringify(bloggerProfile) !== savedBloggerSnap.current;
       case "testleser":return JSON.stringify(testleserProfile) !== savedTestleserSnap.current;
       case "lektoren": return JSON.stringify(lektorenProfile) !== savedLektorenSnap.current;
+      case "verlage":  return JSON.stringify(verlageProfile) !== savedVerlageSnap.current;
       default:         return false;
     }
   }
@@ -145,7 +159,8 @@ function ProfilPageInner() {
       JSON.stringify(speakerProfile) !== savedSpeakerSnap.current ||
       JSON.stringify(bloggerProfile) !== savedBloggerSnap.current ||
       JSON.stringify(testleserProfile) !== savedTestleserSnap.current ||
-      JSON.stringify(lektorenProfile) !== savedLektorenSnap.current
+      JSON.stringify(lektorenProfile) !== savedLektorenSnap.current ||
+      JSON.stringify(verlageProfile) !== savedVerlageSnap.current
     );
   }
 
@@ -176,7 +191,7 @@ function ProfilPageInner() {
     setRequestedUser(user);
 
     const tab = searchParams.get("tab")?.trim();
-    if (tab === "buecher" || tab === "sprecher" || tab === "autor" || tab === "blogger" || tab === "testleser" || tab === "lektoren" || tab === "konto") {
+    if (tab === "buecher" || tab === "sprecher" || tab === "autor" || tab === "blogger" || tab === "testleser" || tab === "lektoren" || tab === "verlage" || tab === "konto") {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -225,16 +240,19 @@ function ProfilPageInner() {
         const loadedBlogger = { ...createDefaultBloggerProfile(), ...data.bloggerProfile };
         const loadedTestleser = { ...createDefaultTestleserProfile(), ...data.testleserProfile };
         const loadedLektoren = { ...createDefaultLektorenProfile(), ...data.lektorenProfile };
+        const loadedVerlage = { ...createDefaultVerlageProfile(), ...data.verlageProfile };
         setProfile(loadedProfile);
         setSpeakerProfile(loadedSpeaker);
         setBloggerProfile(loadedBlogger);
         setTestleserProfile(loadedTestleser);
         setLektorenProfile(loadedLektoren);
+        setVerlageProfile(loadedVerlage);
         savedProfileSnap.current = JSON.stringify(loadedProfile);
         savedSpeakerSnap.current = JSON.stringify(loadedSpeaker);
         savedBloggerSnap.current = JSON.stringify(loadedBlogger);
         savedTestleserSnap.current = JSON.stringify(loadedTestleser);
         savedLektorenSnap.current = JSON.stringify(loadedLektoren);
+        savedVerlageSnap.current = JSON.stringify(loadedVerlage);
         setNewsletterOptIn(!!data.newsletterOptIn);
         setEmailOnUnreadMessages(!!data.emailOnUnreadMessages);
         setDisplayName(data.displayName ?? "");
@@ -412,6 +430,43 @@ function ProfilPageInner() {
       setMessage(err instanceof Error ? err.message : "Lektorenprofil konnte nicht gespeichert werden.");
     } finally {
       setIsSavingLektoren(false);
+    }
+  }
+
+  async function saveVerlageProfile() {
+    if (!account || !targetUsername) {
+      setIsError(true);
+      setMessage("Nicht angemeldet oder Benutzername fehlt.");
+      return;
+    }
+
+    setIsSavingVerlage(true);
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const response = await fetch("/api/verlage/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: targetUsername,
+          verlageProfile,
+        }),
+      });
+
+      const data = (await response.json()) as { message?: string };
+      if (!response.ok) {
+        throw new Error(data.message ?? "Verlagsprofil konnte nicht gespeichert werden.");
+      }
+
+      setMessage(data.message ?? "Verlagsprofil gespeichert.");
+      savedVerlageSnap.current = JSON.stringify(verlageProfile);
+    } catch (err) {
+      console.error("Verlagsprofil speichern fehlgeschlagen:", err);
+      setIsError(true);
+      setMessage(err instanceof Error ? err.message : "Verlagsprofil konnte nicht gespeichert werden.");
+    } finally {
+      setIsSavingVerlage(false);
     }
   }
 
@@ -733,6 +788,17 @@ function ProfilPageInner() {
     };
   }, [lektorenProfile.profileImage]);
 
+  const verlageImagePreviewStyle = useMemo(() => {
+    const imageUrl = verlageProfile.profileImage?.value;
+    if (!imageUrl) return undefined;
+    return {
+      backgroundImage: `url(${imageUrl})`,
+      backgroundPosition: `${verlageProfile.profileImage.crop.x}% ${verlageProfile.profileImage.crop.y}%`,
+      backgroundSize: `${verlageProfile.profileImage.crop.zoom * 100}%`,
+      backgroundRepeat: "no-repeat",
+    };
+  }, [verlageProfile.profileImage]);
+
   async function uploadTestleserImage(file: File) {
     if (!targetUsername) return;
     if (file.size > 5 * 1024 * 1024) { setIsError(true); setMessage("Das Bild darf maximal 5 MB groß sein."); return; }
@@ -803,6 +869,42 @@ function ProfilPageInner() {
   }
   function onLektorenImagePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
     if (lektorenDragStateRef.current?.pointerId === event.pointerId) { lektorenDragStateRef.current = null; event.currentTarget.releasePointerCapture(event.pointerId); }
+  }
+
+  async function uploadVerlageImage(file: File) {
+    if (!targetUsername) return;
+    if (file.size > 5 * 1024 * 1024) { setIsError(true); setMessage("Das Bild darf maximal 5 MB groß sein."); return; }
+    setIsUploadingVerlageImage(true); setMessage(""); setIsError(false);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("username", targetUsername);
+      const response = await fetch("/api/profile/upload-image", { method: "POST", body: formData });
+      if (response.status === 413) throw new Error("Das Bild ist zu groß. Bitte ein kleineres Bild wählen (max. 5 MB).");
+      const data = (await response.json()) as { message?: string; imageUrl?: string };
+      if (!response.ok || !data.imageUrl) throw new Error(data.message ?? "Upload fehlgeschlagen.");
+      setVerlageProfile((current) => ({ ...current, profileImage: { ...current.profileImage, value: data.imageUrl as string, visibility: current.profileImage.visibility === "hidden" ? "public" : current.profileImage.visibility } }));
+      setMessage("Verlags-Bild erfolgreich hochgeladen.");
+    } catch { setIsError(true); setMessage("Verlags-Bild-Upload fehlgeschlagen."); }
+    finally { setIsUploadingVerlageImage(false); }
+  }
+
+  function onVerlageImagePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    verlageDragStateRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, startCropX: verlageProfile.profileImage.crop.x, startCropY: verlageProfile.profileImage.crop.y };
+  }
+  function onVerlageImagePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const dragState = verlageDragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+    const previewSize = event.currentTarget.clientWidth || 160;
+    const zoom = verlageProfile.profileImage.crop.zoom || 1;
+    const factor = (100 / previewSize) / zoom;
+    const deltaX = (event.clientX - dragState.startX) * factor;
+    const deltaY = (event.clientY - dragState.startY) * factor;
+    setVerlageProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, x: clampPercent(dragState.startCropX - deltaX), y: clampPercent(dragState.startCropY - deltaY) } } }));
+  }
+  function onVerlageImagePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (verlageDragStateRef.current?.pointerId === event.pointerId) { verlageDragStateRef.current = null; event.currentTarget.releasePointerCapture(event.pointerId); }
   }
 
   function updateVisibility(field: keyof Omit<ProfileData, "deaktiviert">, visibility: Visibility) {
@@ -973,6 +1075,13 @@ function ProfilPageInner() {
             onClick={() => handleTabSwitch("lektoren")}
           >
             Lektoren
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "verlage" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            onClick={() => handleTabSwitch("verlage")}
+          >
+            Verlage
           </button>
           <button
             type="button"
@@ -2113,6 +2222,140 @@ function ProfilPageInner() {
         </>
         )}
 
+        {activeTab === "verlage" && (
+        <>
+        <h2 className="text-lg mt-0">Verlagsprofil</h2>
+        <p className="text-arena-muted text-[0.95rem]">
+          Fülle dein Profil als Verlag aus. Öffentlich sichtbare Felder werden auf deiner Verlagsseite angezeigt.
+        </p>
+
+        {/* Profil deaktivieren */}
+        <div style={{ background: verlageProfile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+          <div>
+            <span className="text-sm font-semibold">{verlageProfile.deaktiviert ? "🚫 Verlagsprofil ist deaktiviert" : "✅ Verlagsprofil wird angezeigt"}</span>
+            <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: verlageProfile.deaktiviert ? "#dc2626" : "#16a34a" }}>
+              {verlageProfile.deaktiviert ? "Dein Verlagsprofil ist momentan nicht sichtbar." : "Dein Verlagsprofil ist in der Übersicht sichtbar."}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!verlageProfile.deaktiviert}
+            className="toggle-switch"
+            style={{
+              width: 48, height: 26, borderRadius: 13, border: "none",
+              background: verlageProfile.deaktiviert ? "#dc2626" : "#ccc",
+              position: "relative", cursor: "pointer", flexShrink: 0,
+              transition: "background 0.2s",
+            }}
+            onClick={() => setVerlageProfile((c) => ({ ...c, deaktiviert: !c.deaktiviert }))}
+          >
+            <span style={{
+              position: "absolute", top: 3, left: verlageProfile.deaktiviert ? 24 : 3,
+              width: 20, height: 20, borderRadius: "50%", background: "#fff",
+              transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+            }} />
+          </button>
+        </div>
+
+        <button type="button" className="btn" onClick={saveVerlageProfile} disabled={isSavingVerlage}>
+          {isSavingVerlage ? "Speichern ..." : "Verlagsprofil speichern"}
+        </button>
+
+        <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
+          <button type="button" className="border-0 bg-transparent p-0 m-0 cursor-pointer" onClick={() => setIsVerlageImageOverlayOpen(true)}>
+            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border" style={verlageImagePreviewStyle}>
+              {!verlageProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            </div>
+          </button>
+        </div>
+
+        <label className="grid gap-1 text-[0.95rem]">
+          Verlagsname <span className="text-xs text-arena-muted">(immer öffentlich)</span>
+          <input className="input-base" value={verlageProfile.name.value} onChange={(e) =>
+            setVerlageProfile((c) => ({ ...c, name: { value: e.target.value, visibility: "public" } }))
+          } />
+        </label>
+
+        <div className="grid gap-1">
+          <label className="text-sm font-semibold">Beschreibung</label>
+          <textarea
+            className="input-base w-full"
+            rows={4}
+            maxLength={2000}
+            placeholder="Beschreibe deinen Verlag ..."
+            value={verlageProfile.beschreibung}
+            onChange={(e) => setVerlageProfile((c) => ({ ...c, beschreibung: e.target.value }))}
+          />
+        </div>
+
+        <label className="grid gap-1 text-[0.95rem]">
+          Ansprechperson
+          <input className="input-base" value={verlageProfile.ansprechperson} maxLength={200} onChange={(e) =>
+            setVerlageProfile((c) => ({ ...c, ansprechperson: e.target.value }))
+          } />
+        </label>
+
+        <div className="grid gap-1">
+          <label className="text-sm font-semibold">Voraussetzungen</label>
+          <textarea
+            className="input-base w-full"
+            rows={4}
+            maxLength={2000}
+            placeholder="Welche Voraussetzungen müssen erfüllt sein?"
+            value={verlageProfile.voraussetzungen}
+            onChange={(e) => setVerlageProfile((c) => ({ ...c, voraussetzungen: e.target.value }))}
+          />
+        </div>
+
+        {/* Kapazitäten-Kalender */}
+        <div className="mt-2">
+          <h3 className="text-[0.95rem] font-semibold mb-2">Kapazitäten nach Monat</h3>
+          <p className="text-arena-muted text-xs mb-2">Klicke auf die Monate, in denen du Kapazitäten hast.</p>
+          <div className="flex flex-wrap gap-1.5">
+            {["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"].map((label, index) => {
+              const month = index + 1;
+              const isActive = verlageProfile.kapazitaeten.includes(month);
+              return (
+                <button
+                  key={month}
+                  type="button"
+                  className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${isActive ? "bg-green-600 text-white border-green-600" : "bg-white text-arena-text border-arena-border"}`}
+                  onClick={() => {
+                    setVerlageProfile((c) => ({
+                      ...c,
+                      kapazitaeten: isActive
+                        ? c.kapazitaeten.filter((m) => m !== month)
+                        : [...c.kapazitaeten, month].sort((a, b) => a - b),
+                    }));
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Webseite / Social Media</h3>
+        <FieldWithVisibility label="Website" value={verlageProfile.socialWebsite.value} visibility={verlageProfile.socialWebsite.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, visibility } }))} />
+        <FieldWithVisibility label="Social Media: Instagram" value={verlageProfile.socialInstagram.value} visibility={verlageProfile.socialInstagram.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, visibility } }))} />
+        <FieldWithVisibility label="Social Media: Facebook" value={verlageProfile.socialFacebook.value} visibility={verlageProfile.socialFacebook.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, visibility } }))} />
+        <FieldWithVisibility label="Social Media: LinkedIn" value={verlageProfile.socialLinkedin.value} visibility={verlageProfile.socialLinkedin.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, visibility } }))} />
+        <FieldWithVisibility label="Social Media: TikTok" value={verlageProfile.socialTiktok.value} visibility={verlageProfile.socialTiktok.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialTiktok: { ...c.socialTiktok, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialTiktok: { ...c.socialTiktok, visibility } }))} />
+        <FieldWithVisibility label="Social Media: YouTube" value={verlageProfile.socialYoutube.value} visibility={verlageProfile.socialYoutube.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialYoutube: { ...c.socialYoutube, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialYoutube: { ...c.socialYoutube, visibility } }))} />
+        <FieldWithVisibility label="Social Media: Pinterest" value={verlageProfile.socialPinterest.value} visibility={verlageProfile.socialPinterest.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialPinterest: { ...c.socialPinterest, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialPinterest: { ...c.socialPinterest, visibility } }))} />
+        <FieldWithVisibility label="Social Media: Reddit" value={verlageProfile.socialReddit.value} visibility={verlageProfile.socialReddit.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialReddit: { ...c.socialReddit, visibility } }))} />
+        <FieldWithVisibility label="Linktree" value={verlageProfile.socialLinktree.value} visibility={verlageProfile.socialLinktree.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, visibility } }))} />
+        <FieldWithVisibility label="Newsletter" value={verlageProfile.socialNewsletter.value} visibility={verlageProfile.socialNewsletter.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, visibility } }))} />
+        <FieldWithVisibility label="WhatsApp-Kanal" value={verlageProfile.socialWhatsapp.value} visibility={verlageProfile.socialWhatsapp.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))} />
+
+        <button type="button" className="btn" onClick={saveVerlageProfile} disabled={isSavingVerlage}>
+          {isSavingVerlage ? "Speichern ..." : "Verlagsprofil speichern"}
+        </button>
+        </>
+        )}
+
         {activeTab === "buecher" && (
           <>
           <h2 className="text-lg mt-0">Meine Bücher</h2>
@@ -2764,6 +3007,33 @@ function ProfilPageInner() {
               </label>
             </div>
             <button type="button" className="btn" onClick={() => setIsLektorenImageOverlayOpen(false)}>Fertig</button>
+          </section>
+        </div>
+      )}
+
+      {isVerlageImageOverlayOpen && (
+        <div className="overlay-backdrop" onClick={() => setIsVerlageImageOverlayOpen(false)}>
+          <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
+            <h2>Verlags-Bildeinstellungen</h2>
+            <label>
+              Datei auswählen
+              <input type="file" accept="image/*" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadVerlageImage(selectedFile); event.currentTarget.value = ""; }} />
+              {isUploadingVerlageImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
+            </label>
+            <div>
+              <span className="block text-xs mb-1">Sichtbarkeit</span>
+              <VisibilityToggle value={verlageProfile.profileImage.visibility} onChange={(visibility) => setVerlageProfile((current) => ({ ...current, profileImage: { ...current.profileImage, visibility } }))} />
+            </div>
+            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab" style={verlageImagePreviewStyle} onPointerDown={onVerlageImagePointerDown} onPointerMove={onVerlageImagePointerMove} onPointerUp={onVerlageImagePointerUp} onPointerCancel={onVerlageImagePointerUp}>
+              {!verlageProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            </div>
+            <div className="grid gap-2.5">
+              <label>
+                Zoom
+                <input type="range" min={1} max={3} step={0.1} value={verlageProfile.profileImage.crop.zoom} onChange={(event) => setVerlageProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, zoom: Number(event.target.value) } } }))} />
+              </label>
+            </div>
+            <button type="button" className="btn" onClick={() => setIsVerlageImageOverlayOpen(false)}>Fertig</button>
           </section>
         </div>
       )}

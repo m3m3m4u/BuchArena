@@ -114,6 +114,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Ungültiges Land." }, { status: 400 });
     }
 
+    // Stadt + Land sind Pflicht bei Buchmessen und Lesungen
+    if ((category === "Buchmesse" || category === "Lesung") && (!location.city || !location.country)) {
+      return NextResponse.json(
+        { message: "Bei Buchmessen und Lesungen sind Stadt und Land Pflichtfelder." },
+        { status: 400 }
+      );
+    }
+
     // Remove undefined values
     if (!location.street) delete location.street;
     if (!location.city) delete location.city;
