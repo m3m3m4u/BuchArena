@@ -491,24 +491,6 @@ export default function AdminPage() {
       <section className="card">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
           <h1>Admin</h1>
-          <div className="flex gap-2 flex-wrap">
-            <button
-              className="btn btn-sm"
-              onClick={async () => {
-                setMessage("Lesezeichen werden neu berechnet …");
-                try {
-                  const r = await fetch("/api/lesezeichen/recalc", { method: "POST" });
-                  const d = await r.json() as { message?: string };
-                  setMessage(d.message ?? "Fertig.");
-                } catch { setMessage("Fehler bei der Neuberechnung."); }
-              }}
-            >
-              🔖 Lesezeichen neu berechnen
-            </button>
-            <Link href="/admin/einreichungen" className="btn btn-sm">
-              📬 Einreichungen
-            </Link>
-          </div>
         </div>
 
         {/* ── Haupt-Reiter ── */}
@@ -544,6 +526,12 @@ export default function AdminPage() {
             onClick={() => router.push("/admin/musik")}
           >
             🎵 Musik
+          </button>
+          <button
+            className="btn btn-sm"
+            onClick={() => router.push("/admin/einreichungen")}
+          >
+            📬 Einreichungen
           </button>
         </div>
 
