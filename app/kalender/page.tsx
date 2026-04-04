@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
-import type { KalenderCategory } from "@/lib/kalender";
+import { VALID_COUNTRIES, type KalenderCategory } from "@/lib/kalender";
 
 type LeafletModule = typeof import("leaflet");
 
@@ -48,6 +48,81 @@ const CATEGORY_MAP_COLORS: Record<KalenderCategory, string> = {
 };
 
 type ViewMode = "list" | "map";
+
+const COUNTRIES: readonly string[] = VALID_COUNTRIES;
+
+function CountryAutocomplete({
+  value,
+  onChange,
+  className,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  className?: string;
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const suggestions = value.length >= 1
+    ? COUNTRIES.filter((c) => c.toLowerCase().includes(value.toLowerCase()))
+    : [];
+
+  const isValid = !value || COUNTRIES.includes(value);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setFocused(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => {
+          setFocused(true);
+          if (value.length >= 1) setOpen(true);
+        }}
+        onBlur={() => setFocused(false)}
+        className={`${className ?? ""} ${!isValid && !focused ? "border-red-400 ring-1 ring-red-300" : ""}`}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      {!isValid && !focused && (
+        <p className="text-xs text-red-500 mt-0.5">Bitte wähle ein gültiges Land aus.</p>
+      )}
+      {open && suggestions.length > 0 && (
+        <ul className="absolute z-50 w-full bg-white dark:bg-[#1e1e1e] border border-[var(--color-arena-border)] rounded shadow-lg mt-1 max-h-48 overflow-y-auto text-sm">
+          {suggestions.slice(0, 20).map((c) => (
+            <li
+              key={c}
+              className="px-3 py-1.5 cursor-pointer hover:bg-[var(--color-arena-primary)] hover:text-white"
+              onMouseDown={() => {
+                onChange(c);
+                setOpen(false);
+              }}
+            >
+              {c}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 function getMonthLabel(year: number, month: number): string {
   const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
@@ -350,6 +425,11 @@ export default function KalenderPage() {
       return;
     }
 
+    if (formData.locationCountry && !COUNTRIES.includes(formData.locationCountry)) {
+      setMessage("Bitte wähle ein gültiges Land aus.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/kalender/create", {
@@ -467,6 +547,11 @@ export default function KalenderPage() {
       return;
     }
 
+    if (editFormData.locationCountry && !COUNTRIES.includes(editFormData.locationCountry)) {
+      setMessage("Bitte wähle ein gültiges Land aus.");
+      return;
+    }
+
     setIsEditSubmitting(true);
     try {
       const response = await fetch("/api/kalender/update", {
@@ -523,18 +608,6 @@ export default function KalenderPage() {
       setMessage("Fehler beim Löschen.");
     }
   };
-
-  if (!loggedIn) {
-    return (
-      <main className="top-centered-main">
-        <section className="card">
-          <p>
-            Bitte <a href="/auth">melde dich an</a>, um den Kalender zu nutzen.
-          </p>
-        </section>
-      </main>
-    );
-  }
 
   const groupedEvents = new Map<string, KalenderEvent[]>();
   events.forEach((event) => {
@@ -757,10 +830,9 @@ export default function KalenderPage() {
                     </div>
                     <div>
                       <label className="block text-sm mb-1">Land</label>
-                      <input
-                        type="text"
+                      <CountryAutocomplete
                         value={formData.locationCountry}
-                        onChange={(e) => handleFormChange("locationCountry", e.target.value)}
+                        onChange={(v) => handleFormChange("locationCountry", v)}
                         className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
                         placeholder="Deutschland"
                       />
@@ -1213,10 +1285,9 @@ export default function KalenderPage() {
                         </div>
                         <div>
                           <label className="block text-sm mb-1">Land</label>
-                          <input
-                            type="text"
+                          <CountryAutocomplete
                             value={editFormData.locationCountry}
-                            onChange={(e) => handleEditFormChange("locationCountry", e.target.value)}
+                            onChange={(v) => handleEditFormChange("locationCountry", v)}
                             className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
                           />
                         </div>

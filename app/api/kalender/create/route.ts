@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getKalenderCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import type { KalenderCategory } from "@/lib/kalender";
+import { type KalenderCategory, VALID_COUNTRIES } from "@/lib/kalender";
 import { awardTerminErstellt } from "@/lib/lesezeichen";
 
 export async function POST(request: Request) {
@@ -106,6 +106,10 @@ export async function POST(request: Request) {
       zipCode: body.locationZipCode?.trim() || undefined,
       country: body.locationCountry?.trim() || undefined,
     };
+
+    if (location.country && !(VALID_COUNTRIES as readonly string[]).includes(location.country)) {
+      return NextResponse.json({ message: "Ungültiges Land." }, { status: 400 });
+    }
 
     // Remove undefined values
     if (!location.street) delete location.street;

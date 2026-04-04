@@ -39,6 +39,7 @@ export async function GET(request: Request) {
       timeFrom: e.timeFrom ?? null,
       timeTo: e.timeTo ?? null,
       location: e.location ?? null,
+      link: e.link ?? null,
       createdBy: e.createdBy,
       participantCount: e.participants.length,
       participants: e.participants,
