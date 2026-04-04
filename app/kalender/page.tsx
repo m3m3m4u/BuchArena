@@ -539,22 +539,11 @@ export default function KalenderPage() {
   const groupedEvents = new Map<string, KalenderEvent[]>();
   events.forEach((event) => {
     if (event.dateTo && event.dateTo > event.date) {
-      // Multi-day event: add to each day within the current month view
+      // Multi-day event: show only on start date, or on 1st of month if it started earlier
       const monthStart = `${year}-${String(month).padStart(2, "0")}-01`;
-      const nextMonth = month === 12 ? 1 : month + 1;
-      const nextYear = month === 12 ? year + 1 : year;
-      const monthEnd = `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`;
-      const start = event.date < monthStart ? monthStart : event.date;
-      const end = event.dateTo >= monthEnd ? monthEnd : event.dateTo;
-      let current = start;
-      while (current <= end && current < monthEnd) {
-        if (!groupedEvents.has(current)) groupedEvents.set(current, []);
-        groupedEvents.get(current)!.push(event);
-        // Increment day (use noon to avoid timezone/DST issues with toISOString)
-        const d = new Date(current + "T12:00:00");
-        d.setDate(d.getDate() + 1);
-        current = d.toISOString().slice(0, 10);
-      }
+      const showDate = event.date < monthStart ? monthStart : event.date;
+      if (!groupedEvents.has(showDate)) groupedEvents.set(showDate, []);
+      groupedEvents.get(showDate)!.push(event);
     } else {
       if (!groupedEvents.has(event.date)) groupedEvents.set(event.date, []);
       groupedEvents.get(event.date)!.push(event);
