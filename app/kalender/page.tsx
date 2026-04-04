@@ -550,8 +550,8 @@ export default function KalenderPage() {
       while (current <= end && current < monthEnd) {
         if (!groupedEvents.has(current)) groupedEvents.set(current, []);
         groupedEvents.get(current)!.push(event);
-        // Increment day
-        const d = new Date(current + "T00:00:00");
+        // Increment day (use noon to avoid timezone/DST issues with toISOString)
+        const d = new Date(current + "T12:00:00");
         d.setDate(d.getDate() + 1);
         current = d.toISOString().slice(0, 10);
       }
