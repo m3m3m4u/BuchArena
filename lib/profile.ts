@@ -35,6 +35,7 @@ export type ProfileData = {
   socialLinktree: ProfileField;
   socialNewsletter: ProfileField;
   socialWhatsapp: ProfileField;
+  socialEmail: ProfileField;
 };
 
 export type Sprechprobe = {
@@ -69,6 +70,7 @@ export type SpeakerProfileData = {
   socialLinktree: ProfileField;
   socialNewsletter: ProfileField;
   socialWhatsapp: ProfileField;
+  socialEmail: ProfileField;
 };
 
 export function createDefaultProfile(): ProfileData {
@@ -150,6 +152,10 @@ export function createDefaultProfile(): ProfileData {
       value: "",
       visibility: "hidden",
     },
+    socialEmail: {
+      value: "",
+      visibility: "hidden",
+    },
   };
 }
 
@@ -176,6 +182,7 @@ export type BloggerProfileData = {
   socialLinktree: ProfileField;
   socialNewsletter: ProfileField;
   socialWhatsapp: ProfileField;
+  socialEmail: ProfileField;
 };
 
 export function createDefaultSpeakerProfile(): SpeakerProfileData {
@@ -203,6 +210,7 @@ export function createDefaultSpeakerProfile(): SpeakerProfileData {
     socialLinktree: { value: "", visibility: "hidden" },
     socialNewsletter: { value: "", visibility: "hidden" },
     socialWhatsapp: { value: "", visibility: "hidden" },
+    socialEmail: { value: "", visibility: "hidden" },
   };
 }
 
@@ -229,6 +237,7 @@ export function createDefaultBloggerProfile(): BloggerProfileData {
     socialLinktree: { value: "", visibility: "hidden" },
     socialNewsletter: { value: "", visibility: "hidden" },
     socialWhatsapp: { value: "", visibility: "hidden" },
+    socialEmail: { value: "", visibility: "hidden" },
   };
 }
 
@@ -254,6 +263,7 @@ export type TestleserProfileData = {
   socialLinktree: ProfileField;
   socialNewsletter: ProfileField;
   socialWhatsapp: ProfileField;
+  socialEmail: ProfileField;
 };
 
 export function createDefaultTestleserProfile(): TestleserProfileData {
@@ -278,6 +288,7 @@ export function createDefaultTestleserProfile(): TestleserProfileData {
     socialLinktree: { value: "", visibility: "hidden" },
     socialNewsletter: { value: "", visibility: "hidden" },
     socialWhatsapp: { value: "", visibility: "hidden" },
+    socialEmail: { value: "", visibility: "hidden" },
   };
 }
 
@@ -302,6 +313,7 @@ export type LektorenProfileData = {
   socialLinktree: ProfileField;
   socialNewsletter: ProfileField;
   socialWhatsapp: ProfileField;
+  socialEmail: ProfileField;
 };
 
 export function createDefaultLektorenProfile(): LektorenProfileData {
@@ -325,6 +337,7 @@ export function createDefaultLektorenProfile(): LektorenProfileData {
     socialLinktree: { value: "", visibility: "hidden" },
     socialNewsletter: { value: "", visibility: "hidden" },
     socialWhatsapp: { value: "", visibility: "hidden" },
+    socialEmail: { value: "", visibility: "hidden" },
   };
 }
 
@@ -351,6 +364,7 @@ export type VerlageProfileData = {
   socialLinktree: ProfileField;
   socialNewsletter: ProfileField;
   socialWhatsapp: ProfileField;
+  socialEmail: ProfileField;
 };
 
 export function createDefaultVerlageProfile(): VerlageProfileData {
@@ -376,5 +390,6 @@ export function createDefaultVerlageProfile(): VerlageProfileData {
     socialLinktree: { value: "", visibility: "hidden" },
     socialNewsletter: { value: "", visibility: "hidden" },
     socialWhatsapp: { value: "", visibility: "hidden" },
+    socialEmail: { value: "", visibility: "hidden" },
   };
 }

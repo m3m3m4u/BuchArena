@@ -70,6 +70,7 @@ function sanitizeSpeakerProfile(
     socialLinktree: sanitizeField(source.socialLinktree, base.socialLinktree, 300),
     socialNewsletter: sanitizeField(source.socialNewsletter, base.socialNewsletter, 300),
     socialWhatsapp: sanitizeField(source.socialWhatsapp, base.socialWhatsapp, 300),
+    socialEmail: sanitizeField(source.socialEmail, base.socialEmail, 300),
   };
 }
 

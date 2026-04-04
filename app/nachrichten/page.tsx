@@ -97,7 +97,7 @@ export default function NachrichtenPage() {
 
   // Broadcast (Admin)
   const [showBroadcast, setShowBroadcast] = useState(false);
-  const [broadcastGroup, setBroadcastGroup] = useState<"all" | "autoren" | "sprecher" | "lektoren" | "testleser" | "blogger">("all");
+  const [broadcastGroup, setBroadcastGroup] = useState<"all" | "autoren" | "sprecher" | "lektoren" | "testleser" | "blogger" | "verlage">("all");
   const [broadcastSubject, setBroadcastSubject] = useState("");
   const [broadcastBody, setBroadcastBody] = useState("");
   const [broadcastSending, setBroadcastSending] = useState(false);
@@ -709,7 +709,7 @@ export default function NachrichtenPage() {
               <div className="mb-3">
                 <span className="text-sm font-semibold block mb-1.5">Empfänger</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {(["all", "autoren", "sprecher", "lektoren", "testleser", "blogger"] as const).map((g) => (
+                  {(["all", "autoren", "sprecher", "lektoren", "testleser", "blogger", "verlage"] as const).map((g) => (
                     <button
                       key={g}
                       type="button"

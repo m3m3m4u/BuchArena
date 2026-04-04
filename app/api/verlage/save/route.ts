@@ -75,6 +75,7 @@ function sanitizeVerlageProfile(
     socialLinktree: sanitizeField(source.socialLinktree, base.socialLinktree, 250),
     socialNewsletter: sanitizeField(source.socialNewsletter, base.socialNewsletter, 250),
     socialWhatsapp: sanitizeField(source.socialWhatsapp, base.socialWhatsapp, 250),
+    socialEmail: sanitizeField(source.socialEmail, base.socialEmail, 250),
   };
 }
 

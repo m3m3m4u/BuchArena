@@ -1370,6 +1370,19 @@ function ProfilPageInner() {
           onVisibilityChange={(visibility) => updateVisibility("socialWhatsapp", visibility)}
         />
 
+        <FieldWithVisibility
+          label="Mailadresse"
+          value={profile.socialEmail.value}
+          visibility={profile.socialEmail.visibility}
+          onValueChange={(value) =>
+            setProfile((current) => ({
+              ...current,
+              socialEmail: { ...current.socialEmail, value },
+            }))
+          }
+          onVisibilityChange={(visibility) => updateVisibility("socialEmail", visibility)}
+        />
+
         <div className="flex gap-2 flex-wrap">
           {profile.socialInstagram.value && (
             <a className="btn" href={profile.socialInstagram.value} target="_blank" rel="noreferrer">
@@ -1717,6 +1730,17 @@ function ProfilPageInner() {
             setSpeakerProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))
           }
         />
+        <FieldWithVisibility
+          label="Mailadresse"
+          value={speakerProfile.socialEmail?.value ?? ""}
+          visibility={speakerProfile.socialEmail?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))
+          }
+        />
 
         <button type="button" className="btn" onClick={saveSpeakerProfile} disabled={isSavingSpeaker}>
           {isSavingSpeaker ? "Speichern ..." : "Sprecherprofil speichern"}
@@ -1975,6 +1999,18 @@ function ProfilPageInner() {
           }
         />
 
+        <FieldWithVisibility
+          label="Mailadresse"
+          value={bloggerProfile.socialEmail.value}
+          visibility={bloggerProfile.socialEmail.visibility}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))
+          }
+        />
+
         <button type="button" className="btn" onClick={saveBloggerProfile} disabled={isSavingBlogger}>
           {isSavingBlogger ? "Speichern ..." : "Bloggerprofil speichern"}
         </button>
@@ -2100,6 +2136,7 @@ function ProfilPageInner() {
         <FieldWithVisibility label="Linktree" value={testleserProfile.socialLinktree.value} visibility={testleserProfile.socialLinktree.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, visibility } }))} />
         <FieldWithVisibility label="Newsletter" value={testleserProfile.socialNewsletter.value} visibility={testleserProfile.socialNewsletter.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, visibility } }))} />
         <FieldWithVisibility label="WhatsApp-Kanal" value={testleserProfile.socialWhatsapp.value} visibility={testleserProfile.socialWhatsapp.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))} />
+        <FieldWithVisibility label="Mailadresse" value={testleserProfile.socialEmail.value} visibility={testleserProfile.socialEmail.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))} />
 
         <button type="button" className="btn" onClick={saveTestleserProfile} disabled={isSavingTestleser}>
           {isSavingTestleser ? "Speichern ..." : "Testleserprofil speichern"}
@@ -2215,6 +2252,7 @@ function ProfilPageInner() {
         <FieldWithVisibility label="Linktree" value={lektorenProfile.socialLinktree.value} visibility={lektorenProfile.socialLinktree.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, visibility } }))} />
         <FieldWithVisibility label="Newsletter" value={lektorenProfile.socialNewsletter.value} visibility={lektorenProfile.socialNewsletter.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, visibility } }))} />
         <FieldWithVisibility label="WhatsApp-Kanal" value={lektorenProfile.socialWhatsapp.value} visibility={lektorenProfile.socialWhatsapp.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))} />
+        <FieldWithVisibility label="Mailadresse" value={lektorenProfile.socialEmail.value} visibility={lektorenProfile.socialEmail.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))} />
 
         <button type="button" className="btn" onClick={saveLektorenProfile} disabled={isSavingLektoren}>
           {isSavingLektoren ? "Speichern ..." : "Lektorenprofil speichern"}
@@ -2349,6 +2387,7 @@ function ProfilPageInner() {
         <FieldWithVisibility label="Linktree" value={verlageProfile.socialLinktree.value} visibility={verlageProfile.socialLinktree.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialLinktree: { ...c.socialLinktree, visibility } }))} />
         <FieldWithVisibility label="Newsletter" value={verlageProfile.socialNewsletter.value} visibility={verlageProfile.socialNewsletter.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, visibility } }))} />
         <FieldWithVisibility label="WhatsApp-Kanal" value={verlageProfile.socialWhatsapp.value} visibility={verlageProfile.socialWhatsapp.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))} />
+        <FieldWithVisibility label="Mailadresse" value={verlageProfile.socialEmail.value} visibility={verlageProfile.socialEmail.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))} />
 
         <button type="button" className="btn" onClick={saveVerlageProfile} disabled={isSavingVerlage}>
           {isSavingVerlage ? "Speichern ..." : "Verlagsprofil speichern"}

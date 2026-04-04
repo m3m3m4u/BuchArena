@@ -17,6 +17,7 @@ const socialIcons: Record<string, React.ReactNode> = {
   Linktree: (<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M7.53 9.64l3.4-3.3L7.2 2.6l1.9-1.89 3.77 3.76L16.64.71l1.89 1.89-3.73 3.74 3.4 3.3-1.93 1.88-3.4-3.38-3.4 3.38ZM11.07 13.2h1.86v8.33h-1.86z"/></svg>),
   Newsletter: (<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>),
   "WhatsApp-Kanal": (<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.47 2.01A11.93 11.93 0 0 0 12.05 1 10.99 10.99 0 0 0 2.68 17.47L1 23l5.72-1.5A11 11 0 0 0 12.06 23 11 11 0 0 0 17.47 2Zm-5.42 16.93a9.12 9.12 0 0 1-4.65-1.28l-.33-.2-3.46.91.92-3.39-.22-.34A9.07 9.07 0 1 1 21.1 12a9.09 9.09 0 0 1-9.05 6.94Zm5-6.78c-.28-.14-1.63-.8-1.88-.9-.25-.09-.44-.14-.63.14s-.72.9-.88 1.08-.33.21-.6.07a7.55 7.55 0 0 1-3.75-3.27c-.28-.49.28-.45.81-1.51a.52.52 0 0 0-.02-.49c-.07-.14-.63-1.51-.86-2.07-.23-.55-.46-.47-.63-.47h-.54a1.03 1.03 0 0 0-.75.35A3.15 3.15 0 0 0 6.33 8a5.47 5.47 0 0 0 1.15 2.91 12.52 12.52 0 0 0 4.8 4.24c1.76.76 2.45.83 3.33.7a2.87 2.87 0 0 0 1.89-1.34 2.34 2.34 0 0 0 .16-1.34c-.07-.12-.25-.19-.53-.33Z"/></svg>),
+  Mailadresse: (<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2Zm-.4 4.25-7.07 4.42a1 1 0 0 1-1.06 0L4.4 8.25a.85.85 0 1 1 .9-1.44L12 11l6.7-4.19a.85.85 0 1 1 .9 1.44Z"/></svg>),
 };
 
 /** Wandelt Social-Media-Handles/-Werte in vollständige URLs um. */
@@ -38,7 +39,8 @@ function toSocialUrl(platform: string, raw: string): string {
     case "Linktree":
     case "Newsletter":
     case "WhatsApp-Kanal":
-      return v;
+    case "Mailadresse":
+      return platform === "Mailadresse" ? `mailto:${v}` : v;
     default: return v;
   }
 }
@@ -138,6 +140,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
       { label: "Linktree", field: speakerProfile.socialLinktree },
       { label: "Newsletter", field: speakerProfile.socialNewsletter },
       { label: "WhatsApp-Kanal", field: speakerProfile.socialWhatsapp },
+      { label: "Mailadresse", field: speakerProfile.socialEmail },
     ].filter((e) => e.field?.visibility === "public" && e.field?.value);
   }, [speakerProfile]);
 

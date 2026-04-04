@@ -8,7 +8,8 @@ export type BroadcastGroup =
   | "sprecher"
   | "blogger"
   | "testleser"
-  | "lektoren";
+  | "lektoren"
+  | "verlage";
 
 type Payload = {
   group?: BroadcastGroup;
@@ -67,6 +68,8 @@ export async function POST(request: Request) {
         ? { "testleserProfile.name.value": { $exists: true, $ne: "" } }
         : group === "lektoren"
         ? { "lektorenProfile.name.value": { $exists: true, $ne: "" } }
+        : group === "verlage"
+        ? { "verlageProfile.name.value": { $exists: true, $ne: "" } }
         : {}; // "all"
 
     const allUsers = await users
