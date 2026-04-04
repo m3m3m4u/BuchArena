@@ -16,6 +16,7 @@ export async function POST(request: Request) {
       description?: string;
       category?: string;
       date?: string;
+      dateTo?: string;
       timeFrom?: string;
       timeTo?: string;
       locationStreet?: string;
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
     const description = body.description?.trim();
     const category = body.category?.trim();
     const date = body.date?.trim();
+    const dateTo = body.dateTo?.trim() || undefined;
     const timeFrom = body.timeFrom?.trim() || undefined;
     const timeTo = body.timeTo?.trim() || undefined;
 
@@ -64,6 +66,20 @@ export async function POST(request: Request) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return NextResponse.json(
         { message: "Ungültiges Datumsformat (YYYY-MM-DD erwartet)." },
+        { status: 400 }
+      );
+    }
+
+    if (dateTo && !/^\d{4}-\d{2}-\d{2}$/.test(dateTo)) {
+      return NextResponse.json(
+        { message: "Ungültiges Enddatumsformat (YYYY-MM-DD erwartet)." },
+        { status: 400 }
+      );
+    }
+
+    if (dateTo && dateTo < date) {
+      return NextResponse.json(
+        { message: "Das Enddatum darf nicht vor dem Startdatum liegen." },
         { status: 400 }
       );
     }
@@ -105,6 +121,7 @@ export async function POST(request: Request) {
       description,
       category: category as KalenderCategory,
       date,
+      dateTo,
       timeFrom,
       timeTo,
       location: Object.keys(location).length > 0 ? location : undefined,

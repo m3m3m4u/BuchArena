@@ -17,6 +17,7 @@ export async function POST(request: Request) {
       description?: string;
       category?: string;
       date?: string;
+      dateTo?: string;
       timeFrom?: string;
       timeTo?: string;
       locationStreet?: string;
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
     const description = body.description?.trim();
     const category = body.category?.trim();
     const date = body.date?.trim();
+    const dateTo = body.dateTo?.trim() || undefined;
     const timeFrom = body.timeFrom?.trim() || undefined;
     const timeTo = body.timeTo?.trim() || undefined;
 
@@ -75,6 +77,14 @@ export async function POST(request: Request) {
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return NextResponse.json({ message: "Ungültiges Datumsformat." }, { status: 400 });
+    }
+
+    if (dateTo && !/^\d{4}-\d{2}-\d{2}$/.test(dateTo)) {
+      return NextResponse.json({ message: "Ungültiges Enddatumsformat." }, { status: 400 });
+    }
+
+    if (dateTo && dateTo < date) {
+      return NextResponse.json({ message: "Das Enddatum darf nicht vor dem Startdatum liegen." }, { status: 400 });
     }
 
     if (timeFrom && !/^\d{2}:\d{2}$/.test(timeFrom)) {
@@ -116,10 +126,14 @@ export async function POST(request: Request) {
       location: Object.keys(location).length > 0 ? location : undefined,
       updatedAt: new Date(),
     };
+    if (dateTo) $set.dateTo = dateTo;
     if (link) $set.link = link;
 
     const update: Record<string, unknown> = { $set };
-    if (!link) update.$unset = { link: "" };
+    const $unset: Record<string, string> = {};
+    if (!link) $unset.link = "";
+    if (!dateTo) $unset.dateTo = "";
+    if (Object.keys($unset).length > 0) update.$unset = $unset;
 
     await col.updateOne({ _id: new ObjectId(body.id) }, update);
 

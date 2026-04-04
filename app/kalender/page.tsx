@@ -20,6 +20,7 @@ interface KalenderEvent {
   description: string;
   category: KalenderCategory;
   date: string;
+  dateTo: string | null;
   timeFrom: string | null;
   timeTo: string | null;
   location: KalenderLocation | null;
@@ -119,6 +120,7 @@ export default function KalenderPage() {
     description: "",
     category: "Sonstiges" as KalenderCategory,
     date: "",
+    dateTo: "",
     timeFrom: "",
     timeTo: "",
     locationStreet: "",
@@ -369,6 +371,7 @@ export default function KalenderPage() {
         description: "",
         category: "Sonstiges",
         date: "",
+        dateTo: "",
         timeFrom: "",
         timeTo: "",
         locationStreet: "",
@@ -400,6 +403,7 @@ export default function KalenderPage() {
       description: event.description,
       category: event.category,
       date: event.date,
+      dateTo: event.dateTo ?? "",
       timeFrom: event.timeFrom ?? "",
       timeTo: event.timeTo ?? "",
       locationStreet: event.location?.street ?? "",
@@ -534,10 +538,27 @@ export default function KalenderPage() {
 
   const groupedEvents = new Map<string, KalenderEvent[]>();
   events.forEach((event) => {
-    if (!groupedEvents.has(event.date)) {
-      groupedEvents.set(event.date, []);
+    if (event.dateTo && event.dateTo > event.date) {
+      // Multi-day event: add to each day within the current month view
+      const monthStart = `${year}-${String(month).padStart(2, "0")}-01`;
+      const nextMonth = month === 12 ? 1 : month + 1;
+      const nextYear = month === 12 ? year + 1 : year;
+      const monthEnd = `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`;
+      const start = event.date < monthStart ? monthStart : event.date;
+      const end = event.dateTo >= monthEnd ? monthEnd : event.dateTo;
+      let current = start;
+      while (current <= end && current < monthEnd) {
+        if (!groupedEvents.has(current)) groupedEvents.set(current, []);
+        groupedEvents.get(current)!.push(event);
+        // Increment day
+        const d = new Date(current + "T00:00:00");
+        d.setDate(d.getDate() + 1);
+        current = d.toISOString().slice(0, 10);
+      }
+    } else {
+      if (!groupedEvents.has(event.date)) groupedEvents.set(event.date, []);
+      groupedEvents.get(event.date)!.push(event);
     }
-    groupedEvents.get(event.date)!.push(event);
   });
 
   const sortedDates = Array.from(groupedEvents.keys()).sort();
@@ -665,6 +686,17 @@ export default function KalenderPage() {
                     className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Bis Datum (optional, für mehrtägige Termine)</label>
+                <input
+                  type="date"
+                  value={formData.dateTo}
+                  onChange={(e) => handleFormChange("dateTo", e.target.value)}
+                  min={formData.date || undefined}
+                  className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                />
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
@@ -804,6 +836,13 @@ export default function KalenderPage() {
                                 >
                                   {event.category}
                                 </span>
+                                {event.dateTo && event.dateTo > event.date && (
+                                  <span className="px-2 py-0.5 text-xs font-semibold rounded bg-amber-100 text-amber-800 border border-amber-300">
+                                    {new Date(event.date + "T00:00:00").toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
+                                    {" – "}
+                                    {new Date(event.dateTo + "T00:00:00").toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
+                                  </span>
+                                )}
                                 {event.timeFrom && (
                                   <span className="text-xs sm:text-sm text-[var(--color-arena-muted)] font-semibold">
                                     {event.timeFrom}
@@ -936,6 +975,17 @@ export default function KalenderPage() {
                           month: "long",
                           year: "numeric",
                         })}
+                        {selectedEvent.dateTo && selectedEvent.dateTo > selectedEvent.date && (
+                          <>
+                            {" – "}
+                            {new Date(selectedEvent.dateTo + "T00:00:00").toLocaleDateString("de-DE", {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })}
+                          </>
+                        )}
                       </p>
                     </div>
                     {selectedEvent.timeFrom && (
@@ -1095,6 +1145,17 @@ export default function KalenderPage() {
                         className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold mb-1">Bis Datum (optional, für mehrtägige Termine)</label>
+                    <input
+                      type="date"
+                      value={editFormData.dateTo}
+                      onChange={(e) => handleEditFormChange("dateTo", e.target.value)}
+                      min={editFormData.date || undefined}
+                      className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                    />
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-4">

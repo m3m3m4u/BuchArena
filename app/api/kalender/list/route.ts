@@ -18,7 +18,14 @@ export async function GET(request: Request) {
 
     const col = await getKalenderCollection();
     const events = await col
-      .find({ date: { $gte: startDate, $lt: endDate } })
+      .find({
+        $or: [
+          // Events that start within the month
+          { date: { $gte: startDate, $lt: endDate } },
+          // Multi-day events that started before but extend into the month
+          { date: { $lt: endDate }, dateTo: { $gte: startDate } },
+        ],
+      })
       .sort({ date: 1, timeFrom: 1 })
       .toArray();
 
@@ -28,6 +35,7 @@ export async function GET(request: Request) {
       description: e.description,
       category: e.category,
       date: e.date,
+      dateTo: e.dateTo ?? null,
       timeFrom: e.timeFrom ?? null,
       timeTo: e.timeTo ?? null,
       location: e.location ?? null,

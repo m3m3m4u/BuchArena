@@ -15,6 +15,7 @@ export interface KalenderEvent {
   description: string;
   category: KalenderCategory;
   date: string;          // ISO date string YYYY-MM-DD
+  dateTo?: string;       // ISO date string YYYY-MM-DD (optional, for multi-day events)
   timeFrom?: string;     // HH:mm (optional)
   timeTo?: string;       // HH:mm (optional)
   location?: KalenderLocation;
