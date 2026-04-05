@@ -533,6 +533,12 @@ export default function AdminPage() {
           >
             📬 Einreichungen
           </button>
+          <button
+            className="btn btn-sm"
+            onClick={() => router.push("/admin/social-media")}
+          >
+            🖼️ Social-Media-Galerie
+          </button>
         </div>
 
         {/* ══ Tab: Buch der Woche ══ */}

@@ -1,0 +1,1341 @@
+﻿"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+/* ---- FFmpeg UMD loader (bypasses Turbopack bundling) ---- */
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = () => resolve();
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+async function getFFmpeg(): Promise<{ FFmpeg: any }> {
+  await loadScript("/ffmpeg/ffmpeg.js");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (window as any).FFmpegWASM;
+}
+async function blobURL(url: string, mime: string): Promise<string> {
+  const buf = await (await fetch(url)).arrayBuffer();
+  return URL.createObjectURL(new Blob([buf], { type: mime }));
+}
+async function fileToUint8(blob: Blob): Promise<Uint8Array> {
+  return new Uint8Array(await blob.arrayBuffer());
+}
+
+/* ---- Types ---- */
+type FormatPreset = "4:5" | "1:1" | "9:16";
+type AnimPreset = "none" | "fade" | "slide-left" | "slide-right" | "slide-up" | "slide-down" | "zoom";
+type HId = "tl" | "tr" | "bl" | "br";
+type Align = "left" | "center" | "right";
+
+interface TextEl {
+  id: string; type: "text";
+  x: number; y: number; w: number; h: number;
+  content: string;
+  font: string; fontSize: number; color: string;
+  bold: boolean; italic: boolean; align: Align;
+  anim?: AnimPreset;
+  animDelay?: number;    // Sekunden bis Start
+  animDuration?: number; // Sekunden Dauer
+}
+interface ImgEl {
+  id: string; type: "image";
+  x: number; y: number; w: number; h: number;
+  src: string; ratio: number;
+  anim?: AnimPreset;
+  animDelay?: number;
+  animDuration?: number;
+}
+type CE = TextEl | ImgEl;
+
+/* ---- Constants ---- */
+const FONTS = [
+  { label: "Georgia",           value: "Georgia" },
+  { label: "Arial",             value: "Arial" },
+  { label: "Arial Narrow",      value: '"Arial Narrow"' },
+  { label: "Arial Black",       value: '"Arial Black"' },
+  { label: "Verdana",           value: "Verdana" },
+  { label: "Tahoma",            value: "Tahoma" },
+  { label: "Trebuchet MS",      value: '"Trebuchet MS"' },
+  { label: "Impact",            value: "Impact" },
+  { label: "Times New Roman",   value: '"Times New Roman"' },
+  { label: "Palatino Linotype", value: '"Palatino Linotype"' },
+  { label: "Book Antiqua",      value: '"Book Antiqua"' },
+  { label: "Garamond",          value: "Garamond" },
+  { label: "Didot",             value: "Didot, 'Bodoni MT', serif" },
+  { label: "Courier New",       value: '"Courier New"' },
+  { label: "Lucida Console",    value: '"Lucida Console"' },
+  { label: "Comic Sans MS",     value: '"Comic Sans MS"' },
+  { label: "Brush Script MT",   value: '"Brush Script MT", cursive' },
+];
+
+const HIT = 24;
+
+/* ---- Utils ---- */
+function uid() { return Math.random().toString(36).slice(2, 10); }
+function getSize(f: FormatPreset) {
+  if (f === "4:5") return { w: 1080, h: 1350 };
+  if (f === "9:16") return { w: 1080, h: 1920 };
+  return { w: 1080, h: 1080 };
+}
+
+function loadImg(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload  = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload  = () => resolve(String(r.result));
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+function wrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string, x: number, y: number,
+  maxW: number, lh: number, maxLines = 30,
+) {
+  if (!text.trim()) return;
+  const words = text.split(/\s+/).filter(Boolean);
+  let line = "", row = 0;
+  for (const word of words) {
+    const test = line ? `${line} ${word}` : word;
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, y + row * lh);
+      row++;
+      line = word;
+      if (row >= maxLines) return;
+    } else { line = test; }
+  }
+  if (row < maxLines && line) ctx.fillText(line, x, y + row * lh);
+}
+
+function handlePts(el: CE): { id: HId; x: number; y: number }[] {
+  return [
+    { id: "tl", x: el.x,        y: el.y        },
+    { id: "tr", x: el.x + el.w, y: el.y        },
+    { id: "bl", x: el.x,        y: el.y + el.h },
+    { id: "br", x: el.x + el.w, y: el.y + el.h },
+  ];
+}
+
+function hitHandle(mx: number, my: number, el: CE): HId | null {
+  for (const h of handlePts(el)) {
+    if (Math.abs(mx - h.x) <= HIT && Math.abs(my - h.y) <= HIT) return h.id;
+  }
+  return null;
+}
+
+function hitEl(mx: number, my: number, el: CE) {
+  return mx >= el.x && mx <= el.x + el.w && my >= el.y && my <= el.y + el.h;
+}
+
+function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLImageElement>) {
+  if (el.type === "image") {
+    const img = cache.get(el.src);
+    if (img) {
+      ctx.drawImage(img, el.x, el.y, el.w, el.h);
+    } else {
+      ctx.save();
+      ctx.fillStyle = "#dde3ea";
+      ctx.fillRect(el.x, el.y, el.w, el.h);
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "36px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("Bild laedt...", el.x + el.w / 2, el.y + el.h / 2);
+      ctx.restore();
+    }
+  } else {
+    ctx.save();
+    ctx.font = `${el.italic ? "italic " : ""}${el.bold ? "bold " : ""}${el.fontSize}px ${el.font}`;
+    ctx.fillStyle = el.color;
+    ctx.textAlign = el.align;
+    const tx =
+      el.align === "center" ? el.x + el.w / 2
+      : el.align === "right"  ? el.x + el.w
+      : el.x;
+    wrapText(ctx, el.content, tx, el.y + el.fontSize, el.w, el.fontSize * 1.35);
+    ctx.restore();
+  }
+}
+
+/** drawEl mit Animation: t = aktueller Zeitpunkt (Sekunden), dur = Videolänge */
+function drawElAnimated(
+  ctx: CanvasRenderingContext2D,
+  el: CE,
+  cache: Map<string, HTMLImageElement>,
+  t: number,
+) {
+  const delay    = el.animDelay ?? 0;
+  const anim     = el.anim ?? "none";
+  const ANIM_DUR = el.animDuration ?? 0.5;
+  const tRel     = Math.max(0, t - delay);
+  const progress = anim === "none" ? 1 : Math.min(1, tRel / ANIM_DUR);
+
+  if (progress <= 0) return; // noch nicht sichtbar
+
+  ctx.save();
+  ctx.globalAlpha = anim === "fade" ? progress : 1;
+
+  if (anim === "slide-left" || anim === "slide-right" || anim === "slide-up" || anim === "slide-down") {
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const dist = 200 * (1 - ease);
+    if (anim === "slide-left")  ctx.translate(-dist, 0);
+    if (anim === "slide-right") ctx.translate(dist, 0);
+    if (anim === "slide-up")    ctx.translate(0, -dist);
+    if (anim === "slide-down")  ctx.translate(0, dist);
+  }
+  if (anim === "zoom") {
+    const ease  = 1 - Math.pow(1 - progress, 3);
+    const scale = 0.5 + 0.5 * ease;
+    const cx = el.x + el.w / 2;
+    const cy = el.y + el.h / 2;
+    ctx.translate(cx, cy);
+    ctx.scale(scale, scale);
+    ctx.translate(-cx, -cy);
+  }
+
+  drawEl(ctx, el, cache);
+  ctx.restore();
+}
+
+function drawSel(ctx: CanvasRenderingContext2D, el: CE) {
+  ctx.save();
+  ctx.strokeStyle = "#2563eb";
+  ctx.lineWidth = 4;
+  ctx.setLineDash([14, 7]);
+  ctx.strokeRect(el.x - 4, el.y - 4, el.w + 8, el.h + 8);
+  ctx.setLineDash([]);
+  for (const h of handlePts(el)) {
+    ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.rect(h.x - 13, h.y - 13, 26, 26);
+    ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+const CURSOR_MAP: Record<HId, string> = {
+  tl: "nw-resize", tr: "ne-resize", bl: "sw-resize", br: "se-resize",
+};
+
+/* ---- Component ---- */
+export default function BeitragToolPage() {
+  const canvasRef   = useRef<HTMLCanvasElement>(null);
+  const wrapRef     = useRef<HTMLDivElement>(null);
+  const editAreaRef = useRef<HTMLTextAreaElement>(null);
+  const imgCache    = useRef(new Map<string, HTMLImageElement>());
+  const dragRef     = useRef<{
+    mode: "move" | "resize"; id: string; handle?: HId;
+    mx0: number; my0: number; x0: number; y0: number; w0: number; h0: number;
+  } | null>(null);
+
+  const [format,    setFormat]    = useState<FormatPreset>("4:5");
+  const [bgColor,   setBgColor]   = useState("#ffffff");
+  const [elements,  setElements]  = useState<CE[]>([]);
+  const [selId,     setSelId]     = useState<string | null>(null);
+  const [cursor,    setCursor]    = useState("default");
+  const [tick,      setTick]      = useState(0);
+  const [editingId,     setEditingId]     = useState<string | null>(null);
+  const [editText,      setEditText]      = useState("");
+  const [showTemplates, setShowTemplates]  = useState(false);
+  const [templates,     setTemplates]      = useState<{ id: string; label: string; src: string }[]>([]);
+  const [loadingTpl,    setLoadingTpl]     = useState(false);
+  const [showSaveAs,    setShowSaveAs]     = useState(false);
+  const [showOpen,      setShowOpen]       = useState(false);
+  const [showInfo,      setShowInfo]       = useState(false);
+  const [fullscreen,    setFullscreen]     = useState(false);
+  const [showAnimPanel, setShowAnimPanel]  = useState(false);
+  const [confirmDelete, setConfirmDelete]  = useState<string | null>(null);
+  const [savedDesigns,  setSavedDesigns]   = useState<{ id: string; name: string; data: string; updatedAt?: string }[]>([]);
+  const [loadingDesigns, setLoadingDesigns] = useState(false);
+  const [saveNameInput, setSaveNameInput]  = useState("");
+  const [savingState,   setSavingState]    = useState<"idle" | "saving" | "saved">("idle");
+  const [currentDesignName, setCurrentDesignName] = useState<string | null>(null);
+
+  /* Video mode */
+  const [editorMode,    setEditorMode]    = useState<"bild" | "video">("bild");
+  const [videoDuration, setVideoDuration] = useState(10); // Sekunden
+  const [musikTracks,   setMusikTracks]   = useState<{ id: string; title: string; style: string; fileUrl: string }[]>([]);
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [loadingMusik,  setLoadingMusik]  = useState(false);
+  const [exporting,     setExporting]     = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportPhase,    setExportPhase]    = useState<"record" | "convert">("record");
+  const rafRef = useRef<number | null>(null);
+  const [previewing,    setPreviewing]    = useState(false);
+  const previewTRef    = useRef(0);
+  const previewRafRef  = useRef<number | null>(null);
+
+  const sz      = useMemo(() => getSize(format), [format]);
+  const selEl   = useMemo(() => elements.find((e) => e.id === selId) ?? null, [elements, selId]);
+  const textEl  = selEl?.type === "text" ? (selEl as TextEl) : null;
+
+  // Close anim panel when selection changes
+  useEffect(() => { if (!selId) setShowAnimPanel(false); }, [selId]);
+
+  // Block body scroll in fullscreen
+  useEffect(() => {
+    if (fullscreen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [fullscreen]);
+
+  /* preload images */
+  useEffect(() => {
+    const srcs = elements.filter((e) => e.type === "image").map((e) => (e as ImgEl).src);
+    let changed = false;
+    Promise.all(srcs.map(async (src) => {
+      if (!imgCache.current.has(src)) {
+        const img = await loadImg(src).catch(() => null);
+        if (img) { imgCache.current.set(src, img); changed = true; }
+      }
+    })).then(() => { if (changed) setTick((t) => t + 1); });
+  }, [elements]);
+
+  /* render canvas */
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    if (canvas.width !== sz.w || canvas.height !== sz.h) {
+      canvas.width = sz.w; canvas.height = sz.h;
+    }
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, sz.w, sz.h);
+    for (const el of elements) {
+      if (el.id === editingId && el.type === "text") continue;
+      if (previewing) drawElAnimated(ctx, el, imgCache.current, previewTRef.current);
+      else drawEl(ctx, el, imgCache.current);
+    }
+    if (selEl && selEl.id !== editingId) drawSel(ctx, selEl);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elements, selId, sz, bgColor, tick, selEl, editingId, previewing]);
+
+  /* focus textarea when edit starts */
+  useEffect(() => {
+    if (editingId) editAreaRef.current?.focus();
+  }, [editingId]);
+
+  /* Preview RAF loop */
+  useEffect(() => {
+    if (!previewing) return;
+    const start = performance.now();
+    function loop(now: number) {
+      previewTRef.current = (now - start) / 1000;
+      setTick((t) => t + 1);
+      if (previewTRef.current < videoDuration) {
+        previewRafRef.current = requestAnimationFrame(loop);
+      } else {
+        previewTRef.current = 0;
+        setPreviewing(false);
+      }
+    }
+    previewRafRef.current = requestAnimationFrame(loop);
+    return () => { if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewing, videoDuration]);
+
+  /* Show info on first visit */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!localStorage.getItem("beitrag-tool-info-seen")) {
+      setShowInfo(true);
+      localStorage.setItem("beitrag-tool-info-seen", "1");
+    }
+  }, []);
+
+  /* Load gallery templates when overlay opens */
+  useEffect(() => {
+    if (!showTemplates || templates.length > 0) return;
+    setLoadingTpl(true);
+    fetch("/api/social-media/gallery")
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setTemplates(data); })
+      .catch(() => {})
+      .finally(() => setLoadingTpl(false));
+  }, [showTemplates, templates.length]);
+
+  /* Load musik tracks when switching to video mode */
+  useEffect(() => {
+    if (editorMode !== "video" || musikTracks.length > 0) return;
+    setLoadingMusik(true);
+    fetch("/api/musik")
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d.tracks)) setMusikTracks(d.tracks); })
+      .catch(() => {})
+      .finally(() => setLoadingMusik(false));
+  }, [editorMode, musikTracks.length]);
+
+  /* Fetch designs when open overlay opens */
+  useEffect(() => {
+    if (!showOpen) return;
+    setLoadingDesigns(true);
+    fetch("/api/social-media/designs")
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setSavedDesigns(data); })
+      .catch(() => {})
+      .finally(() => setLoadingDesigns(false));
+  }, [showOpen]);
+
+  /* Delete/Backspace key removes selected element */
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (editingId) return;
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (!selId) return;
+      e.preventDefault();
+      setElements((p) => p.filter((el) => el.id !== selId));
+      setSelId(null);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selId, editingId]);
+
+  /* coordinate helper */
+  function toCanvas(e: React.MouseEvent<HTMLCanvasElement>) {
+    const c = canvasRef.current!;
+    const r = c.getBoundingClientRect();
+    const s = sz.w / c.offsetWidth;
+    return { mx: (e.clientX - r.left) * s, my: (e.clientY - r.top) * s };
+  }
+
+  /* commit inline text edit */
+  function commitEdit() {
+    if (!editingId) return;
+    setElements((p) => p.map((e) =>
+      e.id === editingId && e.type === "text" ? { ...e, content: editText } as CE : e
+    ));
+    setEditingId(null);
+  }
+
+  /* mouse: down */
+  function onDown(e: React.MouseEvent<HTMLCanvasElement>) {
+    if (editingId) return;
+    const { mx, my } = toCanvas(e);
+
+    if (selEl) {
+      const h = hitHandle(mx, my, selEl);
+      if (h) {
+        dragRef.current = {
+          mode: "resize", id: selEl.id, handle: h,
+          mx0: mx, my0: my,
+          x0: selEl.x, y0: selEl.y, w0: selEl.w, h0: selEl.h,
+        };
+        return;
+      }
+    }
+
+    for (let i = elements.length - 1; i >= 0; i--) {
+      const el = elements[i];
+      if (hitEl(mx, my, el)) {
+        setSelId(el.id);
+        dragRef.current = {
+          mode: "move", id: el.id,
+          mx0: mx, my0: my,
+          x0: el.x, y0: el.y, w0: el.w, h0: el.h,
+        };
+        return;
+      }
+    }
+    setSelId(null);
+  }
+
+  /* double-click -> enter text edit */
+  function onDblClick(e: React.MouseEvent<HTMLCanvasElement>) {
+    const { mx, my } = toCanvas(e);
+    for (let i = elements.length - 1; i >= 0; i--) {
+      const el = elements[i];
+      if (el.type === "text" && hitEl(mx, my, el)) {
+        setSelId(el.id);
+        setEditingId(el.id);
+        setEditText(el.content);
+        return;
+      }
+    }
+  }
+
+  /* mouse: move */
+  function onMove(e: React.MouseEvent<HTMLCanvasElement>) {
+    if (editingId) return;
+    const { mx, my } = toCanvas(e);
+    const d = dragRef.current;
+
+    if (d) {
+      const dx = mx - d.mx0, dy = my - d.my0;
+      const MIN = 30;
+      setElements((prev) => prev.map((el) => {
+        if (el.id !== d.id) return el;
+        if (d.mode === "move") return { ...el, x: d.x0 + dx, y: d.y0 + dy };
+
+        let { x, y, w, h } = el;
+
+        if (el.type === "image") {
+          /* proportional resize for images */
+          const ratio = (el as ImgEl).ratio || 1;
+          switch (d.handle) {
+            case "br": w = Math.max(MIN, d.w0 + dx);  h = w / ratio; x = d.x0; y = d.y0; break;
+            case "bl": w = Math.max(MIN, d.w0 - dx);  h = w / ratio; x = d.x0 + d.w0 - w; y = d.y0; break;
+            case "tr": w = Math.max(MIN, d.w0 + dx);  h = w / ratio; x = d.x0; y = d.y0 + d.h0 - h; break;
+            case "tl": w = Math.max(MIN, d.w0 - dx);  h = w / ratio; x = d.x0 + d.w0 - w; y = d.y0 + d.h0 - h; break;
+          }
+        } else {
+          /* free resize for text boxes */
+          switch (d.handle) {
+            case "tl":
+              x = Math.min(d.x0 + dx, d.x0 + d.w0 - MIN);
+              y = Math.min(d.y0 + dy, d.y0 + d.h0 - MIN);
+              w = d.w0 - (x - d.x0); h = d.h0 - (y - d.y0); break;
+            case "tr":
+              y = Math.min(d.y0 + dy, d.y0 + d.h0 - MIN);
+              w = Math.max(MIN, d.w0 + dx); h = d.h0 - (y - d.y0); x = d.x0; break;
+            case "bl":
+              x = Math.min(d.x0 + dx, d.x0 + d.w0 - MIN);
+              w = d.w0 - (x - d.x0); h = Math.max(MIN, d.h0 + dy); y = d.y0; break;
+            case "br":
+              w = Math.max(MIN, d.w0 + dx); h = Math.max(MIN, d.h0 + dy); x = d.x0; y = d.y0; break;
+          }
+        }
+        return { ...el, x, y, w, h };
+      }));
+      return;
+    }
+
+    /* cursor hint */
+    if (selEl) {
+      const h = hitHandle(mx, my, selEl);
+      if (h) { setCursor(CURSOR_MAP[h]); return; }
+      if (hitEl(mx, my, selEl)) { setCursor("move"); return; }
+    }
+    for (let i = elements.length - 1; i >= 0; i--) {
+      if (hitEl(mx, my, elements[i])) { setCursor("move"); return; }
+    }
+    setCursor("default");
+  }
+
+  function onUp() { dragRef.current = null; }
+
+  /* add elements */
+  function addText() {
+    const el: TextEl = {
+      id: uid(), type: "text",
+      x: 80, y: 80, w: 920, h: 200,
+      content: "Dein Text hier",
+      font: "Georgia", fontSize: 72, color: "#1a1a1a",
+      bold: false, italic: false, align: "center",
+    };
+    setElements((p) => [...p, el]);
+    setSelId(el.id);
+  }
+
+  async function addTplImage(src: string) {
+    let imgW = Math.round(sz.w * 0.7), imgH = Math.round(sz.h * 0.45), ratio = imgW / imgH;
+    try {
+      const img = await loadImg(src);
+      imgCache.current.set(src, img);
+      ratio = img.naturalWidth / img.naturalHeight;
+      imgW  = Math.round(sz.w * 0.7);
+      imgH  = Math.round(imgW / ratio);
+      setTick((t) => t + 1);
+    } catch { /* keep fallback */ }
+    const el: ImgEl = {
+      id: uid(), type: "image",
+      x: Math.round((sz.w - imgW) / 2), y: 60,
+      w: imgW, h: imgH, src, ratio,
+    };
+    setElements((p) => [...p, el]);
+    setSelId(el.id);
+  }
+
+  async function addUserImage(file: File) {
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      const img     = await loadImg(dataUrl);
+      imgCache.current.set(dataUrl, img);
+      const ratio = img.naturalWidth / img.naturalHeight;
+      const imgW  = Math.round(sz.w * 0.55);
+      const imgH  = Math.round(imgW / ratio);
+      const el: ImgEl = {
+        id: uid(), type: "image",
+        x: Math.round((sz.w - imgW) / 2), y: 60,
+        w: imgW, h: imgH, src: dataUrl, ratio,
+      };
+      setElements((p) => [...p, el]);
+      setSelId(el.id);
+      setTick((t) => t + 1);
+    } catch { /* ignore */ }
+  }
+
+  function del() {
+    if (!selId) return;
+    if (editingId === selId) setEditingId(null);
+    setElements((p) => p.filter((e) => e.id !== selId));
+    setSelId(null);
+  }
+
+  /* load saved designs from API */
+  useEffect(() => {
+    fetch("/api/social-media/designs")
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setSavedDesigns(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
+
+  async function saveDesign(name: string) {
+    const snapshot = JSON.stringify({ format, bgColor, elements });
+    setSavingState("saving");
+    try {
+      const res = await fetch("/api/social-media/designs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, data: snapshot }),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setSavedDesigns((prev) => {
+          const filtered = prev.filter((d) => d.name !== name);
+          return [{ id: saved.id, name, data: snapshot }, ...filtered];
+        });
+        setSavingState("saved");
+        setTimeout(() => setSavingState("idle"), 2000);
+      }
+    } catch { setSavingState("idle"); }
+  }
+
+  function loadDesign(data: string, name?: string) {
+    try {
+      const s = JSON.parse(data) as { format: FormatPreset; bgColor: string; elements: CE[] };
+      setFormat(s.format ?? "4:5");
+      setBgColor(s.bgColor ?? "#ffffff");
+      setElements(s.elements ?? []);
+      setSelId(null);
+      setEditingId(null);
+      setCurrentDesignName(name ?? null);
+      setSaveNameInput(name ?? "");
+      setTick((t) => t + 1);
+    } catch { /* ignore */ }
+  }
+
+  async function deleteDesign(name: string) {
+    setSavedDesigns((prev) => prev.filter((d) => d.name !== name));
+    await fetch(`/api/social-media/designs?name=${encodeURIComponent(name)}`, { method: "DELETE" });
+  }
+
+  function exportDesign() {
+    if (editingId) commitEdit();
+    const snapshot = JSON.stringify({ format, bgColor, elements }, null, 2);
+    const blob = new Blob([snapshot], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "beitrag.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function importDesign(file: File) {
+    try {
+      const text = await file.text();
+      loadDesign(text);
+    } catch { /* ignore */ }
+  }
+
+  function layer(dir: "up" | "down") {
+    setElements((p) => {
+      const i = p.findIndex((e) => e.id === selId);
+      if (i === -1) return p;
+      const j = dir === "up" ? i + 1 : i - 1;
+      if (j < 0 || j >= p.length) return p;
+      const n = [...p]; [n[i], n[j]] = [n[j], n[i]]; return n;
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function upd(patch: Record<string, any>) {
+    setElements((p) => p.map((e) => e.id === selId ? { ...e, ...patch } as CE : e));
+  }
+
+  function download() {
+    if (editingId) commitEdit();
+    requestAnimationFrame(() => {
+      const off = document.createElement("canvas");
+      off.width = sz.w; off.height = sz.h;
+      const ctx = off.getContext("2d")!;
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, sz.w, sz.h);
+      for (const el of elements) drawEl(ctx, el, imgCache.current);
+      const a = document.createElement("a");
+      a.href     = off.toDataURL("image/png");
+      a.download = `beitrag-${format.replace(":", "x")}.png`;
+      a.click();
+    });
+  }
+
+  async function exportVideo() {
+    if (exporting) return;
+    if (editingId) commitEdit();
+    setExporting(true);
+    setExportProgress(0);
+
+    // FFmpeg vorab laden (Turbopack erlaubt keine dynamischen Imports in Callbacks)
+
+    const off = document.createElement("canvas");
+    off.width  = sz.w;
+    off.height = sz.h;
+    const ctx  = off.getContext("2d")!;
+
+    const FPS    = 30;
+    const frames = Math.ceil(videoDuration * FPS);
+    const stream = off.captureStream(FPS);
+
+    // Musik vorbereiten (noch nicht starten)
+    let audioCtx: AudioContext | null = null;
+    let audioSrc: AudioBufferSourceNode | null = null;
+    if (selectedTrackId) {
+      const track = musikTracks.find((t) => t.id === selectedTrackId);
+      if (track) {
+        try {
+          audioCtx = new AudioContext();
+          await audioCtx.resume();
+          const resp  = await fetch(track.fileUrl);
+          const buf   = await resp.arrayBuffer();
+          const audio = await audioCtx.decodeAudioData(buf);
+          audioSrc    = audioCtx.createBufferSource();
+          audioSrc.buffer = audio;
+          const dest  = audioCtx.createMediaStreamDestination();
+          audioSrc.connect(dest);
+          for (const aTrack of dest.stream.getAudioTracks()) stream.addTrack(aTrack);
+        } catch { audioCtx = null; audioSrc = null; }
+      }
+    }
+
+    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")
+      ? "video/webm;codecs=vp8,opus"
+      : "video/webm";
+
+    const recorder = new MediaRecorder(stream, { mimeType });
+    const chunks: Blob[] = [];
+    recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+
+    recorder.onstop = async () => {
+      audioCtx?.close();
+      const webmBlob = new Blob(chunks, { type: "video/webm" });
+
+      // MP4-Konvertierung via FFmpeg.wasm (Single-Thread, kein SharedArrayBuffer nötig)
+      try {
+        setExportPhase("convert");
+        setExportProgress(0);
+
+        const { FFmpeg: FFmpegClass } = await getFFmpeg();
+        const ffmpeg = new FFmpegClass();
+        await ffmpeg.load({
+          coreURL:  "/ffmpeg/ffmpeg-core.js",
+          wasmURL:  "/ffmpeg/ffmpeg-core.wasm",
+        });
+
+        ffmpeg.on("progress", ({ progress }: { progress: number }) => {
+          setExportProgress(Math.min(99, Math.round(progress * 100)));
+        });
+
+        await ffmpeg.writeFile("input.webm", await fileToUint8(webmBlob));
+        await ffmpeg.exec(["-i", "input.webm", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-c:a", "aac", "-movflags", "+faststart", "output.mp4"]);
+
+        const data = await ffmpeg.readFile("output.mp4") as Uint8Array;
+        const rawData = data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer);
+        // In regulären ArrayBuffer kopieren (SharedArrayBuffer-Kompatibilität)
+        const mp4Buffer = rawData.buffer.slice(rawData.byteOffset, rawData.byteOffset + rawData.byteLength) as ArrayBuffer;
+        const mp4Blob = new Blob([mp4Buffer], { type: "video/mp4" });
+        const url = URL.createObjectURL(mp4Blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `beitrag-${format.replace(":", "x")}.mp4`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("MP4-Konvertierung fehlgeschlagen:", err);
+        // Fallback: WebM herunterladen
+        const url = URL.createObjectURL(webmBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `beitrag-${format.replace(":", "x")}.webm`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } finally {
+        setExporting(false);
+        setExportProgress(0);
+        setExportPhase("record");
+      }
+    };
+
+    recorder.start();
+    // Audio exakt beim Start der Aufnahme beginnen
+    if (audioSrc && audioCtx) audioSrc.start(audioCtx.currentTime);
+
+    let frame = 0;
+
+    function renderFrame() {
+      const t = frame / FPS;
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, sz.w, sz.h);
+      for (const el of elements) drawElAnimated(ctx, el, imgCache.current, t);
+
+      frame++;
+      setExportProgress(Math.round((frame / frames) * 100));
+
+      if (frame < frames) {
+        // setTimeout statt RAF: exaktes 30fps-Timing, funktioniert auch im Hintergrund-Tab
+        setTimeout(renderFrame, Math.floor(1000 / FPS));
+      } else {
+        setTimeout(() => recorder.stop(), 200); // letzten Frame abwarten
+      }
+    }
+
+    renderFrame();
+  }
+
+  /* inline edit overlay position */
+  function editOverlayStyle(): React.CSSProperties | null {
+    const el     = elements.find((e) => e.id === editingId) as TextEl | undefined;
+    const canvas = canvasRef.current;
+    if (!el || !canvas) return null;
+    const scale = canvas.offsetWidth / sz.w;
+    const ox    = canvas.offsetLeft;
+    const oy    = canvas.offsetTop;
+    return {
+      position: "absolute",
+      left:   ox + el.x * scale - 2,
+      top:    oy + el.y * scale - 2,
+      width:  el.w * scale + 4,
+      minHeight: Math.max(el.h * scale, 48),
+      fontSize:  `${(el.fontSize * scale).toFixed(1)}px`,
+      fontFamily: el.font,
+      fontWeight: el.bold   ? "bold"   : "normal",
+      fontStyle:  el.italic ? "italic" : "normal",
+      textAlign:  el.align,
+      color:      el.color,
+      background: "rgba(255,255,255,0.93)",
+      border:     "2px solid #2563eb",
+      borderRadius: 6,
+      resize:  "none",
+      outline: "none",
+      padding: 0,
+      lineHeight: 1.35,
+      zIndex: 20,
+    };
+  }
+
+  return (
+    <main className={fullscreen ? "fixed inset-0 z-[100] bg-white overflow-hidden p-3" : "top-centered-main"}>
+      <section className={fullscreen ? "w-full h-full grid content-start gap-3 overflow-hidden" : "card"}>
+
+        <div className={`flex gap-3 items-start ${fullscreen ? "h-full overflow-hidden" : ""}`}>
+
+          {/* Sidebar */}
+          <aside className={`flex-shrink-0 overflow-y-auto grid content-start gap-2 ${fullscreen ? "h-full" : ""}`} style={{ width: 230, minWidth: 0, maxWidth: 230 }}>
+
+            {/* Titel + Aktionen */}
+            <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
+              <p className="text-sm font-bold">Beitrag f&uuml;r Social Media</p>
+              {currentDesignName && <p className="text-xs text-arena-muted truncate">Entwurf: <strong>{currentDesignName}</strong></p>}
+              <button type="button" className="btn btn-primary text-xs w-full"
+                disabled={savingState === "saving"}
+                onClick={() => {
+                  if (currentDesignName) saveDesign(currentDesignName);
+                  else { setSaveNameInput(""); setShowSaveAs(true); }
+                }}>
+                {savingState === "saving" ? "Speichere…" : savingState === "saved" ? "✓ Gespeichert" : "Speichern"}
+              </button>
+              <button type="button" className="btn text-xs w-full"
+                onClick={() => { setSaveNameInput(currentDesignName ?? ""); setShowSaveAs(true); }}>
+                Speichern als
+              </button>
+              <button type="button" className="btn text-xs w-full" onClick={() => setShowOpen(true)}>
+                Öffnen
+              </button>
+              <button type="button" className="btn text-xs w-full" onClick={() => setShowInfo(true)}>
+                Info
+              </button>
+              {editorMode === "bild" ? (
+                <button type="button" className="btn btn-primary text-xs w-full" onClick={download}>
+                  ↓ Herunterladen
+                </button>
+              ) : (
+                <button type="button" className="btn btn-primary text-xs w-full"
+                  disabled={exporting}
+                  onClick={exportVideo}>
+                  {exporting
+                    ? exportPhase === "convert"
+                      ? `MP4… ${exportProgress}%`
+                      : `Render… ${exportProgress}%`
+                    : "↓ Herunterladen"}
+                </button>
+              )}
+              <button type="button" className={`btn text-xs w-full ${fullscreen ? "btn-primary" : ""}`}
+                onClick={() => setFullscreen((f) => !f)}>
+                {fullscreen ? "Vollbild aus" : "Vollbild"}
+              </button>
+            </div>
+
+            {/* Modus-Toggle */}
+            <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
+              <p className="text-sm font-semibold">Modus</p>
+              <div className="grid gap-1.5">
+                <button type="button"
+                  className={`btn w-full text-sm ${editorMode === "bild" ? "btn-primary" : ""}`}
+                  onClick={() => { setEditorMode("bild"); setFormat("4:5"); }}>
+                  Bild (4:5)
+                </button>
+                <button type="button"
+                  className={`btn w-full text-sm ${editorMode === "video" ? "btn-primary" : ""}`}
+                  onClick={() => { setEditorMode("video"); setFormat("9:16"); }}>
+                  Video (9:16)
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
+              <label className="flex items-center gap-2 text-sm">
+                <span>Hintergrund</span>
+                <input type="color" value={bgColor}
+                  onChange={(e) => setBgColor(e.target.value)}
+                  className="ml-auto w-12 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
+              </label>
+            </div>
+
+            {/* Video-Optionen */}
+            {editorMode === "video" && (
+              <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
+                <p className="text-xs font-semibold truncate">Video-Einstellungen</p>
+                <label className="text-xs text-arena-muted">L&auml;nge: <strong>{videoDuration}s</strong></label>
+                <input type="range" min={3} max={60} step={1}
+                  value={videoDuration}
+                  onChange={(e) => setVideoDuration(Number(e.target.value))}
+                  className="w-full" />
+                {!exporting && (
+                  <button type="button"
+                    className={`btn text-xs w-full ${previewing ? "btn-primary" : ""}`}
+                    onClick={() => {
+                      if (previewing) {
+                        if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
+                        previewTRef.current = 0;
+                        setPreviewing(false);
+                        setTick((t) => t + 1);
+                      } else {
+                        setSelId(null);
+                        setPreviewing(true);
+                      }
+                    }}>
+                    {previewing ? "\u258e\u258e Stopp" : "\u25ba Vorschau"}
+                  </button>
+                )}
+                <p className="text-xs font-medium mt-1">Musik</p>
+                {loadingMusik ? (
+                  <p className="text-xs text-arena-muted">Lade…</p>
+                ) : musikTracks.length === 0 ? (
+                  <p className="text-xs text-arena-muted">Keine Tracks verf&uuml;gbar.</p>
+                ) : (
+                  <select className="input text-xs py-1 w-full min-w-0"
+                    value={selectedTrackId ?? ""}
+                    onChange={(e) => setSelectedTrackId(e.target.value || null)}>
+                    <option value="">Kein Musik</option>
+                    {musikTracks.map((t) => (
+                      <option key={t.id} value={t.id}>{t.title} &ndash; {t.style}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            )}
+
+            <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
+              <p className="text-sm font-semibold">Hinzuf&uuml;gen</p>
+              <button type="button" className="btn" onClick={addText}>+ Text</button>
+              <button type="button" className="btn text-xs" onClick={() => setShowTemplates(true)}>
+                + Bildvorlage
+              </button>
+              <label className="btn cursor-pointer text-xs text-center block">
+                + Eigenes Bild
+                <input type="file" accept="image/*" className="sr-only"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) addUserImage(f); e.target.value = ""; }} />
+              </label>
+            </div>
+
+            {/* Entwurf speichern */}
+            {elements.length > 0 && (
+              <button type="button" className="btn text-sm text-red-600"
+                onClick={() => { setEditingId(null); setElements([]); setSelId(null); setCurrentDesignName(null); }}>
+                Alles löschen
+              </button>
+            )}
+          </aside>
+
+          {/* Canvas area */}
+          <div className={`min-w-0 grid content-start gap-2 ${fullscreen ? "h-full overflow-hidden" : ""}`} style={{ width: '75%' }}>
+
+            {/* Toolbar – immer sichtbar, feste Höhe */}
+            <div className="flex items-center gap-1.5 rounded-lg border border-arena-border bg-arena-bg/80 px-2 py-1.5 min-h-11 overflow-x-auto">
+              {textEl ? (
+                <>
+                  <select className="input text-xs py-0 h-8 w-28"
+                    value={textEl.font}
+                    onChange={(e) => upd({ font: e.target.value })}>
+                    {FONTS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+                  </select>
+                  <button type="button" className="btn h-8 w-7 p-0 text-base" onClick={() => upd({ fontSize: Math.max(10, textEl.fontSize - 2) })}>−</button>
+                  <span className="text-xs w-9 text-center select-none tabular-nums">{textEl.fontSize}</span>
+                  <button type="button" className="btn h-8 w-7 p-0 text-base" onClick={() => upd({ fontSize: Math.min(500, textEl.fontSize + 2) })}>+</button>
+                  <button type="button"
+                    className={`btn h-8 w-8 p-0 text-sm font-bold ${textEl.bold ? "btn-primary" : ""}`}
+                    onClick={() => upd({ bold: !textEl.bold })}>B</button>
+                  <button type="button"
+                    className={`btn h-8 w-8 p-0 text-sm italic ${textEl.italic ? "btn-primary" : ""}`}
+                    onClick={() => upd({ italic: !textEl.italic })}>I</button>
+                  {(["left", "center", "right"] as Align[]).map((a) => (
+                    <button key={a} type="button"
+                      className={`btn h-8 px-2 text-xs ${textEl.align === a ? "btn-primary" : ""}`}
+                      onClick={() => upd({ align: a })}>
+                      {a === "left"
+                        ? <svg viewBox="0 0 14 10" width="14" height="10" fill="currentColor"><rect x="0" y="0" width="14" height="2"/><rect x="0" y="4" width="9" height="2"/><rect x="0" y="8" width="11" height="2"/></svg>
+                        : a === "center"
+                        ? <svg viewBox="0 0 14 10" width="14" height="10" fill="currentColor"><rect x="0" y="0" width="14" height="2"/><rect x="2.5" y="4" width="9" height="2"/><rect x="1.5" y="8" width="11" height="2"/></svg>
+                        : <svg viewBox="0 0 14 10" width="14" height="10" fill="currentColor"><rect x="0" y="0" width="14" height="2"/><rect x="5" y="4" width="9" height="2"/><rect x="3" y="8" width="11" height="2"/></svg>
+                      }
+                    </button>
+                  ))}
+                  <input type="color" value={textEl.color}
+                    onChange={(e) => upd({ color: e.target.value })}
+                    className="h-8 w-8 border border-arena-border rounded cursor-pointer p-0.5"
+                    title="Textfarbe" />
+                  <span className="text-arena-border">|</span>
+                  <button type="button" className="btn h-8 px-2 text-xs" onClick={() => layer("up")} title="Ebene nach vorne">&#8679;</button>
+                  <button type="button" className="btn h-8 px-2 text-xs" onClick={() => layer("down")} title="Ebene nach hinten">&#8681;</button>
+                  {editorMode === "video" && (
+                    <button type="button"
+                      className={`btn h-8 px-2 text-xs ${textEl.anim && textEl.anim !== "none" ? "btn-primary" : ""}`}
+                      onClick={() => setShowAnimPanel((v) => !v)}>
+                      Anim.
+                    </button>
+                  )}
+                  <button type="button" className="btn h-8 px-3 text-xs text-red-600 font-bold ml-auto" onClick={del}>L&ouml;schen</button>
+                </>
+              ) : selEl?.type === "image" ? (
+                <>
+                  <span className="text-xs text-arena-muted">Ecken ziehen = proportional skalieren</span>
+                  <div className="ml-auto flex gap-1">
+                    <button type="button" className="btn h-8 px-2 text-xs" onClick={() => layer("up")}>&#8679;</button>
+                    <button type="button" className="btn h-8 px-2 text-xs" onClick={() => layer("down")}>&#8681;</button>
+                    {editorMode === "video" && (
+                      <button type="button"
+                        className={`btn h-8 px-2 text-xs ${selEl?.anim && selEl.anim !== "none" ? "btn-primary" : ""}`}
+                        onClick={() => setShowAnimPanel((v) => !v)}>
+                        Anim.
+                      </button>
+                    )}
+                    <button type="button" className="btn h-8 px-3 text-xs text-red-600 font-bold" onClick={del}>L&ouml;schen</button>
+                  </div>
+                </>
+              ) : (
+                <span className="text-xs text-arena-muted select-none">Element ausw&auml;hlen &middot; Doppelklick = Text bearbeiten</span>
+              )}
+            </div>
+
+            {/* Animations-Overlay */}
+            {showAnimPanel && selEl && editorMode === "video" && (
+              <div className="rounded-lg border border-arena-border bg-white p-3 shadow-lg grid gap-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold">Animation</p>
+                  <button type="button" className="text-lg leading-none text-arena-muted hover:text-black"
+                    onClick={() => setShowAnimPanel(false)}>&times;</button>
+                </div>
+                <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 items-center">
+                  <span className="text-xs text-arena-muted">Typ</span>
+                  <select className="input text-xs py-1"
+                    value={selEl.anim ?? "none"}
+                    onChange={(e) => upd({ anim: e.target.value as AnimPreset })}>
+                    <option value="none">Keine Animation</option>
+                    <option value="fade">Einblenden</option>
+                    <option value="slide-left">Von links</option>
+                    <option value="slide-right">Von rechts</option>
+                    <option value="slide-up">Von oben</option>
+                    <option value="slide-down">Von unten</option>
+                    <option value="zoom">Zoom</option>
+                  </select>
+                  {selEl.anim && selEl.anim !== "none" && (
+                    <>
+                      <span className="text-xs text-arena-muted">Start</span>
+                      <div className="flex items-center gap-1">
+                        <input type="number" className="input text-xs py-1 w-20" min={0} max={videoDuration} step={0.1}
+                          value={selEl.animDelay ?? 0}
+                          onChange={(e) => upd({ animDelay: +e.target.value })} />
+                        <span className="text-xs">s</span>
+                      </div>
+                      <span className="text-xs text-arena-muted">Dauer</span>
+                      <div className="flex items-center gap-1">
+                        <input type="number" className="input text-xs py-1 w-20" min={0.1} max={10} step={0.1}
+                          value={selEl.animDuration ?? 0.5}
+                          onChange={(e) => upd({ animDuration: +e.target.value })} />
+                        <span className="text-xs">s</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Canvas + inline overlay */}
+            <div ref={wrapRef} className={`relative rounded-xl border border-arena-border bg-arena-bg p-2 overflow-hidden ${fullscreen ? "flex-1 min-h-0" : ""}`}>
+              <canvas
+                ref={canvasRef}
+                style={{
+                  width: fullscreen ? undefined : "100%",
+                  maxWidth: "100%",
+                  maxHeight: fullscreen ? "100%" : undefined,
+                  aspectRatio: `${sz.w}/${sz.h}`,
+                  display: "block",
+                  borderRadius: 10,
+                  cursor,
+                  touchAction: "none",
+                  margin: fullscreen ? "0 auto" : undefined,
+                }}
+                onMouseDown={onDown}
+                onMouseMove={onMove}
+                onMouseUp={onUp}
+                onMouseLeave={onUp}
+                onDoubleClick={onDblClick}
+              />
+              {/* Inline text edit overlay */}
+              {editingId && (() => {
+                const style = editOverlayStyle();
+                if (!style) return null;
+                return (
+                  <textarea
+                    ref={editAreaRef}
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") { setEditingId(null); }
+                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); commitEdit(); }
+                    }}
+                    onBlur={commitEdit}
+                    style={style}
+                  />
+                );
+              })()}
+            </div>
+
+            <p className="text-xs text-arena-muted">
+              {sz.w}&times;{sz.h}px
+              {editingId ? " \u2014 Enter best\u00e4tigen, Esc abbrechen" : ""}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Bildvorlagen-Overlay */}
+      {showTemplates && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">Bildvorlagen</h2>
+              <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
+                onClick={() => setShowTemplates(false)}>&times;</button>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {loadingTpl ? (
+                <p className="col-span-2 text-sm text-arena-muted py-2">Lade Bilder&hellip;</p>
+              ) : templates.length === 0 ? (
+                <p className="col-span-2 text-sm text-arena-muted py-2">Noch keine Bildvorlagen vorhanden.</p>
+              ) : templates.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left"
+                  onClick={() => { addTplImage(tpl.src); setShowTemplates(false); }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={tpl.src} alt={tpl.label} className="w-full object-cover aspect-square" />
+                  <p className="text-sm text-center py-2 font-medium">{tpl.label}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Speichern unter Overlay */}
+      {showSaveAs && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 flex flex-col">
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-arena-border">
+              <h2 className="text-lg font-bold">Speichern unter</h2>
+              <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
+                onClick={() => setShowSaveAs(false)}>&times;</button>
+            </div>
+            <div className="px-5 py-4 grid gap-3">
+              <label className="text-sm font-medium">Name des Entwurfs</label>
+              <input type="text" className="input" placeholder="z.&#x202F;B. Sommer-Post&#x2026;"
+                autoFocus
+                value={saveNameInput}
+                onChange={(e) => setSaveNameInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && saveNameInput.trim()) {
+                    saveDesign(saveNameInput.trim());
+                    setCurrentDesignName(saveNameInput.trim());
+                    setTimeout(() => setShowSaveAs(false), 800);
+                  }
+                }} />
+              <button type="button" className="btn btn-primary"
+                disabled={!saveNameInput.trim() || savingState === "saving"}
+                onClick={() => {
+                  saveDesign(saveNameInput.trim());
+                  setCurrentDesignName(saveNameInput.trim());
+                  setTimeout(() => setShowSaveAs(false), 800);
+                }}>
+                {savingState === "saving" ? "Speichere\u2026" : savingState === "saved" ? "\u2713 Gespeichert" : "Speichern"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Öffnen Overlay */}
+      {showOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-arena-border">
+              <h2 className="text-lg font-bold">&Ouml;ffnen</h2>
+              <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
+                onClick={() => setShowOpen(false)}>&times;</button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 py-3">
+              {loadingDesigns ? (
+                <p className="text-sm text-arena-muted py-2">Lade Entw&uuml;rfe&hellip;</p>
+              ) : savedDesigns.length === 0 ? (
+                <p className="text-sm text-arena-muted py-2">Noch keine gespeicherten Entw&uuml;rfe.</p>
+              ) : (
+                <ul className="grid gap-2">
+                  {savedDesigns.map((d) => (
+                    <li key={d.name} className="flex items-center gap-2 rounded-lg border border-arena-border px-3 py-2.5 hover:bg-arena-bg/50 transition-colors cursor-pointer"
+                      onClick={() => { loadDesign(d.data, d.name); setShowOpen(false); }}>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{d.name}</p>
+                        {d.updatedAt && <p className="text-xs text-arena-muted">{new Date(d.updatedAt).toLocaleDateString("de-DE")}</p>}
+                      </div>
+                      <button type="button" className="btn text-sm px-2 text-red-600 flex-shrink-0"
+                        onClick={(e) => { e.stopPropagation(); setConfirmDelete(d.name); }}>
+                        L&ouml;schen
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Löschen bestätigen */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6 grid gap-4">
+            <h2 className="text-lg font-bold">Entwurf l&ouml;schen?</h2>
+            <p className="text-sm text-arena-muted">
+              &bdquo;<strong>{confirmDelete}</strong>&ldquo; wird unwiderruflich gel&ouml;scht.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button type="button" className="btn px-5 py-2"
+                onClick={() => setConfirmDelete(null)}>Abbrechen</button>
+              <button type="button" className="btn px-5 py-2 bg-red-600 text-white hover:bg-red-700 font-semibold rounded-lg"
+                onClick={() => { deleteDesign(confirmDelete); setConfirmDelete(null); }}>
+                L&ouml;schen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Info Overlay */}
+      {showInfo && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-arena-border">
+              <h2 className="text-xl font-bold">So funktioniert der Beitrag-Editor</h2>
+              <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
+                onClick={() => setShowInfo(false)}>&times;</button>
+            </div>
+            <div className="px-6 py-5 grid gap-5 text-sm leading-relaxed">
+
+              <div>
+                <p className="font-semibold mb-1">Formate</p>
+                <ul className="grid gap-1 text-arena-muted">
+                  <li><strong>4:5</strong> &ndash; Hochformat (1080&thinsp;&times;&thinsp;1350&thinsp;px). Ideal f&uuml;r Instagram-Feed-Beitr&auml;ge und Facebook-Posts &ndash; mehr Fl&auml;che im Feed, h&ouml;here Reichweite.</li>
+                  <li><strong>1:1</strong> &ndash; Quadratisch (1080&thinsp;&times;&thinsp;1080&thinsp;px). Gut f&uuml;r LinkedIn und Pinterest. F&uuml;r Instagram 4:5 bevorzugt.</li>
+                  <li><strong>9:16</strong> &ndash; Vertikal (1080&thinsp;&times;&thinsp;1920&thinsp;px). F&uuml;r Instagram Reels, TikTok und YouTube Shorts. Im Video-Modus das Standardformat.</li>
+                </ul>
+              </div>
+
+              <div>
+                <p className="font-semibold mb-1">Elemente bearbeiten</p>
+                <ul className="grid gap-1 text-arena-muted">
+                  <li><strong>Verschieben:</strong> Element anklicken und ziehen.</li>
+                  <li><strong>Gr&ouml;&szlig;e &auml;ndern:</strong> Ecken-Anfasser ziehen. Bilder skalieren proportional.</li>
+                  <li><strong>Text bearbeiten:</strong> Doppelklick auf ein Textelement &ouml;ffnet die direkte Bearbeitung.</li>
+                  <li><strong>L&ouml;schen:</strong> Element ausw&auml;hlen, dann &bdquo;L&ouml;schen&ldquo; in der Toolbar oder <kbd className="font-mono bg-gray-100 px-1 rounded">Entf</kbd>-Taste.</li>
+                  <li><strong>Ebenenreihenfolge:</strong> Pfeile ↑ ↓ in der Toolbar verschieben das Element vor oder hinter andere.</li>
+                </ul>
+              </div>
+
+              <div>
+                <p className="font-semibold mb-1">Speichern &amp; Laden</p>
+                <ul className="grid gap-1 text-arena-muted">
+                  <li><strong>Speichern:</strong> Speichert den aktuellen Stand unter dem vorhandenen Namen. Beim ersten Mal erscheint &bdquo;Speichern unter&ldquo;.</li>
+                  <li><strong>Speichern unter:</strong> Neuen Namen vergeben &ndash; erstellt eine Kopie.</li>
+                  <li><strong>&Ouml;ffnen:</strong> Alle gespeicherten Entw&uuml;rfe laden.</li>
+                </ul>
+              </div>
+
+              <div>
+                <p className="font-semibold mb-1">Video-Modus</p>
+                <ul className="grid gap-1 text-arena-muted">
+                  <li><strong>Format 9:16:</strong> Vertikales Video (1080&thinsp;&times;&thinsp;1920&thinsp;px) f&uuml;r Instagram Reels, TikTok und YouTube Shorts.</li>
+                  <li><strong>L&auml;nge:</strong> Per Slider einstellbar (3&thinsp;&ndash;&thinsp;60&thinsp;Sekunden).</li>
+                  <li><strong>Animationen:</strong> Jedem Element kann eine Eingangs-Animation zugewiesen werden (Einblenden, Von links/rechts/oben/unten, Zoom). Start-Zeitpunkt und Dauer sind individuell steuerbar.</li>
+                  <li><strong>Vorschau:</strong> Spielt die Animation in Echtzeit auf der Canvas ab, um das Timing zu pr&uuml;fen.</li>
+                  <li><strong>Musik:</strong> Optional kann ein Musik-Track hinterlegt werden, der im exportierten Video enthalten ist.</li>
+                  <li><strong>Export:</strong> Rendert das Video als MP4-Datei direkt im Browser &ndash; kein Server-Upload n&ouml;tig.</li>
+                </ul>
+              </div>
+
+              <div>
+                <p className="font-semibold mb-1">Herunterladen / Export</p>
+                <ul className="grid gap-1 text-arena-muted">
+                  <li><strong>Bild-Modus:</strong> Exportiert als PNG in voller Aufl&ouml;sung (1080&thinsp;px Breite) &ndash; bereit zum Hochladen bei Instagram, Facebook, LinkedIn oder Pinterest.</li>
+                  <li><strong>Video-Modus:</strong> Exportiert als MP4-Video. Der Fortschritt wird in Prozent angezeigt.</li>
+                </ul>
+              </div>
+
+              <button type="button" className="btn btn-primary py-2.5 text-base font-semibold"
+                onClick={() => setShowInfo(false)}>Los geht&rsquo;s!</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}

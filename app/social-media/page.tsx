@@ -22,6 +22,7 @@ import {
   DocumentIcon,
   ChatBubbleLeftRightIcon,
   DocumentArrowDownIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/outline";
 
 type Submission = {
@@ -182,6 +183,13 @@ export default function SocialMediaPage() {
   ];
 
   const weitereAktionen = [
+    {
+      title: "Beitrag-Tool (Instagram)",
+      description:
+        "Erstelle schnell einen Social-Media-Post im Format 4:5 oder 1:1 mit Bildvorlage, Text und PNG-Export.",
+      icon: PhotoIcon,
+      href: "/social-media/beitrag-tool",
+    },
     {
       title: "Rezensionen",
       description:

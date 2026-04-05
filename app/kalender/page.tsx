@@ -218,6 +218,18 @@ export default function KalenderPage() {
   const [reportText, setReportText] = useState("");
   const [isReportSubmitting, setIsReportSubmitting] = useState(false);
 
+  // Category filter
+  const [filterCategories, setFilterCategories] = useState<Set<KalenderCategory>>(new Set());
+
+  const toggleFilterCategory = (cat: KalenderCategory) => {
+    setFilterCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  };
+
   // Map state
   const [eventCoords, setEventCoords] = useState<Record<string, [number, number]>>({});
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -347,7 +359,8 @@ export default function KalenderPage() {
         markersRef.current.forEach((m) => m.remove?.());
         markersRef.current = [];
 
-        for (const event of events) {
+        const eventsToPlace = filterCategories.size === 0 ? events : events.filter((e) => filterCategories.has(e.category));
+        for (const event of eventsToPlace) {
           const coords = eventCoords[event.id];
           if (!coords) continue;
 
@@ -385,7 +398,7 @@ export default function KalenderPage() {
       disposed = true;
       resizeObserver?.disconnect();
     };
-  }, [viewMode, events, eventCoords]);
+  }, [viewMode, events, eventCoords, filterCategories]);
 
   // Cleanup map when leaving map view
   useEffect(() => {
@@ -648,8 +661,10 @@ export default function KalenderPage() {
     }
   };
 
+  const filteredEvents = filterCategories.size === 0 ? events : events.filter((e) => filterCategories.has(e.category));
+
   const groupedEvents = new Map<string, KalenderEvent[]>();
-  events.forEach((event) => {
+  filteredEvents.forEach((event) => {
     if (event.dateTo && event.dateTo > event.date) {
       // Multi-day event: add to each day within the current month view
       const monthStart = `${year}-${String(month).padStart(2, "0")}-01`;
@@ -674,7 +689,7 @@ export default function KalenderPage() {
   });
 
   const sortedDates = Array.from(groupedEvents.keys()).sort();
-  const eventsWithLocation = events.filter((e) => eventCoords[e.id]);
+  const eventsWithLocation = filteredEvents.filter((e) => eventCoords[e.id]);
 
   return (
     <main className="top-centered-main">
@@ -728,6 +743,32 @@ export default function KalenderPage() {
                   className="px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base bg-[var(--color-arena-yellow)] text-[var(--color-arena-blue)] font-bold rounded hover:bg-yellow-400"
                 >
                   + Termin erstellen
+                </button>
+              )}
+            </div>
+            {/* Category filter */}
+            <div className="flex flex-wrap items-center justify-center gap-2 w-full">
+              <span className="text-xs text-[var(--color-arena-muted)] font-medium">Filtern:</span>
+              {CATEGORIES.map((cat) => {
+                const active = filterCategories.has(cat);
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => toggleFilterCategory(cat)}
+                    className={`px-3 py-1 text-xs sm:text-sm font-semibold rounded border transition ${
+                      active ? CATEGORY_COLORS[cat] : "border-[var(--color-arena-border)] text-[var(--color-arena-muted)] hover:border-[var(--color-arena-blue)] hover:text-[var(--color-arena-blue)]"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+              {filterCategories.size > 0 && (
+                <button
+                  onClick={() => setFilterCategories(new Set())}
+                  className="px-3 py-1 text-xs sm:text-sm rounded border border-[var(--color-arena-border)] text-[var(--color-arena-muted)] hover:text-red-600 hover:border-red-400 transition"
+                >
+                  ✕ Alle
                 </button>
               )}
             </div>
@@ -919,8 +960,8 @@ export default function KalenderPage() {
           <section className="card">
             {isLoading ? (
               <p>Lade Termine...</p>
-            ) : events.length === 0 ? (
-              <p>Keine Termine im {getMonthLabel(year, month)}.</p>
+            ) : filteredEvents.length === 0 ? (
+              <p>{events.length === 0 ? `Keine Termine im ${getMonthLabel(year, month)}.` : "Keine Termine für den gewählten Filter."}</p>
             ) : (
               <div className="space-y-6">
                 {sortedDates.map((date) => (

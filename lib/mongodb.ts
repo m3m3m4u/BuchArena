@@ -8,6 +8,22 @@ import type { PollDocument, TauschDocument } from "@/lib/discussions";
 import type { MessageDocument } from "@/lib/messages";
 import type { KalenderEvent } from "@/lib/kalender";
 
+export type SocialMediaDesign = {
+  _id?: import("mongodb").ObjectId;
+  username: string;
+  name: string;
+  data: string;       // JSON-String mit format, bgColor, elements
+  updatedAt: Date;
+};
+
+export type SocialMediaGalleryItem = {
+  _id?: import("mongodb").ObjectId;
+  label: string;
+  src: string;        // data-URL oder absoluter Pfad
+  order: number;
+  createdAt: Date;
+};
+
 export type UserRole = "USER" | "ADMIN" | "SUPERADMIN";
 
 export type UserStatus = "active" | "deactivated";
@@ -207,6 +223,16 @@ export async function getTauschCollection(): Promise<Collection<TauschDocument>>
 export async function getKalenderCollection(): Promise<Collection<KalenderEvent>> {
   const db = await getDatabase();
   return db.collection<KalenderEvent>("kalender_events");
+}
+
+export async function getSocialMediaDesignsCollection(): Promise<Collection<SocialMediaDesign>> {
+  const db = await getDatabase();
+  return db.collection<SocialMediaDesign>("social_media_designs");
+}
+
+export async function getSocialMediaGalleryCollection(): Promise<Collection<SocialMediaGalleryItem>> {
+  const db = await getDatabase();
+  return db.collection<SocialMediaGalleryItem>("social_media_gallery");
 }
 
 export function isDuplicateKeyError(error: unknown) {
