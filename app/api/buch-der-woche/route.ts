@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ buchDerWoche: null });
     }
     const res = NextResponse.json({ buchDerWoche: bdw });
-    res.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
+    // Kein aggressives Caching – Änderungen sollen sofort sichtbar sein
+    res.headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=60");
     return res;
   } catch {
     return NextResponse.json({ error: "Fehler beim Laden" }, { status: 500 });

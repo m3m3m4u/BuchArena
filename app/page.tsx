@@ -52,7 +52,7 @@ export default function HomePage() {
   // Public data (stats + BdW)
   useEffect(() => {
     fetch("/api/stats").then(r => r.json()).then(d => setStats(d)).catch(() => {});
-    fetch("/api/buch-der-woche").then(r => r.json()).then(d => setBdw(d.buchDerWoche ?? null)).catch(() => {});
+    fetch("/api/buch-der-woche", { cache: "no-store" }).then(r => r.json()).then(d => setBdw(d.buchDerWoche ?? null)).catch(() => {});
   }, []);
 
   // Logged-in: Dashboard
