@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProgressiveImage } from "@/app/components/progressive-image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import GenrePicker, { parseGenres } from "@/app/components/genre-picker";
@@ -438,7 +438,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                 <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[400px]:grid-cols-1">
                   <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px]">
                     {book.coverImageUrl ? (
-                      <Image src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" unoptimized />
+                      <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" />
                     ) : (
                       <span className="px-6 py-10">Kein Cover</span>
                     )}

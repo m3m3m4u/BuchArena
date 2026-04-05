@@ -63,7 +63,7 @@ export default function SprecherPage() {
                     <div
                       className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
                       style={speaker.profileImageUrl ? {
-                        backgroundImage: `url(${speaker.profileImageUrl})`,
+                        backgroundImage: `url(${speaker.profileImageUrl}${speaker.profileImageUrl.includes('?') ? '&' : '?'}w=200)`,
                         backgroundPosition: `${speaker.profileImageCrop?.x ?? 50}% ${speaker.profileImageCrop?.y ?? 50}%`,
                         backgroundSize: `${(speaker.profileImageCrop?.zoom ?? 1) * 100}%`,
                         backgroundRepeat: "no-repeat",

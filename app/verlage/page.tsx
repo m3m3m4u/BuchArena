@@ -63,7 +63,7 @@ export default function VerlagePage() {
                     <div
                       className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
                       style={vl.profileImageUrl ? {
-                        backgroundImage: `url(${vl.profileImageUrl})`,
+                        backgroundImage: `url(${vl.profileImageUrl}${vl.profileImageUrl.includes('?') ? '&' : '?'}w=200)`,
                         backgroundPosition: `${vl.profileImageCrop?.x ?? 50}% ${vl.profileImageCrop?.y ?? 50}%`,
                         backgroundSize: `${(vl.profileImageCrop?.zoom ?? 1) * 100}%`,
                         backgroundRepeat: "no-repeat",

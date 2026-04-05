@@ -62,7 +62,7 @@ export default function NewsPage() {
                 <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="min-w-0">
                   {post.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" />
+                    <img src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" loading="lazy" />
                   )}
                 </div>
                 <div
@@ -81,7 +81,7 @@ export default function NewsPage() {
                 <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="min-w-0">
                   {post.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" />
+                    <img src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" loading="lazy" />
                   )}
                 </div>
               </div>

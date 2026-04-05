@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProgressiveImage } from "@/app/components/progressive-image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { normalizeGenre } from "@/lib/genres";
@@ -246,7 +246,7 @@ export default function BookDetailPage({ params }: PageProps) {
             <div className="mb-6 grid grid-cols-[200px_1fr] items-start gap-6 max-[600px]:grid-cols-1 max-[600px]:gap-4">
               <div className="relative w-[200px] aspect-[3/4] overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-sm text-arena-muted max-[600px]:mx-auto max-[600px]:w-[150px] max-[380px]:w-[120px]">
                 {book.coverImageUrl ? (
-                  <Image src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain" sizes="200px" unoptimized />
+                  <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain" sizes="200px" />
                 ) : (
                   <div className="grid place-items-center" style={{ aspectRatio: "3/4" }}>
                     <span>Kein Cover</span>
