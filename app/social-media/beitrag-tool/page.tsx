@@ -51,6 +51,13 @@ interface ImgEl {
   anim?: AnimPreset;
   animDelay?: number;
   animDuration?: number;
+  imgBorder?: boolean;
+  imgBorderColor?: string;
+  imgBorderWidth?: number;
+  imgShadow?: boolean;
+  imgShadowColor?: string;
+  imgShadowBlur?: number;
+  imgRounded?: number;
 }
 type CE = TextEl | ImgEl;
 
@@ -159,16 +166,60 @@ function hitEl(mx: number, my: number, el: CE) {
 function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLImageElement>) {
   if (el.type === "image") {
     const img = cache.get(el.src);
+    const hasShadow = el.imgShadow;
+    const hasBorder = el.imgBorder && (el.imgBorderWidth ?? 2) > 0;
+    const radius    = el.imgRounded ?? 0;
+
+    ctx.save();
+
+    // Schatten
+    if (hasShadow) {
+      ctx.shadowColor   = el.imgShadowColor ?? "rgba(0,0,0,0.45)";
+      ctx.shadowBlur    = el.imgShadowBlur ?? 18;
+      ctx.shadowOffsetX = Math.round((el.imgShadowBlur ?? 18) * 0.2);
+      ctx.shadowOffsetY = Math.round((el.imgShadowBlur ?? 18) * 0.25);
+      // Zeichne nur einen gefüllten Rect für Schatten, dann Shadow aus
+      if (radius > 0) {
+        roundRectPath(ctx, el.x, el.y, el.w, el.h, radius);
+        ctx.fill();
+      } else {
+        ctx.fillRect(el.x, el.y, el.w, el.h);
+      }
+      ctx.shadowColor = "transparent";
+    }
+
+    // Clip für abgerundete Ecken
+    if (radius > 0) {
+      ctx.beginPath();
+      roundRectPath(ctx, el.x, el.y, el.w, el.h, radius);
+      ctx.clip();
+    }
+
     if (img) {
       ctx.drawImage(img, el.x, el.y, el.w, el.h);
     } else {
-      ctx.save();
       ctx.fillStyle = "#dde3ea";
       ctx.fillRect(el.x, el.y, el.w, el.h);
       ctx.fillStyle = "#94a3b8";
       ctx.font = "36px Arial";
       ctx.textAlign = "center";
       ctx.fillText("Bild laedt...", el.x + el.w / 2, el.y + el.h / 2);
+    }
+
+    ctx.restore();
+
+    // Rahmen
+    if (hasBorder) {
+      const bw = el.imgBorderWidth ?? 2;
+      ctx.save();
+      ctx.strokeStyle = el.imgBorderColor ?? "#1a1a1a";
+      ctx.lineWidth   = bw;
+      if (radius > 0) {
+        roundRectPath(ctx, el.x, el.y, el.w, el.h, radius);
+        ctx.stroke();
+      } else {
+        ctx.strokeRect(el.x, el.y, el.w, el.h);
+      }
       ctx.restore();
     }
   } else {
@@ -488,6 +539,7 @@ export default function BeitragToolPage() {
   const [editingId,     setEditingId]     = useState<string | null>(null);
   const [editText,      setEditText]      = useState("");
   const [showTemplates, setShowTemplates]  = useState(false);
+  const [tplPage,       setTplPage]        = useState(0);
   const [templates,     setTemplates]      = useState<{ id: string; label: string; src: string }[]>([]);
   const [loadingTpl,    setLoadingTpl]     = useState(false);
   const [showSaveAs,    setShowSaveAs]     = useState(false);
@@ -517,6 +569,7 @@ export default function BeitragToolPage() {
   const [musikFadeInDur, setMusikFadeInDur]  = useState(2); // Sekunden
   const [musikFadeOut,   setMusikFadeOut]   = useState(true);
   const [musikFadeOutDur, setMusikFadeOutDur] = useState(2); // Sekunden
+  const [showGridCrop,  setShowGridCrop]  = useState(false);
   const [exporting,     setExporting]     = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportPhase,    setExportPhase]    = useState<"record" | "convert">("record");
@@ -1220,87 +1273,96 @@ export default function BeitragToolPage() {
   }
 
   return (
-    <main className={fullscreen ? "fixed inset-0 z-[100] bg-white overflow-hidden p-3" : "top-centered-main"}>
-      <section className={fullscreen ? "w-full h-full grid content-start gap-3 overflow-hidden" : "card"}>
+    <main className={fullscreen ? "fixed inset-0 z-[100] bg-white overflow-hidden p-3 flex flex-col" : "top-centered-main"}>
+      <section className={fullscreen ? "w-full flex-1 min-h-0 flex flex-col overflow-hidden" : "card"}>
 
-        <div className={`flex gap-3 items-start ${fullscreen ? "h-full overflow-hidden" : ""}`}>
+        <div className={`flex gap-3 ${fullscreen ? "flex-1 min-h-0 items-stretch" : "items-start"}`}>
 
           {/* Sidebar */}
-          <aside className={`flex-shrink-0 overflow-y-auto grid content-start gap-2 ${fullscreen ? "h-full" : ""}`} style={{ width: 230, minWidth: 0, maxWidth: 230 }}>
+          <aside className="flex-shrink-0 overflow-y-auto grid content-start gap-2 min-h-0" style={{ width: fullscreen ? 540 : 230, minWidth: 0, maxWidth: fullscreen ? 540 : 230 }}>
 
             {/* Titel + Aktionen */}
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
               <p className="text-sm font-bold">Beitrag f&uuml;r Social Media</p>
               {currentDesignName && <p className="text-xs text-arena-muted truncate">Entwurf: <strong>{currentDesignName}</strong></p>}
-              <button type="button" className="btn btn-primary text-xs w-full"
-                disabled={savingState === "saving"}
-                onClick={() => {
-                  if (currentDesignName) saveDesign(currentDesignName);
-                  else { setSaveNameInput(""); setShowSaveAs(true); }
-                }}>
-                {savingState === "saving" ? "Speichere…" : savingState === "saved" ? "✓ Gespeichert" : "Speichern"}
-              </button>
-              <button type="button" className="btn text-xs w-full"
-                onClick={() => { setSaveNameInput(currentDesignName ?? ""); setShowSaveAs(true); }}>
-                Speichern als
-              </button>
-              <button type="button" className="btn text-xs w-full" onClick={() => setShowOpen(true)}>
-                Öffnen
-              </button>
-              <button type="button" className="btn text-xs w-full" onClick={() => setShowInfo(true)}>
-                Info
-              </button>
-              {editorMode === "bild" ? (
-                <button type="button" className="btn btn-primary text-xs w-full" onClick={download}>
-                  ↓ Herunterladen
-                </button>
-              ) : (
+              <div className={fullscreen ? "grid grid-cols-3 gap-1.5" : "grid gap-1.5"}>
                 <button type="button" className="btn btn-primary text-xs w-full"
-                  disabled={exporting}
-                  onClick={exportVideo}>
-                  {exporting
-                    ? exportPhase === "convert"
-                      ? `MP4… ${exportProgress}%`
-                      : `Render… ${exportProgress}%`
-                    : "↓ Herunterladen"}
+                  disabled={savingState === "saving"}
+                  onClick={() => {
+                    if (currentDesignName) saveDesign(currentDesignName);
+                    else { setSaveNameInput(""); setShowSaveAs(true); }
+                  }}>
+                  {savingState === "saving" ? "Speichere…" : savingState === "saved" ? "✓ Gespeichert" : "Speichern"}
                 </button>
-              )}
-              <button type="button" className={`btn text-xs w-full ${fullscreen ? "btn-primary" : ""}`}
-                onClick={() => setFullscreen((f) => !f)}>
-                {fullscreen ? "Vollbild aus" : "Vollbild"}
-              </button>
-            </div>
-
-            {/* Modus-Toggle */}
-            <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
-              <p className="text-sm font-semibold">Modus</p>
-              <div className="grid gap-1.5">
-                <button type="button"
-                  className={`btn w-full text-sm ${editorMode === "bild" ? "btn-primary" : ""}`}
-                  onClick={() => { setEditorMode("bild"); setFormat("4:5"); }}>
-                  Bild (4:5)
+                <button type="button" className="btn text-xs w-full"
+                  onClick={() => { setSaveNameInput(currentDesignName ?? ""); setShowSaveAs(true); }}>
+                  Speichern als
                 </button>
-                <button type="button"
-                  className={`btn w-full text-sm ${editorMode === "video" ? "btn-primary" : ""}`}
-                  onClick={() => { setEditorMode("video"); setFormat("9:16"); }}>
-                  Video (9:16)
+                <button type="button" className="btn text-xs w-full" onClick={() => setShowOpen(true)}>
+                  Öffnen
+                </button>
+                <button type="button" className="btn text-xs w-full" onClick={() => setShowInfo(true)}>
+                  Info
+                </button>
+                {editorMode === "bild" ? (
+                  <button type="button" className="btn btn-primary text-xs w-full" onClick={download}>
+                    ↓ Herunterladen
+                  </button>
+                ) : (
+                  <button type="button" className="btn btn-primary text-xs w-full"
+                    disabled={exporting}
+                    onClick={exportVideo}>
+                    {exporting
+                      ? exportPhase === "convert"
+                        ? `MP4… ${exportProgress}%`
+                        : `Render… ${exportProgress}%`
+                      : "↓ Herunterladen"}
+                  </button>
+                )}
+                <button type="button" className={`btn text-xs w-full ${fullscreen ? "btn-primary" : ""}`}
+                  onClick={() => setFullscreen((f) => !f)}>
+                  {fullscreen ? "Vollbild aus" : "Vollbild"}
                 </button>
               </div>
             </div>
 
-            <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
-              <label className="flex items-center gap-2 text-sm">
-                <span>Hintergrund</span>
-                <input type="color" value={bgColor}
-                  onChange={(e) => setBgColor(e.target.value)}
-                  className="ml-auto w-12 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
-              </label>
+            {/* Modus + Hintergrund */}
+            <div className={`rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden ${fullscreen ? "grid-cols-[1fr_1fr_auto] items-center" : ""}`}>
+              {!fullscreen && <p className="text-sm font-semibold">Modus</p>}
+              <button type="button"
+                className={`btn w-full text-sm ${editorMode === "bild" ? "btn-primary" : ""}`}
+                onClick={() => { setEditorMode("bild"); setFormat("4:5"); }}>
+                Bild (4:5)
+              </button>
+              <button type="button"
+                className={`btn w-full text-sm ${editorMode === "video" ? "btn-primary" : ""}`}
+                onClick={() => { setEditorMode("video"); setFormat("9:16"); }}>
+                Video (9:16)
+              </button>
+              {fullscreen && (
+                <label className="flex items-center gap-1" title="Hintergrund">
+                  <input type="color" value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="w-10 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
+                </label>
+              )}
             </div>
+
+            {!fullscreen && (
+              <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
+                <label className="flex items-center gap-2 text-sm">
+                  <span>Hintergrund</span>
+                  <input type="color" value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="ml-auto w-12 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
+                </label>
+              </div>
+            )}
 
             {/* Rahmen */}
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
               <p className="text-sm font-semibold">Rahmen</p>
-              <div className="grid grid-cols-2 gap-1">
+              <div className={`grid gap-1 ${fullscreen ? "grid-cols-5" : "grid-cols-2"}`}>
                 {FRAME_PRESETS.map((fp) => (
                   <button
                     key={fp.value}
@@ -1347,6 +1409,10 @@ export default function BeitragToolPage() {
                       if (previewing) {
                         if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
                         previewTRef.current = 0;
+                        // Musik sofort stoppen
+                        if (previewAudioSrc.current) { try { previewAudioSrc.current.stop(); } catch {} previewAudioSrc.current = null; }
+                        if (previewAudioCtx.current) { if (previewAudioCtx.current.state !== "closed") previewAudioCtx.current.close().catch(() => {}); previewAudioCtx.current = null; }
+                        previewGain.current = null;
                         setPreviewing(false);
                         setTick((t) => t + 1);
                       } else {
@@ -1407,15 +1473,17 @@ export default function BeitragToolPage() {
 
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
               <p className="text-sm font-semibold">Hinzuf&uuml;gen</p>
-              <button type="button" className="btn" onClick={addText}>+ Text</button>
-              <button type="button" className="btn text-xs" onClick={() => setShowTemplates(true)}>
-                + Bildvorlage
-              </button>
-              <label className="btn cursor-pointer text-xs text-center block">
-                + Eigenes Bild
-                <input type="file" accept="image/*" className="sr-only"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) addUserImage(f); e.target.value = ""; }} />
-              </label>
+              <div className={fullscreen ? "flex gap-1.5" : "grid gap-1.5"}>
+                <button type="button" className="btn text-xs" onClick={addText}>+ Text</button>
+                <button type="button" className="btn text-xs" onClick={() => setShowTemplates(true)}>
+                  + Bildvorlage
+                </button>
+                <label className="btn cursor-pointer text-xs text-center block">
+                  + Eigenes Bild
+                  <input type="file" accept="image/*" className="sr-only"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) addUserImage(f); e.target.value = ""; }} />
+                </label>
+              </div>
             </div>
 
             {/* Entwurf speichern */}
@@ -1428,10 +1496,10 @@ export default function BeitragToolPage() {
           </aside>
 
           {/* Canvas area */}
-          <div className={`min-w-0 grid content-start gap-2 ${fullscreen ? "h-full overflow-hidden" : ""}`} style={{ width: '75%' }}>
+          <div className={`min-w-0 gap-2 ${fullscreen ? "flex-1 flex flex-col overflow-hidden" : "grid content-start"}`} style={fullscreen ? undefined : { width: '75%' }}>
 
             {/* Toolbar – immer sichtbar, feste Höhe */}
-            <div className="flex items-center gap-1.5 rounded-lg border border-arena-border bg-arena-bg/80 px-2 py-1.5 min-h-11 overflow-x-auto">
+            <div className="flex items-center gap-1.5 rounded-lg border border-arena-border bg-arena-bg/80 px-2 py-1.5 min-h-11 overflow-x-auto flex-shrink-0">
               {textEl ? (
                 <>
                   <select className="input text-xs py-0 h-8 w-28"
@@ -1478,19 +1546,63 @@ export default function BeitragToolPage() {
                 </>
               ) : selEl?.type === "image" ? (
                 <>
-                  <span className="text-xs text-arena-muted">Ecken ziehen = proportional skalieren</span>
-                  <div className="ml-auto flex gap-1">
-                    <button type="button" className="btn h-8 px-2 text-xs" onClick={() => layer("up")}>&#8679;</button>
-                    <button type="button" className="btn h-8 px-2 text-xs" onClick={() => layer("down")}>&#8681;</button>
-                    {editorMode === "video" && (
-                      <button type="button"
-                        className={`btn h-8 px-2 text-xs ${selEl?.anim && selEl.anim !== "none" ? "btn-primary" : ""}`}
-                        onClick={() => setShowAnimPanel((v) => !v)}>
-                        Anim.
-                      </button>
-                    )}
-                    <button type="button" className="btn h-8 px-3 text-xs text-red-600 font-bold" onClick={del}>L&ouml;schen</button>
-                  </div>
+                  {/* Zeile 1: Rahmen & Schatten toggles + Ebene + Löschen */}
+                  <button type="button"
+                    className={`btn h-8 px-2 text-xs ${(selEl as ImgEl).imgBorder ? "btn-primary" : ""}`}
+                    title="Rahmen"
+                    onClick={() => upd({ imgBorder: !(selEl as ImgEl).imgBorder })}>
+                    Rahmen
+                  </button>
+                  <button type="button"
+                    className={`btn h-8 px-2 text-xs ${(selEl as ImgEl).imgShadow ? "btn-primary" : ""}`}
+                    title="Schatten"
+                    onClick={() => upd({ imgShadow: !(selEl as ImgEl).imgShadow })}>
+                    Schatten
+                  </button>
+
+                  {/* Rahmen: Farbe + Stärke */}
+                  {(selEl as ImgEl).imgBorder && (
+                    <>
+                      <input type="color" value={(selEl as ImgEl).imgBorderColor ?? "#1a1a1a"}
+                        onChange={(e) => upd({ imgBorderColor: e.target.value })}
+                        className="h-8 w-8 border border-arena-border rounded cursor-pointer p-0.5"
+                        title="Rahmenfarbe" />
+                      <input type="range" min={1} max={20} value={(selEl as ImgEl).imgBorderWidth ?? 2}
+                        onChange={(e) => upd({ imgBorderWidth: +e.target.value })}
+                        className="w-16 h-8 accent-arena-accent" title="Rahmenstärke" />
+                    </>
+                  )}
+
+                  {/* Schatten: Farbe + Blur */}
+                  {(selEl as ImgEl).imgShadow && (
+                    <>
+                      <input type="color" value={(selEl as ImgEl).imgShadowColor ?? "#000000"}
+                        onChange={(e) => upd({ imgShadowColor: e.target.value })}
+                        className="h-8 w-8 border border-arena-border rounded cursor-pointer p-0.5"
+                        title="Schattenfarbe" />
+                      <input type="range" min={2} max={60} value={(selEl as ImgEl).imgShadowBlur ?? 18}
+                        onChange={(e) => upd({ imgShadowBlur: +e.target.value })}
+                        className="w-16 h-8 accent-arena-accent" title="Schattenweichheit" />
+                    </>
+                  )}
+
+                  {/* Abgerundete Ecken */}
+                  <span className="text-xs text-arena-muted ml-1" title="Abgerundete Ecken">&#9711;</span>
+                  <input type="range" min={0} max={80} value={(selEl as ImgEl).imgRounded ?? 0}
+                    onChange={(e) => upd({ imgRounded: +e.target.value })}
+                    className="w-14 h-8 accent-arena-accent" title="Eckenradius" />
+
+                  <span className="text-arena-border">|</span>
+                  <button type="button" className="btn h-8 px-2 text-xs" onClick={() => layer("up")} title="Ebene nach vorne">&#8679;</button>
+                  <button type="button" className="btn h-8 px-2 text-xs" onClick={() => layer("down")} title="Ebene nach hinten">&#8681;</button>
+                  {editorMode === "video" && (
+                    <button type="button"
+                      className={`btn h-8 px-2 text-xs ${selEl?.anim && selEl.anim !== "none" ? "btn-primary" : ""}`}
+                      onClick={() => setShowAnimPanel((v) => !v)}>
+                      Anim.
+                    </button>
+                  )}
+                  <button type="button" className="btn h-8 px-3 text-xs text-red-600 font-bold ml-auto" onClick={del}>L&ouml;schen</button>
                 </>
               ) : (
                 <span className="text-xs text-arena-muted select-none">Element ausw&auml;hlen &middot; Doppelklick = Text bearbeiten</span>
@@ -1499,7 +1611,7 @@ export default function BeitragToolPage() {
 
             {/* Animations-Overlay */}
             {showAnimPanel && selEl && editorMode === "video" && (
-              <div className="rounded-lg border border-arena-border bg-white p-3 shadow-lg grid gap-3 text-sm">
+              <div className="rounded-lg border border-arena-border bg-white p-3 shadow-lg grid gap-3 text-sm flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <p className="font-semibold">Animation</p>
                   <button type="button" className="text-lg leading-none text-arena-muted hover:text-black"
@@ -1541,7 +1653,7 @@ export default function BeitragToolPage() {
             )}
 
             {/* Canvas + inline overlay */}
-            <div ref={wrapRef} className={`relative rounded-xl border border-arena-border bg-arena-bg p-2 overflow-hidden ${fullscreen ? "flex-1 min-h-0" : ""}`}>
+            <div ref={wrapRef} className={`relative rounded-xl border border-arena-border bg-arena-bg p-2 overflow-hidden ${fullscreen ? "flex-1 min-h-0 flex items-center justify-center" : ""}`}>
               <canvas
                 ref={canvasRef}
                 style={{
@@ -1561,6 +1673,47 @@ export default function BeitragToolPage() {
                 onMouseLeave={onUp}
                 onDoubleClick={onDblClick}
               />
+              {/* Instagram-Grid 4:5 Ausschnitt (nur bei 9:16) */}
+              {showGridCrop && format === "9:16" && (
+                <>
+                  {/* oberer dunkler Bereich */}
+                  <div style={{
+                    position: "absolute", left: 8, right: 8, top: 8,
+                    height: `calc((100% - 16px) * ${(1 - 1350 / 1920) / 2})`,
+                    background: "rgba(0,0,0,0.45)", borderRadius: "10px 10px 0 0",
+                    pointerEvents: "none", zIndex: 5,
+                  }} />
+                  {/* unterer dunkler Bereich */}
+                  <div style={{
+                    position: "absolute", left: 8, right: 8, bottom: 8,
+                    height: `calc((100% - 16px) * ${(1 - 1350 / 1920) / 2})`,
+                    background: "rgba(0,0,0,0.45)", borderRadius: "0 0 10px 10px",
+                    pointerEvents: "none", zIndex: 5,
+                  }} />
+                  {/* obere Linie */}
+                  <div style={{
+                    position: "absolute", left: 8, right: 8,
+                    top: `calc(8px + (100% - 16px) * ${(1 - 1350 / 1920) / 2})`,
+                    height: 2, background: "#e53e3e",
+                    pointerEvents: "none", zIndex: 6,
+                  }} />
+                  {/* untere Linie */}
+                  <div style={{
+                    position: "absolute", left: 8, right: 8,
+                    bottom: `calc(8px + (100% - 16px) * ${(1 - 1350 / 1920) / 2})`,
+                    height: 2, background: "#e53e3e",
+                    pointerEvents: "none", zIndex: 6,
+                  }} />
+                  {/* Label */}
+                  <div style={{
+                    position: "absolute", left: 12, zIndex: 7,
+                    top: `calc(8px + (100% - 16px) * ${(1 - 1350 / 1920) / 2} + 6px)`,
+                    background: "rgba(229,62,62,0.85)", color: "#fff",
+                    fontSize: 11, padding: "2px 7px", borderRadius: 4,
+                    pointerEvents: "none", fontWeight: 600, letterSpacing: 0.3,
+                  }}>Instagram Grid 4:5</div>
+                </>
+              )}
               {/* Inline text edit overlay */}
               {editingId && (() => {
                 const style = editOverlayStyle();
@@ -1581,10 +1734,19 @@ export default function BeitragToolPage() {
               })()}
             </div>
 
-            <p className="text-xs text-arena-muted">
-              {sz.w}&times;{sz.h}px
-              {editingId ? " \u2014 Enter best\u00e4tigen, Esc abbrechen" : ""}
-            </p>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <p className="text-xs text-arena-muted">
+                {sz.w}&times;{sz.h}px
+                {editingId ? " \u2014 Enter best\u00e4tigen, Esc abbrechen" : ""}
+              </p>
+              {format === "9:16" && (
+                <label className="flex items-center gap-1 text-xs text-arena-muted cursor-pointer select-none ml-auto">
+                  <input type="checkbox" checked={showGridCrop} onChange={(e) => setShowGridCrop(e.target.checked)}
+                    className="accent-arena-accent" />
+                  Grid-Vorschau
+                </label>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -1595,31 +1757,58 @@ export default function BeitragToolPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
         >
           <div
-            className="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4"
+            className="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full mx-4"
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Bildvorlagen</h2>
               <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
-                onClick={() => setShowTemplates(false)}>&times;</button>
+                onClick={() => { setShowTemplates(false); setTplPage(0); }}>&times;</button>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              {loadingTpl ? (
-                <p className="col-span-2 text-sm text-arena-muted py-2">Lade Bilder&hellip;</p>
-              ) : templates.length === 0 ? (
-                <p className="col-span-2 text-sm text-arena-muted py-2">Noch keine Bildvorlagen vorhanden.</p>
-              ) : templates.map((tpl) => (
-                <button
-                  key={tpl.id}
-                  type="button"
-                  className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left"
-                  onClick={() => { addTplImage(tpl.src); setShowTemplates(false); }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={tpl.src} alt={tpl.label} className="w-full object-cover aspect-square" />
-                  <p className="text-sm text-center py-2 font-medium">{tpl.label}</p>
-                </button>
-              ))}
-            </div>
+            {loadingTpl ? (
+              <p className="text-sm text-arena-muted py-2">Lade Bilder&hellip;</p>
+            ) : templates.length === 0 ? (
+              <p className="text-sm text-arena-muted py-2">Noch keine Bildvorlagen vorhanden.</p>
+            ) : (() => {
+              const perPage = 8;
+              const totalPages = Math.ceil(templates.length / perPage);
+              const page = Math.min(tplPage, totalPages - 1);
+              const slice = templates.slice(page * perPage, page * perPage + perPage);
+              return (
+                <>
+                  <div className="grid grid-cols-4 gap-3">
+                    {slice.map((tpl) => (
+                      <button
+                        key={tpl.id}
+                        type="button"
+                        className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left"
+                        onClick={() => { addTplImage(tpl.src); setShowTemplates(false); setTplPage(0); }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={tpl.src} alt={tpl.label} className="w-full object-cover aspect-square" />
+                        <p className="text-xs text-center py-1.5 font-medium truncate px-1">{tpl.label}</p>
+                      </button>
+                    ))}
+                  </div>
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-3 mt-4">
+                      <button type="button" className="btn text-xs px-3 h-8"
+                        disabled={page === 0}
+                        onClick={() => setTplPage((p) => Math.max(0, p - 1))}>
+                        &larr; Zur&uuml;ck
+                      </button>
+                      <span className="text-xs text-arena-muted tabular-nums">
+                        {page + 1} / {totalPages}
+                      </span>
+                      <button type="button" className="btn text-xs px-3 h-8"
+                        disabled={page >= totalPages - 1}
+                        onClick={() => setTplPage((p) => Math.min(totalPages - 1, p + 1))}>
+                        Weiter &rarr;
+                      </button>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -1718,7 +1907,7 @@ export default function BeitragToolPage() {
       {/* Info Overlay */}
       {showInfo && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-arena-border">
               <h2 className="text-xl font-bold">So funktioniert der Beitrag-Editor</h2>
               <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
@@ -1726,52 +1915,78 @@ export default function BeitragToolPage() {
             </div>
             <div className="px-6 py-5 grid gap-5 text-sm leading-relaxed">
 
-              <div>
-                <p className="font-semibold mb-1">Formate</p>
-                <ul className="grid gap-1 text-arena-muted">
-                  <li><strong>4:5</strong> &ndash; Hochformat (1080&thinsp;&times;&thinsp;1350&thinsp;px). Ideal f&uuml;r Instagram-Feed-Beitr&auml;ge und Facebook-Posts &ndash; mehr Fl&auml;che im Feed, h&ouml;here Reichweite.</li>
-                  <li><strong>1:1</strong> &ndash; Quadratisch (1080&thinsp;&times;&thinsp;1080&thinsp;px). Gut f&uuml;r LinkedIn und Pinterest. F&uuml;r Instagram 4:5 bevorzugt.</li>
-                  <li><strong>9:16</strong> &ndash; Vertikal (1080&thinsp;&times;&thinsp;1920&thinsp;px). F&uuml;r Instagram Reels, TikTok und YouTube Shorts. Im Video-Modus das Standardformat.</li>
-                </ul>
+              <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
+                <p className="font-semibold mb-1.5 text-emerald-800">Nutzungsrechte</p>
+                <p className="text-emerald-900">Alle von uns bereitgestellten <strong>Bildvorlagen</strong> und <strong>Musik-Tracks</strong> wurden von der BuchArena erstellt und d&uuml;rfen <strong>ohne Einschr&auml;nkung</strong> f&uuml;r eure Social-Media-Beitr&auml;ge verwendet werden &ndash; auch kommerziell.</p>
+                <p className="text-emerald-800 mt-2 text-xs">Wir freuen uns, wenn ihr erw&auml;hnt, dass euer Beitrag mit Tools von <strong>bucharena.org</strong> erstellt wurde &ndash; das ist aber keine Pflicht. 💚</p>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-5">
+                <div>
+                  <p className="font-semibold mb-1">Formate</p>
+                  <ul className="grid gap-1 text-arena-muted">
+                    <li><strong>4:5</strong> &ndash; Hochformat (1080&thinsp;&times;&thinsp;1350&thinsp;px). Ideal f&uuml;r Instagram-Feed und Facebook.</li>
+                    <li><strong>1:1</strong> &ndash; Quadratisch (1080&thinsp;&times;&thinsp;1080&thinsp;px). Gut f&uuml;r LinkedIn und Pinterest.</li>
+                    <li><strong>9:16</strong> &ndash; Vertikal (1080&thinsp;&times;&thinsp;1920&thinsp;px). F&uuml;r Reels, TikTok und Shorts.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-semibold mb-1">Elemente bearbeiten</p>
+                  <ul className="grid gap-1 text-arena-muted">
+                    <li><strong>Verschieben:</strong> Element anklicken und ziehen.</li>
+                    <li><strong>Gr&ouml;&szlig;e &auml;ndern:</strong> Ecken-Anfasser ziehen. Bilder skalieren proportional.</li>
+                    <li><strong>Text bearbeiten:</strong> Doppelklick auf ein Textelement.</li>
+                    <li><strong>L&ouml;schen:</strong> Element ausw&auml;hlen &rarr; &bdquo;L&ouml;schen&ldquo; oder <kbd className="font-mono bg-gray-100 px-1 rounded">Entf</kbd>.</li>
+                    <li><strong>Ebenenreihenfolge:</strong> Pfeile ↑ ↓ in der Toolbar.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-semibold mb-1">Bilder</p>
+                  <ul className="grid gap-1 text-arena-muted">
+                    <li><strong>Bildvorlagen:</strong> Aus einer Galerie von BuchArena-Bildern ausw&auml;hlen.</li>
+                    <li><strong>Eigenes Bild:</strong> Eigene Datei hochladen (JPG, PNG etc.).</li>
+                    <li><strong>Rahmen &amp; Schatten:</strong> Bild ausw&auml;hlen &rarr; Rahmen/Schatten/Eckenradius in der Toolbar einstellen.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-semibold mb-1">Rahmen</p>
+                  <ul className="grid gap-1 text-arena-muted">
+                    <li><strong>Rahmentypen:</strong> 10 verschiedene Rahmen (Einfach, Doppelt, Elegant, Vintage, Perlen u.&thinsp;a.).</li>
+                    <li><strong>Farbe &amp; St&auml;rke:</strong> Individuell anpassbar.</li>
+                    <li><strong>Grid-Vorschau:</strong> Bei 9:16 zeigt ein Overlay den sichtbaren 4:5-Ausschnitt im Instagram-Grid.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-semibold mb-1">Speichern &amp; Laden</p>
+                  <ul className="grid gap-1 text-arena-muted">
+                    <li><strong>Speichern:</strong> Aktuellen Stand unter vorhandenem Namen sichern.</li>
+                    <li><strong>Speichern unter:</strong> Neuen Namen vergeben &ndash; erstellt eine Kopie.</li>
+                    <li><strong>&Ouml;ffnen:</strong> Gespeicherte Entw&uuml;rfe laden.</li>
+                    <li><strong>Export/Import:</strong> Entwurf als JSON-Datei exportieren oder importieren.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-semibold mb-1">Video-Modus</p>
+                  <ul className="grid gap-1 text-arena-muted">
+                    <li><strong>L&auml;nge:</strong> Per Slider einstellbar (3&thinsp;&ndash;&thinsp;60&thinsp;s).</li>
+                    <li><strong>Animationen:</strong> Eingangs-Animationen pro Element (Einblenden, Slide, Zoom) mit Start &amp; Dauer.</li>
+                    <li><strong>Vorschau:</strong> Echtzeit-Abspielen auf der Canvas inkl. Musik.</li>
+                    <li><strong>Musik:</strong> Optionaler Track mit Fade-In/Fade-Out.</li>
+                    <li><strong>Export:</strong> Rendert MP4 direkt im Browser &ndash; kein Server-Upload n&ouml;tig.</li>
+                  </ul>
+                </div>
               </div>
 
               <div>
-                <p className="font-semibold mb-1">Elemente bearbeiten</p>
+                <p className="font-semibold mb-1">Herunterladen</p>
                 <ul className="grid gap-1 text-arena-muted">
-                  <li><strong>Verschieben:</strong> Element anklicken und ziehen.</li>
-                  <li><strong>Gr&ouml;&szlig;e &auml;ndern:</strong> Ecken-Anfasser ziehen. Bilder skalieren proportional.</li>
-                  <li><strong>Text bearbeiten:</strong> Doppelklick auf ein Textelement &ouml;ffnet die direkte Bearbeitung.</li>
-                  <li><strong>L&ouml;schen:</strong> Element ausw&auml;hlen, dann &bdquo;L&ouml;schen&ldquo; in der Toolbar oder <kbd className="font-mono bg-gray-100 px-1 rounded">Entf</kbd>-Taste.</li>
-                  <li><strong>Ebenenreihenfolge:</strong> Pfeile ↑ ↓ in der Toolbar verschieben das Element vor oder hinter andere.</li>
-                </ul>
-              </div>
-
-              <div>
-                <p className="font-semibold mb-1">Speichern &amp; Laden</p>
-                <ul className="grid gap-1 text-arena-muted">
-                  <li><strong>Speichern:</strong> Speichert den aktuellen Stand unter dem vorhandenen Namen. Beim ersten Mal erscheint &bdquo;Speichern unter&ldquo;.</li>
-                  <li><strong>Speichern unter:</strong> Neuen Namen vergeben &ndash; erstellt eine Kopie.</li>
-                  <li><strong>&Ouml;ffnen:</strong> Alle gespeicherten Entw&uuml;rfe laden.</li>
-                </ul>
-              </div>
-
-              <div>
-                <p className="font-semibold mb-1">Video-Modus</p>
-                <ul className="grid gap-1 text-arena-muted">
-                  <li><strong>Format 9:16:</strong> Vertikales Video (1080&thinsp;&times;&thinsp;1920&thinsp;px) f&uuml;r Instagram Reels, TikTok und YouTube Shorts.</li>
-                  <li><strong>L&auml;nge:</strong> Per Slider einstellbar (3&thinsp;&ndash;&thinsp;60&thinsp;Sekunden).</li>
-                  <li><strong>Animationen:</strong> Jedem Element kann eine Eingangs-Animation zugewiesen werden (Einblenden, Von links/rechts/oben/unten, Zoom). Start-Zeitpunkt und Dauer sind individuell steuerbar.</li>
-                  <li><strong>Vorschau:</strong> Spielt die Animation in Echtzeit auf der Canvas ab, um das Timing zu pr&uuml;fen.</li>
-                  <li><strong>Musik:</strong> Optional kann ein Musik-Track hinterlegt werden, der im exportierten Video enthalten ist.</li>
-                  <li><strong>Export:</strong> Rendert das Video als MP4-Datei direkt im Browser &ndash; kein Server-Upload n&ouml;tig.</li>
-                </ul>
-              </div>
-
-              <div>
-                <p className="font-semibold mb-1">Herunterladen / Export</p>
-                <ul className="grid gap-1 text-arena-muted">
-                  <li><strong>Bild-Modus:</strong> Exportiert als PNG in voller Aufl&ouml;sung (1080&thinsp;px Breite) &ndash; bereit zum Hochladen bei Instagram, Facebook, LinkedIn oder Pinterest.</li>
-                  <li><strong>Video-Modus:</strong> Exportiert als MP4-Video. Der Fortschritt wird in Prozent angezeigt.</li>
+                  <li><strong>Bild-Modus:</strong> PNG in voller Aufl&ouml;sung (1080&thinsp;px Breite).</li>
+                  <li><strong>Video-Modus:</strong> MP4-Video mit Fortschrittsanzeige.</li>
                 </ul>
               </div>
 
