@@ -355,22 +355,26 @@ export default function BeitragToolPage() {
     const fadeInDur = musikFadeInDur;
     const fadeOut = musikFadeOut;
     const fadeOutDur = musikFadeOutDur;
+    let cancelled = false;
     if (selectedTrackId && musikTracks.length > 0) {
       const track = musikTracks.find((t) => t.id === selectedTrackId);
       if (track) {
         (async () => {
           try {
             const ctx = new AudioContext();
-            previewAudioCtx.current = ctx;
             await ctx.resume();
             const resp = await fetch(track.fileUrl);
             const buf = await resp.arrayBuffer();
+            // Vorschau wurde bereits beendet, bevor Audio fertig geladen war
+            if (cancelled) { ctx.close().catch(() => {}); return; }
             const audio = await ctx.decodeAudioData(buf);
+            if (cancelled) { ctx.close().catch(() => {}); return; }
             const src = ctx.createBufferSource();
             src.buffer = audio;
             const gain = ctx.createGain();
             previewGain.current = gain;
             src.connect(gain).connect(ctx.destination);
+            previewAudioCtx.current = ctx;
             previewAudioSrc.current = src;
             // Fade-In
             if (fadeIn) {
@@ -426,6 +430,7 @@ export default function BeitragToolPage() {
     }
     previewRafRef.current = requestAnimationFrame(loop);
     return () => {
+      cancelled = true;
       if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
       stopAudio();
     };
@@ -680,7 +685,13 @@ export default function BeitragToolPage() {
   }, []);
 
   async function saveDesign(name: string) {
-    const snapshot = JSON.stringify({ format, bgColor, elements });
+    const snapshot = JSON.stringify({
+      format, bgColor, elements,
+      editorMode, videoDuration,
+      selectedTrackId,
+      musikFadeIn, musikFadeInDur,
+      musikFadeOut, musikFadeOutDur,
+    });
     setSavingState("saving");
     try {
       const res = await fetch("/api/social-media/designs", {
@@ -702,10 +713,23 @@ export default function BeitragToolPage() {
 
   function loadDesign(data: string, name?: string) {
     try {
-      const s = JSON.parse(data) as { format: FormatPreset; bgColor: string; elements: CE[] };
+      const s = JSON.parse(data) as {
+        format: FormatPreset; bgColor: string; elements: CE[];
+        editorMode?: "bild" | "video"; videoDuration?: number;
+        selectedTrackId?: string | null;
+        musikFadeIn?: boolean; musikFadeInDur?: number;
+        musikFadeOut?: boolean; musikFadeOutDur?: number;
+      };
       setFormat(s.format ?? "4:5");
       setBgColor(s.bgColor ?? "#ffffff");
       setElements(s.elements ?? []);
+      if (s.editorMode) setEditorMode(s.editorMode);
+      if (s.videoDuration != null) setVideoDuration(s.videoDuration);
+      if (s.selectedTrackId !== undefined) setSelectedTrackId(s.selectedTrackId ?? null);
+      if (s.musikFadeIn != null) setMusikFadeIn(s.musikFadeIn);
+      if (s.musikFadeInDur != null) setMusikFadeInDur(s.musikFadeInDur);
+      if (s.musikFadeOut != null) setMusikFadeOut(s.musikFadeOut);
+      if (s.musikFadeOutDur != null) setMusikFadeOutDur(s.musikFadeOutDur);
       setSelId(null);
       setEditingId(null);
       setCurrentDesignName(name ?? null);
@@ -721,7 +745,13 @@ export default function BeitragToolPage() {
 
   function exportDesign() {
     if (editingId) commitEdit();
-    const snapshot = JSON.stringify({ format, bgColor, elements }, null, 2);
+    const snapshot = JSON.stringify({
+      format, bgColor, elements,
+      editorMode, videoDuration,
+      selectedTrackId,
+      musikFadeIn, musikFadeInDur,
+      musikFadeOut, musikFadeOutDur,
+    }, null, 2);
     const blob = new Blob([snapshot], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
