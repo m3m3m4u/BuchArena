@@ -41,22 +41,25 @@ export default function AdminSocialMediaGalleryPage() {
   }
 
   async function addItem() {
-    const file = fileRef.current?.files?.[0];
-    if (!file || !labelInput.trim()) return;
+    const files = fileRef.current?.files;
+    if (!files || files.length === 0) return;
     setSaving(true);
     try {
-      const src = await fileToDataUrl(file);
-      const res = await fetch("/api/admin/social-media/gallery", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: labelInput.trim(), src }),
-      });
-      if (res.ok) {
-        const item = await res.json() as GalleryItem;
-        setItems((p) => [...p, item]);
-        setLabelInput("");
-        if (fileRef.current) fileRef.current.value = "";
+      for (const file of Array.from(files)) {
+        const label = labelInput.trim() || file.name.replace(/\.[^.]+$/, "");
+        const src = await fileToDataUrl(file);
+        const res = await fetch("/api/admin/social-media/gallery", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ label, src }),
+        });
+        if (res.ok) {
+          const item = await res.json() as GalleryItem;
+          setItems((p) => [...p, item]);
+        }
       }
+      setLabelInput("");
+      if (fileRef.current) fileRef.current.value = "";
     } finally {
       setSaving(false);
     }
@@ -121,7 +124,7 @@ export default function AdminSocialMediaGalleryPage() {
           <p className="font-semibold text-sm">Neues Bild hinzuf&uuml;gen</p>
           <div className="grid sm:grid-cols-2 gap-3">
             <div className="grid gap-1">
-              <label className="text-xs font-medium text-arena-muted">Bezeichnung</label>
+              <label className="text-xs font-medium text-arena-muted">Bezeichnung (leer = Dateiname)</label>
               <input
                 type="text"
                 className="input"
@@ -131,11 +134,12 @@ export default function AdminSocialMediaGalleryPage() {
               />
             </div>
             <div className="grid gap-1">
-              <label className="text-xs font-medium text-arena-muted">Bilddatei (PNG, JPG, WebP)</label>
+              <label className="text-xs font-medium text-arena-muted">Bilddateien (PNG, JPG, WebP)</label>
               <input
                 ref={fileRef}
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
+                multiple
                 className="input py-1.5 text-sm"
               />
             </div>
@@ -143,7 +147,7 @@ export default function AdminSocialMediaGalleryPage() {
           <button
             type="button"
             className="btn btn-primary w-fit px-6"
-            disabled={saving || !labelInput.trim()}
+            disabled={saving}
             onClick={addItem}
           >
             {saving ? "Wird hochgeladen&hellip;" : "+ Hinzuf\u00fcgen"}
