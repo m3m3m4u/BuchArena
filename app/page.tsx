@@ -284,26 +284,38 @@ export default function HomePage() {
         <div className="grid grid-cols-2 gap-5 max-sm:grid-cols-1">
           <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
             <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
-              <strong>Bücher präsentieren</strong> – Erstelle ansprechende Buchseiten mit Cover und Beschreibung
-              und mache dein Werk in der Community&nbsp;sichtbar.
+              <strong>B&uuml;cher &amp; Autoren</strong> &ndash; Pr&auml;sentiere dein Buch mit Cover, Beschreibung und Leseprobe.
+              St&ouml;bere durch B&uuml;cher aller Genres und lerne die Autorinnen und Autoren dahinter&nbsp;kennen.
             </p>
           </div>
           <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
             <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
-              <strong>Bücher entdecken</strong> – Stöbere durch eine wachsende Sammlung an Büchern aller Genres von
-              talentierten Autorinnen und Autoren aus der Community.
+              <strong>Treffpunkt &amp; Nachrichten</strong> &ndash; Diskutiere mit der Community &uuml;ber B&uuml;cher,
+              Schreibtipps und mehr. Schreibe anderen Mitgliedern direkte&nbsp;Nachrichten.
             </p>
           </div>
           <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
             <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
-              <strong>Autoren kennenlernen</strong> – Entdecke die Köpfe hinter den Geschichten. Besuche Autorenprofile
-              und erfahre mehr über ihre Werke und Inspirationen.
+              <strong>Social-Media-Tools</strong> &ndash; Erstelle professionelle Beitr&auml;ge und Reels f&uuml;r Instagram,
+              TikTok &amp; Co. &ndash; mit Vorlagen, Musik und Video-Export direkt im&nbsp;Browser.
             </p>
           </div>
           <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
             <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
-              <strong>Sprecher entdecken</strong> – Finde talentierte Sprecherinnen und Sprecher, die deinem Buch eine
-              Stimme geben – oder biete selbst deine Stimme&nbsp;an.
+              <strong>Quiz &amp; Buchempfehlung</strong> &ndash; Teste dein Buchwissen in verschiedenen Spielmodi
+              oder lass dir anhand deiner Vorlieben das perfekte Buch&nbsp;empfehlen.
+            </p>
+          </div>
+          <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
+            <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
+              <strong>Sprecher, Testleser &amp; Lektoren</strong> &ndash; Finde Sprecherinnen und Sprecher f&uuml;r dein H&ouml;rbuch,
+              Testleser f&uuml;r fr&uuml;hes Feedback oder professionelle Lektoren f&uuml;r den&nbsp;Feinschliff.
+            </p>
+          </div>
+          <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
+            <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
+              <strong>Tauschb&ouml;rse &amp; Rezensionen</strong> &ndash; Tausche B&uuml;cher mit anderen Mitgliedern
+              und teile Rezensionen, Schnipsel und Leseeindr&uuml;cke mit der&nbsp;Community.
             </p>
           </div>
         </div>
