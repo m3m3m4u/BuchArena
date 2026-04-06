@@ -1,7 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+function mulberry32(seed: number) {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function weightedShuffle<T extends { lesezeichenTotal: number }>(items: T[], seed: number): T[] {
+  const rng = mulberry32(seed);
+  const maxLz = Math.max(1, ...items.map((i) => i.lesezeichenTotal));
+  const scored = items.map((i) => ({
+    item: i,
+    score: 0.5 * rng() + 0.5 * Math.log1p(i.lesezeichenTotal) / Math.log1p(maxLz),
+  }));
+  scored.sort((a, b) => b.score - a.score);
+  return scored.map((s) => s.item);
+}
 
 type DiscoverSpeaker = {
   username: string;
@@ -11,12 +32,14 @@ type DiscoverSpeaker = {
   ort: string;
   motto: string;
   sprechprobenCount: number;
+  lesezeichenTotal: number;
 };
 
 export default function SprecherPage() {
   const [speakers, setSpeakers] = useState<DiscoverSpeaker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
 
   useEffect(() => {
     async function loadSpeakers() {
@@ -36,6 +59,8 @@ export default function SprecherPage() {
     void loadSpeakers();
   }, []);
 
+  const sortedSpeakers = useMemo(() => weightedShuffle(speakers, seed), [speakers, seed]);
+
   return (
     <main className="top-centered-main">
       <section className="card">
@@ -52,7 +77,7 @@ export default function SprecherPage() {
           <p>Noch keine Sprecher vorhanden.</p>
         ) : (
           <div className="grid gap-3 min-[700px]:grid-cols-2">
-            {speakers.map((speaker) => (
+            {sortedSpeakers.map((speaker) => (
               <Link
                 key={speaker.username}
                 href={`/sprecher/${encodeURIComponent(speaker.username)}`}

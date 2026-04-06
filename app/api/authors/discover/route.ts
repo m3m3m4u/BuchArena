@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getBooksCollection, getUsersCollection } from "@/lib/mongodb";
+import { getLesezeichenCollection } from "@/lib/lesezeichen";
 
 type AuthorDiscoverItem = {
   username: string;
@@ -7,6 +8,7 @@ type AuthorDiscoverItem = {
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
   lastOnline: string | null;
+  lesezeichenTotal: number;
   books: Array<{
     title: string;
     genre: string;
@@ -64,6 +66,7 @@ export async function GET() {
         profileImageUrl: imgData?.url ?? "",
         profileImageCrop: imgData?.crop,
         lastOnline: lastOnlineByUser.get(user.username) ?? null,
+        lesezeichenTotal: 0,
         books: [],
       });
     }
@@ -80,7 +83,14 @@ export async function GET() {
       });
     }
 
-    const authors = [...grouped.values()];
+    const authorsRaw = [...grouped.values()];
+
+    const lzCol = await getLesezeichenCollection();
+    const lzDocs = await lzCol
+      .find({ username: { $in: authorsRaw.map((a) => a.username) } }, { projection: { username: 1, total: 1 } })
+      .toArray();
+    const lzMap = new Map(lzDocs.map((l) => [l.username, l.total ?? 0]));
+    const authors = authorsRaw.map((a) => ({ ...a, lesezeichenTotal: lzMap.get(a.username) ?? 0 }));
 
     return NextResponse.json({ authors });
   } catch {

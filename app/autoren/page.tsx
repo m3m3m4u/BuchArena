@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { normalizeGenre } from "@/lib/genres";
 
 type AuthorBook = { title: string; genre: string; ageFrom: number; ageTo: number };
-type DiscoverAuthor = { username: string; displayName: string; profileImageUrl: string; profileImageCrop?: { x: number; y: number; zoom: number }; lastOnline: string | null; books: AuthorBook[] };
+type DiscoverAuthor = { username: string; displayName: string; profileImageUrl: string; profileImageCrop?: { x: number; y: number; zoom: number }; lastOnline: string | null; lesezeichenTotal: number; books: AuthorBook[] };
 
 const PAGE_SIZE = 10;
 
@@ -20,25 +20,14 @@ function mulberry32(seed: number) {
   };
 }
 
-/** Weighted-random shuffle: recently-online authors get a score boost */
+/** Weighted-random shuffle: 50 % lesezeichen-Score + 50 % Zufall */
 function weightedShuffle(authors: DiscoverAuthor[], seed: number): DiscoverAuthor[] {
   const rng = mulberry32(seed);
-  const now = Date.now();
-
-  const scored = authors.map((a) => {
-    const random = rng(); // 0..1
-    // lastOnline boost: 0..1, decaying over 7 days
-    let onlineBoost = 0;
-    if (a.lastOnline) {
-      const age = now - new Date(a.lastOnline).getTime();
-      const sevenDays = 7 * 24 * 60 * 60 * 1000;
-      onlineBoost = Math.max(0, 1 - age / sevenDays);
-    }
-    // Final score: 60 % random + 40 % recency
-    const score = 0.6 * random + 0.4 * onlineBoost;
-    return { author: a, score };
-  });
-
+  const maxLz = Math.max(1, ...authors.map((a) => a.lesezeichenTotal));
+  const scored = authors.map((a) => ({
+    author: a,
+    score: 0.5 * rng() + 0.5 * Math.log1p(a.lesezeichenTotal) / Math.log1p(maxLz),
+  }));
   scored.sort((a, b) => b.score - a.score);
   return scored.map((s) => s.author);
 }

@@ -29,6 +29,8 @@ async function fileToUint8(blob: Blob): Promise<Uint8Array> {
 /* ---- Types ---- */
 type FormatPreset = "4:5" | "1:1" | "9:16";
 type AnimPreset = "none" | "fade" | "slide-left" | "slide-right" | "slide-up" | "slide-down" | "zoom";
+type FrameStyle = "none" | "simple" | "double" | "corners" | "elegant" | "vintage"
+  | "perlen" | "passepartout" | "gestrichelt" | "eckakzent";
 type HId = "tl" | "tr" | "bl" | "br";
 type Align = "left" | "center" | "right";
 
@@ -52,7 +54,19 @@ interface ImgEl {
 }
 type CE = TextEl | ImgEl;
 
-/* ---- Constants ---- */
+const FRAME_PRESETS: { value: FrameStyle; label: string }[] = [
+  { value: "none",          label: "Kein Rahmen" },
+  { value: "simple",        label: "Einfach" },
+  { value: "double",        label: "Doppelt" },
+  { value: "corners",       label: "Ecken" },
+  { value: "elegant",       label: "Elegant" },
+  { value: "vintage",       label: "Vintage" },
+  { value: "perlen",        label: "Perlen" },
+  { value: "passepartout",  label: "Passepartout" },
+  { value: "gestrichelt",   label: "Gestrichelt" },
+  { value: "eckakzent",     label: "Eckakzent" },
+];
+
 const FONTS = [
   { label: "Georgia",           value: "Georgia" },
   { label: "Arial",             value: "Arial" },
@@ -227,6 +241,229 @@ function drawSel(ctx: CanvasRenderingContext2D, el: CE) {
   ctx.restore();
 }
 
+/* ---- Frame drawing ---- */
+function roundRectPath(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number, r: number,
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+function drawFrame(
+  ctx: CanvasRenderingContext2D,
+  style: FrameStyle,
+  cw: number, ch: number,
+  color: string,
+  thick: number, // 1–10 Benutzerwert
+) {
+  if (style === "none") return;
+  // thick 1..10 → Pixelstärke relativ zur Canvas-Breite
+  const t = Math.round((thick / 10) * cw * 0.042 + 3);
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle   = color;
+
+  if (style === "simple") {
+    ctx.lineWidth = t;
+    ctx.strokeRect(t / 2, t / 2, cw - t, ch - t);
+  } else if (style === "double") {
+    const lw  = Math.max(2, Math.round(t * 0.35));
+    const gap = Math.round(t * 0.55);
+    ctx.lineWidth = lw;
+    ctx.strokeRect(lw / 2, lw / 2, cw - lw, ch - lw);
+    const i = lw + gap;
+    ctx.strokeRect(i, i, cw - i * 2, ch - i * 2);
+  } else if (style === "corners") {
+    const arm = Math.round(Math.min(cw, ch) * 0.10);
+    const lw  = Math.max(2, Math.round(t * 0.8));
+    const pad = Math.round(t * 0.9);
+    ctx.lineWidth = lw;
+    ctx.lineCap   = "square";
+    const corners: [number, number, number, number, number, number][] = [
+      [pad,      pad,      pad + arm, pad,      pad,      pad + arm],
+      [cw - pad, pad,      cw - pad - arm, pad, cw - pad, pad + arm],
+      [pad,      ch - pad, pad + arm, ch - pad, pad,      ch - pad - arm],
+      [cw - pad, ch - pad, cw - pad - arm, ch - pad, cw - pad, ch - pad - arm],
+    ];
+    for (const [ax, ay, bx, by, cx2, cy2] of corners) {
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(ax, ay);
+      ctx.lineTo(cx2, cy2);
+      ctx.stroke();
+    }
+  } else if (style === "elegant") {
+    // 3 Linien: außen dünn, mittig dick, innen dünn
+    // Ecken: kleines gefülltes Kreischen auf der mittleren Linie
+    const p1 = Math.round(t * 0.3);
+    const p2 = Math.round(t * 0.78);
+    const p3 = Math.round(t * 1.28);
+    const lw1 = Math.max(1, Math.round(t * 0.12));
+    const lw2 = Math.max(2, Math.round(t * 0.38));
+    const lw3 = Math.max(1, Math.round(t * 0.12));
+
+    ctx.lineWidth = lw1;
+    ctx.strokeRect(p1, p1, cw - p1 * 2, ch - p1 * 2);
+    ctx.lineWidth = lw2;
+    ctx.strokeRect(p2, p2, cw - p2 * 2, ch - p2 * 2);
+    ctx.lineWidth = lw3;
+    ctx.strokeRect(p3, p3, cw - p3 * 2, ch - p3 * 2);
+
+    // Kleine gefüllte Kreise genau auf der mittleren Linie an den 4 Ecken
+    const cr = Math.max(3, Math.round(t * 0.32));
+    const ePts: [number, number][] = [
+      [p2, p2], [cw - p2, p2], [p2, ch - p2], [cw - p2, ch - p2],
+    ];
+    // Weißer Hintergrundkreis, damit die mittlere Linie "unterbrochen" wirkt
+    for (const [px, py] of ePts) {
+      ctx.save();
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(px, py, cr + lw2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    for (const [px, py] of ePts) {
+      ctx.beginPath();
+      ctx.arc(px, py, cr, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (style === "vintage") {
+    // Abgeschrägte Ecken (Chamfer) – klassischer antiker Druckrahmen.
+    // Zwei parallele Linien, beide mit 45°-Schnitt an den Ecken (Oktagonform).
+    // Dazwischen: 4 diagonale Verbindungsstriche in den Ecken.
+    const p1    = Math.round(t * 0.28);  // äußere Linie (Abstand zum Rand)
+    const p2    = Math.round(t * 1.05);  // innere Linie
+    const lw1   = Math.max(2, Math.round(t * 0.32)); // äußere Linie dick
+    const lw2   = Math.max(1, Math.round(t * 0.13)); // innere Linie dünn
+    const cut   = Math.round(t * 0.75); // Größe des 45°-Schnitts
+
+    // Hilfsfunktion: Rechteck mit abgeschrägten Ecken als Pfad zeichnen
+    function chamferRect(pad: number, cutSize: number) {
+      const x = pad, y = pad, w = cw - pad * 2, h = ch - pad * 2;
+      ctx.beginPath();
+      ctx.moveTo(x + cutSize, y);
+      ctx.lineTo(x + w - cutSize, y);
+      ctx.lineTo(x + w, y + cutSize);
+      ctx.lineTo(x + w, y + h - cutSize);
+      ctx.lineTo(x + w - cutSize, y + h);
+      ctx.lineTo(x + cutSize, y + h);
+      ctx.lineTo(x, y + h - cutSize);
+      ctx.lineTo(x, y + cutSize);
+      ctx.closePath();
+    }
+
+    ctx.lineWidth = lw1;
+    chamferRect(p1, cut);
+    ctx.stroke();
+
+    ctx.lineWidth = lw2;
+    chamferRect(p2, Math.max(2, Math.round(cut * 0.3)));
+    ctx.stroke();
+
+    // Diagonale Verbindungslinien in den 4 Ecken zwischen beiden Rahmenlinien
+    ctx.lineWidth = lw2;
+    type DiagLine = [number, number, number, number];
+    const diagLines: DiagLine[] = [
+      [p1,      p1 + cut,  p2,      p2 + Math.max(2, Math.round(cut * 0.3))],      // links-oben (vertikal)
+      [p1 + cut, p1,       p2 + Math.max(2, Math.round(cut * 0.3)), p2],            // oben-links (horizontal)
+      [cw - p1,      p1 + cut,  cw - p2,      p2 + Math.max(2, Math.round(cut * 0.3))],
+      [cw - p1 - cut, p1,       cw - p2 - Math.max(2, Math.round(cut * 0.3)), p2],
+      [p1,      ch - p1 - cut,  p2,      ch - p2 - Math.max(2, Math.round(cut * 0.3))],
+      [p1 + cut, ch - p1,       p2 + Math.max(2, Math.round(cut * 0.3)), ch - p2],
+      [cw - p1,      ch - p1 - cut,  cw - p2,      ch - p2 - Math.max(2, Math.round(cut * 0.3))],
+      [cw - p1 - cut, ch - p1,       cw - p2 - Math.max(2, Math.round(cut * 0.3)), ch - p2],
+    ];
+    for (const [x1, y1, x2, y2] of diagLines) {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+  } else if (style === "perlen") {
+    // Perlen: gleichmäßige gefüllte Kreise ganz am Rand entlang
+    const r     = Math.max(3, Math.round(t * 0.28));
+    const pad   = r; // Kreismittelpunkt = r vom Rand → Außenkante berührt Rand
+    const step  = r * 3.0;
+    const perim = 2 * (cw - pad * 2) + 2 * (ch - pad * 2);
+    const count = Math.max(8, Math.round(perim / step));
+    const stepP = perim / count;
+    for (let i = 0; i < count; i++) {
+      const d = i * stepP;
+      const w2 = cw - pad * 2, h2 = ch - pad * 2;
+      let px = 0, py = 0;
+      if      (d < w2)          { px = pad + d;          py = pad; }
+      else if (d < w2 + h2)     { px = pad + w2;         py = pad + (d - w2); }
+      else if (d < 2 * w2 + h2) { px = pad + w2 - (d - w2 - h2); py = pad + h2; }
+      else                      { px = pad;               py = pad + h2 - (d - 2 * w2 - h2); }
+      ctx.beginPath();
+      ctx.arc(px, py, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+  } else if (style === "passepartout") {
+    // Passepartout: breiter gefüllter Rand + feine Innenlinie
+    const bw  = Math.round(t * 1.5);
+    const gap = Math.round(t * 0.28);
+    const lw  = Math.max(1, Math.round(t * 0.12));
+    ctx.fillRect(0, 0, cw, bw);
+    ctx.fillRect(0, ch - bw, cw, bw);
+    ctx.fillRect(0, bw, bw, ch - bw * 2);
+    ctx.fillRect(cw - bw, bw, bw, ch - bw * 2);
+    ctx.lineWidth = lw;
+    const ip = bw + gap;
+    ctx.strokeRect(ip, ip, cw - ip * 2, ch - ip * 2);
+
+  } else if (style === "gestrichelt") {
+    // Gestrichelt abgerundet – Linienaußenkante beginnt am Rand
+    const lw      = Math.max(2, Math.round(t * 0.32));
+    const pad     = lw / 2; // Außenkante der Linie = Bildrand
+    const r       = Math.round(t * 1.2);
+    const dashLen = Math.max(4, Math.round(t * 0.55));
+    const dashGap = Math.max(3, Math.round(t * 0.38));
+    ctx.lineWidth = lw;
+    ctx.setLineDash([dashLen, dashGap]);
+    ctx.lineCap = "round";
+    roundRectPath(ctx, pad, pad, cw - pad * 2, ch - pad * 2, r);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+  } else if (style === "eckakzent") {
+    // Eckakzent: Linie + gefüllte Dreiecke in den 4 Ecken, direkt am Rand
+    const lw   = Math.max(1, Math.round(t * 0.14));
+    const p1   = lw / 2; // Linienaußenkante = Bildrand
+    const size = Math.round(t * 1.4);
+    ctx.lineWidth = lw;
+    ctx.strokeRect(p1, p1, cw - p1 * 2, ch - p1 * 2);
+    const triCorners: Array<[number, number, number, number, number, number]> = [
+      [0,  0,  size, 0,  0,  size],
+      [cw, 0,  cw - size, 0,  cw, size],
+      [0,  ch, size, ch, 0,  ch - size],
+      [cw, ch, cw - size, ch, cw, ch - size],
+    ];
+    for (const [ax, ay, bx, by, cx3, cy3] of triCorners) {
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      ctx.lineTo(cx3, cy3);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  ctx.restore();
+}
+
 const CURSOR_MAP: Record<HId, string> = {
   tl: "nw-resize", tr: "ne-resize", bl: "sw-resize", br: "se-resize",
 };
@@ -264,6 +501,11 @@ export default function BeitragToolPage() {
   const [saveNameInput, setSaveNameInput]  = useState("");
   const [savingState,   setSavingState]    = useState<"idle" | "saving" | "saved">("idle");
   const [currentDesignName, setCurrentDesignName] = useState<string | null>(null);
+
+  /* Frame */
+  const [frameStyle,     setFrameStyle]     = useState<FrameStyle>("none");
+  const [frameColor,     setFrameColor]     = useState("#1a1a1a");
+  const [frameThickness, setFrameThickness] = useState(5);
 
   /* Video mode */
   const [editorMode,    setEditorMode]    = useState<"bild" | "video">("bild");
@@ -325,9 +567,10 @@ export default function BeitragToolPage() {
       if (previewing) drawElAnimated(ctx, el, imgCache.current, previewTRef.current);
       else drawEl(ctx, el, imgCache.current);
     }
+    drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness);
     if (selEl && selEl.id !== editingId) drawSel(ctx, selEl);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elements, selId, sz, bgColor, tick, selEl, editingId, previewing]);
+  }, [elements, selId, sz, bgColor, tick, selEl, editingId, previewing, frameStyle, frameColor, frameThickness]);
 
   /* focus textarea when edit starts */
   useEffect(() => {
@@ -691,6 +934,7 @@ export default function BeitragToolPage() {
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
       musikFadeOut, musikFadeOutDur,
+      frameStyle, frameColor, frameThickness,
     });
     setSavingState("saving");
     try {
@@ -719,6 +963,7 @@ export default function BeitragToolPage() {
         selectedTrackId?: string | null;
         musikFadeIn?: boolean; musikFadeInDur?: number;
         musikFadeOut?: boolean; musikFadeOutDur?: number;
+        frameStyle?: FrameStyle; frameColor?: string; frameThickness?: number;
       };
       setFormat(s.format ?? "4:5");
       setBgColor(s.bgColor ?? "#ffffff");
@@ -730,6 +975,9 @@ export default function BeitragToolPage() {
       if (s.musikFadeInDur != null) setMusikFadeInDur(s.musikFadeInDur);
       if (s.musikFadeOut != null) setMusikFadeOut(s.musikFadeOut);
       if (s.musikFadeOutDur != null) setMusikFadeOutDur(s.musikFadeOutDur);
+      if (s.frameStyle) setFrameStyle(s.frameStyle);
+      if (s.frameColor) setFrameColor(s.frameColor);
+      if (s.frameThickness != null) setFrameThickness(s.frameThickness);
       setSelId(null);
       setEditingId(null);
       setCurrentDesignName(name ?? null);
@@ -751,6 +999,7 @@ export default function BeitragToolPage() {
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
       musikFadeOut, musikFadeOutDur,
+      frameStyle, frameColor, frameThickness,
     }, null, 2);
     const blob = new Blob([snapshot], { type: "application/json" });
     const a = document.createElement("a");
@@ -791,6 +1040,7 @@ export default function BeitragToolPage() {
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, sz.w, sz.h);
       for (const el of elements) drawEl(ctx, el, imgCache.current);
+      drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness);
       const a = document.createElement("a");
       a.href     = off.toDataURL("image/png");
       a.download = `beitrag-${format.replace(":", "x")}.png`;
@@ -922,6 +1172,7 @@ export default function BeitragToolPage() {
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, sz.w, sz.h);
       for (const el of elements) drawElAnimated(ctx, el, imgCache.current, t);
+      drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness);
 
       frame++;
       setExportProgress(Math.round((frame / frames) * 100));
@@ -1044,6 +1295,40 @@ export default function BeitragToolPage() {
                   onChange={(e) => setBgColor(e.target.value)}
                   className="ml-auto w-12 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
               </label>
+            </div>
+
+            {/* Rahmen */}
+            <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
+              <p className="text-sm font-semibold">Rahmen</p>
+              <div className="grid grid-cols-2 gap-1">
+                {FRAME_PRESETS.map((fp) => (
+                  <button
+                    key={fp.value}
+                    type="button"
+                    className={`btn text-xs py-1 ${frameStyle === fp.value ? "btn-primary" : ""}`}
+                    onClick={() => setFrameStyle(fp.value)}
+                  >
+                    {fp.label}
+                  </button>
+                ))}
+              </div>
+              {frameStyle !== "none" && (
+                <>
+                  <label className="flex items-center gap-2 text-xs">
+                    <span>Farbe</span>
+                    <input type="color" value={frameColor}
+                      onChange={(e) => setFrameColor(e.target.value)}
+                      className="ml-auto w-10 h-7 border border-arena-border rounded cursor-pointer p-0.5" />
+                  </label>
+                  <label className="text-xs flex flex-col gap-0.5">
+                    <span>St&auml;rke: <strong>{frameThickness}</strong></span>
+                    <input type="range" min={1} max={10} step={1}
+                      value={frameThickness}
+                      onChange={(e) => setFrameThickness(Number(e.target.value))}
+                      className="w-full" />
+                  </label>
+                </>
+              )}
             </div>
 
             {/* Video-Optionen */}

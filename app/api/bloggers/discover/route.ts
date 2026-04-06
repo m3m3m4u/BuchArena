@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { createDefaultBloggerProfile } from "@/lib/profile";
 import { parseGenres } from "@/lib/genres";
+import { getLesezeichenCollection } from "@/lib/lesezeichen";
 
 type BloggerDiscoverItem = {
   username: string;
@@ -12,6 +13,7 @@ type BloggerDiscoverItem = {
   genres: string[];
   lieblingsbuch: string;
   beschreibung: string;
+  lesezeichenTotal: number;
 };
 
 export async function GET() {
@@ -80,12 +82,18 @@ export async function GET() {
         genres,
         lieblingsbuch,
         beschreibung,
+        lesezeichenTotal: 0,
       });
     }
 
-    bloggers.sort((a, b) => a.displayName.localeCompare(b.displayName, "de"));
+    const lzCol = await getLesezeichenCollection();
+    const lzDocs = await lzCol
+      .find({ username: { $in: bloggers.map((b) => b.username) } }, { projection: { username: 1, total: 1 } })
+      .toArray();
+    const lzMap = new Map(lzDocs.map((l) => [l.username, l.total ?? 0]));
+    const bloggersWithLz = bloggers.map((b) => ({ ...b, lesezeichenTotal: lzMap.get(b.username) ?? 0 }));
 
-    return NextResponse.json({ bloggers });
+    return NextResponse.json({ bloggers: bloggersWithLz });
   } catch {
     return NextResponse.json(
       { message: "Blogger konnten nicht geladen werden." },

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { createDefaultSpeakerProfile } from "@/lib/profile";
+import { getLesezeichenCollection } from "@/lib/lesezeichen";
 
 type SpeakerDiscoverItem = {
   username: string;
@@ -10,6 +11,7 @@ type SpeakerDiscoverItem = {
   ort: string;
   motto: string;
   sprechprobenCount: number;
+  lesezeichenTotal: number;
 };
 
 export async function GET() {
@@ -72,12 +74,18 @@ export async function GET() {
         ort,
         motto,
         sprechprobenCount: sp.sprechproben?.length ?? 0,
+        lesezeichenTotal: 0,
       });
     }
 
-    speakers.sort((a, b) => a.displayName.localeCompare(b.displayName, "de"));
+    const lzCol = await getLesezeichenCollection();
+    const lzDocs = await lzCol
+      .find({ username: { $in: speakers.map((s) => s.username) } }, { projection: { username: 1, total: 1 } })
+      .toArray();
+    const lzMap = new Map(lzDocs.map((l) => [l.username, l.total ?? 0]));
+    const speakersWithLz = speakers.map((s) => ({ ...s, lesezeichenTotal: lzMap.get(s.username) ?? 0 }));
 
-    return NextResponse.json({ speakers });
+    return NextResponse.json({ speakers: speakersWithLz });
   } catch {
     return NextResponse.json(
       { message: "Sprecher konnten nicht geladen werden." },

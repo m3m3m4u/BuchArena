@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { createDefaultLektorenProfile } from "@/lib/profile";
+import { getLesezeichenCollection } from "@/lib/lesezeichen";
 
 type LektorenDiscoverItem = {
   username: string;
@@ -8,6 +9,7 @@ type LektorenDiscoverItem = {
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
   kapazitaeten: number[];
+  lesezeichenTotal: number;
 };
 
 export async function GET() {
@@ -60,12 +62,18 @@ export async function GET() {
         profileImageUrl,
         profileImageCrop,
         kapazitaeten: Array.isArray(lp.kapazitaeten) ? lp.kapazitaeten : [],
+        lesezeichenTotal: 0,
       });
     }
 
-    lektoren.sort((a, b) => a.displayName.localeCompare(b.displayName, "de"));
+    const lzCol = await getLesezeichenCollection();
+    const lzDocs = await lzCol
+      .find({ username: { $in: lektoren.map((l) => l.username) } }, { projection: { username: 1, total: 1 } })
+      .toArray();
+    const lzMap = new Map(lzDocs.map((l) => [l.username, l.total ?? 0]));
+    const lektorenWithLz = lektoren.map((l) => ({ ...l, lesezeichenTotal: lzMap.get(l.username) ?? 0 }));
 
-    return NextResponse.json({ lektoren });
+    return NextResponse.json({ lektoren: lektorenWithLz });
   } catch {
     return NextResponse.json(
       { message: "Lektoren konnten nicht geladen werden." },

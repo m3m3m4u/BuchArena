@@ -6,6 +6,27 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { normalizeGenre } from "@/lib/genres";
 
+function mulberry32(seed: number) {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function weightedShuffleBooks(books: DiscoverBook[], seed: number): DiscoverBook[] {
+  const rng = mulberry32(seed);
+  const maxEmpf = Math.max(1, ...books.map((b) => b.empfehlungenCount));
+  const scored = books.map((b) => ({
+    book: b,
+    score: 0.5 * rng() + 0.5 * b.empfehlungenCount / maxEmpf,
+  }));
+  scored.sort((a, b) => b.score - a.score);
+  return scored.map((s) => s.book);
+}
+
 type DiscoverBook = {
   id: string;
   ownerUsername: string;
@@ -46,6 +67,7 @@ function BuecherContent() {
   const [ageFilter, setAgeFilter] = useState("");
   const [message, setMessage] = useState("");
   const [page, setPage] = useState(1);
+  const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
 
   useEffect(() => {
     async function loadBooks() {
@@ -76,7 +98,7 @@ function BuecherContent() {
     const age = Number(ageFilter);
     const hasAge = Number.isFinite(age) && ageFilter.trim() !== "";
     const q = searchQuery.trim().toLowerCase();
-    return books.filter((book) => {
+    const filtered = books.filter((book) => {
       const genreList = (book.genre ?? "").split(",").map((g) => normalizeGenre(g.trim()));
       const matchesGenre = !genreFilter || genreList.includes(genreFilter);
       const matchesAge = !hasAge || (book.ageFrom <= age && age <= book.ageTo);
@@ -87,7 +109,8 @@ function BuecherContent() {
         (book.isbn ?? "").toLowerCase().includes(q);
       return matchesGenre && matchesAge && matchesSearch;
     });
-  }, [books, genreFilter, ageFilter, searchQuery]);
+    return weightedShuffleBooks(filtered, seed);
+  }, [books, genreFilter, ageFilter, searchQuery, seed]);
 
   // Reset page when filter changes
   useEffect(() => { setPage(1); }, [genreFilter, ageFilter, searchQuery]);

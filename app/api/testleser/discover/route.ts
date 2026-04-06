@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { createDefaultTestleserProfile } from "@/lib/profile";
 import { parseGenres } from "@/lib/genres";
+import { getLesezeichenCollection } from "@/lib/lesezeichen";
 
 type TestleserDiscoverItem = {
   username: string;
@@ -10,6 +11,7 @@ type TestleserDiscoverItem = {
   profileImageCrop?: { x: number; y: number; zoom: number };
   genres: string[];
   verfuegbar: boolean;
+  lesezeichenTotal: number;
 };
 
 export async function GET() {
@@ -65,12 +67,18 @@ export async function GET() {
         profileImageCrop,
         genres,
         verfuegbar: !!tp.verfuegbar,
+        lesezeichenTotal: 0,
       });
     }
 
-    testleser.sort((a, b) => a.displayName.localeCompare(b.displayName, "de"));
+    const lzCol = await getLesezeichenCollection();
+    const lzDocs = await lzCol
+      .find({ username: { $in: testleser.map((t) => t.username) } }, { projection: { username: 1, total: 1 } })
+      .toArray();
+    const lzMap = new Map(lzDocs.map((l) => [l.username, l.total ?? 0]));
+    const testleserWithLz = testleser.map((t) => ({ ...t, lesezeichenTotal: lzMap.get(t.username) ?? 0 }));
 
-    return NextResponse.json({ testleser });
+    return NextResponse.json({ testleser: testleserWithLz });
   } catch {
     return NextResponse.json(
       { message: "Testleser konnten nicht geladen werden." },

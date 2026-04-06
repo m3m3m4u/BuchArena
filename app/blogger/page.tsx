@@ -1,8 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { parseGenres } from "@/app/components/genre-picker";
+
+const PAGE_SIZE = 10;
+
+function mulberry32(seed: number) {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function weightedShuffle<T extends { lesezeichenTotal: number }>(items: T[], seed: number): T[] {
+  const rng = mulberry32(seed);
+  const maxLz = Math.max(1, ...items.map((i) => i.lesezeichenTotal));
+  const scored = items.map((i) => ({
+    item: i,
+    score: 0.5 * rng() + 0.5 * Math.log1p(i.lesezeichenTotal) / Math.log1p(maxLz),
+  }));
+  scored.sort((a, b) => b.score - a.score);
+  return scored.map((s) => s.item);
+}
 
 type DiscoverBlogger = {
   username: string;
@@ -13,6 +36,7 @@ type DiscoverBlogger = {
   genres: string[];
   lieblingsbuch: string;
   beschreibung: string;
+  lesezeichenTotal: number;
 };
 
 export default function BloggerPage() {
@@ -20,6 +44,8 @@ export default function BloggerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [filterGenre, setFilterGenre] = useState("");
+  const [page, setPage] = useState(1);
+  const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
 
   useEffect(() => {
     async function loadBloggers() {
@@ -44,9 +70,21 @@ export default function BloggerPage() {
     new Set(bloggers.flatMap((b) => b.genres))
   ).sort((a, b) => a.localeCompare(b, "de"));
 
-  const filtered = filterGenre
-    ? bloggers.filter((b) => b.genres.includes(filterGenre))
-    : bloggers;
+  const filtered = useMemo(() => {
+    const base = filterGenre ? bloggers.filter((b) => b.genres.includes(filterGenre)) : bloggers;
+    return weightedShuffle(base, seed);
+  }, [bloggers, filterGenre, seed]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const goTo = useCallback((p: number) => {
+    setPage(Math.max(1, Math.min(p, totalPages)));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [totalPages]);
+
+  // Filter-Wechsel → Seite zurücksetzen
+  useEffect(() => { setPage(1); }, [filterGenre]);
 
   return (
     <main className="top-centered-main">
@@ -57,25 +95,13 @@ export default function BloggerPage() {
         </p>
 
         {allGenres.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            <button
-              type="button"
-              className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${!filterGenre ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-text border-arena-border"}`}
-              onClick={() => setFilterGenre("")}
-            >
-              Alle
-            </button>
-            {allGenres.map((genre) => (
-              <button
-                key={genre}
-                type="button"
-                className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${filterGenre === genre ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-text border-arena-border"}`}
-                onClick={() => setFilterGenre(genre)}
-              >
-                {genre}
-              </button>
-            ))}
-          </div>
+          <label className="grid gap-1 text-[0.95rem]">
+            Genre
+            <select className="input-base" value={filterGenre} onChange={(e) => setFilterGenre(e.target.value)}>
+              <option value="">Alle</option>
+              {allGenres.map((g) => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </label>
         )}
 
         {message && <p className="text-red-700">{message}</p>}
@@ -85,8 +111,9 @@ export default function BloggerPage() {
         ) : filtered.length === 0 ? (
           <p>Noch keine Blogger vorhanden.</p>
         ) : (
+          <>
           <div className="grid gap-3 min-[700px]:grid-cols-2">
-            {filtered.map((blogger) => (
+            {paged.map((blogger) => (
               <Link
                 key={blogger.username}
                 href={`/blogger/${encodeURIComponent(blogger.username)}`}
@@ -138,6 +165,15 @@ export default function BloggerPage() {
               </Link>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
+              <button className="btn btn-sm text-sm" disabled={page === 1} onClick={() => goTo(page - 1)}>← Zurück</button>
+              <span className="text-sm text-arena-muted">Seite {page} / {totalPages}</span>
+              <button className="btn btn-sm text-sm" disabled={page === totalPages} onClick={() => goTo(page + 1)}>Weiter →</button>
+            </div>
+          )}
+          </>
         )}
 
         <div className="pt-2">

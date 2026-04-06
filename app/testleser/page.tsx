@@ -1,8 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { parseGenres } from "@/app/components/genre-picker";
+
+const PAGE_SIZE = 10;
+
+function mulberry32(seed: number) {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function weightedShuffle<T extends { lesezeichenTotal: number }>(items: T[], seed: number): T[] {
+  const rng = mulberry32(seed);
+  const maxLz = Math.max(1, ...items.map((i) => i.lesezeichenTotal));
+  const scored = items.map((i) => ({
+    item: i,
+    score: 0.5 * rng() + 0.5 * Math.log1p(i.lesezeichenTotal) / Math.log1p(maxLz),
+  }));
+  scored.sort((a, b) => b.score - a.score);
+  return scored.map((s) => s.item);
+}
 
 type DiscoverTestleser = {
   username: string;
@@ -11,6 +34,7 @@ type DiscoverTestleser = {
   profileImageCrop?: { x: number; y: number; zoom: number };
   genres: string[];
   verfuegbar: boolean;
+  lesezeichenTotal: number;
 };
 
 export default function TestleserPage() {
@@ -18,6 +42,8 @@ export default function TestleserPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [filterGenre, setFilterGenre] = useState("");
+  const [page, setPage] = useState(1);
+  const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
 
   useEffect(() => {
     async function loadTestleser() {
@@ -41,9 +67,22 @@ export default function TestleserPage() {
     new Set(testleser.flatMap((t) => t.genres))
   ).sort((a, b) => a.localeCompare(b, "de"));
 
-  const filtered = filterGenre
-    ? testleser.filter((t) => t.genres.includes(filterGenre) || t.genres.length === 0)
-    : testleser;
+  const filtered = useMemo(() => {
+    const base = filterGenre
+      ? testleser.filter((t) => t.genres.includes(filterGenre) || t.genres.length === 0)
+      : testleser;
+    return weightedShuffle(base, seed);
+  }, [testleser, filterGenre, seed]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const goTo = useCallback((p: number) => {
+    setPage(Math.max(1, Math.min(p, totalPages)));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [totalPages]);
+
+  useEffect(() => { setPage(1); }, [filterGenre]);
 
   return (
     <main className="top-centered-main">
@@ -54,25 +93,13 @@ export default function TestleserPage() {
         </p>
 
         {allGenres.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            <button
-              type="button"
-              className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${!filterGenre ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-text border-arena-border"}`}
-              onClick={() => setFilterGenre("")}
-            >
-              Alle
-            </button>
-            {allGenres.map((genre) => (
-              <button
-                key={genre}
-                type="button"
-                className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${filterGenre === genre ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-text border-arena-border"}`}
-                onClick={() => setFilterGenre(genre)}
-              >
-                {genre}
-              </button>
-            ))}
-          </div>
+          <label className="grid gap-1 text-[0.95rem]">
+            Genre
+            <select className="input-base" value={filterGenre} onChange={(e) => setFilterGenre(e.target.value)}>
+              <option value="">Alle</option>
+              {allGenres.map((g) => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </label>
         )}
 
         {message && <p className="text-red-700">{message}</p>}
@@ -82,8 +109,9 @@ export default function TestleserPage() {
         ) : filtered.length === 0 ? (
           <p>Noch keine Testleser vorhanden.</p>
         ) : (
+          <>
           <div className="grid gap-3 min-[700px]:grid-cols-2">
-            {filtered.map((tl) => (
+            {paged.map((tl) => (
               <Link
                 key={tl.username}
                 href={`/testleser/${encodeURIComponent(tl.username)}`}
@@ -136,6 +164,15 @@ export default function TestleserPage() {
               </Link>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
+              <button className="btn btn-sm text-sm" disabled={page === 1} onClick={() => goTo(page - 1)}>← Zurück</button>
+              <span className="text-sm text-arena-muted">Seite {page} / {totalPages}</span>
+              <button className="btn btn-sm text-sm" disabled={page === totalPages} onClick={() => goTo(page + 1)}>Weiter →</button>
+            </div>
+          )}
+          </>
         )}
 
         <div className="pt-2">
