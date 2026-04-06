@@ -271,6 +271,10 @@ export default function BeitragToolPage() {
   const [musikTracks,   setMusikTracks]   = useState<{ id: string; title: string; style: string; fileUrl: string }[]>([]);
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
   const [loadingMusik,  setLoadingMusik]  = useState(false);
+  const [musikFadeIn,    setMusikFadeIn]    = useState(true);
+  const [musikFadeInDur, setMusikFadeInDur]  = useState(2); // Sekunden
+  const [musikFadeOut,   setMusikFadeOut]   = useState(true);
+  const [musikFadeOutDur, setMusikFadeOutDur] = useState(2); // Sekunden
   const [exporting,     setExporting]     = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportPhase,    setExportPhase]    = useState<"record" | "convert">("record");
@@ -330,24 +334,103 @@ export default function BeitragToolPage() {
     if (editingId) editAreaRef.current?.focus();
   }, [editingId]);
 
-  /* Preview RAF loop */
+  // Musik-Vorschau: AudioContext und BufferSource als Ref
+  const previewAudioCtx = useRef<AudioContext | null>(null);
+  const previewAudioSrc = useRef<AudioBufferSourceNode | null>(null);
+  const previewGain = useRef<GainNode | null>(null);
+
+  /* Preview RAF loop + Musik */
   useEffect(() => {
-    if (!previewing) return;
+    let stopAudio = () => {};
+    if (!previewing) {
+      // Stoppe ggf. laufende Musik
+      if (previewAudioSrc.current) { try { previewAudioSrc.current.stop(); } catch {} previewAudioSrc.current = null; }
+      if (previewAudioCtx.current) { if (previewAudioCtx.current.state !== "closed") previewAudioCtx.current.close().catch(() => {}); previewAudioCtx.current = null; }
+      previewGain.current = null;
+      return;
+    }
+
+    // Musik abspielen, falls Track gewählt
+    const fadeIn = musikFadeIn;
+    const fadeInDur = musikFadeInDur;
+    const fadeOut = musikFadeOut;
+    const fadeOutDur = musikFadeOutDur;
+    if (selectedTrackId && musikTracks.length > 0) {
+      const track = musikTracks.find((t) => t.id === selectedTrackId);
+      if (track) {
+        (async () => {
+          try {
+            const ctx = new AudioContext();
+            previewAudioCtx.current = ctx;
+            await ctx.resume();
+            const resp = await fetch(track.fileUrl);
+            const buf = await resp.arrayBuffer();
+            const audio = await ctx.decodeAudioData(buf);
+            const src = ctx.createBufferSource();
+            src.buffer = audio;
+            const gain = ctx.createGain();
+            previewGain.current = gain;
+            src.connect(gain).connect(ctx.destination);
+            previewAudioSrc.current = src;
+            // Fade-In
+            if (fadeIn) {
+              gain.gain.setValueAtTime(0, ctx.currentTime);
+              gain.gain.linearRampToValueAtTime(1, ctx.currentTime + fadeInDur);
+            } else {
+              gain.gain.setValueAtTime(1, ctx.currentTime);
+            }
+            src.start(ctx.currentTime);
+            // Stoppe Audio nach Vorschau
+            let stopped = false;
+            stopAudio = () => {
+              if (stopped) return;
+              stopped = true;
+              previewAudioSrc.current = null;
+              previewAudioCtx.current = null;
+              previewGain.current = null;
+              const closeCtx = () => { if (ctx.state !== "closed") ctx.close().catch(() => {}); };
+              if (fadeOut) {
+                gain.gain.cancelScheduledValues(ctx.currentTime);
+                gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + fadeOutDur);
+                setTimeout(() => { try { src.stop(); } catch {} closeCtx(); }, fadeOutDur * 1000);
+              } else {
+                try { src.stop(); } catch {}
+                closeCtx();
+              }
+            };
+          } catch {
+            // Fehler ignorieren
+          }
+        })();
+      }
+    }
+
     const start = performance.now();
     function loop(now: number) {
       previewTRef.current = (now - start) / 1000;
       setTick((t) => t + 1);
+      // Fade-Out rechtzeitig starten
+      if (previewAudioCtx.current && previewGain.current && fadeOut && videoDuration - previewTRef.current <= fadeOutDur && previewGain.current.gain.value > 0.01) {
+        previewGain.current.gain.cancelScheduledValues(previewAudioCtx.current.currentTime);
+        previewGain.current.gain.setValueAtTime(previewGain.current.gain.value, previewAudioCtx.current.currentTime);
+        previewGain.current.gain.linearRampToValueAtTime(0, previewAudioCtx.current.currentTime + (videoDuration - previewTRef.current));
+      }
       if (previewTRef.current < videoDuration) {
         previewRafRef.current = requestAnimationFrame(loop);
       } else {
         previewTRef.current = 0;
         setPreviewing(false);
+        stopAudio();
       }
     }
     previewRafRef.current = requestAnimationFrame(loop);
-    return () => { if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current); };
+    return () => {
+      if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
+      stopAudio();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewing, videoDuration]);
+  }, [previewing, videoDuration, selectedTrackId, musikTracks, musikFadeIn, musikFadeInDur, musikFadeOut, musikFadeOutDur]);
 
   /* Show info on first visit */
   useEffect(() => {
@@ -716,9 +799,26 @@ export default function BeitragToolPage() {
           const audio = await audioCtx.decodeAudioData(buf);
           audioSrc    = audioCtx.createBufferSource();
           audioSrc.buffer = audio;
-          const dest  = audioCtx.createMediaStreamDestination();
-          audioSrc.connect(dest);
+          // Fade-In/Fade-Out
+          const gain = audioCtx.createGain();
+          if (musikFadeIn) {
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + musikFadeInDur);
+          } else {
+            gain.gain.setValueAtTime(1, audioCtx.currentTime);
+          }
+          audioSrc.connect(gain);
+          const dest = audioCtx.createMediaStreamDestination();
+          gain.connect(dest);
           for (const aTrack of dest.stream.getAudioTracks()) stream.addTrack(aTrack);
+          if (musikFadeOut) {
+            const foStart = Math.max(0, videoDuration - musikFadeOutDur);
+            setTimeout(() => {
+              gain.gain.cancelScheduledValues(audioCtx!.currentTime);
+              gain.gain.setValueAtTime(gain.gain.value, audioCtx!.currentTime);
+              gain.gain.linearRampToValueAtTime(0, audioCtx!.currentTime + musikFadeOutDur);
+            }, foStart * 1000);
+          }
         } catch { audioCtx = null; audioSrc = null; }
       }
     }
@@ -948,14 +1048,44 @@ export default function BeitragToolPage() {
                 ) : musikTracks.length === 0 ? (
                   <p className="text-xs text-arena-muted">Keine Tracks verf&uuml;gbar.</p>
                 ) : (
-                  <select className="input text-xs py-1 w-full min-w-0"
-                    value={selectedTrackId ?? ""}
-                    onChange={(e) => setSelectedTrackId(e.target.value || null)}>
-                    <option value="">Kein Musik</option>
-                    {musikTracks.map((t) => (
-                      <option key={t.id} value={t.id}>{t.title} &ndash; {t.style}</option>
-                    ))}
-                  </select>
+                  <>
+                    <select className="input text-xs py-1 w-full min-w-0"
+                      value={selectedTrackId ?? ""}
+                      onChange={(e) => setSelectedTrackId(e.target.value || null)}>
+                      <option value="">Kein Musik</option>
+                      {musikTracks.map((t) => (
+                        <option key={t.id} value={t.id}>{t.title} &ndash; {t.style}</option>
+                      ))}
+                    </select>
+                    <div className="grid gap-1 mt-2">
+                      <label className="flex items-center gap-2 text-xs select-none">
+                        <input type="checkbox" checked={musikFadeIn} onChange={e => setMusikFadeIn(e.target.checked)} />
+                        Einblenden
+                        {musikFadeIn && (
+                          <span className="flex items-center gap-1 ml-auto">
+                            <input type="number" min={0.5} max={30} step={0.5}
+                              value={musikFadeInDur}
+                              onChange={e => setMusikFadeInDur(Math.max(0.5, Number(e.target.value)))}
+                              className="input text-xs py-0 w-14 text-right" />
+                            <span>s</span>
+                          </span>
+                        )}
+                      </label>
+                      <label className="flex items-center gap-2 text-xs select-none">
+                        <input type="checkbox" checked={musikFadeOut} onChange={e => setMusikFadeOut(e.target.checked)} />
+                        Ausblenden
+                        {musikFadeOut && (
+                          <span className="flex items-center gap-1 ml-auto">
+                            <input type="number" min={0.5} max={30} step={0.5}
+                              value={musikFadeOutDur}
+                              onChange={e => setMusikFadeOutDur(Math.max(0.5, Number(e.target.value)))}
+                              className="input text-xs py-0 w-14 text-right" />
+                            <span>s</span>
+                          </span>
+                        )}
+                      </label>
+                    </div>
+                  </>
                 )}
               </div>
             )}
