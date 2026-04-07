@@ -102,7 +102,7 @@ export default function SiteHeader() {
   );
 
   const socialMediaLink = (
-    <Link href="/fuer-autoren" className="header-link-member w-full sm:w-auto">Reels und Beiträge für Social Media</Link>
+    <Link href="/social-media" className="header-link-member w-full sm:w-auto">Reels und Beiträge für Social Media</Link>
   );
 
   return (

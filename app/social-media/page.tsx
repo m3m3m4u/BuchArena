@@ -184,9 +184,9 @@ export default function SocialMediaPage() {
 
   const weitereAktionen = [
     {
-      title: "Beitrag-Tool (Instagram)",
+      title: "Beitrag-Tool",
       description:
-        "Erstelle schnell einen Social-Media-Post im Format 4:5 oder 1:1 mit Bildvorlage, Text und PNG-Export.",
+        "Erstelle Social-Media-Posts und -Videos mit Bild, Text, Rahmen, Animationen und Musik – als PNG oder MP4 exportieren. Formate: 4:5 und 9:16.",
       icon: PhotoIcon,
       href: "/social-media/beitrag-tool",
     },
@@ -220,6 +220,26 @@ export default function SocialMediaPage() {
         <p className="text-arena-muted text-[0.95rem]">
           Hier findest du alle Werkzeuge rund um deine Buchvorstellung und weitere Aktionen der BuchArena.
         </p>
+
+        <div className="rounded-lg border border-arena-border bg-[#f8fafc] p-4 text-[0.9rem] leading-relaxed grid gap-2">
+          <p className="m-0">
+            Hier kannst du Daten für Social Media eingeben, aus denen wir Reels und Beiträge erstellen.
+            Wir veröffentlichen auf Instagram (dort verlinken wir dein Profil), Facebook, Reddit, YouTube, TikTok, Pinterest und LinkedIn.
+          </p>
+          <p className="m-0">
+            Die Texte für die Videos werden von <Link href="/sprecher" className="text-arena-blue hover:underline">Hörbuchsprechern</Link> gesprochen. Sie arbeiten ehrenamtlich
+            für die BuchArena und machen damit Werbung für sich.
+          </p>
+          <p className="m-0">
+            Wir werden alle deine Eingaben (zu den Büchern aber auch die Rezensionen, Schnipsel und Umfragen)
+            öfter verwenden, du wirst also immer wieder in unseren Kanälen erwähnt und kannst damit deine Reichweite vergrößern.
+          </p>
+          <p className="m-0">
+            Supporte unsere Kanäle (mehr Infos dazu{" "}
+            <Link href="/tipps" className="text-arena-blue hover:underline font-semibold">hier</Link>),
+            damit auch die Inhalte zu dir und deinen Büchern sichtbarer werden.
+          </p>
+        </div>
 
         {/* Overlay: Sprechertext-Hinweis (Upload / Einreichen) */}
         {showUploadOverlay && (
