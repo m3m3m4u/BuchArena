@@ -1106,8 +1106,7 @@ export default function BeitragToolPage() {
     if (editingId) commitEdit();
     setExporting(true);
     setExportProgress(0);
-
-    // FFmpeg vorab laden (Turbopack erlaubt keine dynamischen Imports in Callbacks)
+    setExportPhase("record");
 
     const off = document.createElement("canvas");
     off.width  = sz.w;
@@ -1116,138 +1115,90 @@ export default function BeitragToolPage() {
 
     const FPS    = 30;
     const frames = Math.ceil(videoDuration * FPS);
-    const stream = off.captureStream(FPS);
 
-    // Musik vorbereiten (noch nicht starten)
-    let audioCtx: AudioContext | null = null;
-    let audioSrc: AudioBufferSourceNode | null = null;
-    if (selectedTrackId) {
-      const track = musikTracks.find((t) => t.id === selectedTrackId);
-      if (track) {
-        try {
-          audioCtx = new AudioContext();
-          await audioCtx.resume();
-          const resp  = await fetch(track.fileUrl);
-          const buf   = await resp.arrayBuffer();
-          const audio = await audioCtx.decodeAudioData(buf);
-          audioSrc    = audioCtx.createBufferSource();
-          audioSrc.buffer = audio;
-          // Fade-In/Fade-Out
-          const gain = audioCtx.createGain();
-          if (musikFadeIn) {
-            gain.gain.setValueAtTime(0, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + musikFadeInDur);
-          } else {
-            gain.gain.setValueAtTime(1, audioCtx.currentTime);
-          }
-          audioSrc.connect(gain);
-          const dest = audioCtx.createMediaStreamDestination();
-          gain.connect(dest);
-          for (const aTrack of dest.stream.getAudioTracks()) stream.addTrack(aTrack);
-          if (musikFadeOut) {
-            const foStart = Math.max(0, videoDuration - musikFadeOutDur);
-            setTimeout(() => {
-              gain.gain.cancelScheduledValues(audioCtx!.currentTime);
-              gain.gain.setValueAtTime(gain.gain.value, audioCtx!.currentTime);
-              gain.gain.linearRampToValueAtTime(0, audioCtx!.currentTime + musikFadeOutDur);
-            }, foStart * 1000);
-          }
-        } catch { audioCtx = null; audioSrc = null; }
-      }
-    }
+    try {
+      // FFmpeg vorab laden
+      const { FFmpeg: FFmpegClass } = await getFFmpeg();
+      const ffmpeg = new FFmpegClass();
+      await ffmpeg.load({
+        coreURL:  "/ffmpeg/ffmpeg-core.js",
+        wasmURL:  "/ffmpeg/ffmpeg-core.wasm",
+      });
 
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")
-      ? "video/webm;codecs=vp8,opus"
-      : "video/webm";
-
-    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
-    const chunks: Blob[] = [];
-    recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
-
-    recorder.onstop = async () => {
-      audioCtx?.close();
-      const webmBlob = new Blob(chunks, { type: "video/webm" });
-
-      // MP4-Konvertierung via FFmpeg.wasm (Single-Thread, kein SharedArrayBuffer nötig)
-      try {
-        setExportPhase("convert");
-        setExportProgress(0);
-
-        const { FFmpeg: FFmpegClass } = await getFFmpeg();
-        const ffmpeg = new FFmpegClass();
-        await ffmpeg.load({
-          coreURL:  "/ffmpeg/ffmpeg-core.js",
-          wasmURL:  "/ffmpeg/ffmpeg-core.wasm",
-        });
-
-        ffmpeg.on("progress", ({ progress }: { progress: number }) => {
-          setExportProgress(Math.min(99, Math.round(progress * 100)));
-        });
-
-        await ffmpeg.writeFile("input.webm", await fileToUint8(webmBlob));
-        await ffmpeg.exec(["-i", "input.webm", "-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-pix_fmt", "yuv420p", "-r", String(FPS), "-c:a", "aac", "-movflags", "+faststart", "output.mp4"]);
-
-        const data = await ffmpeg.readFile("output.mp4") as Uint8Array;
-        const rawData = data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer);
-        // In regulären ArrayBuffer kopieren (SharedArrayBuffer-Kompatibilität)
-        const mp4Buffer = rawData.buffer.slice(rawData.byteOffset, rawData.byteOffset + rawData.byteLength) as ArrayBuffer;
-        const mp4Blob = new Blob([mp4Buffer], { type: "video/mp4" });
-        const url = URL.createObjectURL(mp4Blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `beitrag-${format.replace(":", "x")}.mp4`;
-        a.click();
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        console.error("MP4-Konvertierung fehlgeschlagen:", err);
-        // Fallback: WebM herunterladen
-        const url = URL.createObjectURL(webmBlob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `beitrag-${format.replace(":", "x")}.webm`;
-        a.click();
-        URL.revokeObjectURL(url);
-      } finally {
-        setExporting(false);
-        setExportProgress(0);
-        setExportPhase("record");
-      }
-    };
-
-    recorder.start();
-    // Audio exakt beim Start der Aufnahme beginnen
-    if (audioSrc && audioCtx) audioSrc.start(audioCtx.currentTime);
-
-    let frame = 0;
-    let lastProgressPct = -1;
-    const startTime = performance.now();
-
-    function renderFrame() {
-      const now = performance.now();
-      const elapsed = (now - startTime) / 1000;
-      const targetFrame = Math.min(frames, Math.floor(elapsed * FPS) + 1);
-
-      // Alle fehlenden Frames nachholen (gleichmäßiges Timing)
-      while (frame < targetFrame && frame < frames) {
-        const t = frame / FPS;
+      // Phase 1: Alle Frames rendern und als JPEG in FFmpeg-FS schreiben
+      for (let i = 0; i < frames; i++) {
+        const t = i / FPS;
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, sz.w, sz.h);
         for (const el of elements) drawElAnimated(ctx, el, imgCache.current, t);
         drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness);
-        frame++;
+
+        const blob: Blob = await new Promise((res) => off.toBlob((b) => res(b!), "image/jpeg", 0.92));
+        await ffmpeg.writeFile(`f${String(i).padStart(5, "0")}.jpg`, await fileToUint8(blob));
+
+        if (i % 5 === 0) {
+          setExportProgress(Math.round(((i + 1) / frames) * 100));
+          await new Promise((r) => setTimeout(r, 0)); // UI-Thread freigeben
+        }
+      }
+      setExportProgress(100);
+
+      // Phase 2: FFmpeg-Encoding (Frames + optional Audio → MP4)
+      setExportPhase("convert");
+      setExportProgress(0);
+
+      ffmpeg.on("progress", ({ progress }: { progress: number }) => {
+        setExportProgress(Math.min(99, Math.round(progress * 100)));
+      });
+
+      const cmd: string[] = ["-framerate", String(FPS), "-i", "f%05d.jpg"];
+
+      // Audio hinzufügen (falls ausgewählt)
+      let hasAudio = false;
+      if (selectedTrackId) {
+        const track = musikTracks.find((t) => t.id === selectedTrackId);
+        if (track) {
+          try {
+            const resp = await fetch(track.fileUrl);
+            const audioBuf = new Uint8Array(await resp.arrayBuffer());
+            const ext = (track.fileUrl.split(".").pop()?.split("?")[0] || "mp3").toLowerCase();
+            await ffmpeg.writeFile(`audio.${ext}`, audioBuf);
+            cmd.push("-i", `audio.${ext}`);
+            hasAudio = true;
+          } catch { /* Audio überspringen bei Fehler */ }
+        }
       }
 
-      const pct = Math.round((frame / frames) * 100);
-      if (pct !== lastProgressPct) { setExportProgress(pct); lastProgressPct = pct; }
+      cmd.push("-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-pix_fmt", "yuv420p");
 
-      if (frame < frames) {
-        requestAnimationFrame(renderFrame);
-      } else {
-        setTimeout(() => recorder.stop(), 200); // letzten Frame abwarten
+      if (hasAudio) {
+        const af: string[] = [];
+        if (musikFadeIn)  af.push(`afade=t=in:st=0:d=${musikFadeInDur}`);
+        if (musikFadeOut) af.push(`afade=t=out:st=${Math.max(0, videoDuration - musikFadeOutDur)}:d=${musikFadeOutDur}`);
+        if (af.length) cmd.push("-af", af.join(","));
+        cmd.push("-c:a", "aac", "-shortest");
       }
+
+      cmd.push("-t", String(videoDuration), "-movflags", "+faststart", "output.mp4");
+      await ffmpeg.exec(cmd);
+
+      const data = await ffmpeg.readFile("output.mp4") as Uint8Array;
+      const rawData = data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer);
+      const mp4Buffer = rawData.buffer.slice(rawData.byteOffset, rawData.byteOffset + rawData.byteLength) as ArrayBuffer;
+      const mp4Blob = new Blob([mp4Buffer], { type: "video/mp4" });
+      const url = URL.createObjectURL(mp4Blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `beitrag-${format.replace(":", "x")}.mp4`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Video-Export fehlgeschlagen:", err);
+    } finally {
+      setExporting(false);
+      setExportProgress(0);
+      setExportPhase("record");
     }
-
-    requestAnimationFrame(renderFrame);
   }
 
   /* inline edit overlay position */
