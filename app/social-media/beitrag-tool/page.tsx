@@ -316,11 +316,19 @@ function drawFrame(
   cw: number, ch: number,
   color: string,
   thick: number, // 1–10 Benutzerwert
+  inset: number = 0, // 0–20 Abstand vom Rand
 ) {
   if (style === "none") return;
   // thick 1..10 → Pixelstärke relativ zur Canvas-Breite
   const t = Math.round((thick / 10) * cw * 0.042 + 3);
+  // inset 0..20 → Pixel-Abstand vom Bildrand
+  const insetPx = Math.round((inset / 20) * Math.min(cw, ch) * 0.08);
   ctx.save();
+  if (insetPx > 0) {
+    ctx.translate(insetPx, insetPx);
+    cw = cw - insetPx * 2;
+    ch = ch - insetPx * 2;
+  }
   ctx.strokeStyle = color;
   ctx.fillStyle   = color;
 
@@ -558,6 +566,7 @@ export default function BeitragToolPage() {
   const [frameStyle,     setFrameStyle]     = useState<FrameStyle>("none");
   const [frameColor,     setFrameColor]     = useState("#1a1a1a");
   const [frameThickness, setFrameThickness] = useState(5);
+  const [frameInset,     setFrameInset]     = useState(0);
 
   /* Video mode */
   const [editorMode,    setEditorMode]    = useState<"bild" | "video">("bild");
@@ -620,10 +629,10 @@ export default function BeitragToolPage() {
       if (previewing) drawElAnimated(ctx, el, imgCache.current, previewTRef.current);
       else drawEl(ctx, el, imgCache.current);
     }
-    drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness);
+    drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
     if (selEl && selEl.id !== editingId) drawSel(ctx, selEl);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elements, selId, sz, bgColor, tick, selEl, editingId, previewing, frameStyle, frameColor, frameThickness]);
+  }, [elements, selId, sz, bgColor, tick, selEl, editingId, previewing, frameStyle, frameColor, frameThickness, frameInset]);
 
   /* focus textarea when edit starts */
   useEffect(() => {
@@ -987,7 +996,7 @@ export default function BeitragToolPage() {
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
       musikFadeOut, musikFadeOutDur,
-      frameStyle, frameColor, frameThickness,
+      frameStyle, frameColor, frameThickness, frameInset,
     });
     setSavingState("saving");
     try {
@@ -1017,6 +1026,7 @@ export default function BeitragToolPage() {
         musikFadeIn?: boolean; musikFadeInDur?: number;
         musikFadeOut?: boolean; musikFadeOutDur?: number;
         frameStyle?: FrameStyle; frameColor?: string; frameThickness?: number;
+        frameInset?: number;
       };
       setFormat(s.format ?? "4:5");
       setBgColor(s.bgColor ?? "#ffffff");
@@ -1031,6 +1041,7 @@ export default function BeitragToolPage() {
       if (s.frameStyle) setFrameStyle(s.frameStyle);
       if (s.frameColor) setFrameColor(s.frameColor);
       if (s.frameThickness != null) setFrameThickness(s.frameThickness);
+      if (s.frameInset != null) setFrameInset(s.frameInset);
       setSelId(null);
       setEditingId(null);
       setCurrentDesignName(name ?? null);
@@ -1052,7 +1063,7 @@ export default function BeitragToolPage() {
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
       musikFadeOut, musikFadeOutDur,
-      frameStyle, frameColor, frameThickness,
+      frameStyle, frameColor, frameThickness, frameInset,
     }, null, 2);
     const blob = new Blob([snapshot], { type: "application/json" });
     const a = document.createElement("a");
@@ -1093,7 +1104,7 @@ export default function BeitragToolPage() {
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, sz.w, sz.h);
       for (const el of elements) drawEl(ctx, el, imgCache.current);
-      drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness);
+      drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
       const a = document.createElement("a");
       a.href     = off.toDataURL("image/png");
       a.download = `beitrag-${format.replace(":", "x")}.png`;
@@ -1131,7 +1142,7 @@ export default function BeitragToolPage() {
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, sz.w, sz.h);
         for (const el of elements) drawElAnimated(ctx, el, imgCache.current, t);
-        drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness);
+        drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
 
         const blob: Blob = await new Promise((res) => off.toBlob((b) => res(b!), "image/jpeg", 0.92));
         await ffmpeg.writeFile(`f${String(i).padStart(5, "0")}.jpg`, await fileToUint8(blob));
@@ -1347,6 +1358,13 @@ export default function BeitragToolPage() {
                     <input type="range" min={1} max={10} step={1}
                       value={frameThickness}
                       onChange={(e) => setFrameThickness(Number(e.target.value))}
+                      className="w-full" />
+                  </label>
+                  <label className="text-xs flex flex-col gap-0.5">
+                    <span>Abstand: <strong>{frameInset}</strong></span>
+                    <input type="range" min={0} max={20} step={1}
+                      value={frameInset}
+                      onChange={(e) => setFrameInset(Number(e.target.value))}
                       className="w-full" />
                   </label>
                 </>
