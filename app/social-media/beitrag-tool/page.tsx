@@ -583,6 +583,7 @@ export default function BeitragToolPage() {
   const [exportProgress, setExportProgress] = useState(0);
   const [exportPhase,    setExportPhase]    = useState<"record" | "convert">("record");
   const rafRef = useRef<number | null>(null);
+  const lastTapRef = useRef(0);
   const [previewing,    setPreviewing]    = useState(false);
   const previewTRef    = useRef(0);
   const previewRafRef  = useRef<number | null>(null);
@@ -801,11 +802,14 @@ export default function BeitragToolPage() {
   }, [selId, editingId]);
 
   /* coordinate helper */
-  function toCanvas(e: React.MouseEvent<HTMLCanvasElement>) {
+  function toCanvasXY(clientX: number, clientY: number) {
     const c = canvasRef.current!;
     const r = c.getBoundingClientRect();
     const s = sz.w / c.offsetWidth;
-    return { mx: (e.clientX - r.left) * s, my: (e.clientY - r.top) * s };
+    return { mx: (clientX - r.left) * s, my: (clientY - r.top) * s };
+  }
+  function toCanvas(e: React.MouseEvent<HTMLCanvasElement>) {
+    return toCanvasXY(e.clientX, e.clientY);
   }
 
   /* commit inline text edit */
@@ -922,6 +926,90 @@ export default function BeitragToolPage() {
   }
 
   function onUp() { dragRef.current = null; }
+
+  /* touch handlers for mobile */
+  function onTouchDown(e: React.TouchEvent<HTMLCanvasElement>) {
+    if (editingId || e.touches.length !== 1) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const { mx, my } = toCanvasXY(touch.clientX, touch.clientY);
+
+    // double-tap → text edit
+    const now = Date.now();
+    if (now - lastTapRef.current < 350) {
+      for (let i = elements.length - 1; i >= 0; i--) {
+        const el = elements[i];
+        if (el.type === "text" && hitEl(mx, my, el)) {
+          setSelId(el.id);
+          setEditingId(el.id);
+          setEditText(el.content);
+          lastTapRef.current = 0;
+          return;
+        }
+      }
+    }
+    lastTapRef.current = now;
+
+    if (selEl) {
+      const h = hitHandle(mx, my, selEl);
+      if (h) {
+        dragRef.current = {
+          mode: "resize", id: selEl.id, handle: h,
+          mx0: mx, my0: my,
+          x0: selEl.x, y0: selEl.y, w0: selEl.w, h0: selEl.h,
+        };
+        return;
+      }
+    }
+    for (let i = elements.length - 1; i >= 0; i--) {
+      const el = elements[i];
+      if (hitEl(mx, my, el)) {
+        setSelId(el.id);
+        dragRef.current = {
+          mode: "move", id: el.id,
+          mx0: mx, my0: my,
+          x0: el.x, y0: el.y, w0: el.w, h0: el.h,
+        };
+        return;
+      }
+    }
+    setSelId(null);
+  }
+
+  function onTouchMoveCanvas(e: React.TouchEvent<HTMLCanvasElement>) {
+    if (editingId || e.touches.length !== 1) return;
+    const d = dragRef.current;
+    if (!d) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const { mx, my } = toCanvasXY(touch.clientX, touch.clientY);
+    const dx = mx - d.mx0, dy = my - d.my0;
+    const MIN = 30;
+    setElements((prev) => prev.map((el) => {
+      if (el.id !== d.id) return el;
+      if (d.mode === "move") return { ...el, x: d.x0 + dx, y: d.y0 + dy };
+      let { x, y, w, h } = el;
+      if (el.type === "image") {
+        const ratio = (el as ImgEl).ratio || 1;
+        switch (d.handle) {
+          case "br": w = Math.max(MIN, d.w0 + dx); h = w / ratio; x = d.x0; y = d.y0; break;
+          case "bl": w = Math.max(MIN, d.w0 - dx); h = w / ratio; x = d.x0 + d.w0 - w; y = d.y0; break;
+          case "tr": w = Math.max(MIN, d.w0 + dx); h = w / ratio; x = d.x0; y = d.y0 + d.h0 - h; break;
+          case "tl": w = Math.max(MIN, d.w0 - dx); h = w / ratio; x = d.x0 + d.w0 - w; y = d.y0 + d.h0 - h; break;
+        }
+      } else {
+        switch (d.handle) {
+          case "tl": x = Math.min(d.x0 + dx, d.x0 + d.w0 - MIN); y = Math.min(d.y0 + dy, d.y0 + d.h0 - MIN); w = d.w0 - (x - d.x0); h = d.h0 - (y - d.y0); break;
+          case "tr": y = Math.min(d.y0 + dy, d.y0 + d.h0 - MIN); w = Math.max(MIN, d.w0 + dx); h = d.h0 - (y - d.y0); x = d.x0; break;
+          case "bl": x = Math.min(d.x0 + dx, d.x0 + d.w0 - MIN); w = d.w0 - (x - d.x0); h = Math.max(MIN, d.h0 + dy); y = d.y0; break;
+          case "br": w = Math.max(MIN, d.w0 + dx); h = Math.max(MIN, d.h0 + dy); x = d.x0; y = d.y0; break;
+        }
+      }
+      return { ...el, x, y, w, h };
+    }));
+  }
+
+  function onTouchUp() { dragRef.current = null; }
 
   /* add elements */
   function addText() {
@@ -1247,16 +1335,16 @@ export default function BeitragToolPage() {
     <main className={fullscreen ? "fixed inset-0 z-[100] bg-white overflow-hidden p-3 flex flex-col" : "top-centered-main"}>
       <section className={fullscreen ? "w-full flex-1 min-h-0 flex flex-col overflow-hidden" : "card"}>
 
-        <div className={`flex gap-3 ${fullscreen ? "flex-1 min-h-0 items-stretch" : "items-start"}`}>
+        <div className={`flex flex-col md:flex-row gap-3 ${fullscreen ? "flex-1 min-h-0 md:items-stretch" : "items-start"}`}>
 
           {/* Sidebar */}
-          <aside className="flex-shrink-0 overflow-y-auto grid content-start gap-2 min-h-0" style={{ width: fullscreen ? 540 : 230, minWidth: 0, maxWidth: fullscreen ? 540 : 230 }}>
+          <aside className={`flex-shrink-0 overflow-y-auto grid content-start gap-2 min-h-0 order-2 md:order-none w-full ${fullscreen ? "md:w-[540px] md:min-w-0 md:max-w-[540px]" : "md:w-[230px] md:min-w-0 md:max-w-[230px]"}`}>
 
             {/* Titel + Aktionen */}
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
               <p className="text-sm font-bold">Beitrag f&uuml;r Social Media</p>
               {currentDesignName && <p className="text-xs text-arena-muted truncate">Entwurf: <strong>{currentDesignName}</strong></p>}
-              <div className={fullscreen ? "grid grid-cols-3 gap-1.5" : "grid gap-1.5"}>
+              <div className={fullscreen ? "grid grid-cols-3 gap-1.5" : "grid grid-cols-2 md:grid-cols-1 gap-1.5"}>
                 <button type="button" className="btn btn-primary text-xs w-full"
                   disabled={savingState === "saving"}
                   onClick={() => {
@@ -1333,7 +1421,7 @@ export default function BeitragToolPage() {
             {/* Rahmen */}
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
               <p className="text-sm font-semibold">Rahmen</p>
-              <div className={`grid gap-1 ${fullscreen ? "grid-cols-5" : "grid-cols-2"}`}>
+              <div className={`grid gap-1 ${fullscreen ? "grid-cols-5" : "grid-cols-3 md:grid-cols-2"}`}>
                 {FRAME_PRESETS.map((fp) => (
                   <button
                     key={fp.value}
@@ -1451,7 +1539,7 @@ export default function BeitragToolPage() {
 
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
               <p className="text-sm font-semibold">Hinzuf&uuml;gen</p>
-              <div className={fullscreen ? "flex gap-1.5" : "grid gap-1.5"}>
+              <div className={fullscreen ? "flex gap-1.5" : "grid grid-cols-3 md:grid-cols-1 gap-1.5"}>
                 <button type="button" className="btn text-xs" onClick={addText}>+ Text</button>
                 <button type="button" className="btn text-xs" onClick={() => setShowTemplates(true)}>
                   + Bildvorlage
@@ -1474,7 +1562,7 @@ export default function BeitragToolPage() {
           </aside>
 
           {/* Canvas area */}
-          <div className={`min-w-0 gap-2 ${fullscreen ? "flex-1 flex flex-col overflow-hidden" : "grid content-start"}`} style={fullscreen ? undefined : { width: '75%' }}>
+          <div className={`min-w-0 gap-2 order-1 md:order-none ${fullscreen ? "flex-1 flex flex-col overflow-hidden" : "grid content-start w-full md:w-3/4"}`}>
 
             {/* Toolbar – immer sichtbar, feste Höhe */}
             <div className="flex items-center gap-1.5 rounded-lg border border-arena-border bg-arena-bg/80 px-2 py-1.5 min-h-11 overflow-x-auto flex-shrink-0">
@@ -1650,6 +1738,9 @@ export default function BeitragToolPage() {
                 onMouseUp={onUp}
                 onMouseLeave={onUp}
                 onDoubleClick={onDblClick}
+                onTouchStart={onTouchDown}
+                onTouchMove={onTouchMoveCanvas}
+                onTouchEnd={onTouchUp}
               />
               {/* Instagram-Grid 4:5 Ausschnitt (nur bei 9:16) */}
               {showGridCrop && format === "9:16" && (
@@ -1753,7 +1844,7 @@ export default function BeitragToolPage() {
               const slice = templates.slice(page * perPage, page * perPage + perPage);
               return (
                 <>
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {slice.map((tpl) => (
                       <button
                         key={tpl.id}
