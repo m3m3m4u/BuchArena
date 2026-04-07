@@ -1160,7 +1160,7 @@ export default function BeitragToolPage() {
       ? "video/webm;codecs=vp8,opus"
       : "video/webm";
 
-    const recorder = new MediaRecorder(stream, { mimeType });
+    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
     const chunks: Blob[] = [];
     recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
 
@@ -1185,7 +1185,7 @@ export default function BeitragToolPage() {
         });
 
         await ffmpeg.writeFile("input.webm", await fileToUint8(webmBlob));
-        await ffmpeg.exec(["-i", "input.webm", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-c:a", "aac", "-movflags", "+faststart", "output.mp4"]);
+        await ffmpeg.exec(["-i", "input.webm", "-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-pix_fmt", "yuv420p", "-r", String(FPS), "-c:a", "aac", "-movflags", "+faststart", "output.mp4"]);
 
         const data = await ffmpeg.readFile("output.mp4") as Uint8Array;
         const rawData = data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer);
@@ -1219,26 +1219,35 @@ export default function BeitragToolPage() {
     if (audioSrc && audioCtx) audioSrc.start(audioCtx.currentTime);
 
     let frame = 0;
+    let lastProgressPct = -1;
+    const startTime = performance.now();
 
     function renderFrame() {
-      const t = frame / FPS;
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, sz.w, sz.h);
-      for (const el of elements) drawElAnimated(ctx, el, imgCache.current, t);
-      drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness);
+      const now = performance.now();
+      const elapsed = (now - startTime) / 1000;
+      const targetFrame = Math.min(frames, Math.floor(elapsed * FPS) + 1);
 
-      frame++;
-      setExportProgress(Math.round((frame / frames) * 100));
+      // Alle fehlenden Frames nachholen (gleichmäßiges Timing)
+      while (frame < targetFrame && frame < frames) {
+        const t = frame / FPS;
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, sz.w, sz.h);
+        for (const el of elements) drawElAnimated(ctx, el, imgCache.current, t);
+        drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness);
+        frame++;
+      }
+
+      const pct = Math.round((frame / frames) * 100);
+      if (pct !== lastProgressPct) { setExportProgress(pct); lastProgressPct = pct; }
 
       if (frame < frames) {
-        // setTimeout statt RAF: exaktes 30fps-Timing, funktioniert auch im Hintergrund-Tab
-        setTimeout(renderFrame, Math.floor(1000 / FPS));
+        requestAnimationFrame(renderFrame);
       } else {
         setTimeout(() => recorder.stop(), 200); // letzten Frame abwarten
       }
     }
 
-    renderFrame();
+    requestAnimationFrame(renderFrame);
   }
 
   /* inline edit overlay position */
