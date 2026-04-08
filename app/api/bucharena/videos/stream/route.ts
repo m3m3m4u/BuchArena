@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { Readable } from "node:stream";
+import { ReadableStream as WebReadableStream } from "node:stream/web";
 import {
   getWebdavClient,
   getWebdavUploadDir,
@@ -7,10 +8,17 @@ import {
 
 export const runtime = "nodejs";
 
+/** Maximale Chunk-Größe für Range-Responses (2 MB) */
+const MAX_CHUNK = 2 * 1024 * 1024;
+
+function nodeToWeb(nodeStream: Readable): ReadableStream<Uint8Array> {
+  return Readable.toWeb(nodeStream) as unknown as ReadableStream<Uint8Array>;
+}
+
 /**
  * Streamt ein Review-Video als Video-Response.
  * Unterstützt Range-Requests für Seek im Player.
- * Kein Content-Disposition: attachment → kein Download-Dialog.
+ * Verwendet echtes Streaming (createReadStream) statt alles in den Speicher zu laden.
  */
 export async function GET(request: Request) {
   try {
@@ -34,7 +42,7 @@ export async function GET(request: Request) {
     const remotePath = `/${uploadDir}/review-videos/${fileName}`;
 
     // Dateigröße abfragen
-    const stat = await client.stat(remotePath) as { size: number };
+    const stat = (await client.stat(remotePath)) as { size: number };
     const totalSize = stat.size;
 
     // MIME-Type bestimmen
@@ -55,15 +63,19 @@ export async function GET(request: Request) {
       const match = rangeHeader.match(/bytes=(\d+)-(\d*)/);
       if (match) {
         const start = parseInt(match[1], 10);
-        const end = match[2] ? parseInt(match[2], 10) : totalSize - 1;
+        const requestedEnd = match[2] ? parseInt(match[2], 10) : undefined;
+        // Chunk-Größe begrenzen, damit der Browser schnell Daten bekommt
+        const end = Math.min(
+          requestedEnd ?? start + MAX_CHUNK - 1,
+          totalSize - 1,
+        );
         const chunkSize = end - start + 1;
 
-        const content = (await client.getFileContents(remotePath, {
-          format: "binary",
-          headers: { Range: `bytes=${start}-${end}` },
-        })) as Buffer;
+        const nodeStream = client.createReadStream(remotePath, {
+          range: { start, end },
+        });
 
-        return new NextResponse(new Uint8Array(content) as unknown as BodyInit, {
+        return new Response(nodeToWeb(nodeStream), {
           status: 206,
           headers: {
             "Content-Type": contentType,
@@ -77,12 +89,10 @@ export async function GET(request: Request) {
       }
     }
 
-    // Kein Range → ganzes File
-    const content = (await client.getFileContents(remotePath, {
-      format: "binary",
-    })) as Buffer;
+    // Kein Range → Stream mit Accept-Ranges Header (Browser wird danach Range-Requests senden)
+    const nodeStream = client.createReadStream(remotePath);
 
-    return new NextResponse(new Uint8Array(content) as unknown as BodyInit, {
+    return new Response(nodeToWeb(nodeStream), {
       status: 200,
       headers: {
         "Content-Type": contentType,

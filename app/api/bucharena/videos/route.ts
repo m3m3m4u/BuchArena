@@ -37,38 +37,60 @@ export async function GET() {
     const rawList = Array.isArray(items) ? items : (items as { data: typeof items }).data;
     const allFiles = rawList as { type: string; basename: string; size: number; lastmod: string }[];
 
-    // Video-Dateien (ohne .meta.json)
-    const videoFiles = allFiles
-      .filter((f) => f.type === "file" && !f.basename.endsWith(".meta.json"))
-      .sort(
-        (a, b) =>
-          new Date(b.lastmod).getTime() - new Date(a.lastmod).getTime(),
-      );
+    // Dateien aufteilen: Video-Dateien und Meta-Dateien
+    const videoFiles: typeof allFiles = [];
+    const metaMap = new Map<string, (typeof allFiles)[0]>();
 
-    // Metadaten aus .meta.json lesen
-    const files = await Promise.all(
-      videoFiles.map(async (f) => {
-        let meta: VideoMeta = {};
-        try {
-          const metaContent = (await client.getFileContents(
-            `${dirPath}/${f.basename}.meta.json`,
-            { format: "text" },
-          )) as string;
-          meta = JSON.parse(metaContent) as VideoMeta;
-        } catch {
-          /* Kein Metafile vorhanden */
-        }
-        return {
-          fileName: f.basename,
-          originalName: meta.originalName ?? f.basename,
-          reviewStatus: meta.reviewStatus ?? "pending",
-          reviewNote: meta.reviewNote ?? "",
-          reviewedAt: meta.reviewedAt,
-          size: f.size,
-          uploadedAt: f.lastmod,
-        };
+    for (const f of allFiles) {
+      if (f.type !== "file") continue;
+      if (f.basename.endsWith(".meta.json")) {
+        // Key = Video-Dateiname (ohne .meta.json)
+        metaMap.set(f.basename.slice(0, -".meta.json".length), f);
+      } else {
+        videoFiles.push(f);
+      }
+    }
+
+    videoFiles.sort(
+      (a, b) =>
+        new Date(b.lastmod).getTime() - new Date(a.lastmod).getTime(),
+    );
+
+    // Nur Meta-Dateien laden, die tatsächlich existieren (vermeidet 404-Requests)
+    const metaEntries = videoFiles
+      .filter((f) => metaMap.has(f.basename))
+      .map((f) => f.basename);
+
+    // Alle vorhandenen Meta-Dateien parallel laden
+    const metaResults = await Promise.allSettled(
+      metaEntries.map(async (name) => {
+        const metaContent = (await client.getFileContents(
+          `${dirPath}/${name}.meta.json`,
+          { format: "text" },
+        )) as string;
+        return [name, JSON.parse(metaContent) as VideoMeta] as const;
       }),
     );
+
+    const metaDataMap = new Map<string, VideoMeta>();
+    for (const result of metaResults) {
+      if (result.status === "fulfilled") {
+        metaDataMap.set(result.value[0], result.value[1]);
+      }
+    }
+
+    const files = videoFiles.map((f) => {
+      const meta = metaDataMap.get(f.basename) ?? {};
+      return {
+        fileName: f.basename,
+        originalName: meta.originalName ?? f.basename,
+        reviewStatus: meta.reviewStatus ?? "pending",
+        reviewNote: meta.reviewNote ?? "",
+        reviewedAt: meta.reviewedAt,
+        size: f.size,
+        uploadedAt: f.lastmod,
+      };
+    });
 
     return NextResponse.json({ videos: files });
   } catch {
