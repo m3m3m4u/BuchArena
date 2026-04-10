@@ -1953,7 +1953,7 @@ export default function BeitragToolPage() {
                 {(["all", "photo", "illustration", "vector"] as const).map((t) => (
                   <button key={t} type="button"
                     className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                      pixabayType === t ? "bg-arena-accent text-white border-arena-accent" : "border-arena-border text-arena-muted hover:border-gray-400"
+                      pixabayType === t ? "bg-black text-white border-black font-semibold" : "bg-white border-arena-border text-arena-muted hover:border-gray-400"
                     }`}
                     onClick={() => { setPixabayType(t); if (pixabayQuery.trim()) searchPixabay(pixabayQuery, 1, t); }}>
                     {{ all: "Alle", photo: "Fotos", illustration: "Illustrationen", vector: "Vektorgrafiken" }[t]}
