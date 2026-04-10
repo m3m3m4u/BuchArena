@@ -2301,7 +2301,7 @@ export default function BeitragToolPage() {
 
               <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
                 <p className="font-semibold mb-1.5 text-emerald-800">Nutzungsrechte</p>
-                <p className="text-emerald-900">Alle von uns bereitgestellten <strong>Bildvorlagen</strong> und <strong>Musik-Tracks</strong> wurden von der BuchArena erstellt und d&uuml;rfen <strong>ohne Einschr&auml;nkung</strong> f&uuml;r eure Social-Media-Beitr&auml;ge verwendet werden &ndash; auch kommerziell.</p>
+                <p className="text-emerald-900">Alle von uns bereitgestellten <strong>Bilder der BuchArena</strong> und <strong>Musik-Tracks</strong> wurden von der BuchArena erstellt und d&uuml;rfen <strong>ohne Einschr&auml;nkung</strong> f&uuml;r eure Social-Media-Beitr&auml;ge verwendet werden &ndash; auch kommerziell. <strong>Bilder von Pixabay</strong> sind ebenfalls kostenlos und lizenzfrei nutzbar.</p>
                 <p className="text-emerald-800 mt-2 text-xs">Wir freuen uns, wenn ihr erw&auml;hnt, dass euer Beitrag mit Tools von <strong>bucharena.org</strong> erstellt wurde &ndash; das ist aber keine Pflicht. 💚</p>
               </div>
 
@@ -2321,18 +2321,29 @@ export default function BeitragToolPage() {
                     <li><strong>Verschieben:</strong> Element anklicken und ziehen.</li>
                     <li><strong>Gr&ouml;&szlig;e &auml;ndern:</strong> Ecken-Anfasser ziehen. Bilder skalieren proportional.</li>
                     <li><strong>Text bearbeiten:</strong> Doppelklick auf ein Textelement.</li>
-                    <li><strong>L&ouml;schen:</strong> Element ausw&auml;hlen &rarr; &bdquo;L&ouml;schen&ldquo; oder <kbd className="font-mono bg-gray-100 px-1 rounded">Entf</kbd>.</li>
+                    <li><strong>L&ouml;schen:</strong> Element ausw&auml;hlen &rarr; <kbd className="font-mono bg-gray-100 px-1 rounded">Entf</kbd> oder <kbd className="font-mono bg-gray-100 px-1 rounded">Backspace</kbd>.</li>
                     <li><strong>Ebenenreihenfolge:</strong> Pfeile ↑ ↓ in der Toolbar.</li>
+                    <li><strong>Einf&uuml;gen:</strong> <kbd className="font-mono bg-gray-100 px-1 rounded">Strg+V</kbd> f&uuml;gt Bilder oder Text aus der Zwischenablage ein.</li>
                   </ul>
                 </div>
 
                 <div>
                   <p className="font-semibold mb-1">Bilder</p>
                   <ul className="grid gap-1 text-arena-muted">
-                    <li><strong>Bildvorlagen:</strong> Aus einer Galerie von BuchArena-Bildern ausw&auml;hlen.</li>
-                    <li><strong>Pixabay:</strong> Kostenlose, lizenzfreie Bilder von Pixabay suchen und einf&uuml;gen.</li>
-                    <li><strong>Eigenes Bild:</strong> Eigene Datei hochladen (JPG, PNG etc.).</li>
+                    <li><strong>Bilder der BuchArena:</strong> Aus einer Galerie von BuchArena-Bildern ausw&auml;hlen.</li>
+                    <li><strong>Bilder von Pixabay:</strong> Kostenlose, lizenzfreie Bilder suchen und einf&uuml;gen &ndash; mit Filter nach Fotos, Illustrationen und Vektorgrafiken.</li>
+                    <li><strong>Eigenes Bild:</strong> Eigene Datei hochladen (JPG, PNG etc.) oder per <kbd className="font-mono bg-gray-100 px-1 rounded">Strg+V</kbd> einf&uuml;gen.</li>
                     <li><strong>Rahmen &amp; Schatten:</strong> Bild ausw&auml;hlen &rarr; Rahmen/Schatten/Eckenradius in der Toolbar einstellen.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-semibold mb-1">Hintergrund</p>
+                  <ul className="grid gap-1 text-arena-muted">
+                    <li><strong>Farbe:</strong> Hintergrundfarbe per Farbw&auml;hler &auml;ndern.</li>
+                    <li><strong>Hintergrundbild:</strong> &Uuml;ber &bdquo;Hintergrund von Pixabay&ldquo; ein Bild als Hintergrund setzen.</li>
+                    <li><strong>Verschieben:</strong> Hintergrundbild im sichtbaren Bereich verschieben (horizontal oder vertikal, je nach Bildformat).</li>
+                    <li><strong>Deckkraft:</strong> Transparenz von Hintergrundbild oder -farbe stufenlos einstellen (0&thinsp;&ndash;&thinsp;100&thinsp;%).</li>
                   </ul>
                 </div>
 
@@ -2340,7 +2351,7 @@ export default function BeitragToolPage() {
                   <p className="font-semibold mb-1">Rahmen</p>
                   <ul className="grid gap-1 text-arena-muted">
                     <li><strong>Rahmentypen:</strong> 10 verschiedene Rahmen (Einfach, Doppelt, Elegant, Vintage, Perlen u.&thinsp;a.).</li>
-                    <li><strong>Farbe &amp; St&auml;rke:</strong> Individuell anpassbar.</li>
+                    <li><strong>Farbe, St&auml;rke &amp; Abstand:</strong> Individuell anpassbar.</li>
                     <li><strong>Grid-Vorschau:</strong> Bei 9:16 zeigt ein Overlay den sichtbaren 4:5-Ausschnitt im Instagram-Grid.</li>
                   </ul>
                 </div>
