@@ -561,6 +561,7 @@ export default function BeitragToolPage() {
   const dragRef     = useRef<{
     mode: "move" | "resize"; id: string; handle?: HId;
     mx0: number; my0: number; x0: number; y0: number; w0: number; h0: number;
+    fromHandle?: boolean;
   } | null>(null);
 
   const [format,    setFormat]    = useState<FormatPreset>("4:5");
@@ -646,6 +647,12 @@ export default function BeitragToolPage() {
     return () => { document.body.style.overflow = ""; };
   }, [fullscreen]);
 
+  // Auto-fullscreen on desktop
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.innerWidth >= 1024) setFullscreen(true);
+  }, []);
+
   // Detect admin role
   useEffect(() => {
     const acc = getStoredAccount();
@@ -691,7 +698,6 @@ export default function BeitragToolPage() {
       else drawEl(ctx, el, imgCache.current);
     }
     drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
-    if (selEl && selEl.id !== editingId) drawSel(ctx, selEl);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [elements, selId, sz, bgColor, bgImage, bgOffsetX, bgOffsetY, bgOpacity, tick, selEl, editingId, previewing, frameStyle, frameColor, frameThickness, frameInset]);
 
@@ -920,6 +926,37 @@ export default function BeitragToolPage() {
     setEditingId(null);
   }
 
+  /* shared drag-move logic */
+  function handleDragMove(clientX: number, clientY: number) {
+    const d = dragRef.current;
+    if (!d) return;
+    const { mx, my } = toCanvasXY(clientX, clientY);
+    const dx = mx - d.mx0, dy = my - d.my0;
+    const MIN = 30;
+    setElements((prev) => prev.map((el) => {
+      if (el.id !== d.id) return el;
+      if (d.mode === "move") return { ...el, x: d.x0 + dx, y: d.y0 + dy };
+      let { x, y, w, h } = el;
+      if (el.type === "image") {
+        const ratio = (el as ImgEl).ratio || 1;
+        switch (d.handle) {
+          case "br": w = Math.max(MIN, d.w0 + dx);  h = w / ratio; x = d.x0; y = d.y0; break;
+          case "bl": w = Math.max(MIN, d.w0 - dx);  h = w / ratio; x = d.x0 + d.w0 - w; y = d.y0; break;
+          case "tr": w = Math.max(MIN, d.w0 + dx);  h = w / ratio; x = d.x0; y = d.y0 + d.h0 - h; break;
+          case "tl": w = Math.max(MIN, d.w0 - dx);  h = w / ratio; x = d.x0 + d.w0 - w; y = d.y0 + d.h0 - h; break;
+        }
+      } else {
+        switch (d.handle) {
+          case "tl": x = Math.min(d.x0 + dx, d.x0 + d.w0 - MIN); y = Math.min(d.y0 + dy, d.y0 + d.h0 - MIN); w = d.w0 - (x - d.x0); h = d.h0 - (y - d.y0); break;
+          case "tr": y = Math.min(d.y0 + dy, d.y0 + d.h0 - MIN); w = Math.max(MIN, d.w0 + dx); h = d.h0 - (y - d.y0); x = d.x0; break;
+          case "bl": x = Math.min(d.x0 + dx, d.x0 + d.w0 - MIN); w = d.w0 - (x - d.x0); h = Math.max(MIN, d.h0 + dy); y = d.y0; break;
+          case "br": w = Math.max(MIN, d.w0 + dx); h = Math.max(MIN, d.h0 + dy); x = d.x0; y = d.y0; break;
+        }
+      }
+      return { ...el, x, y, w, h };
+    }));
+  }
+
   /* mouse: down */
   function onDown(e: React.MouseEvent<HTMLCanvasElement>) {
     if (editingId) return;
@@ -973,42 +1010,7 @@ export default function BeitragToolPage() {
     const d = dragRef.current;
 
     if (d) {
-      const dx = mx - d.mx0, dy = my - d.my0;
-      const MIN = 30;
-      setElements((prev) => prev.map((el) => {
-        if (el.id !== d.id) return el;
-        if (d.mode === "move") return { ...el, x: d.x0 + dx, y: d.y0 + dy };
-
-        let { x, y, w, h } = el;
-
-        if (el.type === "image") {
-          /* proportional resize for images */
-          const ratio = (el as ImgEl).ratio || 1;
-          switch (d.handle) {
-            case "br": w = Math.max(MIN, d.w0 + dx);  h = w / ratio; x = d.x0; y = d.y0; break;
-            case "bl": w = Math.max(MIN, d.w0 - dx);  h = w / ratio; x = d.x0 + d.w0 - w; y = d.y0; break;
-            case "tr": w = Math.max(MIN, d.w0 + dx);  h = w / ratio; x = d.x0; y = d.y0 + d.h0 - h; break;
-            case "tl": w = Math.max(MIN, d.w0 - dx);  h = w / ratio; x = d.x0 + d.w0 - w; y = d.y0 + d.h0 - h; break;
-          }
-        } else {
-          /* free resize for text boxes */
-          switch (d.handle) {
-            case "tl":
-              x = Math.min(d.x0 + dx, d.x0 + d.w0 - MIN);
-              y = Math.min(d.y0 + dy, d.y0 + d.h0 - MIN);
-              w = d.w0 - (x - d.x0); h = d.h0 - (y - d.y0); break;
-            case "tr":
-              y = Math.min(d.y0 + dy, d.y0 + d.h0 - MIN);
-              w = Math.max(MIN, d.w0 + dx); h = d.h0 - (y - d.y0); x = d.x0; break;
-            case "bl":
-              x = Math.min(d.x0 + dx, d.x0 + d.w0 - MIN);
-              w = d.w0 - (x - d.x0); h = Math.max(MIN, d.h0 + dy); y = d.y0; break;
-            case "br":
-              w = Math.max(MIN, d.w0 + dx); h = Math.max(MIN, d.h0 + dy); x = d.x0; y = d.y0; break;
-          }
-        }
-        return { ...el, x, y, w, h };
-      }));
+      if (!d.fromHandle) handleDragMove(e.clientX, e.clientY);
       return;
     }
 
@@ -1078,34 +1080,10 @@ export default function BeitragToolPage() {
   function onTouchMoveCanvas(e: React.TouchEvent<HTMLCanvasElement>) {
     if (editingId || e.touches.length !== 1) return;
     const d = dragRef.current;
-    if (!d) return;
+    if (!d || d.fromHandle) return;
     e.preventDefault();
     const touch = e.touches[0];
-    const { mx, my } = toCanvasXY(touch.clientX, touch.clientY);
-    const dx = mx - d.mx0, dy = my - d.my0;
-    const MIN = 30;
-    setElements((prev) => prev.map((el) => {
-      if (el.id !== d.id) return el;
-      if (d.mode === "move") return { ...el, x: d.x0 + dx, y: d.y0 + dy };
-      let { x, y, w, h } = el;
-      if (el.type === "image") {
-        const ratio = (el as ImgEl).ratio || 1;
-        switch (d.handle) {
-          case "br": w = Math.max(MIN, d.w0 + dx); h = w / ratio; x = d.x0; y = d.y0; break;
-          case "bl": w = Math.max(MIN, d.w0 - dx); h = w / ratio; x = d.x0 + d.w0 - w; y = d.y0; break;
-          case "tr": w = Math.max(MIN, d.w0 + dx); h = w / ratio; x = d.x0; y = d.y0 + d.h0 - h; break;
-          case "tl": w = Math.max(MIN, d.w0 - dx); h = w / ratio; x = d.x0 + d.w0 - w; y = d.y0 + d.h0 - h; break;
-        }
-      } else {
-        switch (d.handle) {
-          case "tl": x = Math.min(d.x0 + dx, d.x0 + d.w0 - MIN); y = Math.min(d.y0 + dy, d.y0 + d.h0 - MIN); w = d.w0 - (x - d.x0); h = d.h0 - (y - d.y0); break;
-          case "tr": y = Math.min(d.y0 + dy, d.y0 + d.h0 - MIN); w = Math.max(MIN, d.w0 + dx); h = d.h0 - (y - d.y0); x = d.x0; break;
-          case "bl": x = Math.min(d.x0 + dx, d.x0 + d.w0 - MIN); w = d.w0 - (x - d.x0); h = Math.max(MIN, d.h0 + dy); y = d.y0; break;
-          case "br": w = Math.max(MIN, d.w0 + dx); h = Math.max(MIN, d.h0 + dy); x = d.x0; y = d.y0; break;
-        }
-      }
-      return { ...el, x, y, w, h };
-    }));
+    handleDragMove(touch.clientX, touch.clientY);
   }
 
   function onTouchUp() { dragRef.current = null; }
@@ -1499,16 +1477,43 @@ export default function BeitragToolPage() {
     <main className={fullscreen ? "fixed inset-0 z-[100] bg-white overflow-hidden p-3 flex flex-col" : "top-centered-main"}>
       <section className={fullscreen ? "w-full flex-1 min-h-0 flex flex-col overflow-hidden" : "card"}>
 
-        <div className={`flex flex-col md:flex-row gap-3 ${fullscreen ? "flex-1 min-h-0 md:items-stretch" : "items-start"}`}>
+        <div className={`flex flex-col md:flex-row gap-3 ${fullscreen ? "flex-1 min-h-0 md:items-stretch overflow-y-auto md:overflow-hidden" : "items-start"}`}>
 
           {/* Sidebar */}
-          <aside className={`flex-shrink-0 overflow-y-auto grid content-start gap-2 min-h-0 order-2 md:order-none w-full ${fullscreen ? "md:w-[540px] md:min-w-0 md:max-w-[540px]" : "md:w-[230px] md:min-w-0 md:max-w-[230px]"}`}>
+          <aside className={`order-2 md:order-none w-full ${fullscreen ? "flex flex-col gap-1 min-h-0 md:flex-shrink-0 md:overflow-y-auto md:w-[700px] md:min-w-0 md:max-w-[700px]" : "grid content-start flex-shrink-0 min-h-0 gap-2 overflow-y-auto md:w-[230px] md:min-w-0 md:max-w-[230px]"}`}>
 
             {/* Titel + Aktionen */}
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
-              <p className="text-sm font-bold">Beitrag f&uuml;r Social Media</p>
-              {currentDesignName && <p className="text-xs text-arena-muted truncate">Entwurf: <strong>{currentDesignName}</strong></p>}
-              <div className={fullscreen ? "grid grid-cols-3 gap-1.5" : "grid grid-cols-2 md:grid-cols-1 gap-1.5"}>
+              {fullscreen ? (
+                <div className="flex items-center gap-2">
+                  <a href="/social-media"
+                    className="btn btn-primary text-sm px-4 py-1.5 flex-shrink-0 font-semibold">
+                    ← Zurück
+                  </a>
+                  {editorMode === "bild" ? (
+                    <button type="button" className="btn btn-primary text-sm px-4 py-1.5 font-semibold" onClick={download}>
+                      ↓ Herunterladen
+                    </button>
+                  ) : (
+                    <button type="button" className="btn btn-primary text-sm px-4 py-1.5 font-semibold"
+                      disabled={exporting}
+                      onClick={exportVideo}>
+                      {exporting
+                        ? exportPhase === "convert"
+                          ? `MP4… ${exportProgress}%`
+                          : `Render… ${exportProgress}%`
+                        : "↓ Herunterladen"}
+                    </button>
+                  )}
+                  {currentDesignName && <p className="text-xs text-arena-muted truncate flex-1 text-right">Entwurf: <strong>{currentDesignName}</strong></p>}
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm font-bold">Beitrag f&uuml;r Social Media</p>
+                  {currentDesignName && <p className="text-xs text-arena-muted truncate">Entwurf: <strong>{currentDesignName}</strong></p>}
+                </>
+              )}
+              <div className={fullscreen ? "grid grid-cols-4 gap-1.5" : "grid grid-cols-3 md:grid-cols-1 gap-1.5"}>
                 <button type="button" className="btn btn-primary text-xs w-full"
                   disabled={savingState === "saving"}
                   onClick={() => {
@@ -1527,30 +1532,34 @@ export default function BeitragToolPage() {
                 <button type="button" className="btn text-xs w-full" onClick={() => setShowInfo(true)}>
                   Info
                 </button>
-                {editorMode === "bild" ? (
-                  <button type="button" className="btn btn-primary text-xs w-full" onClick={download}>
-                    ↓ Herunterladen
-                  </button>
-                ) : (
-                  <button type="button" className="btn btn-primary text-xs w-full"
-                    disabled={exporting}
-                    onClick={exportVideo}>
-                    {exporting
-                      ? exportPhase === "convert"
-                        ? `MP4… ${exportProgress}%`
-                        : `Render… ${exportProgress}%`
-                      : "↓ Herunterladen"}
+                {!fullscreen && (
+                  editorMode === "bild" ? (
+                    <button type="button" className="btn btn-primary text-xs w-full" onClick={download}>
+                      ↓ Herunterladen
+                    </button>
+                  ) : (
+                    <button type="button" className="btn btn-primary text-xs w-full"
+                      disabled={exporting}
+                      onClick={exportVideo}>
+                      {exporting
+                        ? exportPhase === "convert"
+                          ? `MP4… ${exportProgress}%`
+                          : `Render… ${exportProgress}%`
+                        : "↓ Herunterladen"}
+                    </button>
+                  )
+                )}
+                {!fullscreen && (
+                  <button type="button" className="btn text-xs w-full"
+                    onClick={() => setFullscreen(true)}>
+                    Vollbild
                   </button>
                 )}
-                <button type="button" className={`btn text-xs w-full ${fullscreen ? "btn-primary" : ""}`}
-                  onClick={() => setFullscreen((f) => !f)}>
-                  {fullscreen ? "Vollbild aus" : "Vollbild"}
-                </button>
               </div>
             </div>
 
             {/* Modus + Hintergrund */}
-            <div className={`rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden ${fullscreen ? "grid-cols-[1fr_1fr_auto] items-center" : ""}`}>
+            <div className={`rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden ${fullscreen ? "grid-cols-[1fr_1fr] items-center" : ""}`}>
               {!fullscreen && <p className="text-sm font-semibold">Modus</p>}
               <button type="button"
                 className={`btn w-full text-sm ${editorMode === "bild" ? "btn-primary" : ""}`}
@@ -1562,22 +1571,19 @@ export default function BeitragToolPage() {
                 onClick={() => { setEditorMode("video"); setFormat("9:16"); }}>
                 Video (9:16)
               </button>
-              {fullscreen && (
-                <label className="flex items-center gap-1" title="Hintergrund">
-                  <input type="color" value={bgColor}
-                    onChange={(e) => { setBgColor(e.target.value); setBgImage(null); bgImgRef.current = null; }}
-                    className="w-10 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
-                </label>
-              )}
             </div>
 
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
-                <label className="flex items-center gap-2 text-sm">
-                  <span className="font-semibold">Hintergrund</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold">Hintergrund</span>
                   <input type="color" value={bgColor}
                     onChange={(e) => { setBgColor(e.target.value); setBgImage(null); bgImgRef.current = null; }}
-                    className="ml-auto w-12 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
-                </label>
+                    className="w-12 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
+                  <button type="button" className="btn text-xs ml-auto"
+                    onClick={() => { setPixabayBgMode(true); setShowPixabay(true); }}>
+                    Hintergrund von Pixabay
+                  </button>
+                </div>
                 {bgImage && (
                   <div className="flex items-center gap-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1618,15 +1624,18 @@ export default function BeitragToolPage() {
                     onChange={(e) => setBgOpacity(Number(e.target.value))}
                     className="w-full" />
                 </label>
-                <button type="button" className="btn text-xs w-full"
-                  onClick={() => { setPixabayBgMode(true); setShowPixabay(true); }}>
-                  Hintergrund von Pixabay
-                </button>
               </div>
 
             {/* Rahmen */}
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
-              <p className="text-sm font-semibold">Rahmen</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold">Rahmen</p>
+                {frameStyle !== "none" && (
+                  <input type="color" value={frameColor}
+                    onChange={(e) => setFrameColor(e.target.value)}
+                    className="w-10 h-7 border border-arena-border rounded cursor-pointer p-0.5" />
+                )}
+              </div>
               <div className={`grid gap-1 ${fullscreen ? "grid-cols-5" : "grid-cols-3 md:grid-cols-2"}`}>
                 {FRAME_PRESETS.map((fp) => (
                   <button
@@ -1640,13 +1649,7 @@ export default function BeitragToolPage() {
                 ))}
               </div>
               {frameStyle !== "none" && (
-                <>
-                  <label className="flex items-center gap-2 text-xs">
-                    <span>Farbe</span>
-                    <input type="color" value={frameColor}
-                      onChange={(e) => setFrameColor(e.target.value)}
-                      className="ml-auto w-10 h-7 border border-arena-border rounded cursor-pointer p-0.5" />
-                  </label>
+                <div className={fullscreen ? "grid grid-cols-2 gap-2 items-center" : "grid gap-1.5"}>
                   <label className="text-xs flex flex-col gap-0.5">
                     <span>St&auml;rke: <strong>{frameThickness}</strong></span>
                     <input type="range" min={1} max={20} step={1}
@@ -1661,7 +1664,7 @@ export default function BeitragToolPage() {
                       onChange={(e) => setFrameInset(Number(e.target.value))}
                       className="w-full" />
                   </label>
-                </>
+                </div>
               )}
             </div>
 
@@ -1674,48 +1677,47 @@ export default function BeitragToolPage() {
                   value={videoDuration}
                   onChange={(e) => setVideoDuration(Number(e.target.value))}
                   className="w-full" />
-                {!exporting && (
-                  <button type="button"
-                    className={`btn text-xs w-full ${previewing ? "btn-primary" : ""}`}
-                    onClick={() => {
-                      if (previewing) {
-                        if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
-                        previewTRef.current = 0;
-                        // Musik sofort stoppen
-                        if (previewAudioSrc.current) { try { previewAudioSrc.current.stop(); } catch {} previewAudioSrc.current = null; }
-                        if (previewAudioCtx.current) { if (previewAudioCtx.current.state !== "closed") previewAudioCtx.current.close().catch(() => {}); previewAudioCtx.current = null; }
-                        previewGain.current = null;
-                        setPreviewing(false);
-                        setTick((t) => t + 1);
-                      } else {
-                        setSelId(null);
-                        setPreviewing(true);
-                      }
-                    }}>
-                    {previewing ? "\u258e\u258e Stopp" : "\u25ba Vorschau"}
-                  </button>
-                )}
                 <p className="text-xs font-medium mt-1">Musik</p>
                 {loadingMusik ? (
-                  <p className="text-xs text-arena-muted">Lade…</p>
+                  <p className="text-xs text-arena-muted">Lade&hellip;</p>
                 ) : musikTracks.length === 0 ? (
                   <p className="text-xs text-arena-muted">Keine Tracks verf&uuml;gbar.</p>
                 ) : (
-                  <>
-                    <select className="input text-xs py-1 w-full min-w-0"
-                      value={selectedTrackId ?? ""}
-                      onChange={(e) => setSelectedTrackId(e.target.value || null)}>
-                      <option value="">Kein Musik</option>
-                      {musikTracks.map((t) => (
-                        <option key={t.id} value={t.id}>{t.title} &ndash; {t.style}</option>
-                      ))}
-                    </select>
-                    <div className="grid gap-1 mt-2">
-                      <label className="flex items-center gap-2 text-xs select-none">
+                  <select className="input text-xs py-1 w-full min-w-0"
+                    value={selectedTrackId ?? ""}
+                    onChange={(e) => setSelectedTrackId(e.target.value || null)}>
+                    <option value="">Kein Musik</option>
+                    {musikTracks.map((t) => (
+                      <option key={t.id} value={t.id}>{t.title} &ndash; {t.style}</option>
+                    ))}
+                  </select>
+                )}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                      {!exporting && (
+                        <button type="button"
+                          className={`btn text-xs ${previewing ? "btn-primary" : ""}`}
+                          onClick={() => {
+                            if (previewing) {
+                              if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
+                              previewTRef.current = 0;
+                              if (previewAudioSrc.current) { try { previewAudioSrc.current.stop(); } catch {} previewAudioSrc.current = null; }
+                              if (previewAudioCtx.current) { if (previewAudioCtx.current.state !== "closed") previewAudioCtx.current.close().catch(() => {}); previewAudioCtx.current = null; }
+                              previewGain.current = null;
+                              setPreviewing(false);
+                              setTick((t) => t + 1);
+                            } else {
+                              setSelId(null);
+                              setPreviewing(true);
+                            }
+                          }}>
+                          {previewing ? "\u258e\u258e Stopp" : "\u25ba Vorschau"}
+                        </button>
+                      )}
+                      <label className="flex items-center gap-1.5 text-xs select-none">
                         <input type="checkbox" checked={musikFadeIn} onChange={e => setMusikFadeIn(e.target.checked)} />
                         Einblenden
                         {musikFadeIn && (
-                          <span className="flex items-center gap-1 ml-auto">
+                          <span className="flex items-center gap-1">
                             <input type="number" min={0.5} max={30} step={0.5}
                               value={musikFadeInDur}
                               onChange={e => setMusikFadeInDur(Math.max(0.5, Number(e.target.value)))}
@@ -1724,11 +1726,11 @@ export default function BeitragToolPage() {
                           </span>
                         )}
                       </label>
-                      <label className="flex items-center gap-2 text-xs select-none">
+                      <label className="flex items-center gap-1.5 text-xs select-none">
                         <input type="checkbox" checked={musikFadeOut} onChange={e => setMusikFadeOut(e.target.checked)} />
                         Ausblenden
                         {musikFadeOut && (
-                          <span className="flex items-center gap-1 ml-auto">
+                          <span className="flex items-center gap-1">
                             <input type="number" min={0.5} max={30} step={0.5}
                               value={musikFadeOutDur}
                               onChange={e => setMusikFadeOutDur(Math.max(0.5, Number(e.target.value)))}
@@ -1738,15 +1740,13 @@ export default function BeitragToolPage() {
                         )}
                       </label>
                     </div>
-                  </>
-                )}
               </div>
             )}
 
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
               <p className="text-sm font-semibold">Hinzuf&uuml;gen</p>
-              <div className={fullscreen ? "flex flex-wrap gap-1.5" : "grid grid-cols-2 md:grid-cols-1 gap-1.5"}>
-                <button type="button" className="btn text-xs" onClick={addText}>+ Text</button>
+              <div className={fullscreen ? "grid grid-cols-4 gap-1.5" : "grid grid-cols-3 md:grid-cols-1 gap-1.5"}>
+                <button type="button" className="btn text-xs" onClick={addText}>Text</button>
                 <button type="button" className="btn text-xs" onClick={() => setShowTemplates(true)}>
                   Bilder der BuchArena
                 </button>
@@ -1754,7 +1754,7 @@ export default function BeitragToolPage() {
                   Bilder von Pixabay
                 </button>
                 <label className="btn cursor-pointer text-xs text-center block">
-                  + Eigenes Bild
+                  Eigenes Bild
                   <input type="file" accept="image/*" className="sr-only"
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) addUserImage(f); e.target.value = ""; }} />
                 </label>
@@ -1928,7 +1928,7 @@ export default function BeitragToolPage() {
             )}
 
             {/* Canvas + inline overlay */}
-            <div ref={wrapRef} className={`relative rounded-xl border border-arena-border bg-arena-bg p-2 overflow-hidden ${fullscreen ? "flex-1 min-h-0 flex items-center justify-center" : ""}`}>
+            <div ref={wrapRef} className={`relative rounded-xl border border-arena-border bg-arena-bg p-2 overflow-visible ${fullscreen ? "flex-1 min-h-0 flex items-center justify-center" : ""}`}>
               <canvas
                 ref={canvasRef}
                 style={{
@@ -2008,6 +2008,72 @@ export default function BeitragToolPage() {
                     onBlur={commitEdit}
                     style={style}
                   />
+                );
+              })()}
+              {/* HTML selection handles – always on top, even outside canvas */}
+              {selEl && selEl.id !== editingId && !previewing && (() => {
+                const canvas = canvasRef.current;
+                if (!canvas) return null;
+                const scale = canvas.offsetWidth / sz.w;
+                const ox = canvas.offsetLeft;
+                const oy = canvas.offsetTop;
+                const handles: { id: HId; cx: number; cy: number }[] = [
+                  { id: "tl", cx: selEl.x, cy: selEl.y },
+                  { id: "tr", cx: selEl.x + selEl.w, cy: selEl.y },
+                  { id: "bl", cx: selEl.x, cy: selEl.y + selEl.h },
+                  { id: "br", cx: selEl.x + selEl.w, cy: selEl.y + selEl.h },
+                ];
+                return (
+                  <>
+                    <div style={{
+                      position: "absolute",
+                      left: ox + (selEl.x - 4) * scale,
+                      top: oy + (selEl.y - 4) * scale,
+                      width: (selEl.w + 8) * scale,
+                      height: (selEl.h + 8) * scale,
+                      border: "3px dashed #2563eb",
+                      pointerEvents: "none",
+                      zIndex: 20,
+                      borderRadius: 2,
+                    }} />
+                    {handles.map((hp) => (
+                      <div
+                        key={hp.id}
+                        style={{
+                          position: "absolute",
+                          left: ox + hp.cx * scale - 13,
+                          top: oy + hp.cy * scale - 13,
+                          width: 26,
+                          height: 26,
+                          background: "#fff",
+                          border: "3px solid #2563eb",
+                          cursor: CURSOR_MAP[hp.id],
+                          zIndex: 30,
+                          touchAction: "none",
+                        }}
+                        onPointerDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          (e.currentTarget).setPointerCapture(e.pointerId);
+                          const { mx, my } = toCanvasXY(e.clientX, e.clientY);
+                          dragRef.current = {
+                            mode: "resize", id: selEl.id, handle: hp.id,
+                            mx0: mx, my0: my,
+                            x0: selEl.x, y0: selEl.y, w0: selEl.w, h0: selEl.h,
+                            fromHandle: true,
+                          };
+                        }}
+                        onPointerMove={(e) => {
+                          if (!dragRef.current || !dragRef.current.fromHandle) return;
+                          handleDragMove(e.clientX, e.clientY);
+                        }}
+                        onPointerUp={(e) => {
+                          (e.currentTarget).releasePointerCapture(e.pointerId);
+                          dragRef.current = null;
+                        }}
+                      />
+                    ))}
+                  </>
                 );
               })()}
             </div>
