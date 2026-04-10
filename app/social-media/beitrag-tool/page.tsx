@@ -565,6 +565,7 @@ export default function BeitragToolPage() {
 
   /* Pixabay */
   const [showPixabay,     setShowPixabay]     = useState(false);
+  const [pixabayBgMode,   setPixabayBgMode]   = useState(false);
   const [pixabayQuery,    setPixabayQuery]    = useState("");
   const [pixabayResults,  setPixabayResults]  = useState<{ id: number; preview: string; webformat: string; large: string; tags: string; width: number; height: number; user: string }[]>([]);
   const [pixabayTotal,    setPixabayTotal]    = useState(0);
@@ -1113,17 +1114,16 @@ export default function BeitragToolPage() {
 
   async function addPixabayImage(url: string) {
     setShowPixabay(false);
-    await addTplImage(url);
-  }
-
-  async function setPixabayAsBackground(url: string) {
-    setShowPixabay(false);
-    try {
-      const img = await loadImg(url);
-      bgImgRef.current = img;
-      setBgImage(url);
-      setTick((t) => t + 1);
-    } catch { /* ignore */ }
+    if (pixabayBgMode) {
+      try {
+        const img = await loadImg(url);
+        bgImgRef.current = img;
+        setBgImage(url);
+        setTick((t) => t + 1);
+      } catch { /* ignore */ }
+    } else {
+      await addTplImage(url);
+    }
   }
 
   function del() {
@@ -1499,6 +1499,10 @@ export default function BeitragToolPage() {
                     </button>
                   </div>
                 )}
+                <button type="button" className="btn text-xs w-full"
+                  onClick={() => { setPixabayBgMode(true); setShowPixabay(true); }}>
+                  Hintergrund von Pixabay
+                </button>
               </div>
             )}
 
@@ -1626,10 +1630,10 @@ export default function BeitragToolPage() {
               <div className={fullscreen ? "flex flex-wrap gap-1.5" : "grid grid-cols-2 md:grid-cols-1 gap-1.5"}>
                 <button type="button" className="btn text-xs" onClick={addText}>+ Text</button>
                 <button type="button" className="btn text-xs" onClick={() => setShowTemplates(true)}>
-                  + Bildvorlage
+                  Bilder der BuchArena
                 </button>
-                <button type="button" className="btn text-xs" onClick={() => setShowPixabay(true)}>
-                  + Pixabay
+                <button type="button" className="btn text-xs" onClick={() => { setPixabayBgMode(false); setShowPixabay(true); }}>
+                  Bilder von Pixabay
                 </button>
                 <label className="btn cursor-pointer text-xs text-center block">
                   + Eigenes Bild
@@ -1974,7 +1978,7 @@ export default function BeitragToolPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full mx-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-arena-border">
-              <h2 className="text-lg font-bold">Pixabay – Kostenlose Bilder</h2>
+              <h2 className="text-lg font-bold">{pixabayBgMode ? "Pixabay – Hintergrund suchen" : "Pixabay – Kostenlose Bilder"}</h2>
               <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
                 onClick={() => setShowPixabay(false)}>&times;</button>
             </div>
@@ -2016,19 +2020,14 @@ export default function BeitragToolPage() {
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-2">
                     {pixabayResults.map((hit) => (
                       <div key={hit.id}
-                        className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left group">
+                        className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left group cursor-pointer"
+                        onClick={() => addPixabayImage(hit.large)}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={hit.preview} alt={hit.tags}
                           className="w-full object-contain bg-gray-100" />
                         <div className="px-1.5 py-1">
                           <p className="text-[10px] text-arena-muted truncate">{hit.tags}</p>
                           <p className="text-[10px] text-arena-muted/60 truncate">von {hit.user}</p>
-                          <div className="flex gap-1 mt-1">
-                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded border border-arena-border text-black hover:bg-gray-100 transition-colors truncate"
-                              onClick={() => addPixabayImage(hit.large)}>als Bild</button>
-                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded bg-black text-white hover:bg-gray-800 transition-colors truncate"
-                              onClick={() => setPixabayAsBackground(hit.large)}>Hintergrund</button>
-                          </div>
                         </div>
                       </div>
                     ))}
