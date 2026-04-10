@@ -344,8 +344,8 @@ function drawFrame(
   inset: number = 0, // 0–20 Abstand vom Rand
 ) {
   if (style === "none") return;
-  // thick 1..10 → Pixelstärke relativ zur Canvas-Breite
-  const t = Math.max(1, Math.round((thick / 10) * cw * 0.042));
+  // thick 1..20 → Pixelstärke relativ zur Canvas-Breite
+  const t = Math.max(1, Math.round((thick / 20) * cw * 0.042));
   // inset 0..20 → Pixel-Abstand vom Bildrand
   const insetPx = Math.round((inset / 20) * Math.min(cw, ch) * 0.08);
   ctx.save();
