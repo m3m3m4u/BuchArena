@@ -673,8 +673,17 @@ export default function BeitragToolPage() {
     if (canvas.width !== sz.w || canvas.height !== sz.h) {
       canvas.width = sz.w; canvas.height = sz.h;
     }
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, sz.w, sz.h);
+    if (!bgImgRef.current && bgOpacity < 100) {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, sz.w, sz.h);
+      ctx.globalAlpha = bgOpacity / 100;
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, sz.w, sz.h);
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, sz.w, sz.h);
+    }
     if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h, bgOffsetX, bgOffsetY, bgOpacity);
     for (const el of elements) {
       if (el.id === editingId && el.type === "text") continue;
@@ -852,6 +861,44 @@ export default function BeitragToolPage() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [selId, editingId]);
+
+  /* Paste from clipboard (images + text) */
+  useEffect(() => {
+    function onPaste(e: ClipboardEvent) {
+      if (editingId) return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith("image/")) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (file) addUserImage(file);
+          return;
+        }
+      }
+
+      const text = e.clipboardData?.getData("text/plain")?.trim();
+      if (text) {
+        e.preventDefault();
+        const el: TextEl = {
+          id: uid(), type: "text",
+          x: 80, y: 80, w: 920, h: 200,
+          content: text,
+          font: "Georgia", fontSize: 72, color: "#1a1a1a",
+          bold: false, italic: false, align: "center",
+        };
+        setElements((p) => [...p, el]);
+        setSelId(el.id);
+      }
+    }
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingId, sz]);
 
   /* coordinate helper */
   function toCanvasXY(clientX: number, clientY: number) {
@@ -1286,8 +1333,17 @@ export default function BeitragToolPage() {
       const off = document.createElement("canvas");
       off.width = sz.w; off.height = sz.h;
       const ctx = off.getContext("2d")!;
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, sz.w, sz.h);
+      if (!bgImgRef.current && bgOpacity < 100) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, sz.w, sz.h);
+        ctx.globalAlpha = bgOpacity / 100;
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, sz.w, sz.h);
+        ctx.globalAlpha = 1;
+      } else {
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, sz.w, sz.h);
+      }
       if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h, bgOffsetX, bgOffsetY, bgOpacity);
       for (const el of elements) drawEl(ctx, el, imgCache.current);
       drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
@@ -1325,8 +1381,17 @@ export default function BeitragToolPage() {
       // Phase 1: Alle Frames rendern und als JPEG in FFmpeg-FS schreiben
       for (let i = 0; i < frames; i++) {
         const t = i / FPS;
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, sz.w, sz.h);
+        if (!bgImgRef.current && bgOpacity < 100) {
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, sz.w, sz.h);
+          ctx.globalAlpha = bgOpacity / 100;
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(0, 0, sz.w, sz.h);
+          ctx.globalAlpha = 1;
+        } else {
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(0, 0, sz.w, sz.h);
+        }
         if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h, bgOffsetX, bgOffsetY, bgOpacity);
         for (const el of elements) drawElAnimated(ctx, el, imgCache.current, t);
         drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
@@ -1544,15 +1609,15 @@ export default function BeitragToolPage() {
                           className="w-full" />
                       </label>
                     )}
-                    <label className="text-xs flex flex-col gap-0.5">
-                      <span>Deckkraft: <strong>{bgOpacity}%</strong></span>
-                      <input type="range" min={0} max={100} step={5}
-                        value={bgOpacity}
-                        onChange={(e) => setBgOpacity(Number(e.target.value))}
-                        className="w-full" />
-                    </label>
                   </>
                 )}
+                <label className="text-xs flex flex-col gap-0.5">
+                  <span>Deckkraft: <strong>{bgOpacity}%</strong></span>
+                  <input type="range" min={0} max={100} step={5}
+                    value={bgOpacity}
+                    onChange={(e) => setBgOpacity(Number(e.target.value))}
+                    className="w-full" />
+                </label>
                 <button type="button" className="btn text-xs w-full"
                   onClick={() => { setPixabayBgMode(true); setShowPixabay(true); }}>
                   Hintergrund von Pixabay
