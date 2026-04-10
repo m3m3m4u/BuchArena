@@ -11,8 +11,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: "Pixabay API nicht konfiguriert." }, { status: 500 });
   }
 
-  const q     = req.nextUrl.searchParams.get("q")?.trim() ?? "";
-  const page  = Math.max(1, Number(req.nextUrl.searchParams.get("page")) || 1);
+  const q         = req.nextUrl.searchParams.get("q")?.trim() ?? "";
+  const page      = Math.max(1, Number(req.nextUrl.searchParams.get("page")) || 1);
+  const imageType = req.nextUrl.searchParams.get("image_type") ?? "all";
+
+  const ALLOWED_TYPES = ["all", "photo", "illustration", "vector"];
+  const safeType = ALLOWED_TYPES.includes(imageType) ? imageType : "all";
 
   if (!q) {
     return NextResponse.json({ hits: [], totalHits: 0 });
@@ -21,7 +25,7 @@ export async function GET(req: NextRequest) {
   const url = new URL("https://pixabay.com/api/");
   url.searchParams.set("key", PIXABAY_KEY);
   url.searchParams.set("q", q);
-  url.searchParams.set("image_type", "photo");
+  url.searchParams.set("image_type", safeType);
   url.searchParams.set("per_page", "20");
   url.searchParams.set("page", String(page));
   url.searchParams.set("safesearch", "true");

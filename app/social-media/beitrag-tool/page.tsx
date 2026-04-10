@@ -559,6 +559,8 @@ export default function BeitragToolPage() {
   const [pixabayTotal,    setPixabayTotal]    = useState(0);
   const [pixabayPage,     setPixabayPage]     = useState(1);
   const [pixabayLoading,  setPixabayLoading]  = useState(false);
+  const [pixabayType,     setPixabayType]     = useState<"all" | "photo" | "illustration" | "vector">("all");
+  const [pixabaySearched, setPixabaySearched] = useState(false);
 
   const [showSaveAs,    setShowSaveAs]     = useState(false);
   const [showOpen,      setShowOpen]       = useState(false);
@@ -1082,12 +1084,13 @@ export default function BeitragToolPage() {
   }
 
   /* ── Pixabay search ── */
-  async function searchPixabay(query: string, page = 1) {
+  async function searchPixabay(query: string, page = 1, type = pixabayType) {
     const q = query.trim();
     if (!q) return;
     setPixabayLoading(true);
+    setPixabaySearched(true);
     try {
-      const res = await fetch(`/api/social-media/pixabay?q=${encodeURIComponent(q)}&page=${page}`);
+      const res = await fetch(`/api/social-media/pixabay?q=${encodeURIComponent(q)}&page=${page}&image_type=${type}`);
       const data = await res.json() as { hits?: typeof pixabayResults; totalHits?: number };
       setPixabayResults(data.hits ?? []);
       setPixabayTotal(data.totalHits ?? 0);
@@ -1934,7 +1937,7 @@ export default function BeitragToolPage() {
                 onClick={() => setShowPixabay(false)}>&times;</button>
             </div>
 
-            <div className="px-5 pt-3 pb-2">
+            <div className="px-5 pt-3 pb-2 grid gap-2">
               <form onSubmit={(e) => { e.preventDefault(); searchPixabay(pixabayQuery, 1); }}
                 className="flex gap-2">
                 <input type="text" className="input-base flex-1 text-sm"
@@ -1946,12 +1949,23 @@ export default function BeitragToolPage() {
                   {pixabayLoading ? "Suche …" : "Suchen"}
                 </button>
               </form>
+              <div className="flex gap-1.5 flex-wrap">
+                {(["all", "photo", "illustration", "vector"] as const).map((t) => (
+                  <button key={t} type="button"
+                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                      pixabayType === t ? "bg-arena-accent text-white border-arena-accent" : "border-arena-border text-arena-muted hover:border-gray-400"
+                    }`}
+                    onClick={() => { setPixabayType(t); if (pixabayQuery.trim()) searchPixabay(pixabayQuery, 1, t); }}>
+                    {{ all: "Alle", photo: "Fotos", illustration: "Illustrationen", vector: "Vektorgrafiken" }[t]}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 pb-4">
               {pixabayResults.length === 0 && !pixabayLoading && (
                 <p className="text-sm text-arena-muted py-4 text-center">
-                  {pixabayTotal === 0 && pixabayQuery.trim() ? "Keine Ergebnisse." : "Suchbegriff eingeben, um Bilder zu finden."}
+                  {pixabaySearched && pixabayTotal === 0 ? "Keine Ergebnisse für diese Suche." : "Suchbegriff eingeben und auf \u201eSuchen\u201c klicken."}
                 </p>
               )}
 
