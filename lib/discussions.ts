@@ -19,6 +19,7 @@ export type DiscussionDocument = {
   authorUsername: string;
   title: string;
   body: string;
+  topic?: DiscussionTopic;
   replies: DiscussionReply[];
   replyCount: number;
   lastActivityAt: Date;
@@ -27,6 +28,24 @@ export type DiscussionDocument = {
 };
 
 export const ALLOWED_EMOJIS = ["👍", "❤️", "😂", "🎉", "🤔", "👎"];
+
+/* ── Diskussions-Themen ── */
+
+export const DISCUSSION_TOPICS = [
+  "Allgemein",
+  "Autorentipps",
+  "Schreibtipps",
+  "Selfpublishing",
+  "Buchmarketing",
+  "Social Media & Werbung",
+  "Buchcover",
+  "Lektoren & Testleser",
+  "Genre-Diskussion",
+  "Veranstaltungen",
+  "Abstimmung",
+] as const;
+
+export type DiscussionTopic = (typeof DISCUSSION_TOPICS)[number];
 
 export type CreateDiscussionPayload = {
   authorUsername?: string;

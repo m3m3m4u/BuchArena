@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getStoredAccount } from "@/lib/client-account";
 
 /* ---- FFmpeg UMD loader (bypasses Turbopack bundling) ---- */
 function loadScript(src: string): Promise<void> {
@@ -320,7 +321,7 @@ function drawFrame(
 ) {
   if (style === "none") return;
   // thick 1..10 → Pixelstärke relativ zur Canvas-Breite
-  const t = Math.round((thick / 10) * cw * 0.042 + 3);
+  const t = Math.round((thick / 10) * cw * 0.042 + 1);
   // inset 0..20 → Pixel-Abstand vom Bildrand
   const insetPx = Math.round((inset / 20) * Math.min(cw, ch) * 0.08);
   ctx.save();
@@ -556,11 +557,13 @@ export default function BeitragToolPage() {
   const [fullscreen,    setFullscreen]     = useState(false);
   const [showAnimPanel, setShowAnimPanel]  = useState(false);
   const [confirmDelete, setConfirmDelete]  = useState<string | null>(null);
-  const [savedDesigns,  setSavedDesigns]   = useState<{ id: string; name: string; data: string; updatedAt?: string }[]>([]);
+  const [savedDesigns,  setSavedDesigns]   = useState<{ id: string; name: string; data: string; updatedAt?: string; username?: string }[]>([]);
   const [loadingDesigns, setLoadingDesigns] = useState(false);
   const [saveNameInput, setSaveNameInput]  = useState("");
   const [savingState,   setSavingState]    = useState<"idle" | "saving" | "saved">("idle");
   const [currentDesignName, setCurrentDesignName] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAllDesigns, setShowAllDesigns] = useState(false);
 
   /* Frame */
   const [frameStyle,     setFrameStyle]     = useState<FrameStyle>("none");
@@ -601,6 +604,12 @@ export default function BeitragToolPage() {
     else document.body.style.overflow = "";
     return () => { document.body.style.overflow = ""; };
   }, [fullscreen]);
+
+  // Detect admin role
+  useEffect(() => {
+    const acc = getStoredAccount();
+    if (acc && (acc.role === "ADMIN" || acc.role === "SUPERADMIN")) setIsAdmin(true);
+  }, []);
 
   /* preload images */
   useEffect(() => {
@@ -778,12 +787,13 @@ export default function BeitragToolPage() {
   useEffect(() => {
     if (!showOpen) return;
     setLoadingDesigns(true);
-    fetch("/api/social-media/designs")
+    const url = showAllDesigns && isAdmin ? "/api/social-media/designs?all=1" : "/api/social-media/designs";
+    fetch(url)
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setSavedDesigns(data); })
       .catch(() => {})
       .finally(() => setLoadingDesigns(false));
-  }, [showOpen]);
+  }, [showOpen, showAllDesigns, isAdmin]);
 
   /* Delete/Backspace key removes selected element */
   useEffect(() => {
@@ -1927,6 +1937,16 @@ export default function BeitragToolPage() {
               <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
                 onClick={() => setShowOpen(false)}>&times;</button>
             </div>
+            {isAdmin && (
+              <div className="px-5 pt-3">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" checked={showAllDesigns}
+                    onChange={(e) => setShowAllDesigns(e.target.checked)}
+                    className="rounded" />
+                  Alle Benutzer-Entwürfe anzeigen
+                </label>
+              </div>
+            )}
             <div className="flex-1 overflow-y-auto px-5 py-3">
               {loadingDesigns ? (
                 <p className="text-sm text-arena-muted py-2">Lade Entw&uuml;rfe&hellip;</p>
@@ -1935,16 +1955,23 @@ export default function BeitragToolPage() {
               ) : (
                 <ul className="grid gap-2">
                   {savedDesigns.map((d) => (
-                    <li key={d.name} className="flex items-center gap-2 rounded-lg border border-arena-border px-3 py-2.5 hover:bg-arena-bg/50 transition-colors cursor-pointer"
+                    <li key={d.id} className="flex items-center gap-2 rounded-lg border border-arena-border px-3 py-2.5 hover:bg-arena-bg/50 transition-colors cursor-pointer"
                       onClick={() => { loadDesign(d.data, d.name); setShowOpen(false); }}>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{d.name}</p>
-                        {d.updatedAt && <p className="text-xs text-arena-muted">{new Date(d.updatedAt).toLocaleDateString("de-DE")}</p>}
+                        <div className="flex items-center gap-2">
+                          {d.username && showAllDesigns && (
+                            <span className="text-xs text-blue-600 font-medium">{d.username}</span>
+                          )}
+                          {d.updatedAt && <p className="text-xs text-arena-muted">{new Date(d.updatedAt).toLocaleDateString("de-DE")}</p>}
+                        </div>
                       </div>
-                      <button type="button" className="btn text-sm px-2 text-red-600 flex-shrink-0"
-                        onClick={(e) => { e.stopPropagation(); setConfirmDelete(d.name); }}>
-                        L&ouml;schen
-                      </button>
+                      {!showAllDesigns && (
+                        <button type="button" className="btn text-sm px-2 text-red-600 flex-shrink-0"
+                          onClick={(e) => { e.stopPropagation(); setConfirmDelete(d.name); }}>
+                          L&ouml;schen
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>

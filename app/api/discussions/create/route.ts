@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDiscussionsCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { awardTreffpunktBeitrag } from "@/lib/lesezeichen";
+import { DISCUSSION_TOPICS, type DiscussionTopic } from "@/lib/discussions";
 
 export async function POST(request: Request) {
   try {
@@ -14,11 +15,27 @@ export async function POST(request: Request) {
       authorUsername?: string;
       title?: string;
       body?: string;
+      topic?: string;
     };
 
     const authorUsername = account.username;
     const title = body.title?.trim();
     const postBody = body.body?.trim();
+    const topic = (body.topic?.trim() || "Allgemein") as DiscussionTopic;
+
+    if (!authorUsername || !title || !postBody) {
+      return NextResponse.json(
+        { message: "Benutzername, Titel und Text sind erforderlich." },
+        { status: 400 }
+      );
+    }
+
+    if (!(DISCUSSION_TOPICS as readonly string[]).includes(topic)) {
+      return NextResponse.json(
+        { message: "Ungültiges Thema." },
+        { status: 400 }
+      );
+    }
 
     if (!authorUsername || !title || !postBody) {
       return NextResponse.json(
@@ -48,6 +65,7 @@ export async function POST(request: Request) {
       authorUsername,
       title,
       body: postBody,
+      topic,
       replies: [],
       replyCount: 0,
       lastActivityAt: now,

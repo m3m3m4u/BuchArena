@@ -2,14 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
 import { getSocialMediaDesignsCollection } from "@/lib/mongodb";
 
-/** GET /api/social-media/designs – alle Designs des Users laden */
-export async function GET() {
+/** GET /api/social-media/designs – alle Designs des Users laden (Admin: ?all=1 für alle User) */
+export async function GET(req: NextRequest) {
   const account = await getServerAccount();
   if (!account) return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
 
   const col = await getSocialMediaDesignsCollection();
+
+  const showAll = req.nextUrl.searchParams.get("all") === "1";
+  const isAdmin = account.role === "ADMIN" || account.role === "SUPERADMIN";
+
+  const filter = (showAll && isAdmin) ? {} : { username: account.username };
+
   const docs = await col
-    .find({ username: account.username }, { projection: { _id: 1, name: 1, updatedAt: 1, data: 1 } })
+    .find(filter, { projection: { _id: 1, name: 1, updatedAt: 1, data: 1, username: 1 } })
     .sort({ updatedAt: -1 })
     .toArray();
 
@@ -18,6 +24,7 @@ export async function GET() {
     name:       d.name,
     updatedAt:  d.updatedAt,
     data:       d.data,
+    ...(showAll && isAdmin ? { username: d.username } : {}),
   })));
 }
 

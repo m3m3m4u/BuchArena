@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
+import { DISCUSSION_TOPICS } from "@/lib/discussions";
 
 type DiscussionItem = {
   id: string;
@@ -12,6 +13,7 @@ type DiscussionItem = {
   displayName?: string;
   title: string;
   body: string;
+  topic?: string;
   replyCount: number;
   lastActivityAt: string;
   createdAt: string;
@@ -84,8 +86,13 @@ export default function DiskussionenPage() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [topic, setTopic] = useState("Allgemein");
   const [isSaving, setIsSaving] = useState(false);
   const [username, setUsername] = useState("");
+
+  /* ── Filter / Suche ── */
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterTopic, setFilterTopic] = useState("");
 
   /* ── Poll state ── */
   const [polls, setPolls] = useState<PollItem[]>([]);
@@ -200,6 +207,7 @@ export default function DiskussionenPage() {
           authorUsername: username,
           title: title.trim(),
           body: body.trim(),
+          topic,
         }),
       });
 
@@ -212,6 +220,7 @@ export default function DiskussionenPage() {
       if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
       setTitle("");
       setBody("");
+      setTopic("Allgemein");
       setShowOverlay(false);
       await loadDiscussions();
     } catch (error) {
@@ -256,17 +265,55 @@ export default function DiskussionenPage() {
 
         {message && <p className="text-red-700">{message}</p>}
 
+        {/* ═══ Such- und Filterleiste ═══ */}
+        <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+          <input
+            type="text"
+            className="input-base text-sm"
+            placeholder="Diskussionen durchsuchen …"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <select
+            className="input-base text-sm"
+            value={filterTopic}
+            onChange={(e) => setFilterTopic(e.target.value)}
+          >
+            <option value="">Alle Themen</option>
+            {DISCUSSION_TOPICS.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+
         {isLoading ? (
           <p>Lade Diskussionen ...</p>
         ) : (() => {
           // Merge discussions & polls into one sorted list
           type ListItem = { type: "discussion"; data: DiscussionItem } | { type: "poll"; data: PollItem };
+
+          const search = searchTerm.trim().toLowerCase();
+
+          const filteredDiscussions = discussions.filter((d) => {
+            if (filterTopic && (d.topic || "Allgemein") !== filterTopic) return false;
+            if (search && !d.title.toLowerCase().includes(search) && !d.body.toLowerCase().includes(search) && !(d.displayName || d.authorUsername).toLowerCase().includes(search)) return false;
+            return true;
+          });
+
+          const filteredPolls = (filterTopic ? [] : polls).filter((p) => {
+            if (search && !p.question.toLowerCase().includes(search)) return false;
+            return true;
+          });
+
           const items: ListItem[] = [
-            ...discussions.map((d) => ({ type: "discussion" as const, data: d })),
-            ...polls.map((p) => ({ type: "poll" as const, data: p })),
+            ...filteredDiscussions.map((d) => ({ type: "discussion" as const, data: d })),
+            ...filteredPolls.map((p) => ({ type: "poll" as const, data: p })),
           ].sort((a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime());
 
-          if (items.length === 0) return <p>Noch keine Diskussionen vorhanden. Starte das erste Thema!</p>;
+          if (items.length === 0) {
+            if (search || filterTopic) return <p className="text-arena-muted text-sm">Keine Ergebnisse für diese Filter.</p>;
+            return <p>Noch keine Diskussionen vorhanden. Starte das erste Thema!</p>;
+          }
 
           return (
             <div className="grid gap-3">
@@ -280,7 +327,12 @@ export default function DiskussionenPage() {
                       className="rounded-lg border border-arena-border p-3 sm:p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit"
                     >
                       <div className="flex items-start justify-between gap-2 sm:gap-3">
-                        <strong className="text-sm sm:text-base line-clamp-2">{d.title}</strong>
+                        <strong className="text-sm sm:text-base line-clamp-2 flex items-center gap-1.5">
+                          {d.title}
+                          {d.topic && d.topic !== "Allgemein" && (
+                            <span className="text-xs bg-arena-accent/10 text-arena-accent px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">{d.topic}</span>
+                          )}
+                        </strong>
                         <span className="text-xs text-arena-muted whitespace-nowrap flex-shrink-0">
                           {d.replyCount} {d.replyCount === 1 ? "Antwort" : "Antworten"}
                         </span>
@@ -410,6 +462,19 @@ export default function DiskussionenPage() {
                 maxLength={200}
                 placeholder="Worum soll diskutiert werden?"
               />
+            </label>
+
+            <label className="grid gap-1 text-[0.95rem]">
+              Thema
+              <select
+                className="input-base"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+              >
+                {DISCUSSION_TOPICS.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
             </label>
 
             <label className="grid gap-1 text-[0.95rem]">
