@@ -167,10 +167,12 @@ function hitEl(mx: number, my: number, el: CE) {
 function drawBgCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, cw: number, ch: number) {
   const ir = img.naturalWidth / img.naturalHeight;
   const cr = cw / ch;
-  let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
-  if (ir > cr) { sw = img.naturalHeight * cr; sx = (img.naturalWidth - sw) / 2; }
-  else { sh = img.naturalWidth / cr; sy = (img.naturalHeight - sh) / 2; }
-  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+  let dw: number, dh: number;
+  if (ir > cr) { dw = cw; dh = cw / ir; }
+  else { dh = ch; dw = ch * ir; }
+  const dx = (cw - dw) / 2;
+  const dy = (ch - dh) / 2;
+  ctx.drawImage(img, dx, dy, dw, dh);
 }
 
 function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLImageElement>) {
@@ -1483,7 +1485,7 @@ export default function BeitragToolPage() {
             {!fullscreen && (
               <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
                 <label className="flex items-center gap-2 text-sm">
-                  <span>Hintergrund</span>
+                  <span className="font-semibold">Hintergrund</span>
                   <input type="color" value={bgColor}
                     onChange={(e) => { setBgColor(e.target.value); setBgImage(null); bgImgRef.current = null; }}
                     className="ml-auto w-12 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
@@ -1491,7 +1493,7 @@ export default function BeitragToolPage() {
                 {bgImage && (
                   <div className="flex items-center gap-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={bgImage} alt="Hintergrund" className="w-10 h-10 rounded object-cover border border-arena-border" />
+                    <img src={bgImage} alt="Hintergrund" className="w-10 h-10 rounded object-contain border border-arena-border bg-gray-50" />
                     <span className="text-xs text-arena-muted flex-1 truncate">Hintergrundbild</span>
                     <button type="button" className="text-xs text-red-500 hover:text-red-700"
                       onClick={() => { setBgImage(null); bgImgRef.current = null; setTick((t) => t + 1); }}>
@@ -2019,7 +2021,7 @@ export default function BeitragToolPage() {
                         className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left group">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={hit.preview} alt={hit.tags}
-                          className="w-full object-cover aspect-square bg-gray-100" />
+                          className="w-full object-contain bg-gray-100" />
                         <div className="px-1.5 py-1">
                           <p className="text-[10px] text-arena-muted truncate">{hit.tags}</p>
                           <p className="text-[10px] text-arena-muted/60 truncate">von {hit.user}</p>
