@@ -164,6 +164,15 @@ function hitEl(mx: number, my: number, el: CE) {
   return mx >= el.x && mx <= el.x + el.w && my >= el.y && my <= el.y + el.h;
 }
 
+function drawBgCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, cw: number, ch: number) {
+  const ir = img.naturalWidth / img.naturalHeight;
+  const cr = cw / ch;
+  let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+  if (ir > cr) { sw = img.naturalHeight * cr; sx = (img.naturalWidth - sw) / 2; }
+  else { sh = img.naturalWidth / cr; sy = (img.naturalHeight - sh) / 2; }
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+}
+
 function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLImageElement>) {
   if (el.type === "image") {
     const img = cache.get(el.src);
@@ -541,6 +550,8 @@ export default function BeitragToolPage() {
 
   const [format,    setFormat]    = useState<FormatPreset>("4:5");
   const [bgColor,   setBgColor]   = useState("#ffffff");
+  const [bgImage,   setBgImage]   = useState<string | null>(null);
+  const bgImgRef = useRef<HTMLImageElement | null>(null);
   const [elements,  setElements]  = useState<CE[]>([]);
   const [selId,     setSelId]     = useState<string | null>(null);
   const [cursor,    setCursor]    = useState("default");
@@ -645,6 +656,7 @@ export default function BeitragToolPage() {
     }
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, sz.w, sz.h);
+    if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h);
     for (const el of elements) {
       if (el.id === editingId && el.type === "text") continue;
       if (previewing) drawElAnimated(ctx, el, imgCache.current, previewTRef.current);
@@ -653,7 +665,7 @@ export default function BeitragToolPage() {
     drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
     if (selEl && selEl.id !== editingId) drawSel(ctx, selEl);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elements, selId, sz, bgColor, tick, selEl, editingId, previewing, frameStyle, frameColor, frameThickness, frameInset]);
+  }, [elements, selId, sz, bgColor, bgImage, tick, selEl, editingId, previewing, frameStyle, frameColor, frameThickness, frameInset]);
 
   /* focus textarea when edit starts */
   useEffect(() => {
@@ -1104,6 +1116,16 @@ export default function BeitragToolPage() {
     await addTplImage(url);
   }
 
+  async function setPixabayAsBackground(url: string) {
+    setShowPixabay(false);
+    try {
+      const img = await loadImg(url);
+      bgImgRef.current = img;
+      setBgImage(url);
+      setTick((t) => t + 1);
+    } catch { /* ignore */ }
+  }
+
   function del() {
     if (!selId) return;
     if (editingId === selId) setEditingId(null);
@@ -1121,7 +1143,7 @@ export default function BeitragToolPage() {
 
   async function saveDesign(name: string) {
     const snapshot = JSON.stringify({
-      format, bgColor, elements,
+      format, bgColor, bgImage, elements,
       editorMode, videoDuration,
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
@@ -1150,7 +1172,7 @@ export default function BeitragToolPage() {
   function loadDesign(data: string, name?: string) {
     try {
       const s = JSON.parse(data) as {
-        format: FormatPreset; bgColor: string; elements: CE[];
+        format: FormatPreset; bgColor: string; bgImage?: string | null; elements: CE[];
         editorMode?: "bild" | "video"; videoDuration?: number;
         selectedTrackId?: string | null;
         musikFadeIn?: boolean; musikFadeInDur?: number;
@@ -1160,6 +1182,13 @@ export default function BeitragToolPage() {
       };
       setFormat(s.format ?? "4:5");
       setBgColor(s.bgColor ?? "#ffffff");
+      if (s.bgImage) {
+        setBgImage(s.bgImage);
+        loadImg(s.bgImage).then((img) => { bgImgRef.current = img; setTick((t) => t + 1); }).catch(() => {});
+      } else {
+        setBgImage(null);
+        bgImgRef.current = null;
+      }
       setElements(s.elements ?? []);
       if (s.editorMode) setEditorMode(s.editorMode);
       if (s.videoDuration != null) setVideoDuration(s.videoDuration);
@@ -1188,7 +1217,7 @@ export default function BeitragToolPage() {
   function exportDesign() {
     if (editingId) commitEdit();
     const snapshot = JSON.stringify({
-      format, bgColor, elements,
+      format, bgColor, bgImage, elements,
       editorMode, videoDuration,
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
@@ -1233,6 +1262,7 @@ export default function BeitragToolPage() {
       const ctx = off.getContext("2d")!;
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, sz.w, sz.h);
+      if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h);
       for (const el of elements) drawEl(ctx, el, imgCache.current);
       drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
       const a = document.createElement("a");
@@ -1271,6 +1301,7 @@ export default function BeitragToolPage() {
         const t = i / FPS;
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, sz.w, sz.h);
+        if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h);
         for (const el of elements) drawElAnimated(ctx, el, imgCache.current, t);
         drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
 
@@ -1443,7 +1474,7 @@ export default function BeitragToolPage() {
               {fullscreen && (
                 <label className="flex items-center gap-1" title="Hintergrund">
                   <input type="color" value={bgColor}
-                    onChange={(e) => setBgColor(e.target.value)}
+                    onChange={(e) => { setBgColor(e.target.value); setBgImage(null); bgImgRef.current = null; }}
                     className="w-10 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
                 </label>
               )}
@@ -1454,9 +1485,20 @@ export default function BeitragToolPage() {
                 <label className="flex items-center gap-2 text-sm">
                   <span>Hintergrund</span>
                   <input type="color" value={bgColor}
-                    onChange={(e) => setBgColor(e.target.value)}
+                    onChange={(e) => { setBgColor(e.target.value); setBgImage(null); bgImgRef.current = null; }}
                     className="ml-auto w-12 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
                 </label>
+                {bgImage && (
+                  <div className="flex items-center gap-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={bgImage} alt="Hintergrund" className="w-10 h-10 rounded object-cover border border-arena-border" />
+                    <span className="text-xs text-arena-muted flex-1 truncate">Hintergrundbild</span>
+                    <button type="button" className="text-xs text-red-500 hover:text-red-700"
+                      onClick={() => { setBgImage(null); bgImgRef.current = null; setTick((t) => t + 1); }}>
+                      Entfernen
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1973,17 +2015,22 @@ export default function BeitragToolPage() {
                 <>
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-2">
                     {pixabayResults.map((hit) => (
-                      <button key={hit.id} type="button"
-                        className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left group"
-                        onClick={() => addPixabayImage(hit.large)}>
+                      <div key={hit.id}
+                        className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left group">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={hit.preview} alt={hit.tags}
                           className="w-full object-cover aspect-square bg-gray-100" />
                         <div className="px-1.5 py-1">
                           <p className="text-[10px] text-arena-muted truncate">{hit.tags}</p>
                           <p className="text-[10px] text-arena-muted/60 truncate">von {hit.user}</p>
+                          <div className="flex gap-1 mt-1">
+                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded bg-arena-accent text-white hover:opacity-80 transition-opacity"
+                              onClick={() => addPixabayImage(hit.large)}>Element</button>
+                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded bg-gray-700 text-white hover:opacity-80 transition-opacity"
+                              onClick={() => setPixabayAsBackground(hit.large)}>Hintergrund</button>
+                          </div>
                         </div>
-                      </button>
+                      </div>
                     ))}
                   </div>
 
