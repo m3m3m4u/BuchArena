@@ -167,12 +167,10 @@ function hitEl(mx: number, my: number, el: CE) {
 function drawBgCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, cw: number, ch: number) {
   const ir = img.naturalWidth / img.naturalHeight;
   const cr = cw / ch;
-  let dw: number, dh: number;
-  if (ir > cr) { dw = cw; dh = cw / ir; }
-  else { dh = ch; dw = ch * ir; }
-  const dx = (cw - dw) / 2;
-  const dy = (ch - dh) / 2;
-  ctx.drawImage(img, dx, dy, dw, dh);
+  let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+  if (ir > cr) { sw = img.naturalHeight * cr; sx = (img.naturalWidth - sw) / 2; }
+  else { sh = img.naturalWidth / cr; sy = (img.naturalHeight - sh) / 2; }
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
 }
 
 function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLImageElement>) {
@@ -2026,10 +2024,10 @@ export default function BeitragToolPage() {
                           <p className="text-[10px] text-arena-muted truncate">{hit.tags}</p>
                           <p className="text-[10px] text-arena-muted/60 truncate">von {hit.user}</p>
                           <div className="flex gap-1 mt-1">
-                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded bg-arena-accent text-white hover:opacity-80 transition-opacity"
-                              onClick={() => addPixabayImage(hit.large)}>Element</button>
-                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded bg-gray-700 text-white hover:opacity-80 transition-opacity"
-                              onClick={() => setPixabayAsBackground(hit.large)}>Hintergrund</button>
+                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded bg-arena-accent text-white hover:opacity-80 transition-opacity truncate"
+                              onClick={() => addPixabayImage(hit.large)}>+ Bild</button>
+                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded bg-gray-700 text-white hover:opacity-80 transition-opacity truncate"
+                              onClick={() => setPixabayAsBackground(hit.large)}>+ HG</button>
                           </div>
                         </div>
                       </div>
