@@ -168,11 +168,21 @@ function drawBgCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, cw: n
   const ir = img.naturalWidth / img.naturalHeight;
   const cr = cw / ch;
   let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
-  if (ir > cr) { sw = img.naturalHeight * cr; sx = (img.naturalWidth - sw) / 2; }
-  else { sh = img.naturalWidth / cr; sy = (img.naturalHeight - sh) / 2; }
-  // Apply offset in source coordinates
-  sx += (ox / 100) * img.naturalWidth;
-  sy += (oy / 100) * img.naturalHeight;
+  if (ir > cr) {
+    // Image wider than canvas: can shift X
+    sw = img.naturalHeight * cr;
+    sx = (img.naturalWidth - sw) / 2;
+    const maxShift = (img.naturalWidth - sw) / 2;
+    sx += (ox / 50) * maxShift;
+    sx = Math.max(0, Math.min(img.naturalWidth - sw, sx));
+  } else {
+    // Image taller than canvas: can shift Y
+    sh = img.naturalWidth / cr;
+    sy = (img.naturalHeight - sh) / 2;
+    const maxShift = (img.naturalHeight - sh) / 2;
+    sy += (oy / 50) * maxShift;
+    sy = Math.max(0, Math.min(img.naturalHeight - sh, sy));
+  }
   if (opacity < 100) ctx.globalAlpha = opacity / 100;
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
   if (opacity < 100) ctx.globalAlpha = 1;
@@ -1496,8 +1506,7 @@ export default function BeitragToolPage() {
               )}
             </div>
 
-            {!fullscreen && (
-              <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
+            <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
                 <label className="flex items-center gap-2 text-sm">
                   <span className="font-semibold">Hintergrund</span>
                   <input type="color" value={bgColor}
@@ -1517,20 +1526,24 @@ export default function BeitragToolPage() {
                 )}
                 {bgImage && (
                   <>
-                    <label className="text-xs flex flex-col gap-0.5">
-                      <span>Verschieben X: <strong>{bgOffsetX}</strong></span>
-                      <input type="range" min={-50} max={50} step={1}
-                        value={bgOffsetX}
-                        onChange={(e) => setBgOffsetX(Number(e.target.value))}
-                        className="w-full" />
-                    </label>
-                    <label className="text-xs flex flex-col gap-0.5">
-                      <span>Verschieben Y: <strong>{bgOffsetY}</strong></span>
-                      <input type="range" min={-50} max={50} step={1}
-                        value={bgOffsetY}
-                        onChange={(e) => setBgOffsetY(Number(e.target.value))}
-                        className="w-full" />
-                    </label>
+                    {bgImgRef.current && (bgImgRef.current.naturalWidth / bgImgRef.current.naturalHeight) > (sz.w / sz.h) && (
+                      <label className="text-xs flex flex-col gap-0.5">
+                        <span>Verschieben: <strong>{bgOffsetX}</strong></span>
+                        <input type="range" min={-50} max={50} step={1}
+                          value={bgOffsetX}
+                          onChange={(e) => setBgOffsetX(Number(e.target.value))}
+                          className="w-full" />
+                      </label>
+                    )}
+                    {bgImgRef.current && (bgImgRef.current.naturalWidth / bgImgRef.current.naturalHeight) <= (sz.w / sz.h) && (
+                      <label className="text-xs flex flex-col gap-0.5">
+                        <span>Verschieben: <strong>{bgOffsetY}</strong></span>
+                        <input type="range" min={-50} max={50} step={1}
+                          value={bgOffsetY}
+                          onChange={(e) => setBgOffsetY(Number(e.target.value))}
+                          className="w-full" />
+                      </label>
+                    )}
                     <label className="text-xs flex flex-col gap-0.5">
                       <span>Deckkraft: <strong>{bgOpacity}%</strong></span>
                       <input type="range" min={0} max={100} step={5}
@@ -1545,7 +1558,6 @@ export default function BeitragToolPage() {
                   Hintergrund von Pixabay
                 </button>
               </div>
-            )}
 
             {/* Rahmen */}
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
