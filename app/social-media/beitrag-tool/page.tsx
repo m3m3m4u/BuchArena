@@ -2024,10 +2024,10 @@ export default function BeitragToolPage() {
                           <p className="text-[10px] text-arena-muted truncate">{hit.tags}</p>
                           <p className="text-[10px] text-arena-muted/60 truncate">von {hit.user}</p>
                           <div className="flex gap-1 mt-1">
-                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded bg-arena-accent text-white hover:opacity-80 transition-opacity truncate"
-                              onClick={() => addPixabayImage(hit.large)}>+ Bild</button>
-                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded bg-gray-700 text-white hover:opacity-80 transition-opacity truncate"
-                              onClick={() => setPixabayAsBackground(hit.large)}>+ HG</button>
+                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded border border-arena-border text-black hover:bg-gray-100 transition-colors truncate"
+                              onClick={() => addPixabayImage(hit.large)}>als Bild</button>
+                            <button type="button" className="flex-1 text-[10px] px-1 py-0.5 rounded bg-black text-white hover:bg-gray-800 transition-colors truncate"
+                              onClick={() => setPixabayAsBackground(hit.large)}>Hintergrund</button>
                           </div>
                         </div>
                       </div>
