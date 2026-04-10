@@ -2305,7 +2305,7 @@ export default function BeitragToolPage() {
                 <p className="text-emerald-800 mt-2 text-xs">Wir freuen uns, wenn ihr erw&auml;hnt, dass euer Beitrag mit Tools von <strong>bucharena.org</strong> erstellt wurde &ndash; das ist aber keine Pflicht. 💚</p>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-5">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 <div>
                   <p className="font-semibold mb-1">Formate</p>
                   <ul className="grid gap-1 text-arena-muted">
