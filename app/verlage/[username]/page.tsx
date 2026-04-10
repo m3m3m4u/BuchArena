@@ -165,6 +165,7 @@ export default function VerlageProfilePage({ params }: PageProps) {
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl">{visibleName}</h1>
+                {verlageProfile.motto && <p className="mt-0.5 italic">„{verlageProfile.motto}“</p>}
               </div>
             </div>
 

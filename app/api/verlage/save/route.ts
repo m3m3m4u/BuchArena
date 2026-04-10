@@ -60,6 +60,7 @@ function sanitizeVerlageProfile(
       },
     },
     name: sanitizeField(source.name, base.name, 120),
+    motto: typeof source.motto === "string" ? source.motto.trim().slice(0, 300) : "",
     beschreibung: typeof source.beschreibung === "string" ? source.beschreibung.trim().slice(0, 2000) : "",
     ansprechperson: typeof source.ansprechperson === "string" ? source.ansprechperson.trim().slice(0, 200) : "",
     voraussetzungen: typeof source.voraussetzungen === "string" ? source.voraussetzungen.trim().slice(0, 2000) : "",

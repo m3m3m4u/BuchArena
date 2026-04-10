@@ -165,6 +165,7 @@ export default function LektorenProfilePage({ params }: PageProps) {
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl">{visibleName}</h1>
+                {lektorenProfile.motto && <p className="mt-0.5 italic">„{lektorenProfile.motto}“</p>}
               </div>
             </div>
 

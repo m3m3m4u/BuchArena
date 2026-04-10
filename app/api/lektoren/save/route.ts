@@ -60,6 +60,7 @@ function sanitizeLektorenProfile(
       },
     },
     name: sanitizeField(source.name, base.name, 120),
+    motto: typeof source.motto === "string" ? source.motto.trim().slice(0, 300) : "",
     zuMir: typeof source.zuMir === "string" ? source.zuMir.trim().slice(0, 2000) : "",
     kapazitaeten: sanitizeKapazitaeten(source.kapazitaeten),
     socialInstagram: sanitizeField(source.socialInstagram, base.socialInstagram, 250),

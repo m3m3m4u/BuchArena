@@ -300,6 +300,7 @@ export type LektorenProfileData = {
     crop: ProfileImageCrop;
   };
   name: ProfileField;
+  motto: string;
   zuMir: string;
   kapazitaeten: number[]; // Monatsnummern 1–12 mit Kapazität
   socialInstagram: ProfileField;
@@ -324,6 +325,7 @@ export function createDefaultLektorenProfile(): LektorenProfileData {
       crop: { x: 50, y: 50, zoom: 1 },
     },
     name: { value: "", visibility: "internal" },
+    motto: "",
     zuMir: "",
     kapazitaeten: [],
     socialInstagram: { value: "", visibility: "hidden" },
@@ -349,6 +351,7 @@ export type VerlageProfileData = {
     crop: ProfileImageCrop;
   };
   name: ProfileField;
+  motto: string;
   beschreibung: string;
   ansprechperson: string;
   voraussetzungen: string;
@@ -375,6 +378,7 @@ export function createDefaultVerlageProfile(): VerlageProfileData {
       crop: { x: 50, y: 50, zoom: 1 },
     },
     name: { value: "", visibility: "internal" },
+    motto: "",
     beschreibung: "",
     ansprechperson: "",
     voraussetzungen: "",

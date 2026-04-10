@@ -7,6 +7,7 @@ type VerlageDiscoverItem = {
   displayName: string;
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
+  motto: string;
   kapazitaeten: number[];
 };
 
@@ -58,6 +59,7 @@ export async function GET() {
         displayName,
         profileImageUrl,
         profileImageCrop,
+        motto: typeof vp.motto === "string" ? vp.motto : "",
         kapazitaeten: Array.isArray(vp.kapazitaeten) ? vp.kapazitaeten : [],
       });
     }

@@ -8,6 +8,7 @@ type LektorenDiscoverItem = {
   displayName: string;
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
+  motto: string;
   kapazitaeten: number[];
   lesezeichenTotal: number;
 };
@@ -61,6 +62,7 @@ export async function GET() {
         displayName,
         profileImageUrl,
         profileImageCrop,
+        motto: typeof lp.motto === "string" ? lp.motto : "",
         kapazitaeten: Array.isArray(lp.kapazitaeten) ? lp.kapazitaeten : [],
         lesezeichenTotal: 0,
       });

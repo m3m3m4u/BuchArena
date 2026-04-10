@@ -2199,6 +2199,13 @@ function ProfilPageInner() {
           } />
         </label>
 
+        <label className="grid gap-1 text-[0.95rem]">
+          Motto / Satz <span className="text-xs text-arena-muted">(wird in der Übersicht angezeigt)</span>
+          <input className="input-base" maxLength={300} placeholder="Dein Text verdient ein zweites Paar Augen." value={lektorenProfile.motto} onChange={(e) =>
+            setLektorenProfile((c) => ({ ...c, motto: e.target.value }))
+          } />
+        </label>
+
         <div className="grid gap-1">
           <label className="text-sm font-semibold">Zu mir</label>
           <textarea
@@ -2312,6 +2319,13 @@ function ProfilPageInner() {
           Verlagsname <span className="text-xs text-arena-muted">(immer öffentlich)</span>
           <input className="input-base" value={verlageProfile.name.value} onChange={(e) =>
             setVerlageProfile((c) => ({ ...c, name: { value: e.target.value, visibility: "public" } }))
+          } />
+        </label>
+
+        <label className="grid gap-1 text-[0.95rem]">
+          Motto / Satz <span className="text-xs text-arena-muted">(wird in der Übersicht angezeigt)</span>
+          <input className="input-base" maxLength={300} placeholder="Wir bringen dein Buch auf die Bühne." value={verlageProfile.motto} onChange={(e) =>
+            setVerlageProfile((c) => ({ ...c, motto: e.target.value }))
           } />
         </label>
 

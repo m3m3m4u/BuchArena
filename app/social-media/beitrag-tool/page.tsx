@@ -2291,7 +2291,7 @@ export default function BeitragToolPage() {
       {/* Info Overlay */}
       {showInfo && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[67rem] mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-arena-border">
               <h2 className="text-xl font-bold">So funktioniert der Beitrag-Editor</h2>
               <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
@@ -2306,84 +2306,87 @@ export default function BeitragToolPage() {
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                <div>
-                  <p className="font-semibold mb-1">Formate</p>
-                  <ul className="grid gap-1 text-arena-muted">
-                    <li><strong>4:5</strong> &ndash; Hochformat (1080&thinsp;&times;&thinsp;1350&thinsp;px). Ideal f&uuml;r Instagram-Feed und Facebook.</li>
-                    <li><strong>1:1</strong> &ndash; Quadratisch (1080&thinsp;&times;&thinsp;1080&thinsp;px). Gut f&uuml;r LinkedIn und Pinterest.</li>
-                    <li><strong>9:16</strong> &ndash; Vertikal (1080&thinsp;&times;&thinsp;1920&thinsp;px). F&uuml;r Reels, TikTok und Shorts.</li>
-                  </ul>
+                {/* Spalte 1 */}
+                <div className="grid content-start gap-5">
+                  <div>
+                    <p className="font-semibold mb-1">Formate</p>
+                    <ul className="grid gap-1 text-arena-muted">
+                      <li><strong>4:5</strong> &ndash; Hochformat (1080&thinsp;&times;&thinsp;1350&thinsp;px). Ideal f&uuml;r Instagram-Feed und Facebook.</li>
+                      <li><strong>9:16</strong> &ndash; Vertikal (1080&thinsp;&times;&thinsp;1920&thinsp;px). F&uuml;r Reels, TikTok und Shorts.</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-semibold mb-1">Bilder</p>
+                    <ul className="grid gap-1 text-arena-muted">
+                      <li><strong>Bilder der BuchArena:</strong> Aus einer Galerie von BuchArena-Bildern ausw&auml;hlen.</li>
+                      <li><strong>Bilder von Pixabay:</strong> Kostenlose, lizenzfreie Bilder suchen und einf&uuml;gen &ndash; mit Filter nach Fotos, Illustrationen und Vektorgrafiken.</li>
+                      <li><strong>Eigenes Bild:</strong> Eigene Datei hochladen (JPG, PNG etc.) oder per <kbd className="font-mono bg-gray-100 px-1 rounded">Strg+V</kbd> einf&uuml;gen.</li>
+                      <li><strong>Rahmen &amp; Schatten:</strong> Bild ausw&auml;hlen &rarr; Rahmen/Schatten/Eckenradius in der Toolbar einstellen.</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-semibold mb-1">Rahmen</p>
+                    <ul className="grid gap-1 text-arena-muted">
+                      <li><strong>Rahmentypen:</strong> 10 verschiedene Rahmen (Einfach, Doppelt, Elegant, Vintage, Perlen u.&thinsp;a.).</li>
+                      <li><strong>Farbe, St&auml;rke &amp; Abstand:</strong> Individuell anpassbar.</li>
+                      <li><strong>Grid-Vorschau:</strong> Bei 9:16 zeigt ein Overlay den sichtbaren 4:5-Ausschnitt im Instagram-Grid.</li>
+                    </ul>
+                  </div>
                 </div>
 
-                <div>
-                  <p className="font-semibold mb-1">Elemente bearbeiten</p>
-                  <ul className="grid gap-1 text-arena-muted">
-                    <li><strong>Verschieben:</strong> Element anklicken und ziehen.</li>
-                    <li><strong>Gr&ouml;&szlig;e &auml;ndern:</strong> Ecken-Anfasser ziehen. Bilder skalieren proportional.</li>
-                    <li><strong>Text bearbeiten:</strong> Doppelklick auf ein Textelement.</li>
-                    <li><strong>L&ouml;schen:</strong> Element ausw&auml;hlen &rarr; <kbd className="font-mono bg-gray-100 px-1 rounded">Entf</kbd> oder <kbd className="font-mono bg-gray-100 px-1 rounded">Backspace</kbd>.</li>
-                    <li><strong>Ebenenreihenfolge:</strong> Pfeile ↑ ↓ in der Toolbar.</li>
-                    <li><strong>Einf&uuml;gen:</strong> <kbd className="font-mono bg-gray-100 px-1 rounded">Strg+V</kbd> f&uuml;gt Bilder oder Text aus der Zwischenablage ein.</li>
-                  </ul>
+                {/* Spalte 2 */}
+                <div className="grid content-start gap-5">
+                  <div>
+                    <p className="font-semibold mb-1">Elemente bearbeiten</p>
+                    <ul className="grid gap-1 text-arena-muted">
+                      <li><strong>Verschieben:</strong> Element anklicken und ziehen.</li>
+                      <li><strong>Gr&ouml;&szlig;e &auml;ndern:</strong> Ecken-Anfasser ziehen. Bilder skalieren proportional.</li>
+                      <li><strong>Text bearbeiten:</strong> Doppelklick auf ein Textelement.</li>
+                      <li><strong>L&ouml;schen:</strong> Element ausw&auml;hlen &rarr; <kbd className="font-mono bg-gray-100 px-1 rounded">Entf</kbd> oder <kbd className="font-mono bg-gray-100 px-1 rounded">Backspace</kbd>.</li>
+                      <li><strong>Ebenenreihenfolge:</strong> Pfeile ↑ ↓ in der Toolbar.</li>
+                      <li><strong>Einf&uuml;gen:</strong> <kbd className="font-mono bg-gray-100 px-1 rounded">Strg+V</kbd> f&uuml;gt Bilder oder Text aus der Zwischenablage ein.</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-semibold mb-1">Hintergrund</p>
+                    <ul className="grid gap-1 text-arena-muted">
+                      <li><strong>Farbe:</strong> Hintergrundfarbe per Farbw&auml;hler &auml;ndern.</li>
+                      <li><strong>Hintergrundbild:</strong> &Uuml;ber &bdquo;Hintergrund von Pixabay&ldquo; ein Bild als Hintergrund setzen.</li>
+                      <li><strong>Verschieben:</strong> Hintergrundbild im sichtbaren Bereich verschieben (horizontal oder vertikal, je nach Bildformat).</li>
+                      <li><strong>Deckkraft:</strong> Transparenz von Hintergrundbild oder -farbe stufenlos einstellen (0&thinsp;&ndash;&thinsp;100&thinsp;%).</li>
+                    </ul>
+                  </div>
                 </div>
 
-                <div>
-                  <p className="font-semibold mb-1">Bilder</p>
-                  <ul className="grid gap-1 text-arena-muted">
-                    <li><strong>Bilder der BuchArena:</strong> Aus einer Galerie von BuchArena-Bildern ausw&auml;hlen.</li>
-                    <li><strong>Bilder von Pixabay:</strong> Kostenlose, lizenzfreie Bilder suchen und einf&uuml;gen &ndash; mit Filter nach Fotos, Illustrationen und Vektorgrafiken.</li>
-                    <li><strong>Eigenes Bild:</strong> Eigene Datei hochladen (JPG, PNG etc.) oder per <kbd className="font-mono bg-gray-100 px-1 rounded">Strg+V</kbd> einf&uuml;gen.</li>
-                    <li><strong>Rahmen &amp; Schatten:</strong> Bild ausw&auml;hlen &rarr; Rahmen/Schatten/Eckenradius in der Toolbar einstellen.</li>
-                  </ul>
+                {/* Spalte 3 */}
+                <div className="grid content-start gap-5">
+                  <div>
+                    <p className="font-semibold mb-1">Speichern &amp; Laden</p>
+                    <ul className="grid gap-1 text-arena-muted">
+                      <li><strong>Speichern:</strong> Aktuellen Stand unter vorhandenem Namen sichern.</li>
+                      <li><strong>Speichern unter:</strong> Neuen Namen vergeben &ndash; erstellt eine Kopie.</li>
+                      <li><strong>&Ouml;ffnen:</strong> Gespeicherte Entw&uuml;rfe laden.</li>
+                      <li><strong>Export/Import:</strong> Entwurf als JSON-Datei exportieren oder importieren.</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-semibold mb-1">Video-Modus</p>
+                    <ul className="grid gap-1 text-arena-muted">
+                      <li><strong>L&auml;nge:</strong> Per Slider einstellbar (3&thinsp;&ndash;&thinsp;60&thinsp;s).</li>
+                      <li><strong>Animationen:</strong> Eingangs-Animationen pro Element (Einblenden, Slide, Zoom) mit Start &amp; Dauer.</li>
+                      <li><strong>Vorschau:</strong> Echtzeit-Abspielen auf der Canvas inkl. Musik.</li>
+                      <li><strong>Musik:</strong> Optionaler Track mit Fade-In/Fade-Out.</li>
+                      <li><strong>Export:</strong> Rendert MP4 direkt im Browser &ndash; kein Server-Upload n&ouml;tig.</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-semibold mb-1">Herunterladen</p>
+                    <ul className="grid gap-1 text-arena-muted">
+                      <li><strong>Bild-Modus:</strong> PNG in voller Aufl&ouml;sung (1080&thinsp;px Breite).</li>
+                      <li><strong>Video-Modus:</strong> MP4-Video mit Fortschrittsanzeige.</li>
+                    </ul>
+                  </div>
                 </div>
-
-                <div>
-                  <p className="font-semibold mb-1">Hintergrund</p>
-                  <ul className="grid gap-1 text-arena-muted">
-                    <li><strong>Farbe:</strong> Hintergrundfarbe per Farbw&auml;hler &auml;ndern.</li>
-                    <li><strong>Hintergrundbild:</strong> &Uuml;ber &bdquo;Hintergrund von Pixabay&ldquo; ein Bild als Hintergrund setzen.</li>
-                    <li><strong>Verschieben:</strong> Hintergrundbild im sichtbaren Bereich verschieben (horizontal oder vertikal, je nach Bildformat).</li>
-                    <li><strong>Deckkraft:</strong> Transparenz von Hintergrundbild oder -farbe stufenlos einstellen (0&thinsp;&ndash;&thinsp;100&thinsp;%).</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <p className="font-semibold mb-1">Rahmen</p>
-                  <ul className="grid gap-1 text-arena-muted">
-                    <li><strong>Rahmentypen:</strong> 10 verschiedene Rahmen (Einfach, Doppelt, Elegant, Vintage, Perlen u.&thinsp;a.).</li>
-                    <li><strong>Farbe, St&auml;rke &amp; Abstand:</strong> Individuell anpassbar.</li>
-                    <li><strong>Grid-Vorschau:</strong> Bei 9:16 zeigt ein Overlay den sichtbaren 4:5-Ausschnitt im Instagram-Grid.</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <p className="font-semibold mb-1">Speichern &amp; Laden</p>
-                  <ul className="grid gap-1 text-arena-muted">
-                    <li><strong>Speichern:</strong> Aktuellen Stand unter vorhandenem Namen sichern.</li>
-                    <li><strong>Speichern unter:</strong> Neuen Namen vergeben &ndash; erstellt eine Kopie.</li>
-                    <li><strong>&Ouml;ffnen:</strong> Gespeicherte Entw&uuml;rfe laden.</li>
-                    <li><strong>Export/Import:</strong> Entwurf als JSON-Datei exportieren oder importieren.</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <p className="font-semibold mb-1">Video-Modus</p>
-                  <ul className="grid gap-1 text-arena-muted">
-                    <li><strong>L&auml;nge:</strong> Per Slider einstellbar (3&thinsp;&ndash;&thinsp;60&thinsp;s).</li>
-                    <li><strong>Animationen:</strong> Eingangs-Animationen pro Element (Einblenden, Slide, Zoom) mit Start &amp; Dauer.</li>
-                    <li><strong>Vorschau:</strong> Echtzeit-Abspielen auf der Canvas inkl. Musik.</li>
-                    <li><strong>Musik:</strong> Optionaler Track mit Fade-In/Fade-Out.</li>
-                    <li><strong>Export:</strong> Rendert MP4 direkt im Browser &ndash; kein Server-Upload n&ouml;tig.</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div>
-                <p className="font-semibold mb-1">Herunterladen</p>
-                <ul className="grid gap-1 text-arena-muted">
-                  <li><strong>Bild-Modus:</strong> PNG in voller Aufl&ouml;sung (1080&thinsp;px Breite).</li>
-                  <li><strong>Video-Modus:</strong> MP4-Video mit Fortschrittsanzeige.</li>
-                </ul>
               </div>
 
               <button type="button" className="btn btn-primary py-2.5 text-base font-semibold"

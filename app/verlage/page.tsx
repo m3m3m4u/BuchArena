@@ -10,6 +10,7 @@ type DiscoverVerlag = {
   displayName: string;
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
+  motto: string;
   kapazitaeten: number[];
 };
 
@@ -73,6 +74,9 @@ export default function VerlagePage() {
                     </div>
                     <div>
                       <h2 className="m-0 text-[1.05rem]">{vl.displayName}</h2>
+                      {vl.motto && (
+                        <p className="mt-0.5 text-sm italic">„{vl.motto}“</p>
+                      )}
                       {vl.kapazitaeten.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {vl.kapazitaeten.map((m) => (

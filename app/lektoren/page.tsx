@@ -33,6 +33,7 @@ type DiscoverLektor = {
   displayName: string;
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
+  motto: string;
   kapazitaeten: number[];
   lesezeichenTotal: number;
 };
@@ -127,6 +128,9 @@ export default function LektorenPage() {
                     </div>
                     <div>
                       <h2 className="m-0 text-[1.05rem]">{lk.displayName}</h2>
+                      {lk.motto && (
+                        <p className="mt-0.5 text-sm italic">„{lk.motto}“</p>
+                      )}
                       {lk.kapazitaeten.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {lk.kapazitaeten.map((m) => (
