@@ -330,7 +330,7 @@ function drawFrame(
 ) {
   if (style === "none") return;
   // thick 1..10 → Pixelstärke relativ zur Canvas-Breite
-  const t = Math.round((thick / 10) * cw * 0.042 + 1);
+  const t = Math.max(1, Math.round((thick / 10) * cw * 0.042));
   // inset 0..20 → Pixel-Abstand vom Bildrand
   const insetPx = Math.round((inset / 20) * Math.min(cw, ch) * 0.08);
   ctx.save();
@@ -591,7 +591,7 @@ export default function BeitragToolPage() {
   /* Frame */
   const [frameStyle,     setFrameStyle]     = useState<FrameStyle>("none");
   const [frameColor,     setFrameColor]     = useState("#1a1a1a");
-  const [frameThickness, setFrameThickness] = useState(5);
+  const [frameThickness, setFrameThickness] = useState(3);
   const [frameInset,     setFrameInset]     = useState(0);
 
   /* Video mode */
@@ -1531,7 +1531,7 @@ export default function BeitragToolPage() {
                   </label>
                   <label className="text-xs flex flex-col gap-0.5">
                     <span>St&auml;rke: <strong>{frameThickness}</strong></span>
-                    <input type="range" min={1} max={10} step={1}
+                    <input type="range" min={1} max={20} step={1}
                       value={frameThickness}
                       onChange={(e) => setFrameThickness(Number(e.target.value))}
                       className="w-full" />
