@@ -295,12 +295,14 @@ export default function DiskussionenPage() {
           const search = searchTerm.trim().toLowerCase();
 
           const filteredDiscussions = discussions.filter((d) => {
+            if (filterTopic === "Abstimmung") return false;
             if (filterTopic && (d.topic || "Allgemein") !== filterTopic) return false;
             if (search && !d.title.toLowerCase().includes(search) && !d.body.toLowerCase().includes(search) && !(d.displayName || d.authorUsername).toLowerCase().includes(search)) return false;
             return true;
           });
 
-          const filteredPolls = (filterTopic ? [] : polls).filter((p) => {
+          const filteredPolls = polls.filter((p) => {
+            if (filterTopic && filterTopic !== "Abstimmung") return false;
             if (search && !p.question.toLowerCase().includes(search)) return false;
             return true;
           });
