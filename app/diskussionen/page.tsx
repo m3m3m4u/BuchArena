@@ -20,6 +20,7 @@ type DiscussionItem = {
   hasProfile?: boolean;
   hasSpeakerProfile?: boolean;
   hasBloggerProfile?: boolean;
+  unread?: boolean;
 };
 
 type PollVoteItem = { username: string; optionIndex: number };
@@ -326,15 +327,16 @@ export default function DiskussionenPage() {
                     <div
                       key={`d-${d.id}`}
                       onClick={() => router.push(`/diskussionen/${d.id}`)}
-                      className="rounded-lg border border-arena-border p-3 sm:p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit"
+                      className={`rounded-lg border p-3 sm:p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit ${d.unread ? "border-arena-accent bg-arena-accent/5" : "border-arena-border"}`}
                     >
                       <div className="flex items-start justify-between gap-2 sm:gap-3">
-                        <strong className="text-sm sm:text-base line-clamp-2 flex items-center gap-1.5">
+                        <span className={`text-sm sm:text-base line-clamp-2 flex items-center gap-1.5 ${d.unread ? "font-bold" : "font-semibold"}`}>
+                          {d.unread && <span className="inline-block w-2 h-2 rounded-full bg-arena-accent flex-shrink-0" />}
                           {d.title}
                           {d.topic && d.topic !== "Allgemein" && (
                             <span className="text-xs bg-arena-accent/10 text-arena-accent px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">{d.topic}</span>
                           )}
-                        </strong>
+                        </span>
                         <span className="text-xs text-arena-muted whitespace-nowrap flex-shrink-0">
                           {d.replyCount} {d.replyCount === 1 ? "Antwort" : "Antworten"}
                         </span>

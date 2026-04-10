@@ -97,6 +97,9 @@ async function initializeDatabase(db: Db) {
   await discussions.createIndex({ lastActivityAt: -1 });
   await discussions.createIndex({ authorUsername: 1 });
 
+  const discussionReads = db.collection("discussionReads");
+  await discussionReads.createIndex({ username: 1, discussionId: 1 }, { unique: true });
+
   const messages = db.collection<MessageDocument>("messages");
   await messages.createIndex({ recipientUsername: 1, createdAt: -1 });
   await messages.createIndex({ senderUsername: 1, createdAt: -1 });
@@ -203,6 +206,11 @@ export async function getSupportCollection(): Promise<Collection<SupportPost>> {
 export async function getDiscussionsCollection(): Promise<Collection<DiscussionDocument>> {
   const db = await getDatabase();
   return db.collection<DiscussionDocument>("discussions");
+}
+
+export async function getDiscussionReadsCollection(): Promise<Collection<{ username: string; discussionId: string; readAt: Date }>> {
+  const db = await getDatabase();
+  return db.collection("discussionReads");
 }
 
 export async function getPollsCollection(): Promise<Collection<PollDocument>> {

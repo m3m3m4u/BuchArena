@@ -261,6 +261,14 @@ export default function DiskussionDetailPage() {
       }
 
       setDiscussion(data.discussion ?? null);
+      // Als gelesen markieren
+      if (data.discussion?.id) {
+        fetch("/api/discussions/mark-read", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ discussionId: data.discussion.id }),
+        }).catch(() => {});
+      }
     } catch {
       setMessage("Diskussion konnte nicht geladen werden.");
     } finally {
