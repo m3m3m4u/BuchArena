@@ -164,13 +164,18 @@ function hitEl(mx: number, my: number, el: CE) {
   return mx >= el.x && mx <= el.x + el.w && my >= el.y && my <= el.y + el.h;
 }
 
-function drawBgCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, cw: number, ch: number) {
+function drawBgCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, cw: number, ch: number, ox = 0, oy = 0, opacity = 100) {
   const ir = img.naturalWidth / img.naturalHeight;
   const cr = cw / ch;
   let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
   if (ir > cr) { sw = img.naturalHeight * cr; sx = (img.naturalWidth - sw) / 2; }
   else { sh = img.naturalWidth / cr; sy = (img.naturalHeight - sh) / 2; }
+  // Apply offset in source coordinates
+  sx += (ox / 100) * img.naturalWidth;
+  sy += (oy / 100) * img.naturalHeight;
+  if (opacity < 100) ctx.globalAlpha = opacity / 100;
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+  if (opacity < 100) ctx.globalAlpha = 1;
 }
 
 function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLImageElement>) {
@@ -551,6 +556,9 @@ export default function BeitragToolPage() {
   const [format,    setFormat]    = useState<FormatPreset>("4:5");
   const [bgColor,   setBgColor]   = useState("#ffffff");
   const [bgImage,   setBgImage]   = useState<string | null>(null);
+  const [bgOffsetX,  setBgOffsetX]  = useState(0);
+  const [bgOffsetY,  setBgOffsetY]  = useState(0);
+  const [bgOpacity,  setBgOpacity]  = useState(100);
   const bgImgRef = useRef<HTMLImageElement | null>(null);
   const [elements,  setElements]  = useState<CE[]>([]);
   const [selId,     setSelId]     = useState<string | null>(null);
@@ -657,7 +665,7 @@ export default function BeitragToolPage() {
     }
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, sz.w, sz.h);
-    if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h);
+    if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h, bgOffsetX, bgOffsetY, bgOpacity);
     for (const el of elements) {
       if (el.id === editingId && el.type === "text") continue;
       if (previewing) drawElAnimated(ctx, el, imgCache.current, previewTRef.current);
@@ -666,7 +674,7 @@ export default function BeitragToolPage() {
     drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
     if (selEl && selEl.id !== editingId) drawSel(ctx, selEl);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elements, selId, sz, bgColor, bgImage, tick, selEl, editingId, previewing, frameStyle, frameColor, frameThickness, frameInset]);
+  }, [elements, selId, sz, bgColor, bgImage, bgOffsetX, bgOffsetY, bgOpacity, tick, selEl, editingId, previewing, frameStyle, frameColor, frameThickness, frameInset]);
 
   /* focus textarea when edit starts */
   useEffect(() => {
@@ -1119,6 +1127,9 @@ export default function BeitragToolPage() {
         const img = await loadImg(url);
         bgImgRef.current = img;
         setBgImage(url);
+        setBgOffsetX(0);
+        setBgOffsetY(0);
+        setBgOpacity(100);
         setTick((t) => t + 1);
       } catch { /* ignore */ }
     } else {
@@ -1143,7 +1154,7 @@ export default function BeitragToolPage() {
 
   async function saveDesign(name: string) {
     const snapshot = JSON.stringify({
-      format, bgColor, bgImage, elements,
+      format, bgColor, bgImage, bgOffsetX, bgOffsetY, bgOpacity, elements,
       editorMode, videoDuration,
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
@@ -1172,7 +1183,9 @@ export default function BeitragToolPage() {
   function loadDesign(data: string, name?: string) {
     try {
       const s = JSON.parse(data) as {
-        format: FormatPreset; bgColor: string; bgImage?: string | null; elements: CE[];
+        format: FormatPreset; bgColor: string; bgImage?: string | null;
+        bgOffsetX?: number; bgOffsetY?: number; bgOpacity?: number;
+        elements: CE[];
         editorMode?: "bild" | "video"; videoDuration?: number;
         selectedTrackId?: string | null;
         musikFadeIn?: boolean; musikFadeInDur?: number;
@@ -1189,6 +1202,9 @@ export default function BeitragToolPage() {
         setBgImage(null);
         bgImgRef.current = null;
       }
+      setBgOffsetX(s.bgOffsetX ?? 0);
+      setBgOffsetY(s.bgOffsetY ?? 0);
+      setBgOpacity(s.bgOpacity ?? 100);
       setElements(s.elements ?? []);
       if (s.editorMode) setEditorMode(s.editorMode);
       if (s.videoDuration != null) setVideoDuration(s.videoDuration);
@@ -1217,7 +1233,7 @@ export default function BeitragToolPage() {
   function exportDesign() {
     if (editingId) commitEdit();
     const snapshot = JSON.stringify({
-      format, bgColor, bgImage, elements,
+      format, bgColor, bgImage, bgOffsetX, bgOffsetY, bgOpacity, elements,
       editorMode, videoDuration,
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
@@ -1262,7 +1278,7 @@ export default function BeitragToolPage() {
       const ctx = off.getContext("2d")!;
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, sz.w, sz.h);
-      if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h);
+      if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h, bgOffsetX, bgOffsetY, bgOpacity);
       for (const el of elements) drawEl(ctx, el, imgCache.current);
       drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
       const a = document.createElement("a");
@@ -1301,7 +1317,7 @@ export default function BeitragToolPage() {
         const t = i / FPS;
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, sz.w, sz.h);
-        if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h);
+        if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h, bgOffsetX, bgOffsetY, bgOpacity);
         for (const el of elements) drawElAnimated(ctx, el, imgCache.current, t);
         drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
 
@@ -1494,10 +1510,35 @@ export default function BeitragToolPage() {
                     <img src={bgImage} alt="Hintergrund" className="w-10 h-10 rounded object-contain border border-arena-border bg-gray-50" />
                     <span className="text-xs text-arena-muted flex-1 truncate">Hintergrundbild</span>
                     <button type="button" className="text-xs text-red-500 hover:text-red-700"
-                      onClick={() => { setBgImage(null); bgImgRef.current = null; setTick((t) => t + 1); }}>
+                      onClick={() => { setBgImage(null); bgImgRef.current = null; setBgOffsetX(0); setBgOffsetY(0); setBgOpacity(100); setTick((t) => t + 1); }}>
                       Entfernen
                     </button>
                   </div>
+                )}
+                {bgImage && (
+                  <>
+                    <label className="text-xs flex flex-col gap-0.5">
+                      <span>Verschieben X: <strong>{bgOffsetX}</strong></span>
+                      <input type="range" min={-50} max={50} step={1}
+                        value={bgOffsetX}
+                        onChange={(e) => setBgOffsetX(Number(e.target.value))}
+                        className="w-full" />
+                    </label>
+                    <label className="text-xs flex flex-col gap-0.5">
+                      <span>Verschieben Y: <strong>{bgOffsetY}</strong></span>
+                      <input type="range" min={-50} max={50} step={1}
+                        value={bgOffsetY}
+                        onChange={(e) => setBgOffsetY(Number(e.target.value))}
+                        className="w-full" />
+                    </label>
+                    <label className="text-xs flex flex-col gap-0.5">
+                      <span>Deckkraft: <strong>{bgOpacity}%</strong></span>
+                      <input type="range" min={0} max={100} step={5}
+                        value={bgOpacity}
+                        onChange={(e) => setBgOpacity(Number(e.target.value))}
+                        className="w-full" />
+                    </label>
+                  </>
                 )}
                 <button type="button" className="btn text-xs w-full"
                   onClick={() => { setPixabayBgMode(true); setShowPixabay(true); }}>
