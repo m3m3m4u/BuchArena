@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
   url.searchParams.set("key", PIXABAY_KEY);
   url.searchParams.set("q", q);
   url.searchParams.set("image_type", safeType);
-  url.searchParams.set("per_page", "20");
+  url.searchParams.set("per_page", "18");
   url.searchParams.set("page", String(page));
   url.searchParams.set("safesearch", "true");
   url.searchParams.set("lang", "de");

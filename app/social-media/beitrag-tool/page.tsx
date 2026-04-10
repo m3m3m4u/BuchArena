@@ -1930,7 +1930,7 @@ export default function BeitragToolPage() {
       {/* Pixabay-Overlay */}
       {showPixabay && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[85vh] flex flex-col">
+          <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full mx-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-arena-border">
               <h2 className="text-lg font-bold">Pixabay – Kostenlose Bilder</h2>
               <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
@@ -1971,7 +1971,7 @@ export default function BeitragToolPage() {
 
               {pixabayResults.length > 0 && (
                 <>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-2">
                     {pixabayResults.map((hit) => (
                       <button key={hit.id} type="button"
                         className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left group"
@@ -1988,7 +1988,7 @@ export default function BeitragToolPage() {
                   </div>
 
                   {/* Pagination */}
-                  {pixabayTotal > 20 && (
+                  {pixabayTotal > 18 && (
                     <div className="flex items-center justify-center gap-3 mt-4">
                       <button type="button" className="btn text-xs px-3 h-8"
                         disabled={pixabayPage <= 1 || pixabayLoading}
@@ -1996,10 +1996,10 @@ export default function BeitragToolPage() {
                         &larr; Zur&uuml;ck
                       </button>
                       <span className="text-xs text-arena-muted tabular-nums">
-                        Seite {pixabayPage} / {Math.ceil(pixabayTotal / 20)}
+                        Seite {pixabayPage} / {Math.ceil(pixabayTotal / 18)}
                       </span>
                       <button type="button" className="btn text-xs px-3 h-8"
-                        disabled={pixabayPage >= Math.ceil(pixabayTotal / 20) || pixabayLoading}
+                        disabled={pixabayPage >= Math.ceil(pixabayTotal / 18) || pixabayLoading}
                         onClick={() => searchPixabay(pixabayQuery, pixabayPage + 1)}>
                         Weiter &rarr;
                       </button>
