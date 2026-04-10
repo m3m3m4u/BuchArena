@@ -551,6 +551,15 @@ export default function BeitragToolPage() {
   const [tplPage,       setTplPage]        = useState(0);
   const [templates,     setTemplates]      = useState<{ id: string; label: string; src: string }[]>([]);
   const [loadingTpl,    setLoadingTpl]     = useState(false);
+
+  /* Pixabay */
+  const [showPixabay,     setShowPixabay]     = useState(false);
+  const [pixabayQuery,    setPixabayQuery]    = useState("");
+  const [pixabayResults,  setPixabayResults]  = useState<{ id: number; preview: string; webformat: string; large: string; tags: string; width: number; height: number; user: string }[]>([]);
+  const [pixabayTotal,    setPixabayTotal]    = useState(0);
+  const [pixabayPage,     setPixabayPage]     = useState(1);
+  const [pixabayLoading,  setPixabayLoading]  = useState(false);
+
   const [showSaveAs,    setShowSaveAs]     = useState(false);
   const [showOpen,      setShowOpen]       = useState(false);
   const [showInfo,      setShowInfo]       = useState(false);
@@ -1072,6 +1081,26 @@ export default function BeitragToolPage() {
     } catch { /* ignore */ }
   }
 
+  /* ── Pixabay search ── */
+  async function searchPixabay(query: string, page = 1) {
+    const q = query.trim();
+    if (!q) return;
+    setPixabayLoading(true);
+    try {
+      const res = await fetch(`/api/social-media/pixabay?q=${encodeURIComponent(q)}&page=${page}`);
+      const data = await res.json() as { hits?: typeof pixabayResults; totalHits?: number };
+      setPixabayResults(data.hits ?? []);
+      setPixabayTotal(data.totalHits ?? 0);
+      setPixabayPage(page);
+    } catch { /* ignore */ }
+    finally { setPixabayLoading(false); }
+  }
+
+  async function addPixabayImage(url: string) {
+    setShowPixabay(false);
+    await addTplImage(url);
+  }
+
   function del() {
     if (!selId) return;
     if (editingId === selId) setEditingId(null);
@@ -1549,10 +1578,13 @@ export default function BeitragToolPage() {
 
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
               <p className="text-sm font-semibold">Hinzuf&uuml;gen</p>
-              <div className={fullscreen ? "flex gap-1.5" : "grid grid-cols-3 md:grid-cols-1 gap-1.5"}>
+              <div className={fullscreen ? "flex flex-wrap gap-1.5" : "grid grid-cols-2 md:grid-cols-1 gap-1.5"}>
                 <button type="button" className="btn text-xs" onClick={addText}>+ Text</button>
                 <button type="button" className="btn text-xs" onClick={() => setShowTemplates(true)}>
                   + Bildvorlage
+                </button>
+                <button type="button" className="btn text-xs" onClick={() => setShowPixabay(true)}>
+                  + Pixabay
                 </button>
                 <label className="btn cursor-pointer text-xs text-center block">
                   + Eigenes Bild
@@ -1892,6 +1924,84 @@ export default function BeitragToolPage() {
         </div>
       )}
 
+      {/* Pixabay-Overlay */}
+      {showPixabay && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-arena-border">
+              <h2 className="text-lg font-bold">Pixabay – Kostenlose Bilder</h2>
+              <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
+                onClick={() => setShowPixabay(false)}>&times;</button>
+            </div>
+
+            <div className="px-5 pt-3 pb-2">
+              <form onSubmit={(e) => { e.preventDefault(); searchPixabay(pixabayQuery, 1); }}
+                className="flex gap-2">
+                <input type="text" className="input-base flex-1 text-sm"
+                  placeholder="z.B. Buch, Natur, Schreibtisch …"
+                  value={pixabayQuery}
+                  onChange={(e) => setPixabayQuery(e.target.value)} />
+                <button type="submit" className="btn text-sm px-4"
+                  disabled={pixabayLoading || !pixabayQuery.trim()}>
+                  {pixabayLoading ? "Suche …" : "Suchen"}
+                </button>
+              </form>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 pb-4">
+              {pixabayResults.length === 0 && !pixabayLoading && (
+                <p className="text-sm text-arena-muted py-4 text-center">
+                  {pixabayTotal === 0 && pixabayQuery.trim() ? "Keine Ergebnisse." : "Suchbegriff eingeben, um Bilder zu finden."}
+                </p>
+              )}
+
+              {pixabayResults.length > 0 && (
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+                    {pixabayResults.map((hit) => (
+                      <button key={hit.id} type="button"
+                        className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left group"
+                        onClick={() => addPixabayImage(hit.large)}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={hit.preview} alt={hit.tags}
+                          className="w-full object-cover aspect-square bg-gray-100" />
+                        <div className="px-1.5 py-1">
+                          <p className="text-[10px] text-arena-muted truncate">{hit.tags}</p>
+                          <p className="text-[10px] text-arena-muted/60 truncate">von {hit.user}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  {pixabayTotal > 20 && (
+                    <div className="flex items-center justify-center gap-3 mt-4">
+                      <button type="button" className="btn text-xs px-3 h-8"
+                        disabled={pixabayPage <= 1 || pixabayLoading}
+                        onClick={() => searchPixabay(pixabayQuery, pixabayPage - 1)}>
+                        &larr; Zur&uuml;ck
+                      </button>
+                      <span className="text-xs text-arena-muted tabular-nums">
+                        Seite {pixabayPage} / {Math.ceil(pixabayTotal / 20)}
+                      </span>
+                      <button type="button" className="btn text-xs px-3 h-8"
+                        disabled={pixabayPage >= Math.ceil(pixabayTotal / 20) || pixabayLoading}
+                        onClick={() => searchPixabay(pixabayQuery, pixabayPage + 1)}>
+                        Weiter &rarr;
+                      </button>
+                    </div>
+                  )}
+
+                  <p className="text-[10px] text-arena-muted/50 text-center mt-3">
+                    Bilder bereitgestellt von <a href="https://pixabay.com" target="_blank" rel="noopener noreferrer" className="underline">Pixabay</a> &ndash; kostenlos und lizenzfrei.
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Speichern unter Overlay */}
       {showSaveAs && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
@@ -2042,6 +2152,7 @@ export default function BeitragToolPage() {
                   <p className="font-semibold mb-1">Bilder</p>
                   <ul className="grid gap-1 text-arena-muted">
                     <li><strong>Bildvorlagen:</strong> Aus einer Galerie von BuchArena-Bildern ausw&auml;hlen.</li>
+                    <li><strong>Pixabay:</strong> Kostenlose, lizenzfreie Bilder von Pixabay suchen und einf&uuml;gen.</li>
                     <li><strong>Eigenes Bild:</strong> Eigene Datei hochladen (JPG, PNG etc.).</li>
                     <li><strong>Rahmen &amp; Schatten:</strong> Bild ausw&auml;hlen &rarr; Rahmen/Schatten/Eckenradius in der Toolbar einstellen.</li>
                   </ul>
