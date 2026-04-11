@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 
 type Platform = "intro" | "instagram" | "youtube" | "reddit" | "tiktok" | "facebook" | "pinterest" | "linkedin";
-type MainTab = "social" | "musik";
+type MainTab = "social" | "musik" | "glossar" | "beitrag-tool";
+
+type GlossarEntry = { begriff: string; erklaerung: string; bereich: string };
+
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 const TABS: { key: Platform; label: string; icon: string }[] = [
   { key: "intro", label: "Überblick", icon: "🚀" },
@@ -21,7 +25,7 @@ function ChecklistItem({ title, children }: { title: string; children: React.Rea
   return (
     <div className="rounded-xl border border-arena-border-light bg-white p-5 space-y-2">
       <h3 className="text-[1rem] font-bold m-0">{title}</h3>
-      <div className="text-[0.93rem] leading-relaxed text-[#444] space-y-2">{children}</div>
+      <div className="text-[0.93rem] leading-relaxed text-arena-muted space-y-2">{children}</div>
     </div>
   );
 }
@@ -64,6 +68,13 @@ export default function TippsPage() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [tracksLoading, setTracksLoading] = useState(false);
 
+  const [glossar, setGlossar] = useState<GlossarEntry[]>([]);
+  const [glossarLoading, setGlossarLoading] = useState(false);
+  const [glossarSearch, setGlossarSearch] = useState("");
+  const [glossarKategorie, setGlossarKategorie] = useState("");
+  const [glossarLetter, setGlossarLetter] = useState("");
+  const [glossarOpen, setGlossarOpen] = useState<string | null>(null);
+
   useEffect(() => {
     if (mainTab !== "musik") return;
     setTracksLoading(true);
@@ -74,17 +85,50 @@ export default function TippsPage() {
       .finally(() => setTracksLoading(false));
   }, [mainTab]);
 
+  useEffect(() => {
+    if (mainTab !== "glossar" || glossar.length > 0) return;
+    setGlossarLoading(true);
+    fetch("/data/glossar.csv")
+      .then((r) => r.text())
+      .then((csv) => {
+        const lines = csv.split(/\r?\n/).filter((l) => l.trim());
+        const entries: GlossarEntry[] = [];
+        for (let i = 1; i < lines.length; i++) {
+          const parts = lines[i].split(";").map((s) => s.replace(/^"|"$/g, "").trim());
+          if (parts.length >= 3 && parts[0]) {
+            entries.push({ begriff: parts[0], erklaerung: parts[1], bereich: parts[2] });
+          }
+        }
+        entries.sort((a, b) => a.begriff.localeCompare(b.begriff, "de"));
+        setGlossar(entries);
+      })
+      .catch(() => {})
+      .finally(() => setGlossarLoading(false));
+  }, [mainTab, glossar.length]);
+
+  const glossarKategorien = [...new Set(glossar.map((e) => e.bereich))].sort((a, b) => a.localeCompare(b, "de"));
+
+  const filteredGlossar = glossar.filter((e) => {
+    if (glossarLetter && !e.begriff.toUpperCase().startsWith(glossarLetter)) return false;
+    if (glossarKategorie && e.bereich !== glossarKategorie) return false;
+    if (glossarSearch) {
+      const q = glossarSearch.toLowerCase();
+      return e.begriff.toLowerCase().includes(q) || e.erklaerung.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
   return (
     <main className="centered-main">
       <section className="w-full max-w-[1100px] rounded-[14px] bg-white px-12 py-10 box-border max-sm:px-4 max-sm:py-6">
         {/* Haupt-Tabs */}
-        <div className="flex gap-2 mb-5 border-b border-gray-200">
+        <div className="flex gap-2 mb-5 border-b border-arena-border-light">
           <button
             type="button"
             className={`px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
               mainTab === "social"
-                ? "bg-white border border-b-white border-gray-200 text-arena-blue"
-                : "bg-gray-50 text-[#666] hover:bg-gray-100 border border-transparent"
+                ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
+                : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
             }`}
             onClick={() => setMainTab("social")}
           >
@@ -94,21 +138,47 @@ export default function TippsPage() {
             type="button"
             className={`px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
               mainTab === "musik"
-                ? "bg-white border border-b-white border-gray-200 text-arena-blue"
-                : "bg-gray-50 text-[#666] hover:bg-gray-100 border border-transparent"
+                ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
+                : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
             }`}
             onClick={() => setMainTab("musik")}
           >
             Hintergrundmusik
           </button>
+          <button
+            type="button"
+            className={`px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
+              mainTab === "glossar"
+                ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
+                : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
+            }`}
+            onClick={() => setMainTab("glossar")}
+          >
+            Glossar
+          </button>
+          <button
+            type="button"
+            className={`px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
+              mainTab === "beitrag-tool"
+                ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
+                : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
+            }`}
+            onClick={() => setMainTab("beitrag-tool")}
+          >
+            Beitrag-Tool
+          </button>
         </div>
 
         <h1 className="mb-2 text-3xl font-extrabold max-sm:text-2xl">
-          {mainTab === "musik" ? "Hintergrundmusik" : "Support-Tipps für Autoren"}
+          {mainTab === "musik" ? "Hintergrundmusik" : mainTab === "glossar" ? "Glossar für Autoren" : mainTab === "beitrag-tool" ? "Beitrag-Tool" : "Support-Tipps für Autoren"}
         </h1>
-        <p className="text-[0.95rem] text-[#555] leading-relaxed mb-6">
+        <p className="text-[0.95rem] text-arena-muted leading-relaxed mb-6">
           {mainTab === "musik"
             ? "Kostenlose MP3-Tracks für deine Videos und Reels – von BuchArena für dich bereitgestellt."
+            : mainTab === "glossar"
+            ? "Fachbegriffe aus der Buch- und Verlagswelt einfach erklärt – von Schreiben über Druck bis Marketing."
+            : mainTab === "beitrag-tool"
+            ? "Erstelle Social-Media-Posts und Videos direkt im Browser – mit Bild, Text, Rahmen, Animationen und Musik. Wir stellen euch frei nutzbare Bilder und Musik zur Verfügung."
             : "Wir übernehmen die Video-Erstellung, das Design und den Upload. Dein Job ist es, den \u201EMotor\u201C zu starten. Hier erfährst du, wie du das Beste aus jeder Plattform herausholst."}
         </p>
 
@@ -119,7 +189,7 @@ export default function TippsPage() {
               <button
                 key={t.key}
                 type="button"
-                className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer border-none transition-colors ${tab === t.key ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text hover:bg-gray-200"}`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer border-none transition-colors ${tab === t.key ? "bg-arena-blue text-white" : "bg-arena-blue/10 text-arena-text hover:bg-arena-blue/20"}`}
                 onClick={() => setTab(t.key)}
               >
                 {t.icon} {t.label}
@@ -141,21 +211,21 @@ export default function TippsPage() {
                   <span className="text-xl flex-shrink-0 text-arena-blue font-bold">1.</span>
                   <div>
                     <p className="font-semibold m-0">Die Mathematik</p>
-                    <p className="text-[0.9rem] text-[#555] m-0">Wenn wir 100 Autoren sind und jeder nur sich selbst liked, hat jeder 1 Like. Wenn jeder auch die Beiträge der anderen supportet, hat jeder 100 Likes.</p>
+                    <p className="text-[0.9rem] text-arena-muted m-0">Wenn wir 100 Autoren sind und jeder nur sich selbst liked, hat jeder 1 Like. Wenn jeder auch die Beiträge der anderen supportet, hat jeder 100 Likes.</p>
                   </div>
                 </div>
                 <div className="flex gap-3 items-start">
                   <span className="text-xl flex-shrink-0 text-arena-blue font-bold">2.</span>
                   <div>
                     <p className="font-semibold m-0">Der Algorithmus</p>
-                    <p className="text-[0.9rem] text-[#555] m-0">Plattformen erkennen Nutzer, die nur online kommen, wenn es um sie selbst geht. Wer regelmäßig bei anderen interagiert, wird als „wertvolles Community-Mitglied" eingestuft – deine eigenen Beiträge werden höher gerankt.</p>
+                    <p className="text-[0.9rem] text-arena-muted m-0">Plattformen erkennen Nutzer, die nur online kommen, wenn es um sie selbst geht. Wer regelmäßig bei anderen interagiert, wird als „wertvolles Community-Mitglied" eingestuft – deine eigenen Beiträge werden höher gerankt.</p>
                   </div>
                 </div>
                 <div className="flex gap-3 items-start">
                   <span className="text-xl flex-shrink-0 text-arena-blue font-bold">3.</span>
                   <div>
                     <p className="font-semibold m-0">Nicht nur Instagram!</p>
-                    <p className="text-[0.9rem] text-[#555] m-0">Es gibt Plattformen, die für die Auffindbarkeit auf Suchmaschinen und KI-Systemen wie ChatGPT viel wichtiger sind. Deshalb: Wende die folgenden Tipps bei deinem Post an UND regelmäßig bei Posts anderer Autorinnen und Autoren.</p>
+                    <p className="text-[0.9rem] text-arena-muted m-0">Es gibt Plattformen, die für die Auffindbarkeit auf Suchmaschinen und KI-Systemen wie ChatGPT viel wichtiger sind. Deshalb: Wende die folgenden Tipps bei deinem Post an UND regelmäßig bei Posts anderer Autorinnen und Autoren.</p>
                   </div>
                 </div>
               </div>
@@ -267,8 +337,8 @@ export default function TippsPage() {
               <p className="m-0"><strong>Community-Tipp:</strong> Wenn du unter dem Post eines anderen Autors kommentierst, stelle ihm eine Frage zum Buch („Wie bist du auf die Idee gekommen?"). Das kurbelt die Diskussion an.</p>
               <p className="m-0"><strong>Der Effekt:</strong> KIs scannen diese Konversationen, um den Kontext und Inhalt des Buches zu verstehen. Je mehr Text du lieferst, desto präziser kann eine KI dein Buch später empfehlen.</p>
             </ChecklistItem>
-            <div className="rounded-xl border-2 border-red-200 bg-red-50 p-5">
-              <h3 className="text-[1rem] font-bold m-0 mb-2 text-red-700">Absolute No-Gos</h3>
+            <div className="rounded-xl border-2 border-arena-danger/30 bg-arena-danger/5 p-5">
+              <h3 className="text-[1rem] font-bold m-0 mb-2 text-arena-danger">Absolute No-Gos</h3>
               <p className="m-0 text-[0.9rem]"><strong>Brigading (Vote-Manipulation):</strong> Rufe niemals öffentlich (z.&nbsp;B. in deiner Insta-Story) dazu auf: „Geht alle auf Reddit und votet hoch!". Reddit erkennt, wenn viele User von extern kommen und nur voten. Das führt zur Löschung des Posts oder Sperrung unseres Accounts. Die Interaktion muss organisch wirken.</p>
             </div>
             <PlatformLink platform="reddit" />
@@ -384,7 +454,7 @@ export default function TippsPage() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-[0.9rem] leading-relaxed text-amber-900">
+            <div className="rounded-xl border border-arena-yellow/30 bg-arena-yellow/10 p-5 text-[0.9rem] leading-relaxed text-arena-text">
               <p className="m-0 font-semibold mb-1">Nutzungshinweis</p>
               <p className="m-0">
                 Die Musik darf frei verwendet werden – für private und kommerzielle Beiträge.
@@ -394,9 +464,9 @@ export default function TippsPage() {
             </div>
 
             {tracksLoading ? (
-              <p className="text-[#888] text-sm">Lade Tracks…</p>
+              <p className="text-arena-muted text-sm">Lade Tracks…</p>
             ) : tracks.length === 0 ? (
-              <p className="text-[#888] text-sm">Aktuell sind keine Tracks verfügbar. Schau bald wieder vorbei!</p>
+              <p className="text-arena-muted text-sm">Aktuell sind keine Tracks verfügbar. Schau bald wieder vorbei!</p>
             ) : (
               <div className="grid gap-4">
                 {tracks.map((track) => (
@@ -416,7 +486,7 @@ export default function TippsPage() {
                         {track.soundcloudUrl ? "SoundCloud →" : "↓ Download"}
                       </a>
                     </div>
-                    <p className="text-[0.9rem] text-[#555] m-0">{track.description}</p>
+                    <p className="text-[0.9rem] text-arena-muted m-0">{track.description}</p>
                     {track.soundcloudUrl ? (
                       <iframe
                         width="100%"
@@ -436,7 +506,132 @@ export default function TippsPage() {
           </div>
         )}
 
-        <div className="mt-10 border-t border-gray-200 pt-6">
+        {/* ── Beitrag-Tool ── */}
+        {mainTab === "beitrag-tool" && (
+          <div className="space-y-5">
+            <div className="rounded-xl border-2 border-arena-blue/30 bg-arena-blue/5 p-6">
+              <h2 className="text-xl font-bold m-0 mb-3">Social-Media-Beiträge selbst erstellen</h2>
+              <p className="m-0 text-[0.95rem] leading-relaxed">
+                Mit dem Beitrag-Tool kannst du professionelle Grafiken und Videos für Instagram, TikTok, YouTube & Co. direkt im Browser erstellen – ohne externe Software.
+              </p>
+              <p className="m-0 mt-3 text-[0.95rem] leading-relaxed">
+                Wir stellen euch frei nutzbare Bilder und Musik zur Verfügung, die ihr für eure Beiträge verwenden könnt.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="rounded-xl border border-arena-border-light bg-white p-5 space-y-2">
+                <h3 className="text-[1rem] font-bold m-0 text-arena-text">Bild-Modus (4:5)</h3>
+                <p className="text-[0.9rem] text-arena-muted m-0">Erstelle statische Posts im Instagram-Format. Exportiere als PNG mit Bild, Text und dekorativem Rahmen.</p>
+              </div>
+              <div className="rounded-xl border border-arena-border-light bg-white p-5 space-y-2">
+                <h3 className="text-[1rem] font-bold m-0 text-arena-text">Video-Modus (9:16)</h3>
+                <p className="text-[0.9rem] text-arena-muted m-0">Erstelle Reels und Shorts mit Animationen und Hintergrundmusik. Export als MP4 direkt im Browser.</p>
+              </div>
+              <div className="rounded-xl border border-arena-border-light bg-white p-5 space-y-2">
+                <h3 className="text-[1rem] font-bold m-0 text-arena-text">Musik und Animationen</h3>
+                <p className="text-[0.9rem] text-arena-muted m-0">Wähle aus kostenlosen BuchArena-Tracks, stelle Fade-In/Out ein und animiere Text und Bilder (Slide, Fade, Zoom).</p>
+              </div>
+              <div className="rounded-xl border border-arena-border-light bg-white p-5 space-y-2">
+                <h3 className="text-[1rem] font-bold m-0 text-arena-text">Rahmen und Designs</h3>
+                <p className="text-[0.9rem] text-arena-muted m-0">Über 10 edle Rahmenstile (Elegant, Vintage, Perlen u.v.m.). Speichere und lade eigene Designs.</p>
+              </div>
+            </div>
+
+            <Link
+              href="/social-media/beitrag-tool"
+              className="flex items-center justify-center gap-2 rounded-xl bg-arena-blue text-white px-6 py-4 text-[0.95rem] font-semibold no-underline hover:bg-arena-blue-light transition-colors"
+            >
+              Zum Beitrag-Tool →
+            </Link>
+          </div>
+        )}
+
+        {/* ── Glossar ── */}
+        {mainTab === "glossar" && (
+          <div className="space-y-5">
+            {/* Suchfeld */}
+            <input
+              type="text"
+              placeholder="Begriff oder Erklärung suchen…"
+              value={glossarSearch}
+              onChange={(e) => { setGlossarSearch(e.target.value); setGlossarLetter(""); }}
+              className="w-full rounded-xl border border-arena-border-light bg-white px-4 py-3 text-[0.95rem] outline-none focus:border-arena-blue transition-colors"
+            />
+
+            {/* A–Z Navigation */}
+            <div className="flex flex-wrap gap-1">
+              <button
+                type="button"
+                className={`w-9 h-9 rounded-lg text-sm font-semibold cursor-pointer border-none transition-colors ${
+                  glossarLetter === "" ? "bg-arena-blue text-white" : "bg-arena-blue/10 text-arena-text hover:bg-arena-blue/20"
+                }`}
+                onClick={() => setGlossarLetter("")}
+              >
+                Alle
+              </button>
+              {ALPHABET.map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  className={`w-9 h-9 rounded-lg text-sm font-semibold cursor-pointer border-none transition-colors ${
+                    glossarLetter === l ? "bg-arena-blue text-white" : "bg-arena-blue/10 text-arena-text hover:bg-arena-blue/20"
+                  }`}
+                  onClick={() => { setGlossarLetter(glossarLetter === l ? "" : l); setGlossarSearch(""); }}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+
+            {/* Kategorie-Filter */}
+            <select
+              value={glossarKategorie}
+              onChange={(e) => setGlossarKategorie(e.target.value)}
+              className="rounded-xl border border-arena-border-light bg-white px-4 py-2.5 text-[0.9rem] outline-none cursor-pointer focus:border-arena-blue transition-colors"
+            >
+              <option value="">Alle Kategorien</option>
+              {glossarKategorien.map((k) => (
+                <option key={k} value={k}>{k}</option>
+              ))}
+            </select>
+
+            {/* Ergebnisse */}
+            {glossarLoading ? (
+              <p className="text-arena-muted text-sm">Lade Glossar…</p>
+            ) : filteredGlossar.length === 0 ? (
+              <p className="text-arena-muted text-sm">Keine Begriffe gefunden.</p>
+            ) : (
+              <div className="space-y-2">
+                {filteredGlossar.map((e) => {
+                  const isOpen = glossarOpen === e.begriff;
+                  return (
+                    <div key={e.begriff} className="rounded-xl border border-arena-border-light bg-white overflow-hidden">
+                      <button
+                        type="button"
+                        className="w-full flex items-center justify-between px-5 py-4 text-left cursor-pointer border-none bg-transparent hover:bg-arena-bg transition-colors"
+                        onClick={() => setGlossarOpen(isOpen ? null : e.begriff)}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="font-bold text-[0.95rem] text-arena-text truncate">{e.begriff}</span>
+                          <span className="shrink-0 text-xs bg-arena-blue/10 text-arena-blue px-2 py-0.5 rounded-full">{e.bereich}</span>
+                        </div>
+                        <span className={`text-arena-muted text-lg transition-transform ${isOpen ? "rotate-180" : ""}`}>▾</span>
+                      </button>
+                      {isOpen && (
+                        <div className="px-5 pb-4 text-[0.9rem] leading-relaxed text-arena-muted border-t border-arena-border-light pt-3">
+                          {e.erklaerung}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="mt-10 border-t border-arena-border-light pt-6">
           <Link href="/" className="font-medium text-arena-link no-underline hover:underline">
             ← Zurück zur Startseite
           </Link>
