@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
 import { createDefaultBloggerProfile, type BloggerProfileData } from "@/lib/profile";
+import { LinkifyText } from "@/app/components/linkify-text";
 import { parseGenres } from "@/app/components/genre-picker";
 
 const socialIcons: Record<string, React.ReactNode> = {
@@ -214,7 +215,7 @@ export default function BloggerProfilePage({ params }: PageProps) {
             {visibleBeschreibung && (
               <div className="my-2">
                 <h2 className="text-lg">Über mich</h2>
-                <p className="whitespace-pre-line">{visibleBeschreibung}</p>
+                <p className="whitespace-pre-line"><LinkifyText text={visibleBeschreibung} /></p>
               </div>
             )}
 

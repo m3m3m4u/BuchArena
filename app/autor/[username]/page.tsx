@@ -1,6 +1,7 @@
 "use client";
 
 import { ProgressiveImage } from "@/app/components/progressive-image";
+import { LinkifyText } from "@/app/components/linkify-text";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
@@ -186,7 +187,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
             </div>
 
             {visibleUeberMich && (
-              <div className="mt-4 text-sm whitespace-pre-line">{visibleUeberMich}</div>
+              <div className="mt-4 text-sm whitespace-pre-line"><LinkifyText text={visibleUeberMich} /></div>
             )}
 
             {socialLinks.length > 0 && (

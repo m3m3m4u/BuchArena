@@ -1177,6 +1177,7 @@ function ProfilPageInner() {
           visibility={profile.ueberMich.visibility}
           multiline
           maxLength={2000}
+          hint="Tipp: Links werden automatisch klickbar. Eigener Linktext: [Mein Blog](https://example.com)"
           onValueChange={(value) =>
             setProfile((current) => ({
               ...current,
@@ -1536,6 +1537,7 @@ function ProfilPageInner() {
           visibility={speakerProfile.ueberMich.visibility}
           multiline
           maxLength={2000}
+          hint="Tipp: Links werden automatisch klickbar. Eigener Linktext: [Mein Blog](https://example.com)"
           onValueChange={(value) =>
             setSpeakerProfile((c) => ({ ...c, ueberMich: { ...c.ueberMich, value } }))
           }
@@ -1845,6 +1847,7 @@ function ProfilPageInner() {
         <div className="grid grid-cols-[2fr_1fr] gap-3 max-[780px]:grid-cols-1">
           <label className="grid gap-1 text-[0.95rem]">
             Beschreibung
+            <span className="text-xs text-arena-muted">Tipp: Links werden automatisch klickbar. Eigener Linktext: [Mein Blog](https://example.com)</span>
             <textarea
               className="input-base"
               rows={4}
@@ -2074,6 +2077,7 @@ function ProfilPageInner() {
 
         <div className="grid gap-1">
           <label className="text-sm font-semibold">Zu mir</label>
+          <span className="text-xs text-arena-muted">Tipp: Links werden automatisch klickbar. Eigener Linktext: [Mein Blog](https://example.com)</span>
           <textarea
             className="input-base w-full"
             rows={4}
@@ -2208,6 +2212,7 @@ function ProfilPageInner() {
 
         <div className="grid gap-1">
           <label className="text-sm font-semibold">Zu mir</label>
+          <span className="text-xs text-arena-muted">Tipp: Links werden automatisch klickbar. Eigener Linktext: [Mein Blog](https://example.com)</span>
           <textarea
             className="input-base w-full"
             rows={4}
@@ -2331,6 +2336,7 @@ function ProfilPageInner() {
 
         <div className="grid gap-1">
           <label className="text-sm font-semibold">Beschreibung</label>
+          <span className="text-xs text-arena-muted">Tipp: Links werden automatisch klickbar. Eigener Linktext: [Mein Blog](https://example.com)</span>
           <textarea
             className="input-base w-full"
             rows={4}
@@ -3102,6 +3108,7 @@ type FieldWithVisibilityProps = {
   onVisibilityChange: (visibility: Visibility) => void;
   multiline?: boolean;
   maxLength?: number;
+  hint?: string;
 };
 
 function FieldWithVisibility({
@@ -3112,11 +3119,13 @@ function FieldWithVisibility({
   onVisibilityChange,
   multiline,
   maxLength,
+  hint,
 }: FieldWithVisibilityProps) {
   return (
     <div className="grid grid-cols-[2fr_1fr] gap-3 max-[780px]:grid-cols-1">
       <label className="grid gap-1 text-[0.95rem]">
         {label}
+        {hint && <span className="text-xs text-arena-muted">{hint}</span>}
         {multiline ? (
           <textarea className="input-base resize-y" rows={4} maxLength={maxLength} value={value} onChange={(event) => {
             const newValue = event.target.value;

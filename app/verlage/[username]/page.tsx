@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
 import { createDefaultVerlageProfile, type VerlageProfileData } from "@/lib/profile";
+import { LinkifyText } from "@/app/components/linkify-text";
 
 const monthLabels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
@@ -172,7 +173,7 @@ export default function VerlageProfilePage({ params }: PageProps) {
             {verlageProfile.beschreibung && (
               <div className="my-2">
                 <h2 className="text-lg">Beschreibung</h2>
-                <p className="text-sm whitespace-pre-wrap">{verlageProfile.beschreibung}</p>
+                <p className="text-sm whitespace-pre-wrap"><LinkifyText text={verlageProfile.beschreibung} /></p>
               </div>
             )}
 

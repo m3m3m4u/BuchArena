@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
 import { createDefaultTestleserProfile, type TestleserProfileData } from "@/lib/profile";
+import { LinkifyText } from "@/app/components/linkify-text";
 import { parseGenres } from "@/app/components/genre-picker";
 
 const socialIcons: Record<string, React.ReactNode> = {
@@ -188,7 +189,7 @@ export default function TestleserProfilePage({ params }: PageProps) {
             {testleserProfile.zuMir && (
               <div className="my-2">
                 <h2 className="text-lg">Zu mir</h2>
-                <p className="text-sm whitespace-pre-wrap">{testleserProfile.zuMir}</p>
+                <p className="text-sm whitespace-pre-wrap"><LinkifyText text={testleserProfile.zuMir} /></p>
               </div>
             )}
 

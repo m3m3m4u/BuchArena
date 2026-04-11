@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
 import { createDefaultLektorenProfile, type LektorenProfileData } from "@/lib/profile";
+import { LinkifyText } from "@/app/components/linkify-text";
 
 const monthLabels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
@@ -191,7 +192,7 @@ export default function LektorenProfilePage({ params }: PageProps) {
             {lektorenProfile.zuMir && (
               <div className="my-2">
                 <h2 className="text-lg">Zu mir</h2>
-                <p className="text-sm whitespace-pre-wrap">{lektorenProfile.zuMir}</p>
+                <p className="text-sm whitespace-pre-wrap"><LinkifyText text={lektorenProfile.zuMir} /></p>
               </div>
             )}
 
