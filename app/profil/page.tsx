@@ -14,9 +14,10 @@ import {
 import { createDefaultProfile, createDefaultSpeakerProfile, createDefaultBloggerProfile, createDefaultTestleserProfile, createDefaultLektorenProfile, createDefaultVerlageProfile, type ProfileData, type SpeakerProfileData, type BloggerProfileData, type TestleserProfileData, type LektorenProfileData, type VerlageProfileData, type Visibility } from "@/lib/profile";
 import MeineBuecherTab from "@/app/components/meine-buecher-tab";
 import GenrePicker from "@/app/components/genre-picker";
+import KooperationenTab from "@/app/components/kooperationen-tab";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
-type ProfileTab = "autor" | "sprecher" | "blogger" | "testleser" | "lektoren" | "verlage" | "buecher" | "konto";
+type ProfileTab = "autor" | "sprecher" | "blogger" | "testleser" | "lektoren" | "verlage" | "buecher" | "kooperationen" | "konto";
 
 type GetProfileResponse = {
   profile: ProfileData;
@@ -191,7 +192,7 @@ function ProfilPageInner() {
     setRequestedUser(user);
 
     const tab = searchParams.get("tab")?.trim();
-    if (tab === "buecher" || tab === "sprecher" || tab === "autor" || tab === "blogger" || tab === "testleser" || tab === "lektoren" || tab === "verlage" || tab === "konto") {
+    if (tab === "buecher" || tab === "sprecher" || tab === "autor" || tab === "blogger" || tab === "testleser" || tab === "lektoren" || tab === "verlage" || tab === "kooperationen" || tab === "konto") {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -1082,6 +1083,13 @@ function ProfilPageInner() {
             onClick={() => handleTabSwitch("verlage")}
           >
             Verlage
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "kooperationen" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            onClick={() => handleTabSwitch("kooperationen")}
+          >
+            Partner
           </button>
           <button
             type="button"
@@ -2413,6 +2421,10 @@ function ProfilPageInner() {
           {isSavingVerlage ? "Speichern ..." : "Verlagsprofil speichern"}
         </button>
         </>
+        )}
+
+        {activeTab === "kooperationen" && (
+          <KooperationenTab username={targetUsername} />
         )}
 
         {activeTab === "buecher" && (

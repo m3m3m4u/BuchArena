@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
 import { createDefaultVerlageProfile, type VerlageProfileData } from "@/lib/profile";
 import { LinkifyText } from "@/app/components/linkify-text";
+import KooperationenAnzeige from "@/app/components/kooperationen-anzeige";
 
 const monthLabels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
@@ -256,7 +257,7 @@ export default function VerlageProfilePage({ params }: PageProps) {
             )}
           </>
         )}
-
+        <KooperationenAnzeige username={username} isAutor={false} />
         <Link href="/verlage" className="btn">Zurück zu Verlage entdecken</Link>
       </section>
     </main>

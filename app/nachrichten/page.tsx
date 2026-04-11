@@ -26,6 +26,7 @@ type ChatMessage = {
   read: boolean;
   readAt: string | null;
   threadId: string | null;
+  kooperationId: string | null;
   createdAt: string;
 };
 
@@ -102,6 +103,10 @@ export default function NachrichtenPage() {
   const [broadcastBody, setBroadcastBody] = useState("");
   const [broadcastSending, setBroadcastSending] = useState(false);
   const [broadcastMessage, setBroadcastMessage] = useState("");
+
+  // Kooperations-Buttons Status
+  const [handledKoopIds, setHandledKoopIds] = useState<Record<string, "confirmed" | "rejected">>({});
+  const [koopActionLoading, setKoopActionLoading] = useState<string | null>(null);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -340,6 +345,33 @@ export default function NachrichtenPage() {
     );
   }
 
+  /* ── Kooperations-Aktionen direkt in der Nachricht ── */
+  async function handleKoopConfirm(koopId: string) {
+    setKoopActionLoading(koopId);
+    try {
+      const res = await fetch("/api/kooperationen/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: koopId }),
+      });
+      if (res.ok) {
+        setHandledKoopIds((prev) => ({ ...prev, [koopId]: "confirmed" }));
+      }
+    } catch { /* ignore */ }
+    setKoopActionLoading(null);
+  }
+
+  async function handleKoopReject(koopId: string) {
+    setKoopActionLoading(koopId);
+    try {
+      const res = await fetch(`/api/kooperationen/remove?id=${encodeURIComponent(koopId)}`, { method: "DELETE" });
+      if (res.ok) {
+        setHandledKoopIds((prev) => ({ ...prev, [koopId]: "rejected" }));
+      }
+    } catch { /* ignore */ }
+    setKoopActionLoading(null);
+  }
+
   /* ── Datums-Trenner berechnen ── */
   function renderMessages() {
     let lastDate = "";
@@ -371,6 +403,30 @@ export default function NachrichtenPage() {
               <p className="whitespace-pre-wrap m-0" style={{ lineHeight: 1.5 }}>
                 {msg.body}
               </p>
+              {/* Kooperations-Buttons direkt in der Nachricht */}
+              {msg.kooperationId && msg.recipientUsername === username && (() => {
+                const status = handledKoopIds[msg.kooperationId!];
+                if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Kooperation bestätigt!</p>;
+                if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Kooperation abgelehnt.</p>;
+                return (
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white border-none cursor-pointer hover:bg-green-700 disabled:opacity-50"
+                      disabled={koopActionLoading === msg.kooperationId}
+                      onClick={() => handleKoopConfirm(msg.kooperationId!)}
+                    >
+                      ✓ Bestätigen
+                    </button>
+                    <button
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 border-none cursor-pointer hover:bg-gray-300 disabled:opacity-50"
+                      disabled={koopActionLoading === msg.kooperationId}
+                      onClick={() => handleKoopReject(msg.kooperationId!)}
+                    >
+                      ✕ Ablehnen
+                    </button>
+                  </div>
+                );
+              })()}
               <div
                 className={`flex items-center gap-1.5 mt-1 ${
                   isMine ? "justify-end" : "justify-start"

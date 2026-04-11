@@ -28,7 +28,7 @@ export async function GET() {
 
     const users = await usersCollection
       .find(
-        { $or: [{ status: { $exists: false } }, { status: "active" }], username: { $not: { $regex: /^kopernikus$/i } } },
+        { $or: [{ status: { $exists: false } }, { status: "active" }] },
         { projection: { username: 1, displayName: 1, profile: 1, lastOnline: 1, speakerProfile: 1 } }
       )
       .toArray();

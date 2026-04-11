@@ -7,6 +7,7 @@ import type { DiscussionDocument } from "@/lib/discussions";
 import type { PollDocument, TauschDocument } from "@/lib/discussions";
 import type { MessageDocument } from "@/lib/messages";
 import type { KalenderEvent } from "@/lib/kalender";
+import type { KooperationDocument } from "@/lib/kooperationen";
 
 export type SocialMediaDesign = {
   _id?: import("mongodb").ObjectId;
@@ -138,6 +139,11 @@ async function initializeDatabase(db: Db) {
   await kalender.createIndex({ date: 1 });
   await kalender.createIndex({ createdBy: 1 });
 
+  const kooperationen = db.collection("kooperationen");
+  await kooperationen.createIndex({ requesterUsername: 1, partnerUsername: 1, requesterRole: 1, partnerRole: 1 }, { unique: true });
+  await kooperationen.createIndex({ partnerUsername: 1, status: 1 });
+  await kooperationen.createIndex({ requesterUsername: 1, status: 1 });
+
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
     { projection: { _id: 1, passwordHash: 1, role: 1 } }
@@ -241,6 +247,11 @@ export async function getSocialMediaDesignsCollection(): Promise<Collection<Soci
 export async function getSocialMediaGalleryCollection(): Promise<Collection<SocialMediaGalleryItem>> {
   const db = await getDatabase();
   return db.collection<SocialMediaGalleryItem>("social_media_gallery");
+}
+
+export async function getKooperationenCollection(): Promise<Collection<KooperationDocument>> {
+  const db = await getDatabase();
+  return db.collection<KooperationDocument>("kooperationen");
 }
 
 export function isDuplicateKeyError(error: unknown) {

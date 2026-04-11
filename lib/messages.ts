@@ -12,6 +12,7 @@ export type MessageDocument = {
   deletedBySender: boolean;
   deletedByRecipient: boolean;
   broadcast?: boolean;
+  kooperationId?: string;
   createdAt: Date;
 };
 
