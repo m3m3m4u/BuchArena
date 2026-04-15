@@ -7,6 +7,7 @@ type BlogPost = {
   _id: string;
   title: string;
   excerpt: string;
+  authorUsername: string;
   authorDisplayName: string;
   createdAt: string;
 };
@@ -68,7 +69,11 @@ export default function BlogPage() {
               {post.title}
             </Link>
             <p className="text-xs text-gray-400">
-              von {post.authorDisplayName} · {formatDate(post.createdAt)}
+              von{" "}
+              <Link href={`/profil?user=${encodeURIComponent(post.authorUsername)}`} className="hover:underline">
+                {post.authorDisplayName}
+              </Link>
+              {" "}· {formatDate(post.createdAt)}
             </p>
             {post.excerpt && (
               <p className="text-[0.93rem] text-gray-600 leading-relaxed">{post.excerpt}</p>
