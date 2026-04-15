@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { normalizeGenre } from "@/lib/genres";
 
 type AuthorBook = { title: string; genre: string; ageFrom: number; ageTo: number };
-type DiscoverAuthor = { username: string; displayName: string; profileImageUrl: string; profileImageCrop?: { x: number; y: number; zoom: number }; lastOnline: string | null; lesezeichenTotal: number; books: AuthorBook[] };
+type DiscoverAuthor = { username: string; displayName: string; profileSlug: string; profileImageUrl: string; profileImageCrop?: { x: number; y: number; zoom: number }; lastOnline: string | null; lesezeichenTotal: number; books: AuthorBook[] };
 
 const PAGE_SIZE = 10;
 
@@ -156,7 +156,7 @@ export default function AutorenPage() {
               {pagedAuthors.map((author) => (
                 <Link
                   key={author.username}
-                  href={`/autor/${encodeURIComponent(author.username)}`}
+                  href={`/autor/${encodeURIComponent(author.profileSlug || author.username)}`}
                   className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md"
                 >
                   <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">

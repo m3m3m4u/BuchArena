@@ -8,6 +8,7 @@ const monthLabels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "S
 type DiscoverVerlag = {
   username: string;
   displayName: string;
+  profileSlug: string;
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
   motto: string;
@@ -56,7 +57,7 @@ export default function VerlagePage() {
             {verlage.map((vl) => (
               <Link
                 key={vl.username}
-                href={`/verlage/${encodeURIComponent(vl.username)}`}
+                href={`/verlage/${encodeURIComponent(vl.profileSlug || vl.username)}`}
                 className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md h-full"
               >
                 <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">

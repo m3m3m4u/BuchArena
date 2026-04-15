@@ -4,6 +4,7 @@ export type LoggedInAccount = {
   username: string;
   email: string;
   role: AccountRole;
+  profileSlug?: string;
 };
 
 const ACCOUNT_STORAGE_KEY = "logged_in_account";

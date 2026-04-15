@@ -7,6 +7,7 @@ import { getLesezeichenCollection } from "@/lib/lesezeichen";
 type BloggerDiscoverItem = {
   username: string;
   displayName: string;
+  profileSlug: string;
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
   motto: string;
@@ -26,7 +27,7 @@ export async function GET() {
           bloggerProfile: { $exists: true },
           $or: [{ status: { $exists: false } }, { status: "active" }],
         },
-        { projection: { username: 1, profile: 1, bloggerProfile: 1, displayName: 1 } }
+        { projection: { username: 1, profile: 1, bloggerProfile: 1, displayName: 1, profileSlug: 1 } }
       )
       .limit(500)
       .toArray();
@@ -76,6 +77,7 @@ export async function GET() {
       bloggers.push({
         username: user.username,
         displayName,
+        profileSlug: user.profileSlug ?? "",
         profileImageUrl,
         profileImageCrop,
         motto,

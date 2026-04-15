@@ -245,7 +245,7 @@ export default function HomePage() {
           <h1 className="mb-2 text-[2.4rem] font-extrabold leading-tight max-sm:text-[1.7rem]">
             Willkommen in der <span className="text-arena-yellow">BuchArena</span>
           </h1>
-          <p className="mb-4 text-lg opacity-90 max-sm:text-base">Die Community für Autoren, Sprecher und Leser</p>
+          <p className="mb-4 text-lg opacity-90 max-sm:text-base">Die Community für Autoren, Sprecher, Lektoren, Testleser, Verlage und Leser</p>
           <div className="mt-4 flex flex-wrap justify-center gap-3">
             <Link href="/auth" className="btn btn-primary rounded-lg px-5 py-2.5 text-base">
               Kostenlos registrieren

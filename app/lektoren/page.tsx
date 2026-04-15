@@ -31,6 +31,7 @@ const monthLabels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "S
 type DiscoverLektor = {
   username: string;
   displayName: string;
+  profileSlug: string;
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
   motto: string;
@@ -110,7 +111,7 @@ export default function LektorenPage() {
             {paged.map((lk) => (
               <Link
                 key={lk.username}
-                href={`/lektoren/${encodeURIComponent(lk.username)}`}
+                href={`/lektoren/${encodeURIComponent(lk.profileSlug || lk.username)}`}
                 className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md h-full"
               >
                 <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">

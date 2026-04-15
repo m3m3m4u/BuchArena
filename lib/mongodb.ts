@@ -36,6 +36,7 @@ export type UserDocument = {
   role: UserRole;
   status?: UserStatus;
   displayName?: string;
+  profileSlug?: string;
   createdAt: Date;
   lastOnline?: Date;
   profile?: ProfileData;
@@ -89,6 +90,7 @@ async function initializeDatabase(db: Db) {
 
   await users.createIndex({ username: 1 }, { unique: true });
   await users.createIndex({ email: 1 }, { unique: true });
+  await users.createIndex({ profileSlug: 1 }, { unique: true, sparse: true });
   await books.createIndex({ ownerUsername: 1, createdAt: -1 });
 
   const support = db.collection<SupportPost>("support");
@@ -144,12 +146,12 @@ async function initializeDatabase(db: Db) {
   await kooperationen.createIndex({ partnerUsername: 1, status: 1 });
   await kooperationen.createIndex({ requesterUsername: 1, status: 1 });
 
+  // Superadmin beim Serverstart anlegen / Passwort synchronisieren
+  const defaultPassword = process.env.SUPERADMIN_PASSWORD ?? "BuchArena!2024#Secure";
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
     { projection: { _id: 1, passwordHash: 1, role: 1 } }
   );
-
-  const defaultPassword = process.env.SUPERADMIN_PASSWORD ?? "BuchArena!2024#Secure";
 
   if (!existingSuperAdmin) {
     const passwordHash = await bcrypt.hash(defaultPassword, 12);
@@ -161,7 +163,6 @@ async function initializeDatabase(db: Db) {
       createdAt: new Date(),
     });
   } else {
-    // Sicherstellen, dass Rolle und Passwort korrekt sind
     const isValid = await bcrypt.compare(defaultPassword, existingSuperAdmin.passwordHash ?? "");
     const updates: Record<string, unknown> = {};
     if (!isValid) {
@@ -197,6 +198,19 @@ export async function getDatabase(): Promise<Db> {
 export async function getUsersCollection(): Promise<Collection<UserDocument>> {
   const db = await getDatabase();
   return db.collection<UserDocument>("users");
+}
+
+/** Sucht einen User zuerst über profileSlug, dann über username. */
+export async function findUserBySlugOrUsername(
+  identifier: string,
+  projection?: Record<string, number>,
+): Promise<UserDocument | null> {
+  const users = await getUsersCollection();
+  const proj = projection ? { projection } : undefined;
+  return (
+    (await users.findOne({ profileSlug: identifier }, proj)) ??
+    (await users.findOne({ username: identifier }, proj))
+  );
 }
 
 export async function getBooksCollection(): Promise<Collection<BookDocument>> {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getBooksCollection, getUsersCollection } from "@/lib/mongodb";
+import { getBooksCollection, findUserBySlugOrUsername } from "@/lib/mongodb";
 import { createDefaultProfile } from "@/lib/profile";
 
 export async function GET(request: Request) {
@@ -14,13 +14,9 @@ export async function GET(request: Request) {
       );
     }
 
-    const users = await getUsersCollection();
     const books = await getBooksCollection();
 
-    const user = await users.findOne(
-      { username },
-      { projection: { username: 1, profile: 1 } }
-    );
+    const user = await findUserBySlugOrUsername(username, { username: 1, profile: 1 });
 
     if (!user) {
       return NextResponse.json(
@@ -31,7 +27,7 @@ export async function GET(request: Request) {
 
     const rawBooks = await books
       .find(
-        { ownerUsername: username },
+        { ownerUsername: user.username },
         { projection: { _id: 1, title: 1, genre: 1, ageFrom: 1, ageTo: 1, coverImageUrl: 1 } }
       )
       .sort({ createdAt: -1 })

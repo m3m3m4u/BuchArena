@@ -30,6 +30,7 @@ function weightedShuffle<T extends { lesezeichenTotal: number }>(items: T[], see
 type DiscoverTestleser = {
   username: string;
   displayName: string;
+  profileSlug: string;
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
   genres: string[];
@@ -114,7 +115,7 @@ export default function TestleserPage() {
             {paged.map((tl) => (
               <Link
                 key={tl.username}
-                href={`/testleser/${encodeURIComponent(tl.username)}`}
+                href={`/testleser/${encodeURIComponent(tl.profileSlug || tl.username)}`}
                 className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md h-full"
               >
                 <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">

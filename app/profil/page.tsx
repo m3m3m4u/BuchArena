@@ -29,6 +29,7 @@ type GetProfileResponse = {
   newsletterOptIn?: boolean;
   emailOnUnreadMessages?: boolean;
   displayName?: string;
+  profileSlug?: string;
 };
 
 const visibilityOptions: Array<{ value: Visibility; label: string }> = [
@@ -119,6 +120,9 @@ function ProfilPageInner() {
   const [isSavingUnreadMail, setIsSavingUnreadMail] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [isSavingDisplayName, setIsSavingDisplayName] = useState(false);
+  const [profileSlug, setProfileSlug] = useState("");
+  const [isSavingSlug, setIsSavingSlug] = useState(false);
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
   const dragStateRef = useRef<{
     pointerId: number;
     startX: number;
@@ -257,6 +261,7 @@ function ProfilPageInner() {
         setNewsletterOptIn(!!data.newsletterOptIn);
         setEmailOnUnreadMessages(!!data.emailOnUnreadMessages);
         setDisplayName(data.displayName ?? "");
+        setProfileSlug(data.profileSlug ?? "");
       } catch {
         setIsError(true);
         setMessage("Profil konnte nicht geladen werden.");
@@ -1450,6 +1455,25 @@ function ProfilPageInner() {
           )}
         </div>
 
+        {/* ── Eigene Profil-URL ── */}
+        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
+          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+            z.{"\u00a0"}B. <strong>bucharena.org/autor/{profileSlug || "dein-name"}</strong>
+          </p>
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 grid gap-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-arena-muted text-sm whitespace-nowrap">/autor/</span>
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+              </div>
+              {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
+              {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
+            </div>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+          </div>
+        </div>
+
         <button type="button" className="btn" onClick={saveProfile} disabled={isSaving}>
           {isSaving ? "Speichern ..." : "Profil speichern"}
         </button>
@@ -1752,6 +1776,25 @@ function ProfilPageInner() {
           }
         />
 
+        {/* ── Eigene Profil-URL ── */}
+        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
+          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+            z.{"\u00a0"}B. <strong>bucharena.org/sprecher/{profileSlug || "dein-name"}</strong>
+          </p>
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 grid gap-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-arena-muted text-sm whitespace-nowrap">/sprecher/</span>
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+              </div>
+              {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
+              {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
+            </div>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+          </div>
+        </div>
+
         <button type="button" className="btn" onClick={saveSpeakerProfile} disabled={isSavingSpeaker}>
           {isSavingSpeaker ? "Speichern ..." : "Sprecherprofil speichern"}
         </button>
@@ -2022,6 +2065,25 @@ function ProfilPageInner() {
           }
         />
 
+        {/* ── Eigene Profil-URL ── */}
+        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
+          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+            z.{"\u00a0"}B. <strong>bucharena.org/blogger/{profileSlug || "dein-name"}</strong>
+          </p>
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 grid gap-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-arena-muted text-sm whitespace-nowrap">/blogger/</span>
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+              </div>
+              {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
+              {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
+            </div>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+          </div>
+        </div>
+
         <button type="button" className="btn" onClick={saveBloggerProfile} disabled={isSavingBlogger}>
           {isSavingBlogger ? "Speichern ..." : "Bloggerprofil speichern"}
         </button>
@@ -2150,6 +2212,25 @@ function ProfilPageInner() {
         <FieldWithVisibility label="WhatsApp-Kanal" value={testleserProfile.socialWhatsapp.value} visibility={testleserProfile.socialWhatsapp.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))} />
         <FieldWithVisibility label="Mailadresse" value={testleserProfile.socialEmail.value} visibility={testleserProfile.socialEmail.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))} />
 
+        {/* ── Eigene Profil-URL ── */}
+        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
+          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+            z.{"\u00a0"}B. <strong>bucharena.org/testleser/{profileSlug || "dein-name"}</strong>
+          </p>
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 grid gap-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-arena-muted text-sm whitespace-nowrap">/testleser/</span>
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+              </div>
+              {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
+              {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
+            </div>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+          </div>
+        </div>
+
         <button type="button" className="btn" onClick={saveTestleserProfile} disabled={isSavingTestleser}>
           {isSavingTestleser ? "Speichern ..." : "Testleserprofil speichern"}
         </button>
@@ -2273,6 +2354,25 @@ function ProfilPageInner() {
         <FieldWithVisibility label="Newsletter" value={lektorenProfile.socialNewsletter.value} visibility={lektorenProfile.socialNewsletter.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, visibility } }))} />
         <FieldWithVisibility label="WhatsApp-Kanal" value={lektorenProfile.socialWhatsapp.value} visibility={lektorenProfile.socialWhatsapp.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))} />
         <FieldWithVisibility label="Mailadresse" value={lektorenProfile.socialEmail.value} visibility={lektorenProfile.socialEmail.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))} />
+
+        {/* ── Eigene Profil-URL ── */}
+        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
+          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+            z.{"\u00a0"}B. <strong>bucharena.org/lektoren/{profileSlug || "dein-name"}</strong>
+          </p>
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 grid gap-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-arena-muted text-sm whitespace-nowrap">/lektoren/</span>
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+              </div>
+              {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
+              {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
+            </div>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+          </div>
+        </div>
 
         <button type="button" className="btn" onClick={saveLektorenProfile} disabled={isSavingLektoren}>
           {isSavingLektoren ? "Speichern ..." : "Lektorenprofil speichern"}
@@ -2416,6 +2516,25 @@ function ProfilPageInner() {
         <FieldWithVisibility label="Newsletter" value={verlageProfile.socialNewsletter.value} visibility={verlageProfile.socialNewsletter.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialNewsletter: { ...c.socialNewsletter, visibility } }))} />
         <FieldWithVisibility label="WhatsApp-Kanal" value={verlageProfile.socialWhatsapp.value} visibility={verlageProfile.socialWhatsapp.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))} />
         <FieldWithVisibility label="Mailadresse" value={verlageProfile.socialEmail.value} visibility={verlageProfile.socialEmail.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))} />
+
+        {/* ── Eigene Profil-URL ── */}
+        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
+          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+            z.{"\u00a0"}B. <strong>bucharena.org/verlage/{profileSlug || "dein-name"}</strong>
+          </p>
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 grid gap-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-arena-muted text-sm whitespace-nowrap">/verlage/</span>
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+              </div>
+              {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
+              {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
+            </div>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+          </div>
+        </div>
 
         <button type="button" className="btn" onClick={saveVerlageProfile} disabled={isSavingVerlage}>
           {isSavingVerlage ? "Speichern ..." : "Verlagsprofil speichern"}

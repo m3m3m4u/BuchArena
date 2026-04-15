@@ -44,16 +44,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             { bloggerProfile: { $exists: true } },
           ],
         },
-        { projection: { username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1 } },
+        { projection: { username: 1, profileSlug: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1 } },
       )
       .limit(5000)
       .toArray();
 
     const authorPages: MetadataRoute.Sitemap = authorDocs.flatMap((u) => {
+      const slug = u.profileSlug || u.username;
       const pages: MetadataRoute.Sitemap = [];
-      if (u.profile) pages.push({ url: `${baseUrl}/autor/${u.username}`, changeFrequency: "weekly", priority: 0.5 });
-      if (u.speakerProfile) pages.push({ url: `${baseUrl}/sprecher/${u.username}`, changeFrequency: "weekly", priority: 0.5 });
-      if (u.bloggerProfile) pages.push({ url: `${baseUrl}/blogger/${u.username}`, changeFrequency: "weekly", priority: 0.5 });
+      if (u.profile) pages.push({ url: `${baseUrl}/autor/${slug}`, changeFrequency: "weekly", priority: 0.5 });
+      if (u.speakerProfile) pages.push({ url: `${baseUrl}/sprecher/${slug}`, changeFrequency: "weekly", priority: 0.5 });
+      if (u.bloggerProfile) pages.push({ url: `${baseUrl}/blogger/${slug}`, changeFrequency: "weekly", priority: 0.5 });
       return pages;
     });
 

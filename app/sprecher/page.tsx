@@ -27,6 +27,7 @@ function weightedShuffle<T extends { lesezeichenTotal: number }>(items: T[], see
 type DiscoverSpeaker = {
   username: string;
   displayName: string;
+  profileSlug: string;
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
   ort: string;
@@ -80,7 +81,7 @@ export default function SprecherPage() {
             {sortedSpeakers.map((speaker) => (
               <Link
                 key={speaker.username}
-                href={`/sprecher/${encodeURIComponent(speaker.username)}`}
+                href={`/sprecher/${encodeURIComponent(speaker.profileSlug || speaker.username)}`}
                 className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md h-full"
               >
                 <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">

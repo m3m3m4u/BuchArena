@@ -17,6 +17,7 @@ type UserRow = {
   passwordHash: string;
   role: "USER" | "ADMIN" | "SUPERADMIN";
   status?: string;
+  profileSlug?: string;
 };
 
 export async function POST(request: Request) {
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     const users = await getUsersCollection();
     const user = (await users.findOne(
       { $or: [{ username: identifier }, { email: normalizedEmail }] },
-      { projection: { username: 1, email: 1, passwordHash: 1, role: 1, status: 1 } }
+      { projection: { username: 1, email: 1, passwordHash: 1, role: 1, status: 1, profileSlug: 1 } }
     )) as UserRow | null;
 
     if (!user) {
@@ -92,6 +93,7 @@ export async function POST(request: Request) {
         username: user.username,
         email: user.email,
         role: user.role,
+        profileSlug: user.profileSlug ?? "",
       },
     });
 

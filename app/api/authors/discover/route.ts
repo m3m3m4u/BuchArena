@@ -5,6 +5,7 @@ import { getLesezeichenCollection } from "@/lib/lesezeichen";
 type AuthorDiscoverItem = {
   username: string;
   displayName: string;
+  profileSlug: string;
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
   lastOnline: string | null;
@@ -29,7 +30,7 @@ export async function GET() {
     const users = await usersCollection
       .find(
         { $or: [{ status: { $exists: false } }, { status: "active" }] },
-        { projection: { username: 1, displayName: 1, profile: 1, lastOnline: 1, speakerProfile: 1 } }
+        { projection: { username: 1, displayName: 1, profile: 1, lastOnline: 1, speakerProfile: 1, profileSlug: 1 } }
       )
       .toArray();
 
@@ -63,6 +64,7 @@ export async function GET() {
       grouped.set(user.username, {
         username: user.username,
         displayName,
+        profileSlug: user.profileSlug ?? "",
         profileImageUrl: imgData?.url ?? "",
         profileImageCrop: imgData?.crop,
         lastOnline: lastOnlineByUser.get(user.username) ?? null,

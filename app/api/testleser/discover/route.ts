@@ -7,6 +7,7 @@ import { getLesezeichenCollection } from "@/lib/lesezeichen";
 type TestleserDiscoverItem = {
   username: string;
   displayName: string;
+  profileSlug: string;
   profileImageUrl: string;
   profileImageCrop?: { x: number; y: number; zoom: number };
   genres: string[];
@@ -24,7 +25,7 @@ export async function GET() {
           testleserProfile: { $exists: true },
           $or: [{ status: { $exists: false } }, { status: "active" }],
         },
-        { projection: { username: 1, profile: 1, testleserProfile: 1, displayName: 1 } }
+        { projection: { username: 1, profile: 1, testleserProfile: 1, displayName: 1, profileSlug: 1 } }
       )
       .limit(500)
       .toArray();
@@ -63,6 +64,7 @@ export async function GET() {
       testleser.push({
         username: user.username,
         displayName,
+        profileSlug: user.profileSlug ?? "",
         profileImageUrl,
         profileImageCrop,
         genres,

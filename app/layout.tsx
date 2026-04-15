@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "BuchArena",
     description:
-      "Die Community für Autoren, Sprecher und Leser.",
+      "Die Community für Autoren, Sprecher, Lektoren, Testleser, Verlage und Leser.",
     images: ["/logo.png"],
   },
   alternates: {

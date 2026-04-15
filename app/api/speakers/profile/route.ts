@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUsersCollection } from "@/lib/mongodb";
+import { findUserBySlugOrUsername } from "@/lib/mongodb";
 import { createDefaultSpeakerProfile } from "@/lib/profile";
 
 export async function GET(request: Request) {
@@ -14,12 +14,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const users = await getUsersCollection();
-
-    const user = await users.findOne(
-      { username },
-      { projection: { username: 1, profile: 1, speakerProfile: 1 } }
-    );
+    const user = await findUserBySlugOrUsername(username, { username: 1, profile: 1, speakerProfile: 1 });
 
     if (!user) {
       return NextResponse.json(

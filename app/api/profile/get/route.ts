@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     const users = await getUsersCollection();
     const user = await users.findOne(
       { username },
-      { projection: { profile: 1, speakerProfile: 1, bloggerProfile: 1, testleserProfile: 1, lektorenProfile: 1, verlageProfile: 1, newsletterOptIn: 1, emailOnUnreadMessages: 1, displayName: 1 } }
+      { projection: { profile: 1, speakerProfile: 1, bloggerProfile: 1, testleserProfile: 1, lektorenProfile: 1, verlageProfile: 1, newsletterOptIn: 1, emailOnUnreadMessages: 1, displayName: 1, profileSlug: 1 } }
     );
 
     if (!user) {
@@ -43,6 +43,7 @@ export async function POST(request: Request) {
       newsletterOptIn: !!user.newsletterOptIn,
       emailOnUnreadMessages: !!user.emailOnUnreadMessages,
       displayName: user.displayName ?? "",
+      profileSlug: user.profileSlug ?? "",
     });
   } catch {
     return NextResponse.json(

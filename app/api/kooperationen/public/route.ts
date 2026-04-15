@@ -37,16 +37,17 @@ export async function GET(req: NextRequest) {
     const userDocs = await users
       .find(
         { username: { $in: [...partnerUsernames] } },
-        { projection: { username: 1, displayName: 1, profile: 1 } },
+        { projection: { username: 1, displayName: 1, profile: 1, profileSlug: 1 } },
       )
       .toArray();
 
-    const userMap = new Map<string, { displayName: string; profileImage: string }>();
+    const userMap = new Map<string, { displayName: string; profileImage: string; profileSlug: string }>();
     for (const u of userDocs) {
       const dn = u.displayName || (u.profile?.name?.visibility === "public" && u.profile?.name?.value ? u.profile.name.value : u.username);
       userMap.set(u.username, {
         displayName: dn,
         profileImage: u.profile?.profileImage?.value ?? "",
+        profileSlug: u.profileSlug ?? "",
       });
     }
 
@@ -70,7 +71,7 @@ export async function GET(req: NextRequest) {
         profileImage: info?.profileImage ?? "",
         rolle: otherRole,
         rolleLabel: ROLLE_LABELS[otherRole],
-        profilePath: `${ROLLE_PROFILE_PATH[otherRole]}/${encodeURIComponent(otherUsername)}`,
+        profilePath: `${ROLLE_PROFILE_PATH[otherRole]}/${encodeURIComponent(info?.profileSlug || otherUsername)}`,
       };
     });
 
