@@ -28,14 +28,39 @@ const ResizableImage = Image.extend({
           if (sw.endsWith("px")) return sw.slice(0, -2);
           return el.getAttribute("width") ?? null;
         },
-        renderHTML: (attrs: { width?: string | null }) => {
-          if (!attrs.width) return {};
-          const w = String(attrs.width);
-          if (w.endsWith("%")) return { style: `width: ${w}; max-width: 100%;` };
-          return { width: w, style: `width: ${w}px; max-width: 100%;` };
+        renderHTML: () => ({}),
+      },
+      align: {
+        default: null,
+        parseHTML: (el: HTMLElement) => {
+          const s = el.style;
+          if (s.marginLeft === "auto" && s.marginRight === "auto") return "center";
+          if (s.float === "left") return "left";
+          if (s.float === "right") return "right";
+          return (el.getAttribute("data-align") as string | null) ?? null;
         },
+        renderHTML: () => ({}),
       },
     };
+  },
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
+    const { width, align, ...rest } = HTMLAttributes as {
+      width?: string | null;
+      align?: string | null;
+      [key: string]: unknown;
+    };
+    const styles: string[] = [];
+    if (width) {
+      const w = String(width);
+      styles.push(w.endsWith("%") ? `width: ${w}; max-width: 100%` : `width: ${w}px; max-width: 100%`);
+    }
+    if (align === "center") styles.push("display: block; margin-left: auto; margin-right: auto");
+    else if (align === "left") styles.push("float: left; margin-right: 1rem; margin-bottom: 0.5rem");
+    else if (align === "right") styles.push("float: right; margin-left: 1rem; margin-bottom: 0.5rem");
+    const attrs: Record<string, unknown> = { ...rest };
+    if (align) attrs["data-align"] = align;
+    if (styles.length) attrs.style = styles.join("; ");
+    return ["img", attrs];
   },
 });
 
@@ -94,6 +119,7 @@ function EditorToolbar({
   const imgInputRef = useRef<HTMLInputElement>(null);
   const [urlModal, setUrlModal] = useState<UrlModalConfig | null>(null);
   const [imgWidthInput, setImgWidthInput] = useState("");
+  const [imgAlignActive, setImgAlignActive] = useState<string | null>(null);
   const [ytWidthInput, setYtWidthInput] = useState("640");
   const [ytHeightInput, setYtHeightInput] = useState("360");
 
@@ -103,17 +129,24 @@ function EditorToolbar({
       isImage: ctx.editor?.isActive("image") ?? false,
       isYoutube: ctx.editor?.isActive("youtube") ?? false,
       imgWidth: (ctx.editor?.getAttributes("image").width as string | null) ?? "",
+      imgAlign: (ctx.editor?.getAttributes("image").align as string | null) ?? null,
       ytWidth: String((ctx.editor?.getAttributes("youtube").width as number | null) ?? 640),
       ytHeight: String((ctx.editor?.getAttributes("youtube").height as number | null) ?? 360),
     }),
   });
 
-  useEffect(() => { if (editorState?.isImage) setImgWidthInput(editorState.imgWidth); }, [editorState?.isImage, editorState?.imgWidth]);
+  useEffect(() => {
+    if (editorState?.isImage) {
+      setImgWidthInput(editorState.imgWidth);
+      setImgAlignActive(editorState.imgAlign);
+    }
+  }, [editorState?.isImage, editorState?.imgWidth, editorState?.imgAlign]);
   useEffect(() => {
     if (editorState?.isYoutube) { setYtWidthInput(editorState.ytWidth); setYtHeightInput(editorState.ytHeight); }
   }, [editorState?.isYoutube, editorState?.ytWidth, editorState?.ytHeight]);
 
   const applyImageWidth = (w: string) => { if (!editor) return; editor.chain().focus().updateAttributes("image", { width: w || null }).run(); };
+  const applyImageAlign = (a: string | null) => { if (!editor) return; setImgAlignActive(a); editor.chain().focus().updateAttributes("image", { align: a }).run(); };
   const applyYtSize = (w: number, h: number) => { if (!editor) return; editor.chain().focus().updateAttributes("youtube", { width: w, height: h }).run(); };
 
   const openLinkModal = useCallback(() => {
@@ -206,6 +239,17 @@ function EditorToolbar({
               ))}
               <button type="button" onMouseDown={(e) => { e.preventDefault(); setImgWidthInput("100%"); applyImageWidth("100%"); }}
                 className={`px-2 py-0.5 rounded border text-xs transition-colors ${imgWidthInput === "100%" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"}`}>Voll</button>
+              <span className="border-l border-blue-200 mx-1 self-stretch" />
+              <span className="text-blue-700 font-medium">Ausrichtung:</span>
+              {(["left", "center", "right", null] as const).map((a) => (
+                <button key={String(a)} type="button"
+                  onMouseDown={(e) => { e.preventDefault(); applyImageAlign(a); }}
+                  className={`px-2 py-0.5 rounded border text-xs transition-colors ${
+                    imgAlignActive === a ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"
+                  }`}>
+                  {a === "left" ? "Links" : a === "center" ? "Mitte" : a === "right" ? "Rechts" : "Normal"}
+                </button>
+              ))}
             </>
           )}
           {editorState.isYoutube && (
