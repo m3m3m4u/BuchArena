@@ -375,11 +375,13 @@ export default function BlogAdminPage() {
         mousedown(view, event) {
           const target = event.target as HTMLElement;
           if (target.tagName !== "IMG") return false;
+          const result = view.posAtCoords({ left: event.clientX, top: event.clientY });
+          if (!result) return false;
+          const pos = result.inside >= 0 ? result.inside : result.pos;
           try {
-            const pos = view.posAtDOM(target, 0);
-            const node = view.state.doc.nodeAt(pos);
-            if (node?.type.name === "image") {
-              view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, pos)));
+            const sel = NodeSelection.create(view.state.doc, pos);
+            if (sel.node.type.name === "image") {
+              view.dispatch(view.state.tr.setSelection(sel));
               return true;
             }
           } catch { /* ignore */ }
