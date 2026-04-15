@@ -335,22 +335,12 @@ export default function BlogEinreichenPage() {
     content: "",
     editorProps: {
       attributes: { class: "prose prose-sm max-w-none min-h-[400px] p-4 focus:outline-none" },
-      handleDOMEvents: {
-        mousedown(view, event) {
-          const target = event.target as HTMLElement;
-          if (target.tagName !== "IMG") return false;
-          const result = view.posAtCoords({ left: event.clientX, top: event.clientY });
-          if (!result) return false;
-          const pos = result.inside >= 0 ? result.inside : result.pos;
-          try {
-            const sel = NodeSelection.create(view.state.doc, pos);
-            if (sel.node.type.name === "image") {
-              view.dispatch(view.state.tr.setSelection(sel));
-              return true;
-            }
-          } catch { /* ignore */ }
-          return false;
-        },
+      handleClickOn(view, _pos, node, nodePos) {
+        if (node.type.name !== "image") return false;
+        try {
+          view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, nodePos)));
+          return true;
+        } catch { return false; }
       },
     },
   });

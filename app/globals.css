@@ -48,6 +48,10 @@ h1 { margin: 0; }
 
 /* ── Tiptap / ProseMirror Editor ── */
 .ProseMirror::after { content: ""; display: table; clear: both; }
+.ProseMirror img.ProseMirror-selectednode {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
 .ProseMirror h1 {
   font-size: 1.875rem;
   font-weight: 700;
