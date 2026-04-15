@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEditor, EditorContent, useEditorState, type Editor } from "@tiptap/react";
+import { NodeSelection } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
@@ -464,6 +465,21 @@ export default function NewsletterAdminPage() {
     editorProps: {
       attributes: {
         class: "prose prose-sm max-w-none min-h-[400px] p-4 focus:outline-none",
+      },
+      handleDOMEvents: {
+        mousedown(view, event) {
+          const target = event.target as HTMLElement;
+          if (target.tagName !== "IMG") return false;
+          try {
+            const pos = view.posAtDOM(target, 0);
+            const node = view.state.doc.nodeAt(pos);
+            if (node?.type.name === "image") {
+              view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, pos)));
+              return true;
+            }
+          } catch { /* ignore */ }
+          return false;
+        },
       },
     },
   });
