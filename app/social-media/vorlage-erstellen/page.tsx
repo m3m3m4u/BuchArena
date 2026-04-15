@@ -1739,6 +1739,9 @@ export default function VorlageErstellenPage() {
         <p className="text-[0.95rem]">
           Fülle alle Informationen aus und reiche die Vorlage direkt ein.
         </p>
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <strong>Hinweis:</strong> Jeder eingereichte Text wird zunächst von einem unserer Sprecher eingelesen. Bitte rechne daher von der Einreichung bis zur Veröffentlichung mit einer Dauer von <strong>2 bis 6 Wochen</strong>.
+        </div>
 
         {/* ── Toolbar: Öffnen / Speichern / Herunterladen / Einreichen ── */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">

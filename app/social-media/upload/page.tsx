@@ -272,6 +272,9 @@ export default function UploadPage() {
           Du hast eine PowerPoint-Präsentation zu einem Buch erstellt? Teile sie
           mit uns und werde Teil der BuchArena!
         </p>
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <strong>Hinweis:</strong> Jede eingereichte Buchvorstellung wird zunächst von einem unserer Sprecher eingelesen. Bitte rechne daher von der Einreichung bis zur Veröffentlichung mit einer Dauer von <strong>2 bis 6 Wochen</strong>.
+        </div>
 
         <form onSubmit={handleSubmit} className="grid gap-4">
           {/* Buchtitel */}
