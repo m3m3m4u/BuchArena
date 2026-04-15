@@ -47,7 +47,7 @@ body {
 h1 { margin: 0; }
 
 /* ── Tiptap / ProseMirror Editor ── */
-.ProseMirror { overflow: auto; }
+.ProseMirror::after { content: ""; display: table; clear: both; }
 .ProseMirror h1 {
   font-size: 1.875rem;
   font-weight: 700;
