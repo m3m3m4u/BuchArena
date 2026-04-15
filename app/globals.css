@@ -49,8 +49,7 @@ h1 { margin: 0; }
 /* ── Tiptap / ProseMirror Editor ── */
 .ProseMirror::after { content: ""; display: table; clear: both; }
 .ProseMirror img.ProseMirror-selectednode {
-  outline: 3px solid #2563eb;
-  outline-offset: 2px;
+  box-shadow: 0 0 0 3px #2563eb;
 }
 .ProseMirror h1 {
   font-size: 1.875rem;
