@@ -4,14 +4,15 @@ import { getBlogCollection } from "@/lib/blog";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    if (!ObjectId.isValid(params.id)) {
+    if (!ObjectId.isValid(id)) {
       return NextResponse.json({ message: "Ungültige ID." }, { status: 400 });
     }
     const col = await getBlogCollection();
-    const post = await col.findOne({ _id: new ObjectId(params.id), status: "approved" });
+    const post = await col.findOne({ _id: new ObjectId(id), status: "approved" });
     if (!post) {
       return NextResponse.json({ message: "Nicht gefunden." }, { status: 404 });
     }

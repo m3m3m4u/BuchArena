@@ -10,19 +10,20 @@ function forbidden() {
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const account = await getServerAccount();
   if (!account || (account.role !== "ADMIN" && account.role !== "SUPERADMIN")) {
     return forbidden();
   }
 
-  if (!ObjectId.isValid(params.id)) {
+  const { id } = await params;
+  if (!ObjectId.isValid(id)) {
     return NextResponse.json({ message: "Ungültige ID." }, { status: 400 });
   }
 
   const col = await getBlogCollection();
-  const post = await col.findOne({ _id: new ObjectId(params.id) });
+  const post = await col.findOne({ _id: new ObjectId(id) });
   if (!post) {
     return NextResponse.json({ message: "Nicht gefunden." }, { status: 404 });
   }
