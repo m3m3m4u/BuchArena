@@ -15,7 +15,6 @@ export type BlogPostDocument = {
   authorUsername: string;
   /** Optionaler Anzeigename */
   authorDisplayName?: string;
-  /** Admin-Notiz bei Ablehnung */
   rejectionNote?: string;
   /** Wer hat freigegeben/abgelehnt */
   reviewedBy?: string;

@@ -81,7 +81,7 @@ export async function POST(request: Request) {
       if (body.status === "rejected" && body.rejectionNote) {
         updateDoc.rejectionNote = body.rejectionNote.trim();
       } else {
-        updateDoc.rejectionNote = null;
+        updateDoc.rejectionNote = undefined;
       }
     }
     const result = await col.updateOne({ _id: new ObjectId(body.id) }, { $set: updateDoc });
@@ -151,7 +151,7 @@ export async function PATCH(request: Request) {
         status: body.status,
         reviewedBy: account.username,
         reviewedAt: now,
-        rejectionNote: body.status === "rejected" ? (body.rejectionNote?.trim() ?? null) : null,
+        rejectionNote: body.status === "rejected" ? (body.rejectionNote?.trim() ?? undefined) : undefined,
         updatedAt: now,
       },
     }
