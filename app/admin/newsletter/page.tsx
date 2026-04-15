@@ -164,14 +164,20 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
 
   const editorState = useEditorState({
     editor,
-    selector: (ctx) => ({
-      isImage: ctx.editor?.isActive("image") ?? false,
-      isYoutube: ctx.editor?.isActive("youtube") ?? false,
-      imgWidth: (ctx.editor?.getAttributes("image").width as string | null) ?? "",
-      imgAlign: (ctx.editor?.getAttributes("image").align as string | null) ?? null,
-      ytWidth: String((ctx.editor?.getAttributes("youtube").width as number | null) ?? 640),
-      ytHeight: String((ctx.editor?.getAttributes("youtube").height as number | null) ?? 360),
-    }),
+    selector: (ctx) => {
+      const sel = ctx.editor?.state.selection;
+      const isImage = sel instanceof NodeSelection && sel.node.type.name === "image";
+      const imgAttrs = isImage ? (sel as NodeSelection).node.attrs : {};
+      const isYoutube = ctx.editor?.isActive("youtube") ?? false;
+      return {
+        isImage,
+        isYoutube,
+        imgWidth: (imgAttrs.width as string | null) ?? "",
+        imgAlign: (imgAttrs.align as string | null) ?? null,
+        ytWidth: String((ctx.editor?.getAttributes("youtube").width as number | null) ?? 640),
+        ytHeight: String((ctx.editor?.getAttributes("youtube").height as number | null) ?? 360),
+      };
+    },
   });
 
   useEffect(() => {
