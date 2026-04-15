@@ -196,13 +196,13 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
 
   function applyImageWidth(w: string) {
     if (!editor) return;
-    editor.chain().focus().updateAttributes("image", { width: w || null }).run();
+    editor.chain().updateAttributes("image", { width: w || null }).run();
   }
 
   function applyImageAlign(a: string | null) {
     if (!editor) return;
     setImgAlignActive(a);
-    editor.chain().focus().updateAttributes("image", { align: a }).run();
+    editor.chain().updateAttributes("image", { align: a }).run();
   }
 
   function applyYtSize(w: number, h: number) {

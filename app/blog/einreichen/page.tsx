@@ -186,8 +186,8 @@ function EditorToolbar({
     if (editorState?.isYoutube) { setYtWidthInput(editorState.ytWidth); setYtHeightInput(editorState.ytHeight); }
   }, [editorState?.isYoutube, editorState?.ytWidth, editorState?.ytHeight]);
 
-  const applyImageWidth = (w: string) => { if (!editor) return; editor.chain().focus().updateAttributes("image", { width: w || null }).run(); };
-  const applyImageAlign = (a: string | null) => { if (!editor) return; setImgAlignActive(a); editor.chain().focus().updateAttributes("image", { align: a }).run(); };
+  const applyImageWidth = (w: string) => { if (!editor) return; editor.chain().updateAttributes("image", { width: w || null }).run(); };
+  const applyImageAlign = (a: string | null) => { if (!editor) return; setImgAlignActive(a); editor.chain().updateAttributes("image", { align: a }).run(); };
   const applyYtSize = (w: number, h: number) => { if (!editor) return; editor.chain().focus().updateAttributes("youtube", { width: w, height: h }).run(); };
 
   const openLinkModal = useCallback(() => {
