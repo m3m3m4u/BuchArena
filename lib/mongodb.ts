@@ -137,6 +137,10 @@ async function initializeDatabase(db: Db) {
   const newsPosts = db.collection("news_posts");
   await newsPosts.createIndex({ active: 1, createdAt: -1 });
 
+  const blogPosts = db.collection("blog_posts");
+  await blogPosts.createIndex({ status: 1, createdAt: -1 });
+  await blogPosts.createIndex({ authorUsername: 1 });
+
   const kalender = db.collection("kalender_events");
   await kalender.createIndex({ date: 1 });
   await kalender.createIndex({ createdBy: 1 });

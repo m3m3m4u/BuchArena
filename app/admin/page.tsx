@@ -517,6 +517,12 @@ export default function AdminPage() {
           </button>
           <button
             className="btn btn-sm"
+            onClick={() => router.push("/admin/blog")}
+          >
+            Blog
+          </button>
+          <button
+            className="btn btn-sm"
             onClick={() => router.push("/admin/newsletter")}
           >
             📬 Newsletter
