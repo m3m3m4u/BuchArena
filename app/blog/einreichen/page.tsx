@@ -45,12 +45,9 @@ const ResizableImage = Image.extend({
       },
     };
   },
-  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
-    const { width, align, ...rest } = HTMLAttributes as {
-      width?: string | null;
-      align?: string | null;
-      [key: string]: unknown;
-    };
+  renderHTML({ node, HTMLAttributes }: { node: { attrs: Record<string, unknown> }; HTMLAttributes: Record<string, unknown> }) {
+    const width = node.attrs.width as string | null;
+    const align = node.attrs.align as string | null;
     const styles: string[] = [];
     if (width) {
       const w = String(width);
@@ -59,7 +56,7 @@ const ResizableImage = Image.extend({
     if (align === "center") styles.push("display: block; margin-left: auto; margin-right: auto");
     else if (align === "left") styles.push("float: left; margin-right: 1rem; margin-bottom: 0.5rem");
     else if (align === "right") styles.push("float: right; margin-left: 1rem; margin-bottom: 0.5rem");
-    const attrs: Record<string, unknown> = { ...rest };
+    const attrs: Record<string, unknown> = { ...HTMLAttributes };
     if (align) attrs["data-align"] = align;
     if (styles.length) attrs.style = styles.join("; ");
     return ["img", attrs];
@@ -191,15 +188,11 @@ function EditorToolbar({
   }, [editorState?.isYoutube, editorState?.ytWidth, editorState?.ytHeight]);
 
   const applyImageAttrs = (patch: Record<string, unknown>) => {
-    console.warn("[IMG] applyImageAttrs called", { patch, pos: imgNodePosRef.current, hasEditor: !!editor });
-    if (!editor || imgNodePosRef.current < 0) { console.warn("[IMG] early return: no editor or pos<0"); return; }
+    if (!editor || imgNodePosRef.current < 0) return;
     const pos = imgNodePosRef.current;
     const node = editor.state.doc.nodeAt(pos);
-    console.warn("[IMG] nodeAt(", pos, ") =", node?.type?.name, node?.attrs);
-    if (!node) { console.warn("[IMG] no node at pos"); return; }
-    const newAttrs = { ...node.attrs, ...patch };
-    console.warn("[IMG] dispatching setNodeMarkup with", newAttrs);
-    editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, null, newAttrs));
+    if (!node) return;
+    editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, null, { ...node.attrs, ...patch }));
   };
   const applyImageWidth = (w: string) => applyImageAttrs({ width: w || null });
   const applyImageAlign = (a: string | null) => { setImgAlignActive(a); applyImageAttrs({ align: a }); };
