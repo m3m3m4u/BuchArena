@@ -2,7 +2,7 @@
 
 import { ProgressiveImage } from "@/app/components/progressive-image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import GenrePicker, { parseGenres } from "@/app/components/genre-picker";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 
@@ -58,6 +58,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const coverFileInputRef = useRef<HTMLInputElement>(null);
   const [editingBookId, setEditingBookId] = useState<string | null>(null);
   const [isBookOverlayOpen, setIsBookOverlayOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -576,31 +577,35 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
               </div>
 
               <div className="grid gap-2.5">
+                <input
+                  ref={coverFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) {
+                      void onUploadCover(file);
+                    }
+                    event.currentTarget.value = "";
+                  }}
+                />
+
                 <div
-                  className="w-full border border-arena-border rounded-lg overflow-hidden grid place-items-center bg-arena-bg"
+                  className={`w-full border border-arena-border rounded-lg overflow-hidden grid place-items-center bg-arena-bg ${coverImageUrl ? "cursor-pointer" : "cursor-pointer"}`}
                   style={{ aspectRatio: "3/4" }}
+                  onClick={() => coverFileInputRef.current?.click()}
+                  title={coverImageUrl ? "Klicken zum Ändern" : "Klicken zum Auswählen"}
                 >
                   {coverImageUrl ? (
                     <img src={coverImageUrl} alt="Buchcover" className="h-full w-full object-contain" />
                   ) : (
-                    <span>Kein Cover</span>
+                    <span className="flex flex-col items-center gap-2 text-arena-muted text-xs text-center p-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                      Cover auswählen
+                    </span>
                   )}
                 </div>
-
-                <label className="grid gap-1 text-[0.95rem]">
-                  Cover hochladen
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) {
-                        void onUploadCover(file);
-                      }
-                      event.currentTarget.value = "";
-                    }}
-                  />
-                </label>
 
                 {isUploadingCover && <span className="text-xs text-arena-muted">Cover wird hochgeladen ...</span>}
 
