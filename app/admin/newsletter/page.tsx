@@ -43,6 +43,7 @@ const ResizableImage = Image.extend({
     };
   },
   renderHTML({ node, HTMLAttributes }: { node: { attrs: Record<string, unknown> }; HTMLAttributes: Record<string, unknown> }) {
+    console.warn("[renderHTML] node.attrs=", JSON.stringify(node?.attrs), "HTMLAttributes=", JSON.stringify(HTMLAttributes));
     const width = node.attrs.width as string | null;
     const align = node.attrs.align as string | null;
     const styles: string[] = [];
@@ -56,6 +57,7 @@ const ResizableImage = Image.extend({
     const attrs: Record<string, unknown> = { ...HTMLAttributes };
     if (align) attrs["data-align"] = align;
     if (styles.length) attrs.style = styles.join("; ");
+    console.warn("[renderHTML] final attrs=", JSON.stringify(attrs));
     return ["img", attrs];
   },
 });
