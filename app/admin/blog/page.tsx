@@ -157,11 +157,15 @@ function EditorToolbar({
   }, [editorState?.isYoutube, editorState?.ytWidth, editorState?.ytHeight]);
 
   const applyImageAttrs = (patch: Record<string, unknown>) => {
-    if (!editor || imgNodePosRef.current < 0) return;
+    console.warn("[IMG] applyImageAttrs called", { patch, pos: imgNodePosRef.current, hasEditor: !!editor });
+    if (!editor || imgNodePosRef.current < 0) { console.warn("[IMG] early return: no editor or pos<0"); return; }
     const pos = imgNodePosRef.current;
     const node = editor.state.doc.nodeAt(pos);
-    if (!node) return;
-    editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, null, { ...node.attrs, ...patch }));
+    console.warn("[IMG] nodeAt(", pos, ") =", node?.type?.name, node?.attrs);
+    if (!node) { console.warn("[IMG] no node at pos"); return; }
+    const newAttrs = { ...node.attrs, ...patch };
+    console.warn("[IMG] dispatching setNodeMarkup with", newAttrs);
+    editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, null, newAttrs));
   };
   const applyImageWidth = (w: string) => applyImageAttrs({ width: w || null });
   const applyImageAlign = (a: string | null) => { setImgAlignActive(a); applyImageAttrs({ align: a }); };
