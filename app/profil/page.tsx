@@ -2682,7 +2682,7 @@ function ProfilPageInner() {
               <input
                 type="text"
                 className="input-base flex-1"
-                placeholder="z.\u00a0B. Dein Vorname oder Spitzname"
+                placeholder="z. B. Dein Vorname oder Spitzname"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 maxLength={120}
