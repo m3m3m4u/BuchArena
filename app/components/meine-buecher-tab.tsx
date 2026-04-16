@@ -412,7 +412,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
 
       {message && !isError && <p className="text-sm text-green-700 mt-2">{message}</p>}
       {isError && message && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-xl mx-4">
             <p className="text-red-700 font-medium mb-4">{message}</p>
             <button
