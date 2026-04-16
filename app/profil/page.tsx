@@ -137,6 +137,12 @@ function ProfilPageInner() {
     startCropX: number;
     startCropY: number;
   } | null>(null);
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
+  const speakerImageFileInputRef = useRef<HTMLInputElement>(null);
+  const bloggerImageFileInputRef = useRef<HTMLInputElement>(null);
+  const testleserImageFileInputRef = useRef<HTMLInputElement>(null);
+  const lektorenImageFileInputRef = useRef<HTMLInputElement>(null);
+  const verlageImageFileInputRef = useRef<HTMLInputElement>(null);
 
   /* ── Dirty-Tracking: Snapshots nach Laden/Speichern ── */
   const savedProfileSnap = useRef("");
@@ -2914,21 +2920,20 @@ function ProfilPageInner() {
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
             <h2>Bildeinstellungen</h2>
 
-            <label>
-              Datei auswählen
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(event) => {
-                  const selectedFile = event.target.files?.[0];
-                  if (selectedFile) {
-                    void uploadImage(selectedFile);
-                  }
-                  event.currentTarget.value = "";
-                }}
-              />
-              {isUploadingImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
-            </label>
+            <input
+              ref={imageFileInputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(event) => {
+                const selectedFile = event.target.files?.[0];
+                if (selectedFile) {
+                  void uploadImage(selectedFile);
+                }
+                event.currentTarget.value = "";
+              }}
+            />
+            {isUploadingImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
 
             <div>
               <span className="block text-xs mb-1">Sichtbarkeit</span>
@@ -2939,14 +2944,21 @@ function ProfilPageInner() {
             </div>
 
             <div
-              className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab"
+              className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${profile.profileImage.value ? "cursor-grab" : "cursor-pointer"}`}
               style={imagePreviewStyle}
               onPointerDown={onImagePointerDown}
               onPointerMove={onImagePointerMove}
               onPointerUp={onImagePointerUp}
               onPointerCancel={onImagePointerUp}
+              onClick={() => imageFileInputRef.current?.click()}
+              title={profile.profileImage.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}
             >
-              {!profile.profileImage.value && <span>Kein Bild gewählt</span>}
+              {!profile.profileImage.value && (
+                <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  Bild auswählen
+                </span>
+              )}
             </div>
 
             <div className="grid gap-2.5">
@@ -2990,21 +3002,20 @@ function ProfilPageInner() {
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
             <h2>Sprecher-Bildeinstellungen</h2>
 
-            <label>
-              Datei auswählen
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(event) => {
-                  const selectedFile = event.target.files?.[0];
-                  if (selectedFile) {
-                    void uploadSpeakerImage(selectedFile);
-                  }
-                  event.currentTarget.value = "";
-                }}
-              />
-              {isUploadingSpeakerImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
-            </label>
+            <input
+              ref={speakerImageFileInputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(event) => {
+                const selectedFile = event.target.files?.[0];
+                if (selectedFile) {
+                  void uploadSpeakerImage(selectedFile);
+                }
+                event.currentTarget.value = "";
+              }}
+            />
+            {isUploadingSpeakerImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
 
             <div>
               <span className="block text-xs mb-1">Sichtbarkeit</span>
@@ -3020,14 +3031,21 @@ function ProfilPageInner() {
             </div>
 
             <div
-              className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab"
+              className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${speakerProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`}
               style={speakerImagePreviewStyle}
               onPointerDown={onSpeakerImagePointerDown}
               onPointerMove={onSpeakerImagePointerMove}
               onPointerUp={onSpeakerImagePointerUp}
               onPointerCancel={onSpeakerImagePointerUp}
+              onClick={() => speakerImageFileInputRef.current?.click()}
+              title={speakerProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}
             >
-              {!speakerProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+              {!speakerProfile.profileImage?.value && (
+                <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  Bild auswählen
+                </span>
+              )}
             </div>
 
             <div className="grid gap-2.5">
@@ -3071,21 +3089,20 @@ function ProfilPageInner() {
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
             <h2>Blogger-Bildeinstellungen</h2>
 
-            <label>
-              Datei auswählen
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(event) => {
-                  const selectedFile = event.target.files?.[0];
-                  if (selectedFile) {
-                    void uploadBloggerImage(selectedFile);
-                  }
-                  event.currentTarget.value = "";
-                }}
-              />
-              {isUploadingBloggerImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
-            </label>
+            <input
+              ref={bloggerImageFileInputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(event) => {
+                const selectedFile = event.target.files?.[0];
+                if (selectedFile) {
+                  void uploadBloggerImage(selectedFile);
+                }
+                event.currentTarget.value = "";
+              }}
+            />
+            {isUploadingBloggerImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
 
             <div>
               <span className="block text-xs mb-1">Sichtbarkeit</span>
@@ -3101,14 +3118,21 @@ function ProfilPageInner() {
             </div>
 
             <div
-              className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab"
+              className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${bloggerProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`}
               style={bloggerImagePreviewStyle}
               onPointerDown={onBloggerImagePointerDown}
               onPointerMove={onBloggerImagePointerMove}
               onPointerUp={onBloggerImagePointerUp}
               onPointerCancel={onBloggerImagePointerUp}
+              onClick={() => bloggerImageFileInputRef.current?.click()}
+              title={bloggerProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}
             >
-              {!bloggerProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+              {!bloggerProfile.profileImage?.value && (
+                <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  Bild auswählen
+                </span>
+              )}
             </div>
 
             <div className="grid gap-2.5">
@@ -3151,17 +3175,14 @@ function ProfilPageInner() {
         <div className="overlay-backdrop" onClick={() => setIsTestleserImageOverlayOpen(false)}>
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
             <h2>Testleser-Bildeinstellungen</h2>
-            <label>
-              Datei auswählen
-              <input type="file" accept="image/*" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadTestleserImage(selectedFile); event.currentTarget.value = ""; }} />
-              {isUploadingTestleserImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
-            </label>
+            <input ref={testleserImageFileInputRef} type="file" accept="image/*" className="sr-only" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadTestleserImage(selectedFile); event.currentTarget.value = ""; }} />
+            {isUploadingTestleserImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
             <div>
               <span className="block text-xs mb-1">Sichtbarkeit</span>
               <VisibilityToggle value={testleserProfile.profileImage.visibility} onChange={(visibility) => setTestleserProfile((current) => ({ ...current, profileImage: { ...current.profileImage, visibility } }))} />
             </div>
-            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab" style={testleserImagePreviewStyle} onPointerDown={onTestleserImagePointerDown} onPointerMove={onTestleserImagePointerMove} onPointerUp={onTestleserImagePointerUp} onPointerCancel={onTestleserImagePointerUp}>
-              {!testleserProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            <div className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${testleserProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`} style={testleserImagePreviewStyle} onPointerDown={onTestleserImagePointerDown} onPointerMove={onTestleserImagePointerMove} onPointerUp={onTestleserImagePointerUp} onPointerCancel={onTestleserImagePointerUp} onClick={() => testleserImageFileInputRef.current?.click()} title={testleserProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}>
+              {!testleserProfile.profileImage?.value && <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Bild auswählen</span>}
             </div>
             <div className="grid gap-2.5">
               <label>
@@ -3178,17 +3199,14 @@ function ProfilPageInner() {
         <div className="overlay-backdrop" onClick={() => setIsLektorenImageOverlayOpen(false)}>
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
             <h2>Lektoren-Bildeinstellungen</h2>
-            <label>
-              Datei auswählen
-              <input type="file" accept="image/*" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadLektorenImage(selectedFile); event.currentTarget.value = ""; }} />
-              {isUploadingLektorenImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
-            </label>
+            <input ref={lektorenImageFileInputRef} type="file" accept="image/*" className="sr-only" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadLektorenImage(selectedFile); event.currentTarget.value = ""; }} />
+            {isUploadingLektorenImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
             <div>
               <span className="block text-xs mb-1">Sichtbarkeit</span>
               <VisibilityToggle value={lektorenProfile.profileImage.visibility} onChange={(visibility) => setLektorenProfile((current) => ({ ...current, profileImage: { ...current.profileImage, visibility } }))} />
             </div>
-            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab" style={lektorenImagePreviewStyle} onPointerDown={onLektorenImagePointerDown} onPointerMove={onLektorenImagePointerMove} onPointerUp={onLektorenImagePointerUp} onPointerCancel={onLektorenImagePointerUp}>
-              {!lektorenProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            <div className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${lektorenProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`} style={lektorenImagePreviewStyle} onPointerDown={onLektorenImagePointerDown} onPointerMove={onLektorenImagePointerMove} onPointerUp={onLektorenImagePointerUp} onPointerCancel={onLektorenImagePointerUp} onClick={() => lektorenImageFileInputRef.current?.click()} title={lektorenProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}>
+              {!lektorenProfile.profileImage?.value && <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Bild auswählen</span>}
             </div>
             <div className="grid gap-2.5">
               <label>
@@ -3205,17 +3223,14 @@ function ProfilPageInner() {
         <div className="overlay-backdrop" onClick={() => setIsVerlageImageOverlayOpen(false)}>
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
             <h2>Verlags-Bildeinstellungen</h2>
-            <label>
-              Datei auswählen
-              <input type="file" accept="image/*" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadVerlageImage(selectedFile); event.currentTarget.value = ""; }} />
-              {isUploadingVerlageImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
-            </label>
+            <input ref={verlageImageFileInputRef} type="file" accept="image/*" className="sr-only" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadVerlageImage(selectedFile); event.currentTarget.value = ""; }} />
+            {isUploadingVerlageImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
             <div>
               <span className="block text-xs mb-1">Sichtbarkeit</span>
               <VisibilityToggle value={verlageProfile.profileImage.visibility} onChange={(visibility) => setVerlageProfile((current) => ({ ...current, profileImage: { ...current.profileImage, visibility } }))} />
             </div>
-            <div className="w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border cursor-grab" style={verlageImagePreviewStyle} onPointerDown={onVerlageImagePointerDown} onPointerMove={onVerlageImagePointerMove} onPointerUp={onVerlageImagePointerUp} onPointerCancel={onVerlageImagePointerUp}>
-              {!verlageProfile.profileImage?.value && <span>Kein Bild gewählt</span>}
+            <div className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${verlageProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`} style={verlageImagePreviewStyle} onPointerDown={onVerlageImagePointerDown} onPointerMove={onVerlageImagePointerMove} onPointerUp={onVerlageImagePointerUp} onPointerCancel={onVerlageImagePointerUp} onClick={() => verlageImageFileInputRef.current?.click()} title={verlageProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}>
+              {!verlageProfile.profileImage?.value && <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Bild auswählen</span>}
             </div>
             <div className="grid gap-2.5">
               <label>
