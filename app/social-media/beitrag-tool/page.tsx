@@ -1,4 +1,4 @@
-Ôªø"use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
@@ -76,7 +76,7 @@ const FRAME_PRESETS: { value: FrameStyle; label: string }[] = [
 ];
 
 const FONTS = [
-  // ‚îÄ‚îÄ Serif ‚îÄ‚îÄ
+  // -- Serif --
   { label: "Georgia",              value: "Georgia" },
   { label: "Times New Roman",      value: '"Times New Roman"' },
   { label: "Palatino Linotype",    value: '"Palatino Linotype"' },
@@ -91,7 +91,7 @@ const FONTS = [
   { label: "Libre Baskerville",    value: '"Libre Baskerville", serif' },
   { label: "Crimson Text",         value: '"Crimson Text", serif' },
   { label: "Spectral",             value: '"Spectral", serif' },
-  // ‚îÄ‚îÄ Sans-Serif ‚îÄ‚îÄ
+  // -- Sans-Serif --
   { label: "Arial",                value: "Arial" },
   { label: "Arial Narrow",         value: '"Arial Narrow"' },
   { label: "Arial Black",          value: '"Arial Black"' },
@@ -116,11 +116,11 @@ const FONTS = [
   { label: "Josefin Sans",         value: '"Josefin Sans", sans-serif' },
   { label: "Quicksand",            value: '"Quicksand", sans-serif' },
   { label: "Cabin",                value: '"Cabin", sans-serif' },
-  // ‚îÄ‚îÄ Monospace ‚îÄ‚îÄ
+  // -- Monospace --
   { label: "Courier New",          value: '"Courier New"' },
   { label: "Lucida Console",       value: '"Lucida Console"' },
   { label: "Source Code Pro",      value: '"Source Code Pro", monospace' },
-  // ‚îÄ‚îÄ Display / Decorativ ‚îÄ‚îÄ
+  // -- Display / Decorativ --
   { label: "Bebas Neue",           value: '"Bebas Neue", sans-serif' },
   { label: "Anton",                value: '"Anton", sans-serif' },
   { label: "Abril Fatface",        value: '"Abril Fatface", serif' },
@@ -289,7 +289,7 @@ function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLIm
       ctx.shadowBlur    = el.imgShadowBlur ?? 18;
       ctx.shadowOffsetX = Math.round((el.imgShadowBlur ?? 18) * 0.2);
       ctx.shadowOffsetY = Math.round((el.imgShadowBlur ?? 18) * 0.25);
-      // Zeichne nur einen gef√ºllten Rect f√ºr Schatten, dann Shadow aus
+      // Zeichne nur einen gef¸llten Rect f¸r Schatten, dann Shadow aus
       if (radius > 0) {
         roundRectPath(ctx, el.x, el.y, el.w, el.h, radius);
         ctx.fill();
@@ -299,7 +299,7 @@ function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLIm
       ctx.shadowColor = "transparent";
     }
 
-    // Clip f√ºr abgerundete Ecken
+    // Clip f¸r abgerundete Ecken
     if (radius > 0) {
       ctx.beginPath();
       roundRectPath(ctx, el.x, el.y, el.w, el.h, radius);
@@ -347,7 +347,7 @@ function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLIm
   }
 }
 
-/** drawEl mit Animation: t = aktueller Zeitpunkt (Sekunden), dur = Videol√§nge */
+/** drawEl mit Animation: t = aktueller Zeitpunkt (Sekunden), dur = Videol‰nge */
 function drawElAnimated(
   ctx: CanvasRenderingContext2D,
   el: CE,
@@ -426,13 +426,13 @@ function drawFrame(
   style: FrameStyle,
   cw: number, ch: number,
   color: string,
-  thick: number, // 1‚Äì10 Benutzerwert
-  inset: number = 0, // 0‚Äì20 Abstand vom Rand
+  thick: number, // 1ñ10 Benutzerwert
+  inset: number = 0, // 0ñ20 Abstand vom Rand
 ) {
   if (style === "none") return;
-  // thick 1..20 ‚Üí Pixelst√§rke relativ zur Canvas-Breite
+  // thick 1..20 ? Pixelst‰rke relativ zur Canvas-Breite
   const t = Math.max(1, Math.round((thick / 20) * cw * 0.042));
-  // inset 0..20 ‚Üí Pixel-Abstand vom Bildrand
+  // inset 0..20 ? Pixel-Abstand vom Bildrand
   const insetPx = Math.round((inset / 20) * Math.min(cw, ch) * 0.08);
   ctx.save();
   if (insetPx > 0) {
@@ -473,8 +473,8 @@ function drawFrame(
       ctx.stroke();
     }
   } else if (style === "elegant") {
-    // 3 Linien: au√üen d√ºnn, mittig dick, innen d√ºnn
-    // Ecken: kleines gef√ºlltes Kreischen auf der mittleren Linie
+    // 3 Linien: auﬂen d¸nn, mittig dick, innen d¸nn
+    // Ecken: kleines gef¸lltes Kreischen auf der mittleren Linie
     const p1 = Math.round(t * 0.3);
     const p2 = Math.round(t * 0.78);
     const p3 = Math.round(t * 1.28);
@@ -489,12 +489,12 @@ function drawFrame(
     ctx.lineWidth = lw3;
     ctx.strokeRect(p3, p3, cw - p3 * 2, ch - p3 * 2);
 
-    // Kleine gef√ºllte Kreise genau auf der mittleren Linie an den 4 Ecken
+    // Kleine gef¸llte Kreise genau auf der mittleren Linie an den 4 Ecken
     const cr = Math.max(3, Math.round(t * 0.32));
     const ePts: [number, number][] = [
       [p2, p2], [cw - p2, p2], [p2, ch - p2], [cw - p2, ch - p2],
     ];
-    // Wei√üer Hintergrundkreis, damit die mittlere Linie "unterbrochen" wirkt
+    // Weiﬂer Hintergrundkreis, damit die mittlere Linie "unterbrochen" wirkt
     for (const [px, py] of ePts) {
       ctx.save();
       ctx.fillStyle = "white";
@@ -509,16 +509,16 @@ function drawFrame(
       ctx.fill();
     }
   } else if (style === "vintage") {
-    // Abgeschr√§gte Ecken (Chamfer) ‚Äì klassischer antiker Druckrahmen.
-    // Zwei parallele Linien, beide mit 45¬∞-Schnitt an den Ecken (Oktagonform).
+    // Abgeschr‰gte Ecken (Chamfer) ñ klassischer antiker Druckrahmen.
+    // Zwei parallele Linien, beide mit 45∞-Schnitt an den Ecken (Oktagonform).
     // Dazwischen: 4 diagonale Verbindungsstriche in den Ecken.
-    const p1    = Math.round(t * 0.28);  // √§u√üere Linie (Abstand zum Rand)
+    const p1    = Math.round(t * 0.28);  // ‰uﬂere Linie (Abstand zum Rand)
     const p2    = Math.round(t * 1.05);  // innere Linie
-    const lw1   = Math.max(2, Math.round(t * 0.32)); // √§u√üere Linie dick
-    const lw2   = Math.max(1, Math.round(t * 0.13)); // innere Linie d√ºnn
-    const cut   = Math.round(t * 0.75); // Gr√∂√üe des 45¬∞-Schnitts
+    const lw1   = Math.max(2, Math.round(t * 0.32)); // ‰uﬂere Linie dick
+    const lw2   = Math.max(1, Math.round(t * 0.13)); // innere Linie d¸nn
+    const cut   = Math.round(t * 0.75); // Grˆﬂe des 45∞-Schnitts
 
-    // Hilfsfunktion: Rechteck mit abgeschr√§gten Ecken als Pfad zeichnen
+    // Hilfsfunktion: Rechteck mit abgeschr‰gten Ecken als Pfad zeichnen
     function chamferRect(pad: number, cutSize: number) {
       const x = pad, y = pad, w = cw - pad * 2, h = ch - pad * 2;
       ctx.beginPath();
@@ -561,9 +561,9 @@ function drawFrame(
       ctx.stroke();
     }
   } else if (style === "perlen") {
-    // Perlen: gleichm√§√üige gef√ºllte Kreise ganz am Rand entlang
+    // Perlen: gleichm‰ﬂige gef¸llte Kreise ganz am Rand entlang
     const r     = Math.max(3, Math.round(t * 0.28));
-    const pad   = r; // Kreismittelpunkt = r vom Rand ‚Üí Au√üenkante ber√ºhrt Rand
+    const pad   = r; // Kreismittelpunkt = r vom Rand ? Auﬂenkante ber¸hrt Rand
     const step  = r * 3.0;
     const perim = 2 * (cw - pad * 2) + 2 * (ch - pad * 2);
     const count = Math.max(8, Math.round(perim / step));
@@ -582,7 +582,7 @@ function drawFrame(
     }
 
   } else if (style === "passepartout") {
-    // Passepartout: breiter gef√ºllter Rand + feine Innenlinie
+    // Passepartout: breiter gef¸llter Rand + feine Innenlinie
     const bw  = Math.round(t * 1.5);
     const gap = Math.round(t * 0.28);
     const lw  = Math.max(1, Math.round(t * 0.12));
@@ -595,9 +595,9 @@ function drawFrame(
     ctx.strokeRect(ip, ip, cw - ip * 2, ch - ip * 2);
 
   } else if (style === "gestrichelt") {
-    // Gestrichelt abgerundet ‚Äì Linienau√üenkante beginnt am Rand
+    // Gestrichelt abgerundet ñ Linienauﬂenkante beginnt am Rand
     const lw      = Math.max(2, Math.round(t * 0.32));
-    const pad     = lw / 2; // Au√üenkante der Linie = Bildrand
+    const pad     = lw / 2; // Auﬂenkante der Linie = Bildrand
     const r       = Math.round(t * 1.2);
     const dashLen = Math.max(4, Math.round(t * 0.55));
     const dashGap = Math.max(3, Math.round(t * 0.38));
@@ -609,9 +609,9 @@ function drawFrame(
     ctx.setLineDash([]);
 
   } else if (style === "eckakzent") {
-    // Eckakzent: Linie + gef√ºllte Dreiecke in den 4 Ecken, direkt am Rand
+    // Eckakzent: Linie + gef¸llte Dreiecke in den 4 Ecken, direkt am Rand
     const lw   = Math.max(1, Math.round(t * 0.14));
-    const p1   = lw / 2; // Linienau√üenkante = Bildrand
+    const p1   = lw / 2; // Linienauﬂenkante = Bildrand
     const size = Math.round(t * 1.4);
     ctx.lineWidth = lw;
     ctx.strokeRect(p1, p1, cw - p1 * 2, ch - p1 * 2);
@@ -858,7 +858,7 @@ export default function BeitragToolPage() {
       return;
     }
 
-    // Musik abspielen, falls Track gew√§hlt
+    // Musik abspielen, falls Track gew‰hlt
     const fadeIn = musikFadeIn;
     const fadeInDur = musikFadeInDur;
     const fadeOut = musikFadeOut;
@@ -1187,7 +1187,7 @@ export default function BeitragToolPage() {
     const touch = e.touches[0];
     const { mx, my } = toCanvasXY(touch.clientX, touch.clientY);
 
-    // double-tap ‚Üí text edit
+    // double-tap ? text edit
     const now = Date.now();
     if (now - lastTapRef.current < 350) {
       for (let i = elements.length - 1; i >= 0; i--) {
@@ -1296,7 +1296,7 @@ export default function BeitragToolPage() {
     } catch { /* ignore */ }
   }
 
-  /* ‚îÄ‚îÄ Pixabay search ‚îÄ‚îÄ */
+  /* -- Pixabay search -- */
   async function searchPixabay(query: string, page = 1, type = pixabayType) {
     const q = query.trim();
     if (!q) return;
@@ -1312,7 +1312,7 @@ export default function BeitragToolPage() {
     finally { setPixabayLoading(false); }
   }
 
-  /** L√§dt ein Bild √ºber den serverseitigen Proxy und gibt eine Data-URL zur√ºck.
+  /** L‰dt ein Bild ¸ber den serverseitigen Proxy und gibt eine Data-URL zur¸ck.
    *  Verhindert Hotlinking zu externen Diensten (z. B. Pixabay). */
   async function fetchAsDataUrl(externalUrl: string): Promise<string> {
     const res = await fetch(
@@ -1588,7 +1588,7 @@ export default function BeitragToolPage() {
       }
       setExportProgress(100);
 
-      // Phase 2: FFmpeg-Encoding (Frames + optional Audio ‚Üí MP4)
+      // Phase 2: FFmpeg-Encoding (Frames + optional Audio ? MP4)
       setExportPhase("convert");
       setExportProgress(0);
 
@@ -1598,7 +1598,7 @@ export default function BeitragToolPage() {
 
       const cmd: string[] = ["-framerate", String(FPS), "-i", "f%05d.jpg"];
 
-      // Audio hinzuf√ºgen (falls ausgew√§hlt)
+      // Audio hinzuf¸gen (falls ausgew‰hlt)
       let hasAudio = false;
       if (selectedTrackId) {
         const track = musikTracks.find((t) => t.id === selectedTrackId);
@@ -1610,7 +1610,7 @@ export default function BeitragToolPage() {
             await ffmpeg.writeFile(`audio.${ext}`, audioBuf);
             cmd.push("-i", `audio.${ext}`);
             hasAudio = true;
-          } catch { /* Audio √ºberspringen bei Fehler */ }
+          } catch { /* Audio ¸berspringen bei Fehler */ }
         }
       }
 
@@ -1692,11 +1692,11 @@ export default function BeitragToolPage() {
                 <div className="flex items-center gap-2">
                   <a href="/social-media"
                     className="btn btn-primary text-sm px-4 py-1.5 flex-shrink-0 font-semibold">
-                    ‚Üê Zur√ºck
+                    ? Zur¸ck
                   </a>
                   {editorMode === "bild" ? (
                     <button type="button" className="btn btn-primary text-sm px-4 py-1.5 font-semibold" onClick={download}>
-                      ‚Üì Herunterladen
+                      ? Herunterladen
                     </button>
                   ) : (
                     <button type="button" className="btn btn-primary text-sm px-4 py-1.5 font-semibold"
@@ -1704,9 +1704,9 @@ export default function BeitragToolPage() {
                       onClick={startExportVideo}>
                       {exporting
                         ? exportPhase === "convert"
-                          ? `MP4‚Ä¶ ${exportProgress}%`
-                          : `Render‚Ä¶ ${exportProgress}%`
-                        : "‚Üì Herunterladen"}
+                          ? `MP4Ö ${exportProgress}%`
+                          : `RenderÖ ${exportProgress}%`
+                        : "? Herunterladen"}
                     </button>
                   )}
                   {currentDesignName && <p className="text-xs text-arena-muted truncate flex-1 text-right">Entwurf: <strong>{currentDesignName}</strong></p>}
@@ -1724,26 +1724,26 @@ export default function BeitragToolPage() {
                     if (currentDesignName) saveDesign(currentDesignName);
                     else { setSaveNameInput(""); setShowSaveAs(true); }
                   }}>
-                  {savingState === "saving" ? "Speichere‚Ä¶" : savingState === "saved" ? "‚úì Gespeichert" : "Speichern"}
+                  {savingState === "saving" ? "SpeichereÖ" : savingState === "saved" ? "? Gespeichert" : "Speichern"}
                 </button>
                 <button type="button" className="btn text-xs w-full"
                   onClick={() => { setSaveNameInput(currentDesignName ?? ""); setShowSaveAs(true); }}>
                   Speichern als
                 </button>
                 <button type="button" className="btn text-xs w-full" onClick={() => setShowOpen(true)}>
-                  √ñffnen
+                  ÷ffnen
                 </button>
                 <button type="button" className="btn text-xs w-full" onClick={() => setShowInfo(true)}>
                   Info
                 </button>
                 <button type="button" className="btn text-xs w-full" disabled={!canUndo} onClick={undo}
-                  title="Letzte Aktion r√ºckg√§ngig machen">
-                  ‚Ü© R√ºckg√§ngig
+                  title="Letzte Aktion r¸ckg‰ngig machen">
+                  R¸ckg‰ngig
                 </button>
                 {!fullscreen && (
                   editorMode === "bild" ? (
                     <button type="button" className="btn btn-primary text-xs w-full" onClick={download}>
-                      ‚Üì Herunterladen
+                      ? Herunterladen
                     </button>
                   ) : (
                     <button type="button" className="btn btn-primary text-xs w-full"
@@ -1751,9 +1751,9 @@ export default function BeitragToolPage() {
                       onClick={startExportVideo}>
                       {exporting
                         ? exportPhase === "convert"
-                          ? `MP4‚Ä¶ ${exportProgress}%`
-                          : `Render‚Ä¶ ${exportProgress}%`
-                        : "‚Üì Herunterladen"}
+                          ? `MP4Ö ${exportProgress}%`
+                          : `RenderÖ ${exportProgress}%`
+                        : "? Herunterladen"}
                     </button>
                   )
                 )}
@@ -1973,7 +1973,7 @@ export default function BeitragToolPage() {
             {elements.length > 0 && (
               <button type="button" className="btn text-sm text-red-600"
                 onClick={() => { setEditingId(null); setElements([]); setSelId(null); setCurrentDesignName(null); }}>
-                Alles l√∂schen
+                Alles lˆschen
               </button>
             )}
           </aside>
@@ -1981,7 +1981,7 @@ export default function BeitragToolPage() {
           {/* Canvas area */}
           <div className={`min-w-0 gap-2 order-1 md:order-none ${fullscreen ? "flex-1 flex flex-col overflow-hidden" : "grid content-start w-full md:w-3/4"}`}>
 
-            {/* Toolbar ‚Äì immer sichtbar, feste H√∂he */}
+            {/* Toolbar ñ immer sichtbar, feste Hˆhe */}
             <div className="flex items-center gap-1.5 rounded-lg border border-arena-border bg-arena-bg/80 px-2 py-1.5 min-h-11 overflow-x-auto flex-shrink-0">
               {textEl ? (
                 <>
@@ -1990,7 +1990,7 @@ export default function BeitragToolPage() {
                     onChange={(e) => upd({ font: e.target.value })}>
                     {FONTS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
                   </select>
-                  <button type="button" className="btn h-8 w-7 p-0 text-base" onClick={() => upd({ fontSize: Math.max(10, textEl.fontSize - 2) })}>‚àí</button>
+                  <button type="button" className="btn h-8 w-7 p-0 text-base" onClick={() => upd({ fontSize: Math.max(10, textEl.fontSize - 2) })}>-</button>
                   <span className="text-xs w-9 text-center select-none tabular-nums">{textEl.fontSize}</span>
                   <button type="button" className="btn h-8 w-7 p-0 text-base" onClick={() => upd({ fontSize: Math.min(500, textEl.fontSize + 2) })}>+</button>
                   <button type="button"
@@ -2029,7 +2029,7 @@ export default function BeitragToolPage() {
                 </>
               ) : selEl?.type === "image" ? (
                 <>
-                  {/* Zeile 1: Rahmen & Schatten toggles + Ebene + L√∂schen */}
+                  {/* Zeile 1: Rahmen & Schatten toggles + Ebene + Lˆschen */}
                   <button type="button"
                     className={`btn h-8 px-2 text-xs ${(selEl as ImgEl).imgBorder ? "btn-primary" : ""}`}
                     title="Rahmen"
@@ -2043,7 +2043,7 @@ export default function BeitragToolPage() {
                     Schatten
                   </button>
 
-                  {/* Rahmen: Farbe + St√§rke */}
+                  {/* Rahmen: Farbe + St‰rke */}
                   {(selEl as ImgEl).imgBorder && (
                     <>
                       <input type="color" value={(selEl as ImgEl).imgBorderColor ?? "#1a1a1a"}
@@ -2052,7 +2052,7 @@ export default function BeitragToolPage() {
                         title="Rahmenfarbe" />
                       <input type="range" min={1} max={20} value={(selEl as ImgEl).imgBorderWidth ?? 2}
                         onChange={(e) => upd({ imgBorderWidth: +e.target.value })}
-                        className="w-16 h-8 accent-arena-accent" title="Rahmenst√§rke" />
+                        className="w-16 h-8 accent-arena-accent" title="Rahmenst‰rke" />
                     </>
                   )}
 
@@ -2218,7 +2218,7 @@ export default function BeitragToolPage() {
                   />
                 );
               })()}
-              {/* HTML selection handles ‚Äì always on top, even outside canvas */}
+              {/* HTML selection handles ñ always on top, even outside canvas */}
               {selEl && selEl.id !== editingId && !previewing && (() => {
                 const canvas = canvasRef.current;
                 if (!canvas) return null;
@@ -2370,7 +2370,7 @@ export default function BeitragToolPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full mx-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-arena-border">
-              <h2 className="text-lg font-bold">{pixabayBgMode ? "Pixabay ‚Äì Hintergrund suchen" : "Pixabay ‚Äì Kostenlose Bilder"}</h2>
+              <h2 className="text-lg font-bold">{pixabayBgMode ? "Pixabay ñ Hintergrund suchen" : "Pixabay ñ Kostenlose Bilder"}</h2>
               <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
                 onClick={() => setShowPixabay(false)}>&times;</button>
             </div>
@@ -2379,12 +2379,12 @@ export default function BeitragToolPage() {
               <form onSubmit={(e) => { e.preventDefault(); searchPixabay(pixabayQuery, 1); }}
                 className="flex gap-2">
                 <input type="text" className="input-base flex-1 text-sm"
-                  placeholder="z.B. Buch, Natur, Schreibtisch ‚Ä¶"
+                  placeholder="z.B. Buch, Natur, Schreibtisch Ö"
                   value={pixabayQuery}
                   onChange={(e) => setPixabayQuery(e.target.value)} />
                 <button type="submit" className="btn text-sm px-4"
                   disabled={pixabayLoading || !pixabayQuery.trim()}>
-                  {pixabayLoading ? "Suche ‚Ä¶" : "Suchen"}
+                  {pixabayLoading ? "Suche Ö" : "Suchen"}
                 </button>
               </form>
               <div className="flex gap-1.5 flex-wrap">
@@ -2403,7 +2403,7 @@ export default function BeitragToolPage() {
             <div className="flex-1 overflow-y-auto px-5 pb-4">
               {pixabayResults.length === 0 && !pixabayLoading && (
                 <p className="text-sm text-arena-muted py-4 text-center">
-                  {pixabaySearched && pixabayTotal === 0 ? "Keine Ergebnisse f√ºr diese Suche." : "Suchbegriff eingeben und auf \u201eSuchen\u201c klicken."}
+                  {pixabaySearched && pixabayTotal === 0 ? "Keine Ergebnisse f¸r diese Suche." : "Suchbegriff eingeben und auf \u201eSuchen\u201c klicken."}
                 </p>
               )}
 
@@ -2490,7 +2490,7 @@ export default function BeitragToolPage() {
         </div>
       )}
 
-      {/* √ñffnen Overlay */}
+      {/* ÷ffnen Overlay */}
       {showOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[85vh] flex flex-col">
@@ -2505,7 +2505,7 @@ export default function BeitragToolPage() {
                   <input type="checkbox" checked={showAllDesigns}
                     onChange={(e) => setShowAllDesigns(e.target.checked)}
                     className="rounded" />
-                  Alle Benutzer-Entw√ºrfe anzeigen
+                  Alle Benutzer-Entw¸rfe anzeigen
                 </label>
               </div>
             )}
@@ -2543,7 +2543,7 @@ export default function BeitragToolPage() {
         </div>
       )}
 
-      {/* L√∂schen best√§tigen */}
+      {/* Lˆschen best‰tigen */}
       {confirmDelete && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6 grid gap-4">
@@ -2576,7 +2576,7 @@ export default function BeitragToolPage() {
               <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
                 <p className="font-semibold mb-1.5 text-emerald-800">Nutzungsrechte</p>
                 <p className="text-emerald-900">Alle von uns bereitgestellten <strong>Bilder der BuchArena</strong> und <strong>Musik-Tracks</strong> wurden von der BuchArena erstellt und d&uuml;rfen <strong>ohne Einschr&auml;nkung</strong> f&uuml;r eure Social-Media-Beitr&auml;ge verwendet werden &ndash; auch kommerziell. <strong>Bilder von Pixabay</strong> sind ebenfalls kostenlos und lizenzfrei nutzbar.</p>
-                <p className="text-emerald-800 mt-2 text-xs">Wir freuen uns, wenn ihr erw&auml;hnt, dass euer Beitrag mit Tools von <strong>bucharena.org</strong> erstellt wurde &ndash; das ist aber keine Pflicht. üíö</p>
+                <p className="text-emerald-800 mt-2 text-xs">Wir freuen uns, wenn ihr erw&auml;hnt, dass euer Beitrag mit Tools von <strong>bucharena.org</strong> erstellt wurde &ndash; das ist aber keine Pflicht. ??</p>
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -2617,7 +2617,7 @@ export default function BeitragToolPage() {
                       <li><strong>Gr&ouml;&szlig;e &auml;ndern:</strong> Ecken-Anfasser ziehen. Bilder skalieren proportional.</li>
                       <li><strong>Text bearbeiten:</strong> Doppelklick auf ein Textelement.</li>
                       <li><strong>L&ouml;schen:</strong> Element ausw&auml;hlen &rarr; <kbd className="font-mono bg-gray-100 px-1 rounded">Entf</kbd> oder <kbd className="font-mono bg-gray-100 px-1 rounded">Backspace</kbd>.</li>
-                      <li><strong>Ebenenreihenfolge:</strong> Pfeile ‚Üë ‚Üì in der Toolbar.</li>
+                      <li><strong>Ebenenreihenfolge:</strong> Pfeile ? ? in der Toolbar.</li>
                       <li><strong>Einf&uuml;gen:</strong> <kbd className="font-mono bg-gray-100 px-1 rounded">Strg+V</kbd> f&uuml;gt Bilder oder Text aus der Zwischenablage ein.</li>
                     </ul>
                   </div>
@@ -2670,7 +2670,7 @@ export default function BeitragToolPage() {
         </div>
       )}
 
-      {/* ‚îÄ‚îÄ Download-Dialog ‚îÄ‚îÄ */}
+      {/* -- Download-Dialog -- */}
       {showDownload && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4 grid gap-4">
@@ -2713,7 +2713,7 @@ export default function BeitragToolPage() {
                   if (editorMode === "bild") doDownload(downloadName);
                   else exportVideo(downloadName);
                 }}>
-                ‚Üì Herunterladen
+                ? Herunterladen
               </button>
             </div>
           </div>
