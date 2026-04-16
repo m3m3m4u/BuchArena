@@ -76,24 +76,110 @@ const FRAME_PRESETS: { value: FrameStyle; label: string }[] = [
 ];
 
 const FONTS = [
-  { label: "Georgia",           value: "Georgia" },
-  { label: "Arial",             value: "Arial" },
-  { label: "Arial Narrow",      value: '"Arial Narrow"' },
-  { label: "Arial Black",       value: '"Arial Black"' },
-  { label: "Verdana",           value: "Verdana" },
-  { label: "Tahoma",            value: "Tahoma" },
-  { label: "Trebuchet MS",      value: '"Trebuchet MS"' },
-  { label: "Impact",            value: "Impact" },
-  { label: "Times New Roman",   value: '"Times New Roman"' },
-  { label: "Palatino Linotype", value: '"Palatino Linotype"' },
-  { label: "Book Antiqua",      value: '"Book Antiqua"' },
-  { label: "Garamond",          value: "Garamond" },
-  { label: "Didot",             value: "Didot, 'Bodoni MT', serif" },
-  { label: "Courier New",       value: '"Courier New"' },
-  { label: "Lucida Console",    value: '"Lucida Console"' },
-  { label: "Comic Sans MS",     value: '"Comic Sans MS"' },
-  { label: "Brush Script MT",   value: '"Brush Script MT", cursive' },
+  // ── Serif ──
+  { label: "Georgia",              value: "Georgia" },
+  { label: "Times New Roman",      value: '"Times New Roman"' },
+  { label: "Palatino Linotype",    value: '"Palatino Linotype"' },
+  { label: "Book Antiqua",         value: '"Book Antiqua"' },
+  { label: "Garamond",             value: "Garamond" },
+  { label: "Didot",                value: "Didot, 'Bodoni MT', serif" },
+  { label: "Playfair Display",     value: '"Playfair Display", serif' },
+  { label: "Lora",                 value: '"Lora", serif' },
+  { label: "Merriweather",         value: '"Merriweather", serif' },
+  { label: "EB Garamond",          value: '"EB Garamond", serif' },
+  { label: "Cormorant Garamond",   value: '"Cormorant Garamond", serif' },
+  { label: "Libre Baskerville",    value: '"Libre Baskerville", serif' },
+  { label: "Crimson Text",         value: '"Crimson Text", serif' },
+  { label: "Spectral",             value: '"Spectral", serif' },
+  // ── Sans-Serif ──
+  { label: "Arial",                value: "Arial" },
+  { label: "Arial Narrow",         value: '"Arial Narrow"' },
+  { label: "Arial Black",          value: '"Arial Black"' },
+  { label: "Verdana",              value: "Verdana" },
+  { label: "Tahoma",               value: "Tahoma" },
+  { label: "Trebuchet MS",         value: '"Trebuchet MS"' },
+  { label: "Impact",               value: "Impact" },
+  { label: "Helvetica",            value: '"Helvetica Neue", Helvetica, sans-serif' },
+  { label: "Open Sans",            value: '"Open Sans", sans-serif' },
+  { label: "Roboto",               value: '"Roboto", sans-serif' },
+  { label: "Lato",                 value: '"Lato", sans-serif' },
+  { label: "Montserrat",           value: '"Montserrat", sans-serif' },
+  { label: "Raleway",              value: '"Raleway", sans-serif' },
+  { label: "Oswald",               value: '"Oswald", sans-serif' },
+  { label: "Nunito",               value: '"Nunito", sans-serif' },
+  { label: "Poppins",              value: '"Poppins", sans-serif' },
+  { label: "Inter",                value: '"Inter", sans-serif' },
+  { label: "Source Sans 3",        value: '"Source Sans 3", sans-serif' },
+  { label: "PT Sans",              value: '"PT Sans", sans-serif' },
+  { label: "Ubuntu",               value: '"Ubuntu", sans-serif' },
+  { label: "Exo 2",                value: '"Exo 2", sans-serif' },
+  { label: "Josefin Sans",         value: '"Josefin Sans", sans-serif' },
+  { label: "Quicksand",            value: '"Quicksand", sans-serif' },
+  { label: "Cabin",                value: '"Cabin", sans-serif' },
+  // ── Monospace ──
+  { label: "Courier New",          value: '"Courier New"' },
+  { label: "Lucida Console",       value: '"Lucida Console"' },
+  { label: "Source Code Pro",      value: '"Source Code Pro", monospace' },
+  // ── Display / Decorativ ──
+  { label: "Bebas Neue",           value: '"Bebas Neue", sans-serif' },
+  { label: "Anton",                value: '"Anton", sans-serif' },
+  { label: "Abril Fatface",        value: '"Abril Fatface", serif' },
+  { label: "Lilita One",           value: '"Lilita One", sans-serif' },
+  { label: "Righteous",            value: '"Righteous", sans-serif' },
+  { label: "Pacifico",             value: '"Pacifico", cursive' },
+  { label: "Lobster",              value: '"Lobster", cursive' },
+  { label: "Dancing Script",       value: '"Dancing Script", cursive' },
+  { label: "Great Vibes",          value: '"Great Vibes", cursive' },
+  { label: "Satisfy",              value: '"Satisfy", cursive' },
+  { label: "Caveat",               value: '"Caveat", cursive' },
+  { label: "Kalam",                value: '"Kalam", cursive' },
+  { label: "Indie Flower",         value: '"Indie Flower", cursive' },
+  { label: "Comic Sans MS",        value: '"Comic Sans MS"' },
+  { label: "Brush Script MT",      value: '"Brush Script MT", cursive' },
 ];
+
+// Google Fonts families to load
+const GOOGLE_FONTS_URL =
+  "https://fonts.googleapis.com/css2?family=" + [
+    "Playfair+Display:ital,wght@0,400;0,700;1,400",
+    "Lora:ital,wght@0,400;0,700;1,400",
+    "Merriweather:ital,wght@0,300;0,400;0,700;1,400",
+    "EB+Garamond:ital,wght@0,400;0,700;1,400",
+    "Cormorant+Garamond:ital,wght@0,400;0,700;1,400",
+    "Libre+Baskerville:ital,wght@0,400;0,700;1,400",
+    "Crimson+Text:ital,wght@0,400;0,600;1,400",
+    "Spectral:ital,wght@0,400;0,700;1,400",
+    "Open+Sans:wght@400;700",
+    "Roboto:wght@400;700",
+    "Lato:wght@400;700",
+    "Montserrat:wght@400;700",
+    "Raleway:wght@400;700",
+    "Oswald:wght@400;700",
+    "Nunito:wght@400;700",
+    "Poppins:wght@400;700",
+    "Inter:wght@400;700",
+    "Source+Sans+3:wght@400;700",
+    "PT+Sans:wght@400;700",
+    "Ubuntu:wght@400;700",
+    "Exo+2:wght@400;700",
+    "Josefin+Sans:wght@400;700",
+    "Quicksand:wght@400;700",
+    "Cabin:wght@400;700",
+    "Source+Code+Pro:wght@400;700",
+    "Bebas+Neue",
+    "Anton",
+    "Abril+Fatface",
+    "Lilita+One",
+    "Righteous",
+    "Pacifico",
+    "Lobster",
+    "Dancing+Script:wght@400;700",
+    "Great+Vibes",
+    "Satisfy",
+    "Caveat:wght@400;700",
+    "Kalam:wght@400;700",
+    "Indie+Flower",
+  ].join("&family=") + "&display=swap";
 
 const HIT = 24;
 
@@ -596,6 +682,8 @@ export default function BeitragToolPage() {
   const [showSaveAs,    setShowSaveAs]     = useState(false);
   const [showOpen,      setShowOpen]       = useState(false);
   const [showInfo,      setShowInfo]       = useState(false);
+  const [showDownload,  setShowDownload]   = useState(false);
+  const [downloadName,  setDownloadName]   = useState("");
   const [fullscreen,    setFullscreen]     = useState(false);
   const [showAnimPanel, setShowAnimPanel]  = useState(false);
   const [confirmDelete, setConfirmDelete]  = useState<string | null>(null);
@@ -633,12 +721,60 @@ export default function BeitragToolPage() {
   const previewTRef    = useRef(0);
   const previewRafRef  = useRef<number | null>(null);
 
+  /* Undo history */
+  type Snapshot = {
+    elements: CE[]; bgColor: string; bgImage: string | null;
+    bgOffsetX: number; bgOffsetY: number; bgOpacity: number;
+    frameStyle: FrameStyle; frameColor: string; frameThickness: number; frameInset: number;
+    format: FormatPreset;
+  };
+  const historyRef = useRef<Snapshot[]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+
+  function pushHistory() {
+    const snap: Snapshot = {
+      elements: elements.map((e) => ({ ...e })),
+      bgColor, bgImage, bgOffsetX, bgOffsetY, bgOpacity,
+      frameStyle, frameColor, frameThickness, frameInset, format,
+    };
+    historyRef.current = [...historyRef.current.slice(-19), snap];
+    setCanUndo(true);
+  }
+
+  function undo() {
+    const stack = historyRef.current;
+    if (!stack.length) return;
+    const prev = stack[stack.length - 1];
+    historyRef.current = stack.slice(0, -1);
+    setElements(prev.elements);
+    setBgColor(prev.bgColor);
+    setBgOffsetX(prev.bgOffsetX);
+    setBgOffsetY(prev.bgOffsetY);
+    setBgOpacity(prev.bgOpacity);
+    setFrameStyle(prev.frameStyle);
+    setFrameColor(prev.frameColor);
+    setFrameThickness(prev.frameThickness);
+    setFrameInset(prev.frameInset);
+    setFormat(prev.format);
+    if (prev.bgImage !== bgImage) {
+      if (prev.bgImage) {
+        setBgImage(prev.bgImage);
+        loadImg(prev.bgImage).then((img) => { bgImgRef.current = img; setTick((t) => t + 1); }).catch(() => {});
+      } else {
+        setBgImage(null);
+        bgImgRef.current = null;
+      }
+    }
+    setCanUndo(historyRef.current.length > 0);
+    setTick((t) => t + 1);
+  }
+
   const sz      = useMemo(() => getSize(format), [format]);
   const selEl   = useMemo(() => elements.find((e) => e.id === selId) ?? null, [elements, selId]);
   const textEl  = selEl?.type === "text" ? (selEl as TextEl) : null;
 
   // Close anim panel when selection changes
-  useEffect(() => { if (!selId) setShowAnimPanel(false); }, [selId]);
+  useEffect(() => { if (!selId) setShowAnimPanel(false); updPushedRef.current = false; }, [selId]);
 
   // Block body scroll in fullscreen
   useEffect(() => {
@@ -809,6 +945,17 @@ export default function BeitragToolPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewing, videoDuration, selectedTrackId, musikTracks, musikFadeIn, musikFadeInDur, musikFadeOut, musikFadeOutDur]);
 
+  /* Load Google Fonts for this page */
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (document.querySelector('link[data-beitrag-fonts]')) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = GOOGLE_FONTS_URL;
+    link.setAttribute("data-beitrag-fonts", "1");
+    document.head.appendChild(link);
+  }, []);
+
   /* Show info on first visit */
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -861,6 +1008,7 @@ export default function BeitragToolPage() {
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
       if (!selId) return;
       e.preventDefault();
+      pushHistory();
       setElements((p) => p.filter((el) => el.id !== selId));
       setSelId(null);
     }
@@ -890,6 +1038,7 @@ export default function BeitragToolPage() {
       const text = e.clipboardData?.getData("text/plain")?.trim();
       if (text) {
         e.preventDefault();
+        pushHistory();
         const el: TextEl = {
           id: uid(), type: "text",
           x: 80, y: 80, w: 920, h: 200,
@@ -920,6 +1069,7 @@ export default function BeitragToolPage() {
   /* commit inline text edit */
   function commitEdit() {
     if (!editingId) return;
+    pushHistory();
     setElements((p) => p.map((e) =>
       e.id === editingId && e.type === "text" ? { ...e, content: editText } as CE : e
     ));
@@ -965,6 +1115,7 @@ export default function BeitragToolPage() {
     if (selEl) {
       const h = hitHandle(mx, my, selEl);
       if (h) {
+        pushHistory();
         dragRef.current = {
           mode: "resize", id: selEl.id, handle: h,
           mx0: mx, my0: my,
@@ -978,6 +1129,7 @@ export default function BeitragToolPage() {
       const el = elements[i];
       if (hitEl(mx, my, el)) {
         setSelId(el.id);
+        pushHistory();
         dragRef.current = {
           mode: "move", id: el.id,
           mx0: mx, my0: my,
@@ -1026,7 +1178,7 @@ export default function BeitragToolPage() {
     setCursor("default");
   }
 
-  function onUp() { dragRef.current = null; }
+  function onUp() { dragRef.current = null; updPushedRef.current = false; }
 
   /* touch handlers for mobile */
   function onTouchDown(e: React.TouchEvent<HTMLCanvasElement>) {
@@ -1054,6 +1206,7 @@ export default function BeitragToolPage() {
     if (selEl) {
       const h = hitHandle(mx, my, selEl);
       if (h) {
+        pushHistory();
         dragRef.current = {
           mode: "resize", id: selEl.id, handle: h,
           mx0: mx, my0: my,
@@ -1066,6 +1219,7 @@ export default function BeitragToolPage() {
       const el = elements[i];
       if (hitEl(mx, my, el)) {
         setSelId(el.id);
+        pushHistory();
         dragRef.current = {
           mode: "move", id: el.id,
           mx0: mx, my0: my,
@@ -1090,6 +1244,7 @@ export default function BeitragToolPage() {
 
   /* add elements */
   function addText() {
+    pushHistory();
     const el: TextEl = {
       id: uid(), type: "text",
       x: 80, y: 80, w: 920, h: 200,
@@ -1102,6 +1257,7 @@ export default function BeitragToolPage() {
   }
 
   async function addTplImage(src: string) {
+    pushHistory();
     let imgW = Math.round(sz.w * 0.7), imgH = Math.round(sz.h * 0.45), ratio = imgW / imgH;
     try {
       const img = await loadImg(src);
@@ -1121,6 +1277,7 @@ export default function BeitragToolPage() {
   }
 
   async function addUserImage(file: File) {
+    pushHistory();
     try {
       const dataUrl = await fileToDataUrl(file);
       const img     = await loadImg(dataUrl);
@@ -1155,25 +1312,50 @@ export default function BeitragToolPage() {
     finally { setPixabayLoading(false); }
   }
 
+  /** Lädt ein Bild über den serverseitigen Proxy und gibt eine Data-URL zurück.
+   *  Verhindert Hotlinking zu externen Diensten (z. B. Pixabay). */
+  async function fetchAsDataUrl(externalUrl: string): Promise<string> {
+    const res = await fetch(
+      `/api/social-media/proxy-image?url=${encodeURIComponent(externalUrl)}`,
+    );
+    if (!res.ok) throw new Error(`Proxy-Fehler ${res.status}`);
+    const blob = await res.blob();
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
   async function addPixabayImage(url: string) {
+    pushHistory();
     setShowPixabay(false);
+    let dataUrl: string;
+    try {
+      dataUrl = await fetchAsDataUrl(url);
+    } catch {
+      // Fallback: direkte URL (sollte im Normalfall nicht eintreten)
+      dataUrl = url;
+    }
     if (pixabayBgMode) {
       try {
-        const img = await loadImg(url);
+        const img = await loadImg(dataUrl);
         bgImgRef.current = img;
-        setBgImage(url);
+        setBgImage(dataUrl);
         setBgOffsetX(0);
         setBgOffsetY(0);
         setBgOpacity(100);
         setTick((t) => t + 1);
       } catch { /* ignore */ }
     } else {
-      await addTplImage(url);
+      await addTplImage(dataUrl);
     }
   }
 
   function del() {
     if (!selId) return;
+    pushHistory();
     if (editingId === selId) setEditingId(null);
     setElements((p) => p.filter((e) => e.id !== selId));
     setSelId(null);
@@ -1291,6 +1473,7 @@ export default function BeitragToolPage() {
   }
 
   function layer(dir: "up" | "down") {
+    pushHistory();
     setElements((p) => {
       const i = p.findIndex((e) => e.id === selId);
       if (i === -1) return p;
@@ -1300,13 +1483,26 @@ export default function BeitragToolPage() {
     });
   }
 
+  const updPushedRef = useRef(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function upd(patch: Record<string, any>) {
+  function upd(patch: Record<string, any>, skipHistory = false) {
+    if (!skipHistory && !updPushedRef.current) {
+      pushHistory();
+      updPushedRef.current = true;
+    }
     setElements((p) => p.map((e) => e.id === selId ? { ...e, ...patch } as CE : e));
   }
 
   function download() {
     if (editingId) commitEdit();
+    const defaultName = currentDesignName || `beitrag-${format.replace(":", "x")}`;
+    setDownloadName(defaultName);
+    setShowDownload(true);
+  }
+
+  function doDownload(name: string) {
+    setShowDownload(false);
+    const fileName = (name.trim() || `beitrag-${format.replace(":", "x")}`) + ".png";
     requestAnimationFrame(() => {
       const off = document.createElement("canvas");
       off.width = sz.w; off.height = sz.h;
@@ -1327,12 +1523,20 @@ export default function BeitragToolPage() {
       drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
       const a = document.createElement("a");
       a.href     = off.toDataURL("image/png");
-      a.download = `beitrag-${format.replace(":", "x")}.png`;
+      a.download = fileName;
       a.click();
     });
   }
 
-  async function exportVideo() {
+  function startExportVideo() {
+    if (exporting) return;
+    if (editingId) commitEdit();
+    const defaultName = currentDesignName || `beitrag-${format.replace(":", "x")}`;
+    setDownloadName(defaultName);
+    setShowDownload(true);
+  }
+
+  async function exportVideo(videoFileName?: string) {
     if (exporting) return;
     if (editingId) commitEdit();
     setExporting(true);
@@ -1430,7 +1634,7 @@ export default function BeitragToolPage() {
       const url = URL.createObjectURL(mp4Blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `beitrag-${format.replace(":", "x")}.mp4`;
+      a.download = (videoFileName?.trim() || `beitrag-${format.replace(":", "x")}`) + ".mp4";
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -1497,7 +1701,7 @@ export default function BeitragToolPage() {
                   ) : (
                     <button type="button" className="btn btn-primary text-sm px-4 py-1.5 font-semibold"
                       disabled={exporting}
-                      onClick={exportVideo}>
+                      onClick={startExportVideo}>
                       {exporting
                         ? exportPhase === "convert"
                           ? `MP4… ${exportProgress}%`
@@ -1513,7 +1717,7 @@ export default function BeitragToolPage() {
                   {currentDesignName && <p className="text-xs text-arena-muted truncate">Entwurf: <strong>{currentDesignName}</strong></p>}
                 </>
               )}
-              <div className={fullscreen ? "grid grid-cols-4 gap-1.5" : "grid grid-cols-3 md:grid-cols-1 gap-1.5"}>
+              <div className={fullscreen ? "grid grid-cols-5 gap-1.5" : "grid grid-cols-3 md:grid-cols-1 gap-1.5"}>
                 <button type="button" className="btn btn-primary text-xs w-full"
                   disabled={savingState === "saving"}
                   onClick={() => {
@@ -1532,6 +1736,10 @@ export default function BeitragToolPage() {
                 <button type="button" className="btn text-xs w-full" onClick={() => setShowInfo(true)}>
                   Info
                 </button>
+                <button type="button" className="btn text-xs w-full" disabled={!canUndo} onClick={undo}
+                  title="Letzte Aktion rückgängig machen">
+                  ↩ Rückgängig
+                </button>
                 {!fullscreen && (
                   editorMode === "bild" ? (
                     <button type="button" className="btn btn-primary text-xs w-full" onClick={download}>
@@ -1540,7 +1748,7 @@ export default function BeitragToolPage() {
                   ) : (
                     <button type="button" className="btn btn-primary text-xs w-full"
                       disabled={exporting}
-                      onClick={exportVideo}>
+                      onClick={startExportVideo}>
                       {exporting
                         ? exportPhase === "convert"
                           ? `MP4… ${exportProgress}%`
@@ -2457,6 +2665,56 @@ export default function BeitragToolPage() {
 
               <button type="button" className="btn btn-primary py-2.5 text-base font-semibold"
                 onClick={() => setShowInfo(false)}>Los geht&rsquo;s!</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Download-Dialog ── */}
+      {showDownload && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4 grid gap-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold">Dateiname</h2>
+              <button type="button" className="text-xl leading-none text-arena-muted hover:text-arena-text"
+                onClick={() => setShowDownload(false)}>&times;</button>
+            </div>
+            <div className="grid gap-1">
+              <label className="text-xs text-arena-muted">
+                {editorMode === "bild" ? "Dateiname (.png)" : "Dateiname (.mp4)"}
+              </label>
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  className="input text-sm flex-1"
+                  value={downloadName}
+                  onChange={(e) => setDownloadName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      if (editorMode === "bild") doDownload(downloadName);
+                      else exportVideo(downloadName);
+                    }
+                    if (e.key === "Escape") setShowDownload(false);
+                  }}
+                  autoFocus
+                  spellCheck={false}
+                />
+                <span className="text-xs text-arena-muted flex-shrink-0">
+                  {editorMode === "bild" ? ".png" : ".mp4"}
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button type="button" className="btn text-sm" onClick={() => setShowDownload(false)}>
+                Abbrechen
+              </button>
+              <button type="button" className="btn btn-primary text-sm"
+                onClick={() => {
+                  if (editorMode === "bild") doDownload(downloadName);
+                  else exportVideo(downloadName);
+                }}>
+                ↓ Herunterladen
+              </button>
             </div>
           </div>
         </div>
