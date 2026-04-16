@@ -162,6 +162,8 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
   const [ytWidthInput, setYtWidthInput] = useState("640");
   const [ytHeightInput, setYtHeightInput] = useState("360");
 
+  const imgNodePosRef = useRef(-1);
+
   const editorState = useEditorState({
     editor,
     selector: (ctx) => {
@@ -171,6 +173,7 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
       const isYoutube = ctx.editor?.isActive("youtube") ?? false;
       return {
         isImage,
+        imgNodePos: isImage ? sel!.from : -1,
         isYoutube,
         imgWidth: (imgAttrs.width as string | null) ?? "",
         imgAlign: (imgAttrs.align as string | null) ?? null,
@@ -182,10 +185,11 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
 
   useEffect(() => {
     if (editorState?.isImage) {
+      imgNodePosRef.current = editorState.imgNodePos;
       setImgWidthInput(editorState.imgWidth);
       setImgAlignActive(editorState.imgAlign);
     }
-  }, [editorState?.isImage, editorState?.imgWidth, editorState?.imgAlign]);
+  }, [editorState?.isImage, editorState?.imgNodePos, editorState?.imgWidth, editorState?.imgAlign]);
 
   useEffect(() => {
     if (editorState?.isYoutube) {
@@ -194,15 +198,19 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
     }
   }, [editorState?.isYoutube, editorState?.ytWidth, editorState?.ytHeight]);
 
-  function applyImageWidth(w: string) {
-    if (!editor) return;
-    editor.chain().updateAttributes("image", { width: w || null }).run();
+  function applyImageAttrs(patch: Record<string, unknown>) {
+    if (!editor || imgNodePosRef.current < 0) return;
+    const pos = imgNodePosRef.current;
+    const node = editor.state.doc.nodeAt(pos);
+    if (!node) return;
+    editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, null, { ...node.attrs, ...patch }));
   }
 
+  function applyImageWidth(w: string) { applyImageAttrs({ width: w || null }); }
+
   function applyImageAlign(a: string | null) {
-    if (!editor) return;
     setImgAlignActive(a);
-    editor.chain().updateAttributes("image", { align: a }).run();
+    applyImageAttrs({ align: a });
   }
 
   function applyYtSize(w: number, h: number) {
