@@ -1692,11 +1692,11 @@ export default function BeitragToolPage() {
                 <div className="flex items-center gap-2">
                   <a href="/social-media"
                     className="btn btn-primary text-sm px-4 py-1.5 flex-shrink-0 font-semibold">
-                    ? Zurück
+                    Zurück
                   </a>
                   {editorMode === "bild" ? (
                     <button type="button" className="btn btn-primary text-sm px-4 py-1.5 font-semibold" onClick={download}>
-                      ? Herunterladen
+                      Herunterladen
                     </button>
                   ) : (
                     <button type="button" className="btn btn-primary text-sm px-4 py-1.5 font-semibold"
@@ -1706,7 +1706,7 @@ export default function BeitragToolPage() {
                         ? exportPhase === "convert"
                           ? `MP4… ${exportProgress}%`
                           : `Render… ${exportProgress}%`
-                        : "? Herunterladen"}
+                        : "Herunterladen"}
                     </button>
                   )}
                   {currentDesignName && <p className="text-xs text-arena-muted truncate flex-1 text-right">Entwurf: <strong>{currentDesignName}</strong></p>}
@@ -1724,7 +1724,7 @@ export default function BeitragToolPage() {
                     if (currentDesignName) saveDesign(currentDesignName);
                     else { setSaveNameInput(""); setShowSaveAs(true); }
                   }}>
-                  {savingState === "saving" ? "Speichere…" : savingState === "saved" ? "? Gespeichert" : "Speichern"}
+                  {savingState === "saving" ? "Speichere…" : savingState === "saved" ? "✓ Gespeichert" : "Speichern"}
                 </button>
                 <button type="button" className="btn text-xs w-full"
                   onClick={() => { setSaveNameInput(currentDesignName ?? ""); setShowSaveAs(true); }}>
@@ -1743,7 +1743,7 @@ export default function BeitragToolPage() {
                 {!fullscreen && (
                   editorMode === "bild" ? (
                     <button type="button" className="btn btn-primary text-xs w-full" onClick={download}>
-                      ? Herunterladen
+                      Herunterladen
                     </button>
                   ) : (
                     <button type="button" className="btn btn-primary text-xs w-full"
@@ -1753,7 +1753,7 @@ export default function BeitragToolPage() {
                         ? exportPhase === "convert"
                           ? `MP4… ${exportProgress}%`
                           : `Render… ${exportProgress}%`
-                        : "? Herunterladen"}
+                        : "Herunterladen"}
                     </button>
                   )
                 )}
