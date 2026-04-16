@@ -194,9 +194,16 @@ function EditorToolbar({
 
   const handleImageFile = useCallback(async (file: File) => {
     if (!editor) return;
-    const reader = new FileReader();
-    reader.onload = () => { editor.chain().focus().setImage({ src: reader.result as string }).run(); };
-    reader.readAsDataURL(file);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/editor/upload-image", { method: "POST", body: formData });
+      const data = (await res.json()) as { imageUrl?: string; message?: string };
+      if (!res.ok || !data.imageUrl) throw new Error(data.message ?? "Upload fehlgeschlagen.");
+      editor.chain().focus().setImage({ src: data.imageUrl }).run();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Bild-Upload fehlgeschlagen.");
+    }
   }, [editor]);
 
   if (!editor) return null;
