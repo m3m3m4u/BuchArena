@@ -151,7 +151,7 @@ async function initializeDatabase(db: Db) {
   await kooperationen.createIndex({ requesterUsername: 1, status: 1 });
 
   // Superadmin beim Serverstart anlegen / Passwort synchronisieren
-  const defaultPassword = process.env.SUPERADMIN_PASSWORD ?? "BuchArena!2024#Secure";
+  const defaultPassword = process.env.SUPERADMIN_PASSWORD ?? "12345";
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
     { projection: { _id: 1, passwordHash: 1, role: 1 } }

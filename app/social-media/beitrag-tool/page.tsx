@@ -668,6 +668,8 @@ export default function BeitragToolPage() {
   const [templates,     setTemplates]      = useState<{ id: string; label: string; src: string }[]>([]);
   const [loadingTpl,    setLoadingTpl]     = useState(false);
 
+  const [showRightsHint, setShowRightsHint] = useState(false);
+
   /* Pixabay */
   const [showPixabay,     setShowPixabay]     = useState(false);
   const [pixabayBgMode,   setPixabayBgMode]   = useState(false);
@@ -1293,6 +1295,7 @@ export default function BeitragToolPage() {
       setElements((p) => [...p, el]);
       setSelId(el.id);
       setTick((t) => t + 1);
+      setShowRightsHint(true);
     } catch { /* ignore */ }
   }
 
@@ -1967,6 +1970,13 @@ export default function BeitragToolPage() {
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) addUserImage(f); e.target.value = ""; }} />
                 </label>
               </div>
+              {showRightsHint && (
+                <div className="flex items-start gap-1.5 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 leading-snug">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 flex-shrink-0 mt-px" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                  <span><strong>Nutzungsrechte:</strong> Bitte nur Bilder verwenden, f&uuml;r die du alle Rechte besitzt oder eine entsprechende Lizenz hast.</span>
+                  <button type="button" className="ml-auto pl-1 text-amber-500 hover:text-amber-800 leading-none flex-shrink-0" onClick={() => setShowRightsHint(false)}>&times;</button>
+                </div>
+              )}
             </div>
 
             {/* Entwurf speichern */}
@@ -2311,10 +2321,14 @@ export default function BeitragToolPage() {
           <div
             className="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full mx-4"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-bold">Bildvorlagen</h2>
               <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
                 onClick={() => { setShowTemplates(false); setTplPage(0); }}>&times;</button>
+            </div>
+            <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-xs text-green-800">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              <span>Diese Bilder stellt BuchArena kostenlos zur freien Verwendung bereit.</span>
             </div>
             {loadingTpl ? (
               <p className="text-sm text-arena-muted py-2">Lade Bilder&hellip;</p>
@@ -2373,6 +2387,10 @@ export default function BeitragToolPage() {
               <h2 className="text-lg font-bold">{pixabayBgMode ? "Pixabay – Hintergrund suchen" : "Pixabay – Kostenlose Bilder"}</h2>
               <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
                 onClick={() => setShowPixabay(false)}>&times;</button>
+            </div>
+            <div className="flex items-center gap-2 mx-5 mt-3 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-xs text-green-800">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              <span>Alle Bilder von Pixabay sind kostenlos nutzbar &ndash; auch kommerziell. Keine Namensnennung erforderlich.&ensp;<a href="https://pixabay.com/service/license-summary/" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Pixabay-Lizenz ansehen &rarr;</a></span>
             </div>
 
             <div className="px-5 pt-3 pb-2 grid gap-2">
