@@ -19,6 +19,7 @@ export const GENRE_OPTIONS = [
   "Fantasy – Urban Fantasy",
   "Gedichte / Lyrik",
   "Gesellschaftsroman",
+  "Grounded Fantasy Sci-Fi",
   "Historischer Roman",
   "Horror",
   "Humor / Satire",
