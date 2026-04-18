@@ -14,7 +14,12 @@ import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 /** Erkennt den Shop-Namen und ob es ein Affiliate-Link ist. */
 function parseBuyLink(url: string): { label: string; isAffiliate: boolean } {
   try {
-    const u = new URL(url);
+    // Protokoll ergänzen, falls nicht vorhanden
+    let fixedUrl = url;
+    if (!/^https?:\/\//i.test(fixedUrl)) {
+      fixedUrl = "https://" + fixedUrl;
+    }
+    const u = new URL(fixedUrl);
     const host = u.hostname.toLowerCase();
     const search = u.search.toLowerCase();
 
@@ -40,10 +45,8 @@ function parseBuyLink(url: string): { label: string; isAffiliate: boolean } {
     if (host.includes("kobo.com")) return { label: "Kobo", isAffiliate: false };
     // Generische Affiliate-Erkennung
     const genericAff = search.includes("tag=") || search.includes("ref=") || search.includes("affiliate") || search.includes("partner_id") || search.includes("aff_id");
-    // Domain als Label
-    const domainParts = host.replace(/^www\./, "").split(".");
-    const label = domainParts.length >= 2 ? domainParts.slice(0, -1).join(".") : host;
-    return { label: label.charAt(0).toUpperCase() + label.slice(1), isAffiliate: genericAff };
+    // Für unbekannte Domains: Label "Webseite"
+    return { label: "Webseite", isAffiliate: genericAff };
   } catch {
     return { label: "Jetzt kaufen", isAffiliate: false };
   }
@@ -292,9 +295,14 @@ export default function BookDetailPage({ params }: PageProps) {
                 <h2 className="mb-2 text-lg">Kaufen</h2>
                 <div className="flex flex-wrap gap-2">
                   {book.buyLinks.map((link) => {
-                    const { label, isAffiliate } = parseBuyLink(link);
+                    // Protokoll ergänzen, falls nicht vorhanden
+                    let fixedUrl = link;
+                    if (!/^https?:\/\//i.test(fixedUrl)) {
+                      fixedUrl = "https://" + fixedUrl;
+                    }
+                    const { label, isAffiliate } = parseBuyLink(fixedUrl);
                     return (
-                      <a key={link} href={link} target="_blank" rel={isAffiliate ? "noreferrer sponsored" : "noreferrer"} className="btn inline-flex items-center gap-1.5">
+                      <a key={link} href={fixedUrl} target="_blank" rel={isAffiliate ? "noreferrer sponsored" : "noreferrer"} className="btn inline-flex items-center gap-1.5">
                         {label}
                         {isAffiliate && <span className="text-[0.7rem] opacity-70" title="Affiliate-Link – bei einem Kauf über diesen Link erhalten wir eine kleine Provision">*</span>}
                       </a>
