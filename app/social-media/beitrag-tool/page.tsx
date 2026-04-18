@@ -693,6 +693,8 @@ export default function BeitragToolPage() {
   const [editText,      setEditText]      = useState("");
   const [showTemplates, setShowTemplates]  = useState(false);
   const [tplPage,       setTplPage]        = useState(0);
+  const [tplTotal,      setTplTotal]        = useState(0);
+  const [tplTotalPages, setTplTotalPages]   = useState(0);
   const [templates,     setTemplates]      = useState<{ id: string; label: string; src: string }[]>([]);
   const [loadingTpl,    setLoadingTpl]     = useState(false);
 
@@ -999,16 +1001,21 @@ export default function BeitragToolPage() {
     }
   }, []);
 
-  /* Load gallery templates when overlay opens */
+  /* Load gallery templates when overlay opens or page changes */
   useEffect(() => {
-    if (!showTemplates || templates.length > 0) return;
+    if (!showTemplates) return;
     setLoadingTpl(true);
-    fetch("/api/social-media/gallery")
+    setTemplates([]);
+    fetch(`/api/social-media/gallery?page=${tplPage}`)
       .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data)) setTemplates(data); })
+      .then((data: { items?: { id: string; label: string; src: string }[]; total?: number; totalPages?: number }) => {
+        if (Array.isArray(data.items)) setTemplates(data.items);
+        if (data.total != null) setTplTotal(data.total);
+        if (data.totalPages != null) setTplTotalPages(data.totalPages);
+      })
       .catch(() => {})
       .finally(() => setLoadingTpl(false));
-  }, [showTemplates, templates.length]);
+  }, [showTemplates, tplPage]);
 
   /* Load musik tracks when switching to video mode */
   useEffect(() => {
@@ -2479,47 +2486,41 @@ export default function BeitragToolPage() {
               <p className="text-sm text-arena-muted py-2">Lade Bilder&hellip;</p>
             ) : templates.length === 0 ? (
               <p className="text-sm text-arena-muted py-2">Noch keine Bildvorlagen vorhanden.</p>
-            ) : (() => {
-              const perPage = 8;
-              const totalPages = Math.ceil(templates.length / perPage);
-              const page = Math.min(tplPage, totalPages - 1);
-              const slice = templates.slice(page * perPage, page * perPage + perPage);
-              return (
-                <>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {slice.map((tpl) => (
-                      <button
-                        key={tpl.id}
-                        type="button"
-                        className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left"
-                        onClick={() => { addTplImage(tpl.src); setShowTemplates(false); setTplPage(0); }}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={tpl.src} alt={tpl.label} className="w-full object-cover aspect-square" />
-                        <p className="text-xs text-center py-1.5 font-medium truncate px-1">{tpl.label}</p>
-                      </button>
-                    ))}
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {templates.map((tpl) => (
+                    <button
+                      key={tpl.id}
+                      type="button"
+                      className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left"
+                      onClick={() => { addTplImage(tpl.src); setShowTemplates(false); setTplPage(0); }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={tpl.src} alt={tpl.label} className="w-full object-cover aspect-square" loading="lazy" />
+                      <p className="text-xs text-center py-1.5 font-medium truncate px-1">{tpl.label}</p>
+                    </button>
+                  ))}
+                </div>
+                {tplTotalPages > 1 && (
+                  <div className="flex items-center justify-center gap-3 mt-4">
+                    <button type="button" className="btn text-xs px-3 h-8"
+                      disabled={tplPage === 0}
+                      onClick={() => setTplPage((p) => Math.max(0, p - 1))}>
+                      &larr; Zur&uuml;ck
+                    </button>
+                    <span className="text-xs text-arena-muted tabular-nums">
+                      {tplPage + 1} / {tplTotalPages}
+                    </span>
+                    <button type="button" className="btn text-xs px-3 h-8"
+                      disabled={tplPage >= tplTotalPages - 1}
+                      onClick={() => setTplPage((p) => Math.min(tplTotalPages - 1, p + 1))}>
+                      Weiter &rarr;
+                    </button>
                   </div>
-                  {totalPages > 1 && (
-                    <div className="flex items-center justify-center gap-3 mt-4">
-                      <button type="button" className="btn text-xs px-3 h-8"
-                        disabled={page === 0}
-                        onClick={() => setTplPage((p) => Math.max(0, p - 1))}>
-                        &larr; Zur&uuml;ck
-                      </button>
-                      <span className="text-xs text-arena-muted tabular-nums">
-                        {page + 1} / {totalPages}
-                      </span>
-                      <button type="button" className="btn text-xs px-3 h-8"
-                        disabled={page >= totalPages - 1}
-                        onClick={() => setTplPage((p) => Math.min(totalPages - 1, p + 1))}>
-                        Weiter &rarr;
-                      </button>
-                    </div>
-                  )}
-                </>
-              );
-            })()}
+                )}
+              </>
+            )}
           </div>
         </div>
       )}
