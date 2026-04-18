@@ -25,6 +25,50 @@ export type SocialMediaGalleryItem = {
   createdAt: Date;
 };
 
+export type SocialMediaPixabayUploaderBlacklist = {
+  _id?: import("mongodb").ObjectId;
+  userId: number;
+  uploaderName?: string;
+  reason: string;
+  createdAt: Date;
+  createdBy: string;
+};
+
+export type SocialMediaPixabayLicenseSafe = {
+  _id?: import("mongodb").ObjectId;
+  username: string;
+  imageId: number;
+  uploaderUserId: number;
+  uploaderName: string;
+  pageUrl: string;
+  profileUrl: string;
+  imagePath: string;
+  apiResponsePath: string;
+  htmlSnapshotPath: string;
+  profileSnapshotPath: string;
+  manifestPath: string;
+  packageHash: string;
+  joinedAt?: Date;
+  accountAgeDays?: number | null;
+  uploadedImageCount?: number | null;
+  licenseVerification: {
+    status: "verified" | "degraded";
+    reason?: string;
+  };
+  uploaderVerification: {
+    status: "verified" | "degraded";
+    reason?: string;
+  };
+  reverseImageCheck: {
+    status: "passed" | "failed" | "skipped";
+    reason?: string;
+    provider?: string;
+    matchedSource?: string;
+    matchedOwner?: string;
+  };
+  createdAt: Date;
+};
+
 export type UserRole = "USER" | "ADMIN" | "SUPERADMIN";
 
 export type UserStatus = "active" | "deactivated";
@@ -111,6 +155,22 @@ async function initializeDatabase(db: Db) {
   await analytics.createIndex({ timestamp: -1 });
   await analytics.createIndex({ page: 1, timestamp: -1 });
   await analytics.createIndex({ visitorId: 1, timestamp: -1 });
+
+  const socialMediaDesigns = db.collection("social_media_designs");
+  await socialMediaDesigns.createIndex({ username: 1, name: 1 }, { unique: true });
+  await socialMediaDesigns.createIndex({ username: 1, updatedAt: -1 });
+
+  const socialMediaGallery = db.collection("social_media_gallery");
+  await socialMediaGallery.createIndex({ order: 1, createdAt: 1 });
+
+  const pixabayBlacklist = db.collection("social_media_pixabay_blacklist");
+  await pixabayBlacklist.createIndex({ userId: 1 }, { unique: true });
+  await pixabayBlacklist.createIndex({ createdAt: -1 });
+
+  const pixabayLicenseSafes = db.collection("social_media_pixabay_license_safes");
+  await pixabayLicenseSafes.createIndex({ username: 1, createdAt: -1 });
+  await pixabayLicenseSafes.createIndex({ imageId: 1, createdAt: -1 });
+  await pixabayLicenseSafes.createIndex({ uploaderUserId: 1, createdAt: -1 });
 
   const lesezeichen = db.collection("lesezeichen");
   await lesezeichen.createIndex({ username: 1 }, { unique: true });
@@ -265,6 +325,16 @@ export async function getSocialMediaDesignsCollection(): Promise<Collection<Soci
 export async function getSocialMediaGalleryCollection(): Promise<Collection<SocialMediaGalleryItem>> {
   const db = await getDatabase();
   return db.collection<SocialMediaGalleryItem>("social_media_gallery");
+}
+
+export async function getSocialMediaPixabayUploaderBlacklistCollection(): Promise<Collection<SocialMediaPixabayUploaderBlacklist>> {
+  const db = await getDatabase();
+  return db.collection<SocialMediaPixabayUploaderBlacklist>("social_media_pixabay_blacklist");
+}
+
+export async function getSocialMediaPixabayLicenseSafesCollection(): Promise<Collection<SocialMediaPixabayLicenseSafe>> {
+  const db = await getDatabase();
+  return db.collection<SocialMediaPixabayLicenseSafe>("social_media_pixabay_license_safes");
 }
 
 export async function getKooperationenCollection(): Promise<Collection<KooperationDocument>> {

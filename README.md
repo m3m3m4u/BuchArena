@@ -29,6 +29,17 @@ In `.env.local`:
 - `WEBDAV_PASSWORD`
 - `WEBDAV_UPLOAD_DIR` (optional)
 - `WEBDAV_PUBLIC_BASE_URL` (optional)
+- `PIXABAY_API_KEY`
+- `REVERSE_IMAGE_CHECK_URL` (optional, Webhook/API für TinEye-ähnlichen Copyfraud-Check)
+- `REVERSE_IMAGE_CHECK_API_KEY` (optional)
+
+## Pixabay-Lizenz-Safe im Beitrag-Tool
+
+- Der Import aus `/social-media/beitrag-tool` übernimmt Pixabay-Bilder nicht mehr direkt, sondern legt zuerst einen Lizenz-Safe an.
+- Gespeichert werden das Originalbild, der Pixabay-API-Response, die HTML-Detailseite, die HTML-Uploader-Seite und ein Manifest mit SHA-256-Hash.
+- Uploader werden blockiert, wenn ihr Profil jünger als 90 Tage ist oder weniger als 20 veröffentlichte Medien erkannt werden.
+- Admins können auffällige Pixabay-`user_id` global sperren.
+- Ein Reverse-Image-Check kann optional über `REVERSE_IMAGE_CHECK_URL` angebunden werden. Wenn konfiguriert, läuft der Import fail-closed bei Fehlern oder Treffern auf kostenpflichtigen Stock-Plattformen.
 
 ## Start
 

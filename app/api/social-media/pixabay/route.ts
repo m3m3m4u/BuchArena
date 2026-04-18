@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
+import { getSocialMediaPixabayUploaderBlacklistCollection } from "@/lib/mongodb";
 
 const PIXABAY_KEY = process.env.PIXABAY_API_KEY ?? "";
+
+export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   const account = await getServerAccount();
@@ -44,12 +47,21 @@ export async function GET(req: NextRequest) {
       previewURL: string;
       webformatURL: string;
       largeImageURL: string;
+      pageURL: string;
       tags: string;
       imageWidth: number;
       imageHeight: number;
       user: string;
+      user_id: number;
     }>;
   };
+
+  const blacklistCollection = await getSocialMediaPixabayUploaderBlacklistCollection();
+  const uploaderIds = data.hits.map((hit) => hit.user_id).filter((value, index, arr) => arr.indexOf(value) === index);
+  const blockedUploaders = uploaderIds.length > 0
+    ? await blacklistCollection.find({ userId: { $in: uploaderIds } }).toArray()
+    : [];
+  const blockedMap = new Map(blockedUploaders.map((entry) => [entry.userId, entry]));
 
   return NextResponse.json({
     totalHits: data.totalHits,
@@ -58,10 +70,14 @@ export async function GET(req: NextRequest) {
       preview: h.previewURL,
       webformat: h.webformatURL,
       large: h.largeImageURL,
+      pageUrl: h.pageURL,
       tags: h.tags,
       width: h.imageWidth,
       height: h.imageHeight,
       user: h.user,
+      userId: h.user_id,
+      blocked: blockedMap.has(h.user_id),
+      blockReason: blockedMap.get(h.user_id)?.reason ?? null,
     })),
   });
 }

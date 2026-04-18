@@ -49,6 +49,7 @@ interface ImgEl {
   id: string; type: "image";
   x: number; y: number; w: number; h: number;
   src: string; ratio: number;
+  evidenceId?: string;
   anim?: AnimPreset;
   animDelay?: number;
   animDuration?: number;
@@ -61,6 +62,33 @@ interface ImgEl {
   imgRounded?: number;
 }
 type CE = TextEl | ImgEl;
+
+type PixabayHit = {
+  id: number;
+  preview: string;
+  webformat: string;
+  large: string;
+  pageUrl: string;
+  tags: string;
+  width: number;
+  height: number;
+  user: string;
+  userId: number;
+  blocked?: boolean;
+  blockReason?: string | null;
+};
+
+type PixabayNotice = {
+  kind: "success" | "error" | "info";
+  text: string;
+};
+
+type PixabayEvidence = {
+  id: string;
+  packageHash: string;
+  accountAgeDays?: number;
+  uploadedImageCount?: number;
+};
 
 const FRAME_PRESETS: { value: FrameStyle; label: string }[] = [
   { value: "none",          label: "Kein Rahmen" },
@@ -674,12 +702,16 @@ export default function BeitragToolPage() {
   const [showPixabay,     setShowPixabay]     = useState(false);
   const [pixabayBgMode,   setPixabayBgMode]   = useState(false);
   const [pixabayQuery,    setPixabayQuery]    = useState("");
-  const [pixabayResults,  setPixabayResults]  = useState<{ id: number; preview: string; webformat: string; large: string; tags: string; width: number; height: number; user: string }[]>([]);
+  const [pixabayResults,  setPixabayResults]  = useState<PixabayHit[]>([]);
   const [pixabayTotal,    setPixabayTotal]    = useState(0);
   const [pixabayPage,     setPixabayPage]     = useState(1);
   const [pixabayLoading,  setPixabayLoading]  = useState(false);
   const [pixabayType,     setPixabayType]     = useState<"all" | "photo" | "illustration" | "vector">("all");
   const [pixabaySearched, setPixabaySearched] = useState(false);
+  const [pixabayNotice,   setPixabayNotice]   = useState<PixabayNotice | null>(null);
+  const [pixabayBusyId,   setPixabayBusyId]   = useState<number | null>(null);
+  const [bgEvidenceId, setBgEvidenceId] = useState<string | null>(null);
+  const [downloadingSources, setDownloadingSources] = useState(false);
 
   const [showSaveAs,    setShowSaveAs]     = useState(false);
   const [showOpen,      setShowOpen]       = useState(false);
@@ -1305,6 +1337,7 @@ export default function BeitragToolPage() {
     if (!q) return;
     setPixabayLoading(true);
     setPixabaySearched(true);
+    setPixabayNotice(null);
     try {
       const res = await fetch(`/api/social-media/pixabay?q=${encodeURIComponent(q)}&page=${page}&image_type=${type}`);
       const data = await res.json() as { hits?: typeof pixabayResults; totalHits?: number };
@@ -1315,44 +1348,103 @@ export default function BeitragToolPage() {
     finally { setPixabayLoading(false); }
   }
 
-  /** Lädt ein Bild über den serverseitigen Proxy und gibt eine Data-URL zurück.
-   *  Verhindert Hotlinking zu externen Diensten (z. B. Pixabay). */
-  async function fetchAsDataUrl(externalUrl: string): Promise<string> {
-    const res = await fetch(
-      `/api/social-media/proxy-image?url=${encodeURIComponent(externalUrl)}`,
-    );
-    if (!res.ok) throw new Error(`Proxy-Fehler ${res.status}`);
-    const blob = await res.blob();
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  }
-
-  async function addPixabayImage(url: string) {
-    pushHistory();
-    setShowPixabay(false);
-    let dataUrl: string;
+  async function addPixabayImage(hit: PixabayHit) {
+    setPixabayBusyId(hit.id);
+    setPixabayNotice({ kind: "info", text: "Bild wird geprüft und mit Nachweisen gespeichert …" });
+    let safeUrl: string;
+    let evidenceId: string | undefined;
     try {
-      dataUrl = await fetchAsDataUrl(url);
+      const res = await fetch("/api/social-media/pixabay/select", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageId: hit.id }),
+      });
+      const data = await res.json() as {
+        message?: string;
+        evidenceId?: string;
+        imageUrl?: string;
+        packageHash?: string;
+        verification?: { accountAgeDays?: number; uploadedImageCount?: number };
+      };
+      if (!res.ok || !data.imageUrl) {
+        setPixabayNotice({ kind: "error", text: data.message ?? "Bild konnte nicht abgesichert werden." });
+        return;
+      }
+      safeUrl = data.imageUrl;
+      evidenceId = data.evidenceId;
+      setPixabayNotice({
+        kind: "success",
+        text: "Bild gespeichert. Die Bildquellen kannst du später gesammelt herunterladen.",
+      });
     } catch {
-      // Fallback: direkte URL (sollte im Normalfall nicht eintreten)
-      dataUrl = url;
+      setPixabayNotice({ kind: "error", text: "Bild konnte nicht abgesichert werden." });
+      return;
+    } finally {
+      setPixabayBusyId(null);
     }
+
+    setShowPixabay(false);
     if (pixabayBgMode) {
       try {
-        const img = await loadImg(dataUrl);
+        pushHistory();
+        const img = await loadImg(safeUrl);
         bgImgRef.current = img;
-        setBgImage(dataUrl);
+        setBgImage(safeUrl);
+        setBgEvidenceId(evidenceId ?? null);
         setBgOffsetX(0);
         setBgOffsetY(0);
         setBgOpacity(100);
         setTick((t) => t + 1);
       } catch { /* ignore */ }
     } else {
-      await addTplImage(dataUrl);
+      pushHistory();
+      let imgW = Math.round(sz.w * 0.7), imgH = Math.round(sz.h * 0.45), ratio = imgW / imgH;
+      try {
+        const img = await loadImg(safeUrl);
+        imgCache.current.set(safeUrl, img);
+        ratio = img.naturalWidth / img.naturalHeight;
+        imgW  = Math.round(sz.w * 0.7);
+        imgH  = Math.round(imgW / ratio);
+        setTick((t) => t + 1);
+      } catch { /* keep fallback */ }
+      const el: ImgEl = {
+        id: uid(), type: "image",
+        x: Math.round((sz.w - imgW) / 2), y: 60,
+        w: imgW, h: imgH, src: safeUrl, ratio, evidenceId,
+      };
+      setElements((p) => [...p, el]);
+      setSelId(el.id);
+    }
+  }
+
+  async function blockPixabayUploader(hit: PixabayHit) {
+    setPixabayBusyId(hit.id);
+    setPixabayNotice(null);
+    try {
+      const res = await fetch("/api/admin/social-media/pixabay-blacklist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: hit.userId,
+          uploaderName: hit.user,
+          reason: `Manuell im Beitrag-Tool gesperrt (Bild ${hit.id}).`,
+        }),
+      });
+      const data = await res.json() as { message?: string };
+      if (!res.ok) {
+        setPixabayNotice({ kind: "error", text: data.message ?? "Uploader konnte nicht gesperrt werden." });
+        return;
+      }
+      setPixabayResults((prev) => prev.map((entry) => (
+        entry.userId === hit.userId
+          ? { ...entry, blocked: true, blockReason: `Manuell von Admin gesperrt.` }
+          : entry
+      )));
+      setPixabayNotice({ kind: "success", text: `Uploader ${hit.user} wurde global gesperrt.` });
+    } catch {
+      setPixabayNotice({ kind: "error", text: "Uploader konnte nicht gesperrt werden." });
+    } finally {
+      setPixabayBusyId(null);
     }
   }
 
@@ -1374,7 +1466,7 @@ export default function BeitragToolPage() {
 
   async function saveDesign(name: string) {
     const snapshot = JSON.stringify({
-      format, bgColor, bgImage, bgOffsetX, bgOffsetY, bgOpacity, elements,
+      format, bgColor, bgImage, bgEvidenceId, bgOffsetX, bgOffsetY, bgOpacity, elements,
       editorMode, videoDuration,
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
@@ -1403,7 +1495,7 @@ export default function BeitragToolPage() {
   function loadDesign(data: string, name?: string) {
     try {
       const s = JSON.parse(data) as {
-        format: FormatPreset; bgColor: string; bgImage?: string | null;
+        format: FormatPreset; bgColor: string; bgImage?: string | null; bgEvidenceId?: string | null;
         bgOffsetX?: number; bgOffsetY?: number; bgOpacity?: number;
         elements: CE[];
         editorMode?: "bild" | "video"; videoDuration?: number;
@@ -1417,9 +1509,11 @@ export default function BeitragToolPage() {
       setBgColor(s.bgColor ?? "#ffffff");
       if (s.bgImage) {
         setBgImage(s.bgImage);
+        setBgEvidenceId(s.bgEvidenceId ?? null);
         loadImg(s.bgImage).then((img) => { bgImgRef.current = img; setTick((t) => t + 1); }).catch(() => {});
       } else {
         setBgImage(null);
+        setBgEvidenceId(null);
         bgImgRef.current = null;
       }
       setBgOffsetX(s.bgOffsetX ?? 0);
@@ -1453,7 +1547,7 @@ export default function BeitragToolPage() {
   function exportDesign() {
     if (editingId) commitEdit();
     const snapshot = JSON.stringify({
-      format, bgColor, bgImage, bgOffsetX, bgOffsetY, bgOpacity, elements,
+      format, bgColor, bgImage, bgEvidenceId, bgOffsetX, bgOffsetY, bgOpacity, elements,
       editorMode, videoDuration,
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
@@ -1501,6 +1595,45 @@ export default function BeitragToolPage() {
     const defaultName = currentDesignName || `beitrag-${format.replace(":", "x")}`;
     setDownloadName(defaultName);
     setShowDownload(true);
+  }
+
+  function collectEvidenceIds() {
+    const ids = new Set<string>();
+    if (bgEvidenceId) ids.add(bgEvidenceId);
+    for (const el of elements) {
+      if (el.type === "image" && el.evidenceId) ids.add(el.evidenceId);
+    }
+    return Array.from(ids);
+  }
+
+  async function downloadImageSources() {
+    const evidenceIds = collectEvidenceIds();
+    if (evidenceIds.length === 0 || downloadingSources) return;
+    setDownloadingSources(true);
+    try {
+      const projectName = (currentDesignName || downloadName || `beitrag-${format.replace(":", "x")}`).trim();
+      const res = await fetch("/api/social-media/pixabay/evidence/download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ evidenceIds, projectName }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ message: "Bildquellen konnten nicht geladen werden." }));
+        setPixabayNotice({ kind: "error", text: data.message ?? "Bildquellen konnten nicht geladen werden." });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${projectName || "beitrag"}-bildquellen.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setPixabayNotice({ kind: "error", text: "Bildquellen konnten nicht geladen werden." });
+    } finally {
+      setDownloadingSources(false);
+    }
   }
 
   function doDownload(name: string) {
@@ -1712,6 +1845,11 @@ export default function BeitragToolPage() {
                         : "Herunterladen"}
                     </button>
                   )}
+                  <button type="button" className="btn text-sm px-4 py-1.5 font-semibold"
+                    disabled={collectEvidenceIds().length === 0 || downloadingSources}
+                    onClick={() => { void downloadImageSources(); }}>
+                    {downloadingSources ? "Bildquellen …" : "Bildquellen herunterladen"}
+                  </button>
                   {currentDesignName && <p className="text-xs text-arena-muted truncate flex-1 text-right">Entwurf: <strong>{currentDesignName}</strong></p>}
                 </div>
               ) : (
@@ -1759,6 +1897,13 @@ export default function BeitragToolPage() {
                         : "Herunterladen"}
                     </button>
                   )
+                )}
+                {!fullscreen && (
+                  <button type="button" className="btn text-xs w-full"
+                    disabled={collectEvidenceIds().length === 0 || downloadingSources}
+                    onClick={() => { void downloadImageSources(); }}>
+                    {downloadingSources ? "Bildquellen …" : "Bildquellen herunterladen"}
+                  </button>
                 )}
                 {!fullscreen && (
                   <button type="button" className="btn text-xs w-full"
@@ -2388,10 +2533,34 @@ export default function BeitragToolPage() {
               <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
                 onClick={() => setShowPixabay(false)}>&times;</button>
             </div>
-            <div className="flex items-center gap-2 mx-5 mt-3 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-xs text-green-800">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              <span>Alle Bilder von Pixabay sind kostenlos nutzbar &ndash; auch kommerziell. Keine Namensnennung erforderlich.&ensp;<a href="https://pixabay.com/service/license-summary/" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Pixabay-Lizenz ansehen &rarr;</a></span>
+            <div className="mx-5 mt-3 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-xs text-green-800">
+              <div className="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                <div>
+                  <span className="font-semibold">Automatische Lizenz-Prüfung aktiv.</span>
+                  {" "}Bilder werden beim Einbinden serverseitig geprüft und mit Nachweisen gespeichert:
+                  <ul className="mt-1 ml-3 list-disc space-y-0.5">
+                    <li>Lizenz wird über die Pixabay-API und die Bildseite bestätigt</li>
+                    <li>Uploader muss eine Mindestanzahl an eigenen Uploads haben – inaktive Konten werden abgelehnt</li>
+                    <li>Alle Nachweise (Bild, API-Daten, Seitenkopien, Hashwerte) kannst du über <em>Bildquellen herunterladen</em> als ZIP abrufen</li>
+                  </ul>
+                  <a href="https://pixabay.com/service/license-summary/" target="_blank" rel="noopener noreferrer" className="underline font-semibold mt-1 inline-block">Pixabay-Lizenz ansehen &rarr;</a>
+                  <p className="mt-2 text-green-700 opacity-80">BuchArena übernimmt keine Haftung für die Richtigkeit der von Pixabay bereitgestellten Lizenzangaben. Die gespeicherten Nachweise dienen der Dokumentation zum Zeitpunkt der Nutzung.</p>
+                </div>
+              </div>
             </div>
+
+            {pixabayNotice && (
+              <div className={`mx-5 mt-3 px-3 py-2 rounded-lg border text-xs ${
+                pixabayNotice.kind === "error"
+                  ? "bg-red-50 border-red-200 text-red-800"
+                  : pixabayNotice.kind === "success"
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                    : "bg-blue-50 border-blue-200 text-blue-800"
+              }`}>
+                {pixabayNotice.text}
+              </div>
+            )}
 
             <div className="px-5 pt-3 pb-2 grid gap-2">
               <form onSubmit={(e) => { e.preventDefault(); searchPixabay(pixabayQuery, 1); }}
@@ -2430,14 +2599,42 @@ export default function BeitragToolPage() {
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-2">
                     {pixabayResults.map((hit) => (
                       <div key={hit.id}
-                        className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left group cursor-pointer"
-                        onClick={() => addPixabayImage(hit.large)}>
+                        className={`rounded-lg border-2 overflow-hidden transition-colors text-left group ${
+                          hit.blocked
+                            ? "border-red-300 bg-red-50/40 cursor-not-allowed opacity-75"
+                            : pixabayBusyId === hit.id
+                              ? "border-blue-400 ring-2 ring-blue-200 cursor-progress"
+                              : "border-arena-border hover:border-blue-400 cursor-pointer"
+                        }`}
+                        onClick={() => {
+                          if (hit.blocked || pixabayBusyId !== null) return;
+                          void addPixabayImage(hit);
+                        }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={hit.preview} alt={hit.tags}
                           className="w-full object-contain bg-gray-100" />
                         <div className="px-1.5 py-1">
                           <p className="text-[10px] text-arena-muted truncate">{hit.tags}</p>
                           <p className="text-[10px] text-arena-muted/60 truncate">von {hit.user}</p>
+                          {hit.blocked && (
+                            <p className="text-[10px] text-red-700 font-semibold mt-0.5">Gesperrt{hit.blockReason ? `: ${hit.blockReason}` : ""}</p>
+                          )}
+                          {!hit.blocked && pixabayBusyId === hit.id && (
+                            <p className="text-[10px] text-blue-700 font-semibold mt-0.5">Prüfung läuft …</p>
+                          )}
+                          {isAdmin && !hit.blocked && (
+                            <button
+                              type="button"
+                              className="mt-1 text-[10px] font-semibold text-red-700 underline"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                if (pixabayBusyId !== null) return;
+                                void blockPixabayUploader(hit);
+                              }}
+                            >
+                              Uploader sperren
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -2463,7 +2660,7 @@ export default function BeitragToolPage() {
                   )}
 
                   <p className="text-[10px] text-arena-muted/50 text-center mt-3">
-                    Bilder bereitgestellt von <a href="https://pixabay.com" target="_blank" rel="noopener noreferrer" className="underline">Pixabay</a> &ndash; kostenlos und lizenzfrei.
+                    Bilder bereitgestellt von <a href="https://pixabay.com" target="_blank" rel="noopener noreferrer" className="underline">Pixabay</a>. Auswahl erst nach Uploader-Prüfung, HTML-Archivierung und Hash-Signatur.
                   </p>
                 </>
               )}
@@ -2676,6 +2873,7 @@ export default function BeitragToolPage() {
                     <ul className="grid gap-1 text-arena-muted">
                       <li><strong>Bild-Modus:</strong> PNG in voller Aufl&ouml;sung (1080&thinsp;px Breite).</li>
                       <li><strong>Video-Modus:</strong> MP4-Video mit Fortschrittsanzeige.</li>
+                      <li><strong>Bildquellen herunterladen:</strong> Erstellt eine ZIP-Datei mit allen gespeicherten Nachweisen zu Pixabay-Bildern im aktuellen Projekt.</li>
                     </ul>
                   </div>
                 </div>
