@@ -84,8 +84,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       notes4: (body.notes4 ?? "").slice(0, 2000),
       notes5: (body.notes5 ?? "").slice(0, 2000),
       notiz: (body.notiz ?? "").slice(0, 2000),
-      coverImg: typeof body.coverImg === "string" && body.coverImg.startsWith("data:") ? body.coverImg : (body.coverImg === null ? undefined : existing.coverImg),
-      autorImg: typeof body.autorImg === "string" && body.autorImg.startsWith("data:") ? body.autorImg : (body.autorImg === null ? undefined : existing.autorImg),
+      coverImg: typeof body.coverImg === "string" && (body.coverImg.startsWith("data:") || body.coverImg.startsWith("/api/profile/image")) ? body.coverImg : (body.coverImg === null ? undefined : existing.coverImg),
+      autorImg: typeof body.autorImg === "string" && (body.autorImg.startsWith("data:") || body.autorImg.startsWith("/api/profile/image")) ? body.autorImg : (body.autorImg === null ? undefined : existing.autorImg),
       updatedAt: new Date(),
     };
 

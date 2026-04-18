@@ -34,6 +34,15 @@ export type SocialMediaPixabayUploaderBlacklist = {
   createdBy: string;
 };
 
+export type SocialMediaPixabayFlaggedImage = {
+  _id?: import("mongodb").ObjectId;
+  imageId: number;
+  pageUrl?: string;
+  reason: string;
+  createdAt: Date;
+  createdBy: string;
+};
+
 export type SocialMediaPixabayLicenseSafe = {
   _id?: import("mongodb").ObjectId;
   username: string;
@@ -166,6 +175,10 @@ async function initializeDatabase(db: Db) {
   const pixabayBlacklist = db.collection("social_media_pixabay_blacklist");
   await pixabayBlacklist.createIndex({ userId: 1 }, { unique: true });
   await pixabayBlacklist.createIndex({ createdAt: -1 });
+
+  const pixabayFlagged = db.collection("social_media_pixabay_flagged_images");
+  await pixabayFlagged.createIndex({ imageId: 1 }, { unique: true });
+  await pixabayFlagged.createIndex({ createdAt: -1 });
 
   const pixabayLicenseSafes = db.collection("social_media_pixabay_license_safes");
   await pixabayLicenseSafes.createIndex({ username: 1, createdAt: -1 });
@@ -330,6 +343,11 @@ export async function getSocialMediaGalleryCollection(): Promise<Collection<Soci
 export async function getSocialMediaPixabayUploaderBlacklistCollection(): Promise<Collection<SocialMediaPixabayUploaderBlacklist>> {
   const db = await getDatabase();
   return db.collection<SocialMediaPixabayUploaderBlacklist>("social_media_pixabay_blacklist");
+}
+
+export async function getSocialMediaPixabayFlaggedImagesCollection(): Promise<Collection<SocialMediaPixabayFlaggedImage>> {
+  const db = await getDatabase();
+  return db.collection<SocialMediaPixabayFlaggedImage>("social_media_pixabay_flagged_images");
 }
 
 export async function getSocialMediaPixabayLicenseSafesCollection(): Promise<Collection<SocialMediaPixabayLicenseSafe>> {

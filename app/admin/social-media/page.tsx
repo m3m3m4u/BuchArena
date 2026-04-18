@@ -11,6 +11,8 @@ interface GalleryItem {
   createdAt?: string;
 }
 
+const ADMIN_PER_PAGE = 10;
+
 export default function AdminSocialMediaGalleryPage() {
   const [isAdmin,  setIsAdmin]  = useState<boolean | null>(null);
   const [items,    setItems]    = useState<GalleryItem[]>([]);
@@ -20,6 +22,8 @@ export default function AdminSocialMediaGalleryPage() {
   const [editId,   setEditId]   = useState<string | null>(null);
   const [editLabel, setEditLabel] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [search,   setSearch]   = useState("");
+  const [page,     setPage]     = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -47,11 +51,12 @@ export default function AdminSocialMediaGalleryPage() {
     try {
       for (const file of Array.from(files)) {
         const label = labelInput.trim() || file.name.replace(/\.[^.]+$/, "");
-        const src = await fileToDataUrl(file);
+        const fd = new FormData();
+        fd.append("label", label);
+        fd.append("file", file);
         const res = await fetch("/api/admin/social-media/gallery", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ label, src }),
+          body: fd,
         });
         if (res.ok) {
           const item = await res.json() as GalleryItem;
@@ -111,6 +116,13 @@ export default function AdminSocialMediaGalleryPage() {
   if (isAdmin === null) return <div className="p-8 text-gray-500">Lade&hellip;</div>;
   if (!isAdmin) return <div className="p-8 text-red-600 font-semibold">Kein Zugriff.</div>;
 
+  const filtered = search.trim()
+    ? items.filter((i) => i.label.toLowerCase().includes(search.trim().toLowerCase()))
+    : items;
+  const totalPages = Math.ceil(filtered.length / ADMIN_PER_PAGE);
+  const currentPage = Math.min(page, Math.max(0, totalPages - 1));
+  const pageItems = filtered.slice(currentPage * ADMIN_PER_PAGE, (currentPage + 1) * ADMIN_PER_PAGE);
+
   return (
     <main className="top-centered-main">
       <section className="card">
@@ -155,14 +167,31 @@ export default function AdminSocialMediaGalleryPage() {
         </div>
 
         {/* Galerie-Liste */}
+        {/* Suche */}
+        <div className="mb-4">
+          <input
+            type="search"
+            className="input w-full max-w-xs"
+            placeholder="Suchen&hellip;"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+          />
+          {search.trim() && (
+            <p className="text-xs text-arena-muted mt-1">{filtered.length} Treffer</p>
+          )}
+        </div>
+
         {loading ? (
           <p className="text-sm text-arena-muted">Lade&hellip;</p>
-        ) : items.length === 0 ? (
-          <p className="text-sm text-arena-muted">Noch keine Bilder in der Galerie.</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-sm text-arena-muted">{search.trim() ? "Keine Treffer." : "Noch keine Bilder in der Galerie."}</p>
         ) : (
-          <ul className="grid gap-3">
-            {items.map((item, idx) => (
-              <li key={item.id} className="flex items-center gap-3 rounded-lg border border-arena-border p-3">
+          <>
+            <ul className="grid gap-3">
+              {pageItems.map((item) => {
+                const idx = items.findIndex((i) => i.id === item.id);
+                return (
+                <li key={item.id} className="flex items-center gap-3 rounded-lg border border-arena-border p-3">
                 {/* Vorschau */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -224,8 +253,29 @@ export default function AdminSocialMediaGalleryPage() {
                   >L&ouml;schen</button>
                 </div>
               </li>
-            ))}
-          </ul>
+                );
+              })}
+            </ul>
+
+            {/* Paginierung */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-4">
+                <button type="button" className="btn text-xs px-3 h-8"
+                  disabled={currentPage === 0}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}>
+                  &larr; Zur&uuml;ck
+                </button>
+                <span className="text-xs text-arena-muted tabular-nums">
+                  {currentPage + 1} / {totalPages} &nbsp;&middot;&nbsp; {filtered.length} Bilder
+                </span>
+                <button type="button" className="btn text-xs px-3 h-8"
+                  disabled={currentPage >= totalPages - 1}
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}>
+                  Weiter &rarr;
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
 
@@ -250,13 +300,4 @@ export default function AdminSocialMediaGalleryPage() {
       )}
     </main>
   );
-}
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload  = () => resolve(r.result as string);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
 }

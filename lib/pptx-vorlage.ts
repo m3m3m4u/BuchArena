@@ -8,6 +8,7 @@ import fs from "fs/promises";
 import JSZip from "jszip";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import type { BucharenaVorlageDoc } from "./bucharena-db";
+import { getWebdavClient } from "./webdav-storage";
 
 const A_NS = "http://schemas.openxmlformats.org/drawingml/2006/main";
 const P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main";
@@ -15,6 +16,16 @@ const P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main";
 function dataUrlToBytes(dataUrl: string): Buffer {
   const base64 = dataUrl.split(",")[1];
   return Buffer.from(base64, "base64");
+}
+
+async function imageToBytes(src: string): Promise<Buffer> {
+  if (src.startsWith("data:")) return dataUrlToBytes(src);
+  // WebDAV-interne URL: /api/profile/image?path=...
+  const remotePath = new URL(src, "http://localhost").searchParams.get("path") ?? "";
+  if (!remotePath) throw new Error("Ungültige Bild-URL: " + src);
+  const client = getWebdavClient();
+  const data = await client.getFileContents(remotePath);
+  return Buffer.from(data as ArrayBuffer);
 }
 
 export function getAutorFull(vorlage: Pick<BucharenaVorlageDoc, "autorName" | "autorVorname" | "autorNachname">): string {
@@ -228,8 +239,8 @@ export async function buildVorlagePptx(vorlage: BucharenaVorlageDoc): Promise<Bu
   zip.file("ppt/slides/slide5.xml", s5);
 
   /* Images */
-  if (vorlage.coverImg) zip.file("ppt/media/image3.jpeg", dataUrlToBytes(vorlage.coverImg));
-  if (vorlage.autorImg) zip.file("ppt/media/image6.jpeg", dataUrlToBytes(vorlage.autorImg));
+  if (vorlage.coverImg) zip.file("ppt/media/image3.jpeg", await imageToBytes(vorlage.coverImg));
+  if (vorlage.autorImg) zip.file("ppt/media/image6.jpeg", await imageToBytes(vorlage.autorImg));
 
   /* Notes */
   await applyNotesMap(zip, vorlage);
@@ -333,8 +344,8 @@ export async function buildShortsVorlagePptx(vorlage: BucharenaVorlageDoc): Prom
   zip.file("ppt/slides/slide5.xml", s5);
 
   /* Images */
-  if (vorlage.coverImg) zip.file("ppt/media/image3.jpeg", dataUrlToBytes(vorlage.coverImg));
-  if (vorlage.autorImg) zip.file("ppt/media/image5.jpeg", dataUrlToBytes(vorlage.autorImg));
+  if (vorlage.coverImg) zip.file("ppt/media/image3.jpeg", await imageToBytes(vorlage.coverImg));
+  if (vorlage.autorImg) zip.file("ppt/media/image5.jpeg", await imageToBytes(vorlage.autorImg));
 
   /* Notes */
   await applyNotesMap(zip, vorlage);

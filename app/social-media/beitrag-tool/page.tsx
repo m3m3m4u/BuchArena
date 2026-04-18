@@ -697,6 +697,8 @@ export default function BeitragToolPage() {
   const [tplTotalPages, setTplTotalPages]   = useState(0);
   const [templates,     setTemplates]      = useState<{ id: string; label: string; src: string }[]>([]);
   const [loadingTpl,    setLoadingTpl]     = useState(false);
+  const [tplError,      setTplError]       = useState<string | null>(null);
+  const [tplSearch,     setTplSearch]      = useState("");
 
   const [showRightsHint, setShowRightsHint] = useState(false);
 
@@ -1006,16 +1008,22 @@ export default function BeitragToolPage() {
     if (!showTemplates) return;
     setLoadingTpl(true);
     setTemplates([]);
-    fetch(`/api/social-media/gallery?page=${tplPage}`)
-      .then((r) => r.json())
+    setTplError(null);
+    const params = new URLSearchParams({ page: String(tplPage) });
+    if (tplSearch.trim()) params.set("q", tplSearch.trim());
+    fetch(`/api/social-media/gallery?${params.toString()}`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`Fehler ${r.status}`);
+        return r.json();
+      })
       .then((data: { items?: { id: string; label: string; src: string }[]; total?: number; totalPages?: number }) => {
         if (Array.isArray(data.items)) setTemplates(data.items);
         if (data.total != null) setTplTotal(data.total);
         if (data.totalPages != null) setTplTotalPages(data.totalPages);
       })
-      .catch(() => {})
+      .catch((err: unknown) => setTplError(err instanceof Error ? err.message : "Laden fehlgeschlagen."))
       .finally(() => setLoadingTpl(false));
-  }, [showTemplates, tplPage]);
+  }, [showTemplates, tplPage, tplSearch]);
 
   /* Load musik tracks when switching to video mode */
   useEffect(() => {
@@ -2476,7 +2484,17 @@ export default function BeitragToolPage() {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-bold">Bildvorlagen</h2>
               <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
-                onClick={() => { setShowTemplates(false); setTplPage(0); }}>&times;</button>
+                onClick={() => { setShowTemplates(false); setTplPage(0); setTplSearch(""); }}>&times;</button>
+            </div>
+            {/* Suchfeld */}
+            <div className="mb-3">
+              <input
+                type="search"
+                className="input w-full text-sm"
+                placeholder="Suchen&hellip;"
+                value={tplSearch}
+                onChange={(e) => { setTplSearch(e.target.value); setTplPage(0); }}
+              />
             </div>
             <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-xs text-green-800">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
@@ -2484,8 +2502,10 @@ export default function BeitragToolPage() {
             </div>
             {loadingTpl ? (
               <p className="text-sm text-arena-muted py-2">Lade Bilder&hellip;</p>
+            ) : tplError ? (
+              <p className="text-sm text-red-600 py-2">Bilder konnten nicht geladen werden: {tplError}</p>
             ) : templates.length === 0 ? (
-              <p className="text-sm text-arena-muted py-2">Noch keine Bildvorlagen vorhanden.</p>
+              <p className="text-sm text-arena-muted py-2">{tplSearch.trim() ? "Keine Treffer." : "Noch keine Bildvorlagen vorhanden."}</p>
             ) : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -2494,7 +2514,7 @@ export default function BeitragToolPage() {
                       key={tpl.id}
                       type="button"
                       className="rounded-lg border-2 border-arena-border hover:border-blue-400 overflow-hidden transition-colors text-left"
-                      onClick={() => { addTplImage(tpl.src); setShowTemplates(false); setTplPage(0); }}
+                      onClick={() => { addTplImage(tpl.src); setShowTemplates(false); setTplPage(0); setTplSearch(""); }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={tpl.src} alt={tpl.label} className="w-full object-cover aspect-square" loading="lazy" />

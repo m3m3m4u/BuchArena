@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getSocialMediaPixabayLicenseSafesCollection,
   getSocialMediaPixabayUploaderBlacklistCollection,
+  getSocialMediaPixabayFlaggedImagesCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import {
@@ -389,6 +390,20 @@ export async function POST(req: NextRequest) {
         }, { status: 502 });
       }
       reverseImageCheck = { status: "skipped", reason: "Reverse-Image-Check nicht konfiguriert." };
+    }
+
+    // Interne Sperrliste für bekannte Problembild-IDs
+    if (reverseImageCheck.status === "skipped") {
+      const flaggedCollection = await getSocialMediaPixabayFlaggedImagesCollection();
+      const flaggedEntry = await flaggedCollection.findOne({ imageId: hit.id });
+      if (flaggedEntry) {
+        reverseImageCheck = {
+          status: "failed",
+          reason: `Bild ist intern gesperrt: ${flaggedEntry.reason}`,
+        };
+      } else {
+        reverseImageCheck = { status: "passed", reason: "Interne Sperrliste – kein Treffer." };
+      }
     }
 
     if (reverseImageCheck.status === "failed") {

@@ -223,10 +223,22 @@ export default function ShortsErstellenPage() {
     }
     setError("");
     try {
+      // Komprimieren → data-URL → Blob → WebDAV-Upload
       const b64 = await compressImage(file);
-      setter(b64);
-    } catch {
-      setError("Das Bild konnte nicht verarbeitet werden. Bitte versuche ein anderes Format (JPEG oder PNG).");
+      const parts = b64.split(",");
+      const byteArr = Uint8Array.from(atob(parts[1]), (c) => c.charCodeAt(0));
+      const blob = new Blob([byteArr], { type: "image/jpeg" });
+      const fd = new FormData();
+      fd.append("file", new File([blob], "image.jpg", { type: "image/jpeg" }));
+      const res = await fetch("/api/profile/upload-image", { method: "POST", body: fd });
+      if (!res.ok) {
+        const msg = (await res.json().catch(() => ({}))).message ?? "Upload fehlgeschlagen";
+        throw new Error(msg);
+      }
+      const { imageUrl } = await res.json();
+      setter(imageUrl);
+    } catch (err) {
+      setError((err as Error).message || "Das Bild konnte nicht verarbeitet werden.");
     }
   }
 
@@ -723,10 +735,12 @@ export default function ShortsErstellenPage() {
 
     /* ────── Replace images ────── */
     if (coverImg) {
-      zip.file("ppt/media/image3.jpeg", dataUrlToBlob(coverImg));
+      const res = await fetch(coverImg);
+      zip.file("ppt/media/image3.jpeg", new Uint8Array(await res.arrayBuffer()));
     }
     if (autorImg) {
-      zip.file("ppt/media/image5.jpeg", dataUrlToBlob(autorImg));
+      const res = await fetch(autorImg);
+      zip.file("ppt/media/image5.jpeg", new Uint8Array(await res.arrayBuffer()));
     }
 
     /* ────── Replace notes ────── */

@@ -75,8 +75,8 @@ export async function POST(request: Request) {
       notes4: (body.notes4 ?? "").slice(0, 2000),
       notes5: (body.notes5 ?? "").slice(0, 2000),
       notiz: (body.notiz ?? "").slice(0, 2000),
-      coverImg: typeof body.coverImg === "string" && body.coverImg.startsWith("data:") ? body.coverImg : undefined,
-      autorImg: typeof body.autorImg === "string" && body.autorImg.startsWith("data:") ? body.autorImg : undefined,
+      coverImg: typeof body.coverImg === "string" && (body.coverImg.startsWith("data:") || body.coverImg.startsWith("/api/profile/image")) ? body.coverImg : undefined,
+      autorImg: typeof body.autorImg === "string" && (body.autorImg.startsWith("data:") || body.autorImg.startsWith("/api/profile/image")) ? body.autorImg : undefined,
       createdAt: now,
       updatedAt: now,
     };
