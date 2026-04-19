@@ -13,6 +13,8 @@ type Step =
   | "fantasy"
   | "trueStory"
   | "happyEnd"
+  | "series"
+  | "setting"
   | "freeText"
   | "loading"
   | "result";
@@ -25,6 +27,8 @@ type Preferences = {
   fantasy: boolean | null;
   trueStory: boolean | null;
   happyEnd: boolean | null;
+  series: string;
+  setting: string;
   freeText: string;
 };
 
@@ -88,6 +92,20 @@ const LENGTH_CHOICES = [
   { label: "Egal", value: "egal" },
 ];
 
+const SERIES_CHOICES = [
+  "Reihe bevorzugt",
+  "Einzelband bevorzugt",
+  "Egal",
+];
+
+const SETTING_CHOICES = [
+  "Gegenwart",
+  "Vergangenheit",
+  "Zukunft",
+  "Fantasiewelt",
+  "Egal",
+];
+
 const QUESTIONS: Record<string, string> = {
   genre: "Welche Genres magst du? Du kannst mehrere auswählen!",
   age: "Für welches Alter suchst du ein Buch?",
@@ -96,6 +114,8 @@ const QUESTIONS: Record<string, string> = {
   fantasy: "Magst du Fantasy-Elemente (Magie, andere Welten)?",
   trueStory: "Bevorzugst du Geschichten, die auf wahren Begebenheiten basieren?",
   happyEnd: "Ist dir ein Happy End wichtig?",
+  series: "Bevorzugst du Bücher, die Teil einer Reihe sind, oder lieber Einzelbände?",
+  setting: "In welchem Zeitsetting soll die Geschichte hauptsächlich spielen?",
   freeText: "Was ist dir sonst noch wichtig? (kann auch leer bleiben)",
 };
 
@@ -111,12 +131,16 @@ export default function BuchempfehlungPage() {
     fantasy: null,
     trueStory: null,
     happyEnd: null,
+    series: "",
+    setting: "",
     freeText: "",
   });
   // Pending single-choice selections (confirmed with "Weiter")
   const [pendingAge, setPendingAge] = useState("");
   const [pendingLength, setPendingLength] = useState<{ value: string; label: string } | null>(null);
   const [pendingYesNo, setPendingYesNo] = useState<boolean | null | "egal">(null);
+  const [pendingSeries, setPendingSeries] = useState("");
+  const [pendingSetting, setPendingSetting] = useState("");
   const [chat, setChat] = useState<ChatMessage[]>([
     { role: "bot", text: "Hallo! Ich bin dein persönlicher Buchberater der BuchArena. Lass uns gemeinsam das perfekte Buch für dich finden!" },
     { role: "bot", text: QUESTIONS.genre },
@@ -131,6 +155,15 @@ export default function BuchempfehlungPage() {
 
   function addMessages(...msgs: ChatMessage[]) {
     setChat((prev) => [...prev, ...msgs]);
+  }
+
+  function skipToResult() {
+    addMessages(
+      { role: "user", text: "Genug der Fragen, mach mir jetzt einen Vorschlag!" },
+      { role: "bot", text: "Alles klar! Ich suche jetzt die besten Bücher für dich heraus …" },
+    );
+    setStep("loading");
+    fetchRecommendations(prefs);
   }
 
   function handleGenreToggle(genre: string) {
@@ -228,11 +261,43 @@ export default function BuchempfehlungPage() {
     } else {
       addMessages(
         { role: "user", text: answer },
-        { role: "bot", text: QUESTIONS.freeText },
+        { role: "bot", text: QUESTIONS.series },
       );
       if (!isEgal) setPrefs((p) => ({ ...p, [field]: actualValue }));
-      setStep("freeText");
+      setStep("series");
     }
+  }
+
+  function selectSeries(value: string) {
+    setPendingSeries(value);
+  }
+
+  function confirmSeries() {
+    if (!pendingSeries) return;
+    const isEgal = pendingSeries === "Egal";
+    if (!isEgal) setPrefs((p) => ({ ...p, series: pendingSeries }));
+    addMessages(
+      { role: "user", text: pendingSeries },
+      { role: "bot", text: QUESTIONS.setting },
+    );
+    setPendingSeries("");
+    setStep("setting");
+  }
+
+  function selectSetting(value: string) {
+    setPendingSetting(value);
+  }
+
+  function confirmSetting() {
+    if (!pendingSetting) return;
+    const isEgal = pendingSetting === "Egal";
+    if (!isEgal) setPrefs((p) => ({ ...p, setting: pendingSetting }));
+    addMessages(
+      { role: "user", text: pendingSetting },
+      { role: "bot", text: QUESTIONS.freeText },
+    );
+    setPendingSetting("");
+    setStep("freeText");
   }
 
   async function fetchRecommendations(finalPrefs: Preferences) {
@@ -272,10 +337,12 @@ export default function BuchempfehlungPage() {
 
   function restart() {
     setStep("genre");
-    setPrefs({ genres: [], age: "", moods: [], length: "", fantasy: null, trueStory: null, happyEnd: null, freeText: "" });
+    setPrefs({ genres: [], age: "", moods: [], length: "", fantasy: null, trueStory: null, happyEnd: null, series: "", setting: "", freeText: "" });
     setPendingAge("");
     setPendingLength(null);
     setPendingYesNo(null);
+    setPendingSeries("");
+    setPendingSetting("");
     setChat([
       { role: "bot", text: "Hallo! Lass uns nochmal von vorne anfangen." },
       { role: "bot", text: QUESTIONS.genre },
@@ -333,9 +400,11 @@ export default function BuchempfehlungPage() {
                   </button>
                 ))}
               </div>
-              <button onClick={confirmGenres} className="btn btn-primary mt-1 self-end">
-                Weiter →
-              </button>
+              <div className="flex items-center justify-end gap-2 mt-1">
+                <button onClick={confirmGenres} className="btn btn-primary">
+                  Weiter →
+                </button>
+              </div>
             </div>
           )}
 
@@ -357,11 +426,13 @@ export default function BuchempfehlungPage() {
                   </button>
                 ))}
               </div>
-              {pendingAge && (
-                <button onClick={confirmAge} className="btn btn-primary mt-1 self-end">
-                  Weiter →
-                </button>
-              )}
+              <div className="flex items-center justify-end gap-2 mt-1">
+                {pendingAge && (
+                  <button onClick={confirmAge} className="btn btn-primary">
+                    Weiter →
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -383,9 +454,11 @@ export default function BuchempfehlungPage() {
                   </button>
                 ))}
               </div>
-              <button onClick={confirmMoods} className="btn btn-primary mt-1 self-end">
-                Weiter →
-              </button>
+              <div className="flex items-center justify-end gap-2 mt-1">
+                <button onClick={confirmMoods} className="btn btn-primary">
+                  Weiter →
+                </button>
+              </div>
             </div>
           )}
 
@@ -407,11 +480,16 @@ export default function BuchempfehlungPage() {
                   </button>
                 ))}
               </div>
-              {pendingLength && (
-                <button onClick={confirmLength} className="btn btn-primary mt-1 self-end">
-                  Weiter →
+              <div className="flex items-center justify-between gap-2 mt-1">
+                <button onClick={skipToResult} className="btn btn-secondary text-xs">
+                  Genug der Fragen, mach mir jetzt einen Vorschlag!
                 </button>
-              )}
+                {pendingLength && (
+                  <button onClick={confirmLength} className="btn btn-primary">
+                    Weiter →
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -450,11 +528,78 @@ export default function BuchempfehlungPage() {
                   Egal
                 </button>
               </div>
-              {pendingYesNo !== null && (
-                <button onClick={() => confirmYesNo(step)} className="btn btn-primary mt-1 self-end">
-                  Weiter →
+              <div className="flex items-center justify-between gap-2 mt-1">
+                <button onClick={skipToResult} className="btn btn-secondary text-xs">
+                  Genug der Fragen, mach mir jetzt einen Vorschlag!
                 </button>
-              )}
+                {pendingYesNo !== null && (
+                  <button onClick={() => confirmYesNo(step)} className="btn btn-primary">
+                    Weiter →
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Reihe oder Einzelband (Single Select + Bestätigung) */}
+          {step === "series" && (
+            <div className="grid gap-2">
+              <div className="flex flex-wrap gap-2">
+                {SERIES_CHOICES.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => selectSeries(s)}
+                    className={`rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
+                      pendingSeries === s
+                        ? "bg-arena-blue text-white border-arena-blue"
+                        : "bg-white text-arena-text border-arena-border hover:bg-arena-bg"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center justify-between gap-2 mt-1">
+                <button onClick={skipToResult} className="btn btn-secondary text-xs">
+                  Genug der Fragen, mach mir jetzt einen Vorschlag!
+                </button>
+                {pendingSeries && (
+                  <button onClick={confirmSeries} className="btn btn-primary">
+                    Weiter →
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Zeitsetting (Single Select + Bestätigung) */}
+          {step === "setting" && (
+            <div className="grid gap-2">
+              <div className="flex flex-wrap gap-2">
+                {SETTING_CHOICES.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => selectSetting(s)}
+                    className={`rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
+                      pendingSetting === s
+                        ? "bg-arena-blue text-white border-arena-blue"
+                        : "bg-white text-arena-text border-arena-border hover:bg-arena-bg"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center justify-between gap-2 mt-1">
+                <button onClick={skipToResult} className="btn btn-secondary text-xs">
+                  Genug der Fragen, mach mir jetzt einen Vorschlag!
+                </button>
+                {pendingSetting && (
+                  <button onClick={confirmSetting} className="btn btn-primary">
+                    Weiter →
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -480,7 +625,7 @@ export default function BuchempfehlungPage() {
                 }}
                 className="btn btn-primary self-end"
               >
-                Weiter →
+                Vorschlag holen →
               </button>
             </div>
           )}

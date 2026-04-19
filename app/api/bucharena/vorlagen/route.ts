@@ -5,16 +5,25 @@ import { getServerAccount } from "@/lib/server-auth";
 export const runtime = "nodejs";
 
 /** GET — eigene Vorlagen auflisten */
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const account = await getServerAccount();
     if (!account?.username) {
       return NextResponse.json({ success: false, error: "Nicht eingeloggt" }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type"); // "vorlage" | "shorts" | null
+
     const col = await getBucharenaVorlagenCollection();
+    const filter: Record<string, unknown> = { username: account.username };
+    if (type === "shorts") {
+      filter.type = "shorts";
+    } else if (type === "vorlage") {
+      filter.$or = [{ type: "vorlage" }, { type: { $exists: false } }];
+    }
     const docs = await col
-      .find({ username: account.username })
+      .find(filter)
       .sort({ updatedAt: -1 })
       .project({ coverImg: 0 })
       .toArray();
@@ -52,7 +61,7 @@ export async function POST(request: Request) {
       buchtitel: (body.buchtitel ?? "").slice(0, 200),
       untertitel: (body.untertitel ?? "").slice(0, 300),
       autorName: (body.autorName ?? "").slice(0, 200),
-      geschlecht: body.geschlecht === "Autor" ? "Autor" : "Autorin",
+      geschlecht: (body.geschlecht ?? "Autorin").slice(0, 50),
       erscheinungsjahr: (body.erscheinungsjahr ?? "").slice(0, 10),
       genre: (body.genre ?? "").slice(0, 100),
       verlag: (body.verlag ?? "").slice(0, 200),
@@ -75,6 +84,7 @@ export async function POST(request: Request) {
       notes4: (body.notes4 ?? "").slice(0, 2000),
       notes5: (body.notes5 ?? "").slice(0, 2000),
       notiz: (body.notiz ?? "").slice(0, 2000),
+      type: typeof body.type === "string" ? body.type.slice(0, 20) : "vorlage",
       coverImg: typeof body.coverImg === "string" && (body.coverImg.startsWith("data:") || body.coverImg.startsWith("/api/profile/image")) ? body.coverImg : undefined,
       autorImg: typeof body.autorImg === "string" && (body.autorImg.startsWith("data:") || body.autorImg.startsWith("/api/profile/image")) ? body.autorImg : undefined,
       createdAt: now,

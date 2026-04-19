@@ -8,7 +8,7 @@ export const runtime = "nodejs";
  * GET /api/bucharena/submissions/my
  * Returns all submissions for the currently logged-in user.
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const account = await getServerAccount();
     if (!account?.username) {
@@ -18,9 +18,20 @@ export async function GET() {
       );
     }
 
+    const { searchParams } = new URL(request.url);
+    const typeFilter = searchParams.get("type");
+
     const col = await getBucharenaSubmissionsCollection();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const query: Record<string, any> = { submittedBy: account.username };
+    if (typeFilter === "reel") {
+      query.type = "reel";
+    } else if (typeFilter === "vorlage") {
+      query.$or = [{ type: "vorlage" }, { type: { $exists: false } }];
+    }
+
     const submissions = await col
-      .find({ submittedBy: account.username })
+      .find(query)
       .sort({ createdAt: -1 })
       .toArray();
 

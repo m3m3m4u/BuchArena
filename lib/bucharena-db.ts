@@ -119,6 +119,39 @@ export type BucharenaVorlageDoc = {
   autorImg?: string;
   /** Submission reference (set when submitted) */
   submissionId?: string;
+  /** Source page: "vorlage" | "shorts" (older docs without type = "vorlage") */
+  type?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type BucharenaReelVorlageDoc = {
+  _id?: ObjectId;
+  /** Owner */
+  username: string;
+  /** Form fields */
+  buchtitel: string;
+  untertitel: string;
+  autorName: string;
+  geschlecht?: string;
+  erscheinungsjahr: string;
+  genre: string;
+  verlag: string;
+  coverDesign: string;
+  hintergrund: string;
+  hauptfigur: string;
+  thema: string;
+  inhalte: string;
+  autorHerkunft: string;
+  autorBeruf: string;
+  autorStil: string;
+  notiz: string;
+  beschreibung?: string;
+  /** Base64 data-URLs for images (optional) */
+  coverImg?: string;
+  autorImg?: string;
+  /** Submission reference (set when submitted) */
+  submissionId?: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -134,10 +167,12 @@ export type BucharenaSubmissionDoc = {
   filePath: string;
   files?: { fileName: string; fileSize: number; filePath: string }[];
   notes?: string;
+  beschreibung?: string;
   contact?: string;
   contactType?: "email" | "instagram";
   instagram?: string;
   submittedBy?: string;
+  type?: "vorlage" | "reel";
   status: "pending" | "approved" | "rejected" | "done" | "withdrawn";
   reviewNotes?: string;
   reviewedBy?: string;
@@ -213,6 +248,11 @@ export async function getBucharenaSubmissionsCollection(): Promise<Collection<Bu
 export async function getBucharenaVorlagenCollection(): Promise<Collection<BucharenaVorlageDoc>> {
   const db = await getDatabase();
   return db.collection<BucharenaVorlageDoc>("bucharenavorlagen");
+}
+
+export async function getBucharenaReelVorlagenCollection(): Promise<Collection<BucharenaReelVorlageDoc>> {
+  const db = await getDatabase();
+  return db.collection<BucharenaReelVorlageDoc>("bucharenareelvorlagen");
 }
 
 /* ═══════════════ Helpers ═══════════════ */

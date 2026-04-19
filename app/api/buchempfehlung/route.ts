@@ -12,6 +12,8 @@ type Preferences = {
   fantasy: boolean | null;
   trueStory: boolean | null;
   happyEnd: boolean | null;
+  series?: string;
+  setting?: string;
   freeText?: string;
 };
 
@@ -95,8 +97,8 @@ export async function POST(request: Request) {
       `Buchlänge: ${prefs.length || "Egal"}`,
       prefs.fantasy !== null ? `Fantasy-Elemente erwünscht: ${prefs.fantasy ? "Ja" : "Nein"}` : "",
       prefs.trueStory !== null ? `Wahre Geschichte bevorzugt: ${prefs.trueStory ? "Ja" : "Nein"}` : "",
-      prefs.happyEnd !== null ? `Happy End gewünscht: ${prefs.happyEnd ? "Ja" : "Nein"}` : "",
-      prefs.freeText ? `Sonstige Wünsche: ${prefs.freeText}` : "",
+      prefs.happyEnd !== null ? `Happy End gewünscht: ${prefs.happyEnd ? "Ja" : "Nein"}` : "",      prefs.series ? `Reihe oder Einzelband: ${prefs.series}` : "",
+      prefs.setting ? `Zeitsetting: ${prefs.setting}` : "",      prefs.freeText ? `Sonstige Wünsche: ${prefs.freeText}` : "",
     ]
       .filter(Boolean)
       .join("\n");

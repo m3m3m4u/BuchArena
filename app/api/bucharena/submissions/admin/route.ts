@@ -12,9 +12,13 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
+    const type = searchParams.get("type");
 
     const query: Record<string, unknown> = { status: { $ne: "withdrawn" } };
     if (status && ["pending", "approved", "rejected", "done"].includes(status)) query.status = status;
+    if (type === "reel") query.type = "reel";
+    else if (type === "standard") query.type = { $ne: "reel" };
+    else if (!type) query.type = { $ne: "reel" }; // default: exclude reels from main list
 
     const col = await getBucharenaSubmissionsCollection();
     const submissions = await col.find(query).sort({ createdAt: -1 }).toArray();

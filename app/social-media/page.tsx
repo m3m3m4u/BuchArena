@@ -23,6 +23,10 @@ import {
   ChatBubbleLeftRightIcon,
   DocumentArrowDownIcon,
   PhotoIcon,
+  FilmIcon,
+  ChevronLeftIcon,
+  PlayIcon,
+  StarIcon,
 } from "@heroicons/react/24/outline";
 
 type Submission = {
@@ -45,6 +49,8 @@ const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
   rejected: { label: "Abgelehnt", cls: "bg-red-100 text-red-800" },
 };
 
+type WizardStep = "start" | "video-tools" | "content-tools" | "admin";
+
 export default function SocialMediaPage() {
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -55,6 +61,7 @@ export default function SocialMediaPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [showDownloadOverlay, setShowDownloadOverlay] = useState(false);
   const [showUploadOverlay, setShowUploadOverlay] = useState(false);
+  const [wizardStep, setWizardStep] = useState<WizardStep>("start");
 
   useEffect(() => {
     function sync() {
@@ -85,8 +92,6 @@ export default function SocialMediaPage() {
   useEffect(() => {
     if (account) loadSubmissions();
   }, [account, loadSubmissions]);
-
-  const isAdmin = account?.role === "SUPERADMIN";
 
   async function handleDelete(id: string) {
     if (!confirm("Möchtest du diese Einreichung wirklich löschen?")) return;
@@ -149,97 +154,326 @@ export default function SocialMediaPage() {
     }
   }
 
-  const videoSections = [
-    {
-      title: "Vorlage online erstellen",
-      description:
-        "Erstelle deine Buchvorstellung direkt im Browser – wir generieren automatisch eine fertige PowerPoint-Datei.",
-      icon: DocumentArrowDownIcon,
-      href: "/social-media/vorlage-erstellen",
-    },
-    {
-      title: "Buchvorstellung einreichen",
-      description:
-        "Lade eine fertige PowerPoint-Datei hoch. Wir machen daraus Videos und Posts für Social Media.",
-      icon: ArrowUpTrayIcon,
-      href: "/social-media/upload",
-      intercept: true,
-    },
-    {
-      title: "Anleitung für Autoren",
-      description:
-        "Alle Informationen zur Buchvorstellung auf der Webseite von meridianbooks.",
-      icon: BookOpenIcon,
-      href: "https://www.meridianbooks.at/autorenvorstellung/",
-      external: true,
-    },
-    {
-      title: "Sprecher-Texte",
-      description:
-        "Das Tool für unsere freiwilligen Sprecher. Wähle einen Text, trage deinen Namen ein und lade deine Aufnahme als MP3 hoch.",
-      icon: MicrophoneIcon,
-      href: "/sprecher-texte",
-    },
-  ];
-
-  const weitereAktionen = [
-    {
-      title: "Beitrag-Tool",
-      description:
-        "Erstelle Social-Media-Posts und -Videos mit Bild, Text, Rahmen, Animationen und Musik – als PNG oder MP4 exportieren. Formate: 4:5 und 9:16.",
-      icon: PhotoIcon,
-      href: "/social-media/beitrag-tool",
-    },
-    {
-      title: "Rezensionen",
-      description:
-        "Lade hier Rezensionen zu deinem Buch vor. Wir veröffentlichen Ausschnitte davon auf Social Media.",
-      icon: PencilSquareIcon,
-      href: "/rezensionen",
-    },
-    {
-      title: "Schnipsel",
-      description:
-        "Teile einen Lieblings-Textabschnitt aus einem Buch – optional mit deiner eigenen Vorlesung als MP3! Wir machen draus Beiträge für Social Media.",
-      icon: MusicalNoteIcon,
-      href: "/schnipsel",
-    },
-    {
-      title: "Kurz gefragt",
-      description:
-        "Beantworte kurze Fragen zu dir und deinem Schreibstil – wir machen daraus Social-Media-Beiträge.",
-      icon: ChatBubbleLeftRightIcon,
-      href: "/social-media/kurz-gefragt",
-    },
-  ];
+  /* ── shared card class ── */
+  const optionCls =
+    "flex items-start gap-4 rounded-xl border border-arena-border bg-white p-4 text-left transition-colors hover:border-arena-blue hover:bg-[#f0f7ff] cursor-pointer w-full";
 
   return (
     <main className="top-centered-main">
       <section className="card">
         <h1 className="text-xl font-bold">BuchArena – Social Media</h1>
-        <p className="text-arena-muted text-[0.95rem]">
-          Hier findest du alle Werkzeuge rund um deine Buchvorstellung und weitere Aktionen der BuchArena.
-        </p>
 
-        <div className="rounded-lg border border-arena-border bg-[#f8fafc] p-4 text-[0.9rem] leading-relaxed grid gap-2">
-          <p className="m-0">
-            Hier kannst du Daten für Social Media eingeben, aus denen wir Reels und Beiträge erstellen.
-            Wir veröffentlichen auf Instagram (dort verlinken wir dein Profil), Facebook, Reddit, YouTube, TikTok, Pinterest und LinkedIn.
-          </p>
-          <p className="m-0">
-            Die Texte für die Videos werden von <Link href="/sprecher" className="text-arena-blue hover:underline">Hörbuchsprechern</Link> gesprochen. Sie arbeiten ehrenamtlich
-            für die BuchArena und machen damit Werbung für sich.
-          </p>
-          <p className="m-0">
-            Wir werden alle deine Eingaben (zu den Büchern aber auch die Rezensionen, Schnipsel und Umfragen)
-            öfter verwenden, du wirst also immer wieder in unseren Kanälen erwähnt und kannst damit deine Reichweite vergrößern.
-          </p>
-          <p className="m-0">
-            Supporte unsere Kanäle (mehr Infos dazu{" "}
-            <Link href="/tipps" className="text-arena-blue hover:underline font-semibold">hier</Link>),
-            damit auch die Inhalte zu dir und deinen Büchern sichtbarer werden.
-          </p>
-        </div>
+        {wizardStep !== "start" && (
+          <button
+            type="button"
+            onClick={() => setWizardStep("start")}
+            className="flex items-center gap-1 text-sm text-arena-muted hover:text-arena-blue transition-colors -mt-1"
+          >
+            <ChevronLeftIcon className="size-4" /> Zurück zur Übersicht
+          </button>
+        )}
+
+        {/* ═══ SCHRITT 1: Was möchtest du tun? ═══ */}
+        {wizardStep === "start" && (
+          <div className="grid gap-4">
+            <p className="text-arena-muted text-[0.95rem]">
+              Was möchtest du heute tun? Wähle eine Option:
+            </p>
+
+            <div className="grid gap-2.5">
+              {/* a) Reel / Video-Vorlage */}
+              <button
+                type="button"
+                className={optionCls}
+                onClick={() => setWizardStep("video-tools")}
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-arena-blue">
+                  <FilmIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1">
+                  <strong className="text-[0.95rem]">Vorlage für Reels oder Videos zu meinen Büchern</strong>
+                  <span className="text-sm text-arena-muted">Reiche dein Buch für ein Kurzvideo oder ein vollständiges Video mit Sprecher ein.</span>
+                </div>
+                <span className="text-arena-muted self-center shrink-0">→</span>
+              </button>
+
+              {/* b) Rezensionen / Schnipsel */}
+              <button
+                type="button"
+                className={optionCls}
+                onClick={() => setWizardStep("content-tools")}
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-700">
+                  <PencilSquareIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1">
+                  <strong className="text-[0.95rem]">Vorlage für Rezensionen oder Schnipsel</strong>
+                  <span className="text-sm text-arena-muted">Reiche Rezensionen, Textausschnitte oder kurze Antworten für Social-Media-Beiträge ein.</span>
+                </div>
+                <span className="text-arena-muted self-center shrink-0">→</span>
+              </button>
+
+              {/* c) Beitrag-Tool */}
+              <Link
+                href="/social-media/beitrag-tool"
+                className={`${optionCls} no-underline text-inherit`}
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-700">
+                  <PhotoIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1">
+                  <strong className="text-[0.95rem]">Beitrags-Tool – selbst Beiträge oder Reels erstellen</strong>
+                  <span className="text-sm text-arena-muted">Gestalte Instagram-Posts und Reels selbst mit Bild, Text, Rahmen, Animationen und Musik – als PNG oder MP4 herunterladen.</span>
+                </div>
+                <span className="text-arena-muted self-center shrink-0">→</span>
+              </Link>
+
+              {/* d) Fertiges Video kontrollieren */}
+              <Link
+                href="/social-media/videos"
+                className={`${optionCls} no-underline text-inherit`}
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-yellow-50 text-yellow-700">
+                  <PlayIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1">
+                  <strong className="text-[0.95rem]">Fertiges Video kontrollieren und freigeben</strong>
+                  <span className="text-sm text-arena-muted">Sieh dir die fertig produzierten Videos zu deinem Buch an und gib sie frei.</span>
+                </div>
+                <span className="text-arena-muted self-center shrink-0">→</span>
+              </Link>
+
+              {/* e) Sprecher */}
+              <Link
+                href="/sprecher-texte"
+                className={`${optionCls} no-underline text-inherit`}
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-700">
+                  <MicrophoneIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1">
+                  <strong className="text-[0.95rem]">Ich bin Sprecher und möchte Texte lesen</strong>
+                  <span className="text-sm text-arena-muted">Wähle einen Text, trage deinen Namen ein und lade deine Aufnahme als MP3 hoch.</span>
+                </div>
+                <span className="text-arena-muted self-center shrink-0">→</span>
+              </Link>
+
+              {/* f) Admin – nur für Admins */}
+              {account?.role === "SUPERADMIN" && (
+                <button
+                  type="button"
+                  className={`${optionCls} border-amber-300 bg-amber-50 hover:border-amber-500 hover:bg-amber-50`}
+                  onClick={() => setWizardStep("admin")}
+                >
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                    <Cog6ToothIcon className="size-6" />
+                  </div>
+                  <div className="grid gap-0.5 flex-1">
+                    <strong className="text-[0.95rem]">Admin-Bereich</strong>
+                    <span className="text-sm text-amber-700">Einreichungen, Reels, Rezensionen und Schnipsel verwalten.</span>
+                  </div>
+                  <span className="text-amber-600 self-center shrink-0">→</span>
+                </button>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-arena-border bg-[#f8fafc] p-4 text-[0.85rem] leading-relaxed grid gap-1.5 text-arena-muted mt-1">
+              <p className="m-0 font-medium text-arena-text">Wie funktioniert die BuchArena?</p>
+              <p className="m-0">
+                Wir veröffentlichen auf Instagram, Facebook, Reddit, YouTube, TikTok, Pinterest und LinkedIn.
+                Die Texte werden von{" "}
+                <Link href="/sprecher" className="text-arena-blue hover:underline">Hörbuchsprechern</Link>{" "}
+                gesprochen, die ehrenamtlich für die BuchArena arbeiten.
+              </p>
+              <p className="m-0">
+                Deine Eingaben (Bücher, Rezensionen, Schnipsel, Umfragen) werden öfter verwendet –
+                du wirst immer wieder erwähnt und kannst deine Reichweite vergrößern.{" "}
+                <Link href="/tipps" className="text-arena-blue hover:underline font-medium">Mehr Infos hier.</Link>
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ SCHRITT 2a: Reel- oder Video-Tool ═══ */}
+        {wizardStep === "video-tools" && (
+          <div className="grid gap-4">
+            <div>
+              <h2 className="text-lg font-semibold">Welches Tool möchtest du verwenden?</h2>
+              <p className="text-sm text-arena-muted mt-1">
+                Beide Tools findest du direkt hier im Browser – keine Software nötig.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {/* Reel-Tool */}
+              <Link
+                href="/social-media/reel-erstellen"
+                className="grid gap-2 rounded-xl border-2 border-arena-border p-4 no-underline text-inherit hover:border-arena-blue hover:bg-[#f0f7ff] transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-arena-blue">
+                    <FilmIcon className="size-6" />
+                  </div>
+                  <strong className="text-[0.95rem]">Reel-Tool – Kurzvideo</strong>
+                  <span className="ml-auto text-xs rounded-full bg-green-100 text-green-800 px-2 py-0.5 font-medium">Schnell</span>
+                </div>
+                <ul className="text-sm text-arena-muted grid gap-1 pl-1">
+                  <li>📄 <strong>3 Seiten</strong> mit Buchinformationen ausfüllen</li>
+                  <li>🎵 Musik im Hintergrund</li>
+                  <li>📐 Format: 9:16 (Instagram Reels, YouTube Shorts, TikTok)</li>
+                  <li>⏱ Bearbeitung dauert aktuell <strong>wenige Tage</strong></li>
+                </ul>
+              </Link>
+
+              {/* Reel + Video-Tool */}
+              <Link
+                href="/social-media/shorts-erstellen"
+                className="grid gap-2 rounded-xl border-2 border-arena-border p-4 no-underline text-inherit hover:border-arena-blue hover:bg-[#f0f7ff] transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-700">
+                    <StarIcon className="size-6" />
+                  </div>
+                  <strong className="text-[0.95rem]">Reel- und Video-Tool – Kurzvideo + längere Version</strong>
+                  <span className="ml-auto text-xs rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 font-medium">Aufwendig</span>
+                </div>
+                <ul className="text-sm text-arena-muted grid gap-1 pl-1">
+                  <li>📄 <strong>5 Seiten</strong> mit Buchinformationen und Sprechertext</li>
+                  <li>🎙 Professioneller Sprecher liest den Text vor</li>
+                  <li>🎬 Kurzvideo (Reel) <strong>und</strong> längere Version</li>
+                  <li>⏱ Bearbeitung dauert aktuell <strong>einige Wochen</strong></li>
+                </ul>
+              </Link>
+
+            </div>
+          </div>
+        )}
+
+        {/* ═══ SCHRITT 2b: Inhalte für Social Media ═══ */}
+        {wizardStep === "content-tools" && (
+          <div className="grid gap-4">
+            <div>
+              <h2 className="text-lg font-semibold">Was möchtest du einreichen?</h2>
+              <p className="text-sm text-arena-muted mt-1">
+                Diese Inhalte werden in regelmäßigen Abständen zu Social-Media-Beiträgen verarbeitet.
+              </p>
+            </div>
+
+            <div className="grid gap-2.5">
+              <Link
+                href="/rezensionen"
+                className={`${optionCls} no-underline text-inherit`}
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-700">
+                  <PencilSquareIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1">
+                  <strong className="text-[0.95rem]">Rezension einreichen</strong>
+                  <span className="text-sm text-arena-muted">Teile eine Rezension zu einem Buch – wir veröffentlichen Ausschnitte auf Social Media.</span>
+                </div>
+                <span className="text-arena-muted self-center shrink-0">→</span>
+              </Link>
+
+              <Link
+                href="/schnipsel"
+                className={`${optionCls} no-underline text-inherit`}
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+                  <MusicalNoteIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1">
+                  <strong className="text-[0.95rem]">Schnipsel einreichen</strong>
+                  <span className="text-sm text-arena-muted">Teile einen Lieblings-Textabschnitt – optional mit eigener Vorlesung als MP3.</span>
+                </div>
+                <span className="text-arena-muted self-center shrink-0">→</span>
+              </Link>
+
+              <Link
+                href="/social-media/kurz-gefragt"
+                className={`${optionCls} no-underline text-inherit`}
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700">
+                  <ChatBubbleLeftRightIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1">
+                  <strong className="text-[0.95rem]">Kurz gefragt – Autorenfragen</strong>
+                  <span className="text-sm text-arena-muted">Beantworte kurze Fragen zu dir und deinem Schreibstil – wir machen daraus Social-Media-Beiträge.</span>
+                </div>
+                <span className="text-arena-muted self-center shrink-0">→</span>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ SCHRITT 2f: Admin-Bereich ═══ */}
+        {wizardStep === "admin" && account?.role === "SUPERADMIN" && (
+          <div className="grid gap-4">
+            <div>
+              <h2 className="text-lg font-semibold">Admin-Bereich</h2>
+              <p className="text-sm text-arena-muted mt-1">Verwaltung aller Einreichungen und Inhalte.</p>
+            </div>
+
+            <div className="grid gap-2.5">
+              <Link
+                href="/admin/einreichungen"
+                className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 no-underline text-inherit hover:border-amber-500 transition-colors"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                  <Cog6ToothIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1 text-[0.95rem]">
+                  <strong>Einreichungen verwalten</strong>
+                  <span className="text-sm text-arena-muted">Alle eingesendeten Buchvorstellungen – herunterladen, bearbeiten, genehmigen.</span>
+                </div>
+                <span className="text-amber-600 shrink-0">→</span>
+              </Link>
+
+              <Link
+                href="/admin/reel-einreichungen"
+                className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 no-underline text-inherit hover:border-amber-500 transition-colors"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                  <FilmIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1 text-[0.95rem]">
+                  <strong>Reel-Einreichungen verwalten</strong>
+                  <span className="text-sm text-arena-muted">Alle eingereichten Kurzvideos (9:16) – Dateien herunterladen und Status verwalten.</span>
+                </div>
+                <span className="text-amber-600 shrink-0">→</span>
+              </Link>
+
+              <Link
+                href="/rezensionen/admin"
+                className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 no-underline text-inherit hover:border-amber-500 transition-colors"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                  <PencilSquareIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1 text-[0.95rem]">
+                  <strong>Rezensionen verwalten</strong>
+                  <span className="text-sm text-arena-muted">Alle eingereichten Rezensionen – als bearbeitet markieren, löschen, als XLSX exportieren.</span>
+                </div>
+                <span className="text-amber-600 shrink-0">→</span>
+              </Link>
+
+              <Link
+                href="/schnipsel/admin"
+                className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 no-underline text-inherit hover:border-amber-500 transition-colors"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                  <MusicalNoteIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1 text-[0.95rem]">
+                  <strong>Schnipsel verwalten</strong>
+                  <span className="text-sm text-arena-muted">Alle eingereichten Schnipsel – Audio herunterladen, löschen, als XLSX exportieren.</span>
+                </div>
+                <span className="text-amber-600 shrink-0">→</span>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ OVERLAYS ═══ */}
 
         {/* Overlay: Sprechertext-Hinweis (Upload / Einreichen) */}
         {showUploadOverlay && (
@@ -300,180 +534,9 @@ export default function SocialMediaPage() {
           </div>
         )}
 
-        {/* ═══ SECTION 1: Buch für Video vorbereiten ═══ */}
-        <div className="grid gap-3 pt-1">
-          <div>
-            <h2 className="text-lg font-bold">Buch für Video vorbereiten</h2>
-            <p className="text-arena-muted text-sm">
-              Um dein Buch als Video auf Social Media vorzustellen, brauchst du eine ausgefüllte PowerPoint-Vorlage.
-              Du hast zwei Möglichkeiten: Erstelle die Vorlage bequem über unser <strong>Online-Formular</strong> oder
-              lade die <strong>PPTX-Datei</strong> herunter und fülle sie selbst aus.
-            </p>
-          </div>
-
-          <div className="grid gap-2.5">
-            {videoSections.map((section) => {
-              const inner = (
-                <>
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
-                    <section.icon className="size-6" />
-                  </div>
-                  <div className="grid gap-0.5 text-[0.95rem]">
-                    <strong>{section.title}</strong>
-                    <span className="text-arena-muted text-sm">{section.description}</span>
-                  </div>
-                  <span className="ml-auto shrink-0 text-arena-muted">
-                    {section.external ? "↗" : "→"}
-                  </span>
-                </>
-              );
-
-              const cls =
-                "flex items-center gap-3 rounded-lg border border-arena-border p-3 no-underline text-inherit transition-colors hover:border-gray-500 hover:bg-[#fafafa]";
-
-              return section.external ? (
-                <a
-                  key={section.href}
-                  href={section.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cls}
-                >
-                  {inner}
-                </a>
-              ) : section.intercept ? (
-                <button
-                  key={section.href}
-                  type="button"
-                  onClick={() => setShowUploadOverlay(true)}
-                  className={`${cls} w-full text-left cursor-pointer`}
-                >
-                  {inner}
-                </button>
-              ) : (
-                <Link key={section.href} href={section.href} className={cls}>
-                  {inner}
-                </Link>
-              );
-            })}
-
-            {/* Vorlage herunterladen */}
-            <button
-              type="button"
-              onClick={() => setShowDownloadOverlay(true)}
-              className="flex w-full items-center gap-3 rounded-lg border border-arena-border p-3 text-[0.95rem] text-inherit hover:border-gray-500 hover:bg-[#fafafa] transition-colors text-left cursor-pointer"
-            >
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
-                <ArrowDownTrayIcon className="size-6" />
-              </div>
-              <div className="grid gap-0.5">
-                <strong>Vorlage herunterladen (PPTX)</strong>
-                <span className="text-arena-muted text-sm">
-                  Lade die PowerPoint-Vorlage herunter und fülle sie selbst in PowerPoint aus.
-                </span>
-              </div>
-              <span className="ml-auto shrink-0 text-arena-muted">⬇</span>
-            </button>
-          </div>
-
-          {/* Video-Links */}
-          <Link
-            href="/social-media/videos"
-            className="flex items-center gap-2 rounded-lg border border-arena-border-light bg-[#fffbe6] p-3 text-[0.95rem] no-underline text-inherit hover:border-arena-yellow transition-colors"
-          >
-            📹 <span className="font-medium">Videos zur Kontrolle</span>
-            <span className="text-xs text-arena-muted ml-auto">Ansehen</span>
-          </Link>
-        </div>
-
-        {/* ═══ SECTION 2: Weitere Aktionen ═══ */}
-        <div className="grid gap-3 pt-2 border-t border-arena-border mt-2">
-          <div>
-            <h2 className="text-lg font-bold">Weitere Aktionen der BuchArena</h2>
-            <p className="text-arena-muted text-sm">
-              Diese Informationen werden in längeren Intervallen gesammelt und zu Social-Media-Beiträgen verarbeitet.
-            </p>
-          </div>
-
-          <div className="grid gap-2.5">
-            {weitereAktionen.map((section) => {
-              const cls =
-                "flex items-center gap-3 rounded-lg border border-arena-border p-3 no-underline text-inherit transition-colors hover:border-gray-500 hover:bg-[#fafafa]";
-              return (
-                <Link key={section.href} href={section.href} className={cls}>
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
-                    <section.icon className="size-6" />
-                  </div>
-                  <div className="grid gap-0.5 text-[0.95rem]">
-                    <strong>{section.title}</strong>
-                    <span className="text-arena-muted text-sm">{section.description}</span>
-                  </div>
-                  <span className="ml-auto shrink-0 text-arena-muted">→</span>
-                </Link>
-              );
-            })}
-
-          {/* Admin-Links */}
-          {isAdmin && (
-            <>
-              <Link
-                href="/admin/einreichungen"
-                className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3 no-underline text-inherit transition-colors hover:border-amber-500"
-              >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
-                  <Cog6ToothIcon className="size-6" />
-                </div>
-                <div className="grid gap-0.5 text-[0.95rem]">
-                  <strong>Einreichungen verwalten (Admin)</strong>
-                  <span className="text-arena-muted text-sm">
-                    Übersicht aller eingesendeten Buchvorstellungen. Dateien
-                    herunterladen, bearbeiten und genehmigen.
-                  </span>
-                </div>
-                <span className="ml-auto shrink-0 text-arena-muted">→</span>
-              </Link>
-
-              <Link
-                href="/rezensionen/admin"
-                className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3 no-underline text-inherit transition-colors hover:border-amber-500"
-              >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
-                  <PencilSquareIcon className="size-6" />
-                </div>
-                <div className="grid gap-0.5 text-[0.95rem]">
-                  <strong>Rezensionen verwalten (Admin)</strong>
-                  <span className="text-arena-muted text-sm">
-                    Übersicht aller eingereichten Rezensionen. Als bearbeitet
-                    markieren, löschen und als XLSX exportieren.
-                  </span>
-                </div>
-                <span className="ml-auto shrink-0 text-arena-muted">→</span>
-              </Link>
-
-              <Link
-                href="/schnipsel/admin"
-                className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3 no-underline text-inherit transition-colors hover:border-amber-500"
-              >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
-                  <MusicalNoteIcon className="size-6" />
-                </div>
-                <div className="grid gap-0.5 text-[0.95rem]">
-                  <strong>Schnipsel verwalten (Admin)</strong>
-                  <span className="text-arena-muted text-sm">
-                    Übersicht aller eingereichten Schnipsel. Audio herunterladen,
-                    löschen und als XLSX exportieren.
-                  </span>
-                </div>
-                <span className="ml-auto shrink-0 text-arena-muted">→</span>
-              </Link>
-            </>
-          )}
-        </div>
-        </div>
-
-        {/* Meine Einreichungen */}
+        {/* ═══ MEINE EINREICHUNGEN (immer sichtbar, wenn eingeloggt) ═══ */}
         {account && (
-          <div className="grid gap-3 pt-2">
+          <div className="grid gap-3 pt-2 border-t border-arena-border mt-2">
             <h2 className="text-lg font-bold">Meine Einreichungen</h2>
 
             {actionError && (

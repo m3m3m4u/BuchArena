@@ -98,6 +98,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       notes: vorlage.notiz || "Erstellt mit dem Vorlagen-Editor",
       submittedBy: account.username,
       status: "pending",
+      type: "vorlage",
       createdAt: now,
       updatedAt: now,
     });

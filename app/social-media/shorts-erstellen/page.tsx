@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -98,6 +98,8 @@ interface FormData {
   inhalte: string;
   schwerpunkt: string;
   autorTitel: string;
+  geschlecht: string;
+  geschlechtCustom: string;
   autorHerkunft: string;
   autorBeruf: string;
   autorStil: string;
@@ -125,6 +127,8 @@ const INITIAL: FormData = {
   inhalte: "",
   schwerpunkt: "",
   autorTitel: "Über die Autorin",
+  geschlecht: "Autorin",
+  geschlechtCustom: "",
   autorHerkunft: "",
   autorBeruf: "",
   autorStil: "",
@@ -255,7 +259,7 @@ export default function ShortsErstellenPage() {
 
     // Dann frisch laden und Cache aktualisieren
     try {
-      const res = await fetch("/api/bucharena/vorlagen");
+      const res = await fetch("/api/bucharena/vorlagen?type=shorts");
       const data = await res.json();
       if (data.success) {
         setSavedVorlagen(data.vorlagen);
@@ -277,7 +281,8 @@ export default function ShortsErstellenPage() {
     }
     setSaving(true);
     try {
-      const payload = { ...form, coverImg, autorImg };
+      const effectiveGeschlecht = form.geschlecht === "custom" ? (form.geschlechtCustom || "Autorin") : (form.geschlecht || "Autorin");
+      const payload = { ...form, geschlecht: effectiveGeschlecht, type: "shorts", coverImg, autorImg };
       let res: Response;
       if (savedId) {
         res = await fetch(`/api/bucharena/vorlagen/${savedId}`, {
@@ -334,6 +339,8 @@ export default function ShortsErstellenPage() {
         inhalte: v.inhalte ?? "",
         schwerpunkt: v.schwerpunkt ?? "",
         autorTitel: v.autorTitel ?? "Über die Autorin",
+        geschlecht: ["Autorin", "Autor"].includes(v.geschlecht) ? v.geschlecht : "custom",
+        geschlechtCustom: !["Autorin", "Autor"].includes(v.geschlecht) ? (v.geschlecht || "") : "",
         autorHerkunft: v.autorHerkunft ?? "",
         autorBeruf: v.autorBeruf ?? "",
         autorStil: v.autorStil ?? "",
@@ -467,8 +474,9 @@ export default function ShortsErstellenPage() {
         );
 
       case 1: {
+        const effG = form.geschlecht === "custom" ? (form.geschlechtCustom || "Autorin") : (form.geschlecht || "Autorin");
         const infos: string[] = [];
-        if (autorFull) infos.push("Autorin: " + autorFull);
+        if (autorFull) infos.push(effG + ": " + autorFull);
         if (form.erscheinungsjahr) infos.push("Erscheinungsjahr: " + form.erscheinungsjahr);
         if (form.genre) infos.push("Genre: " + form.genre);
         if (form.hintergrund) infos.push("Hintergrund: " + form.hintergrund);
@@ -686,13 +694,14 @@ export default function ShortsErstellenPage() {
     zip.file("ppt/slides/slide1.xml", s1);
 
     /* ────── Slide 2: Allgemeine Infos ────── */
+    const effG = form.geschlecht === "custom" ? (form.geschlechtCustom || "Autorin") : (form.geschlecht || "Autorin");
     const coverDesignText = form.coverDesign
       ? " Cover: " + form.coverDesign
-      : " Autorin & Coverdesign: " + autorFull;
+      : " " + effG + " & Coverdesign: " + autorFull;
 
     let s2 = await zip.file("ppt/slides/slide2.xml")!.async("string");
     s2 = replacePlaceholders(s2, [
-      ["#1", "Autorin: " + autorFull],
+      ["#1", effG + ": " + autorFull],
       ["#2", "Erscheinungsjahr: " + form.erscheinungsjahr],
       ["#3", "Genre: " + form.genre],
       ["#4", "Hintergrund: " + form.hintergrund],
@@ -813,7 +822,8 @@ export default function ShortsErstellenPage() {
 
     setSubmitting(true);
     try {
-      const payload = { ...form, coverImg, autorImg };
+      const effectiveGeschlecht = form.geschlecht === "custom" ? (form.geschlechtCustom || "Autorin") : (form.geschlecht || "Autorin");
+      const payload = { ...form, geschlecht: effectiveGeschlecht, type: "shorts", coverImg, autorImg };
       await fetch(`/api/bucharena/vorlagen/${savedId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -899,6 +909,27 @@ export default function ShortsErstellenPage() {
                 <span className="font-medium">Nachname</span>
                 <input className="input-base" placeholder="z.&nbsp;B. Zöchinger" value={form.autorNachname} onChange={(e) => set("autorNachname", e.target.value)} />
               </label>
+            </div>
+            <div className="grid gap-1 text-[0.95rem]">
+              <span className="font-medium">Bezeichnung</span>
+              <div className="flex flex-wrap gap-4 pt-1">
+                {(["Autorin", "Autor"] as const).map((v) => (
+                  <label key={v} className="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" name="shorts-geschlecht" value={v} checked={form.geschlecht === v} onChange={() => set("geschlecht", v)} className="accent-arena-blue" />
+                    <span>{v}</span>
+                  </label>
+                ))}
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="shorts-geschlecht" value="custom" checked={form.geschlecht === "custom"} onChange={() => set("geschlecht", "custom")} className="accent-arena-blue" />
+                  <span>Eigener Begriff</span>
+                </label>
+              </div>
+              {form.geschlecht === "custom" && (
+                <label className="grid gap-0.5 mt-1">
+                  <span className="text-xs text-arena-muted">Wie lautet die Bezeichnung? (z.&nbsp;B. Schriftstellerin)</span>
+                  <input className="input-base" value={form.geschlechtCustom} onChange={(e) => set("geschlechtCustom", e.target.value)} placeholder="z.&nbsp;B. Schriftstellerin" autoFocus />
+                </label>
+              )}
             </div>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie)</span></span>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -102,7 +102,8 @@ interface FormData {
   thema: string;
   inhalte: string;
   schwerpunkt: string;
-  geschlecht: "Autorin" | "Autor";
+  geschlecht: string;
+  geschlechtCustom: string;
   autorTitel: string;
   autorHerkunft: string;
   autorBeruf: string;
@@ -130,6 +131,7 @@ const INITIAL: FormData = {
   inhalte: "",
   schwerpunkt: "",
   geschlecht: "Autorin",
+  geschlechtCustom: "",
   autorTitel: "",
   autorHerkunft: "",
   autorBeruf: "",
@@ -258,7 +260,7 @@ export default function VorlageErstellenPage() {
     // Nur leere Felder überschreiben
     setForm((f) => ({
       ...f,
-      geschlecht: match.geschlecht === "Autor" ? "Autor" : f.geschlecht,
+      geschlecht: ["Autorin", "Autor"].includes(match.geschlecht ?? "") ? match.geschlecht! : f.geschlecht,
       autorTitel: f.autorTitel || match.autorTitel || "",
       autorHerkunft: f.autorHerkunft || match.autorHerkunft || "",
       autorBeruf: f.autorBeruf || match.autorBeruf || "",
@@ -328,7 +330,7 @@ export default function VorlageErstellenPage() {
 
     // Dann frisch laden und Cache aktualisieren
     try {
-      const res = await fetch("/api/bucharena/vorlagen");
+      const res = await fetch("/api/bucharena/vorlagen?type=vorlage");
       const data = await res.json();
       if (data.success) {
         setSavedVorlagen(data.vorlagen);
@@ -339,7 +341,7 @@ export default function VorlageErstellenPage() {
 
   const loadSubmissions = useCallback(async () => {
     try {
-      const res = await fetch("/api/bucharena/submissions/my");
+      const res = await fetch("/api/bucharena/submissions/my?type=vorlage");
       const data = await res.json();
       if (data.success) setSubmissions(data.submissions.filter((s: { status: string }) => s.status !== "withdrawn"));
     } catch { /* ignore */ }
@@ -377,7 +379,8 @@ export default function VorlageErstellenPage() {
 
     setSaving(true);
     try {
-      const payload = { ...form, coverImg, autorImg };
+      const effectiveGeschlecht = form.geschlecht === "custom" ? (form.geschlechtCustom || "Autorin") : form.geschlecht;
+      const payload = { ...form, geschlecht: effectiveGeschlecht, type: "vorlage", coverImg, autorImg };
       let res: Response;
       if (savedId) {
         res = await fetch(`/api/bucharena/vorlagen/${savedId}`, {
@@ -424,7 +427,8 @@ export default function VorlageErstellenPage() {
         buchtitel: v.buchtitel ?? "",
         untertitel: v.untertitel ?? "",
         autorName: v.autorName ?? [v.autorVorname, v.autorNachname].filter(Boolean).join(" "),
-        geschlecht: v.geschlecht === "Autor" ? "Autor" : "Autorin",
+        geschlecht: ["Autorin", "Autor"].includes(v.geschlecht) ? v.geschlecht : "custom",
+        geschlechtCustom: !["Autorin", "Autor"].includes(v.geschlecht) ? (v.geschlecht || "") : "",
         erscheinungsjahr: v.erscheinungsjahr ?? "",
         genre: v.genre ?? "",
         verlag: v.verlag ?? "",
@@ -477,7 +481,8 @@ export default function VorlageErstellenPage() {
     setForm({
       ...INITIAL,
       autorName: latest?.autorName ?? "",
-      geschlecht: latest?.geschlecht === "Autor" ? "Autor" : INITIAL.geschlecht,
+      geschlecht: ["Autorin", "Autor"].includes(latest?.geschlecht ?? "") ? (latest!.geschlecht as string) : INITIAL.geschlecht,
+      geschlechtCustom: "",
       autorTitel: latest?.autorTitel ?? "",
       autorHerkunft: latest?.autorHerkunft ?? "",
       autorBeruf: latest?.autorBeruf ?? "",
@@ -601,7 +606,8 @@ export default function VorlageErstellenPage() {
 
       case 1: {
         const infos: string[] = [];
-        if (autorFull) infos.push(form.geschlecht + ": " + autorFull);
+        const effG1 = form.geschlecht === "custom" ? (form.geschlechtCustom || "Autorin") : form.geschlecht;
+        if (autorFull) infos.push(effG1 + ": " + autorFull);
         if (form.erscheinungsjahr) infos.push("Erscheinungsjahr: " + form.erscheinungsjahr);
         if (form.genre) infos.push("Genre: " + form.genre);
         if (form.hintergrund) infos.push("Hintergrund: " + form.hintergrund);
@@ -678,7 +684,7 @@ export default function VorlageErstellenPage() {
           <SlideFrame>
             <SlideCard>
               <div className="absolute" style={{ left: "5%", top: "6%", width: "85%", fontSize: "0.85em", fontWeight: 700, color: "#000" }}>
-                {"Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin")}
+                {"Über " + (form.geschlecht === "Autor" ? "den Autor" : form.geschlecht === "custom" ? (autorFull || "die Autorin") : "die Autorin")}
               </div>
               <div className="absolute rounded-[0.4em] p-[3%]" style={{ left: "3%", top: "18%", width: "50%", height: "75%", border: "1px solid #DDD", background: "#FAFAFA" }}>
                 <ul className="space-y-[0.3em] text-[0.42em] sm:text-[0.48em] list-none p-0 m-0">
@@ -797,7 +803,8 @@ export default function VorlageErstellenPage() {
 
       case 1: {
         const infos: string[] = [];
-        if (autorFull) infos.push(form.geschlecht + ": " + autorFull);
+        const effGS1 = form.geschlecht === "custom" ? (form.geschlechtCustom || "Autorin") : form.geschlecht;
+        if (autorFull) infos.push(effGS1 + ": " + autorFull);
         if (form.erscheinungsjahr) infos.push("Erscheinungsjahr: " + form.erscheinungsjahr);
         if (form.genre) infos.push("Genre: " + form.genre);
         if (form.hintergrund) infos.push("Hintergrund: " + form.hintergrund);
@@ -874,7 +881,7 @@ export default function VorlageErstellenPage() {
           <ShortsSlideFrame>
             <div className="absolute inset-[3%] rounded-[0.4em] bg-white border border-gray-200">
               <div className="absolute" style={{ left: "6%", top: "4%", width: "88%", fontSize: "0.65em", fontWeight: 700, color: "#000" }}>
-                {"Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin")}
+                {"Über " + (form.geschlecht === "Autor" ? "den Autor" : form.geschlecht === "custom" ? (autorFull || "die Autorin") : "die Autorin")}
               </div>
               <div className="absolute flex items-center justify-center" style={{ left: "15%", top: "10%", width: "70%", height: "35%" }}>
                 {autorImg ? (
@@ -1088,13 +1095,14 @@ export default function VorlageErstellenPage() {
       zip.file("ppt/slides/slide1.xml", s1);
 
       /* ────── Slide 2: Allgemeine Infos ────── */
+      const effG = form.geschlecht === "custom" ? (form.geschlechtCustom || "Autorin") : form.geschlecht;
       const coverDesignText = form.coverDesign
         ? "Coverdesign: " + form.coverDesign
-        : form.geschlecht + " & Coverdesign: " + autorFull;
+        : effG + " & Coverdesign: " + autorFull;
 
       let s2 = await zip.file("ppt/slides/slide2.xml")!.async("string");
       s2 = replaceParagraphTexts(s2, [
-        ["Autorin: Martina Zöchinger", form.geschlecht + ": " + autorFull],
+        ["Autorin: Martina Zöchinger", effG + ": " + autorFull],
         ["Erscheinungsjahr: 2025", "Erscheinungsjahr: " + form.erscheinungsjahr],
         ["Genre: Fantasy, Spiritualität", form.genre.trim() ? "Genre: " + form.genre : ""],
         ["Hintergrund: basiert auf einer wahren Begebenheit", form.hintergrund.trim() ? "Hintergrund: " + form.hintergrund : ""],
@@ -1117,7 +1125,7 @@ export default function VorlageErstellenPage() {
       /* ────── Slide 4: Über den Autor ────── */
       let s4 = await zip.file("ppt/slides/slide4.xml")!.async("string");
       s4 = replaceParagraphTexts(s4, [
-        ["Über die Autorin", "Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin")],
+        ["Über die Autorin", "Über " + (effG === "Autor" ? "den Autor" : effG === "Autorin" ? "die Autorin" : autorFull)],
         ["Martina Zöchinger", autorFull],
         ["Österreich, Steiermark", form.autorHerkunft],
         ["Mutter, Medienfachfrau, Mentaltrainerin", form.autorBeruf],
@@ -1253,9 +1261,10 @@ export default function VorlageErstellenPage() {
     zip.file("ppt/slides/slide1.xml", s1);
 
     /* ────── Slide 2: Allgemeine Infos ────── */
+    const effGS = form.geschlecht === "custom" ? (form.geschlechtCustom || "Autorin") : form.geschlecht;
     let s2 = await zip.file("ppt/slides/slide2.xml")!.async("string");
     s2 = replacePlaceholders(s2, [
-      ["#1", form.geschlecht + ": " + autorFull],
+      ["#1", effGS + ": " + autorFull],
       ["#2", "Erscheinungsjahr: " + form.erscheinungsjahr],
       ["#3", form.genre.trim() ? "Genre: " + form.genre : ""],
       ["#4", form.hintergrund.trim() ? "Hintergrund: " + form.hintergrund : ""],
@@ -1279,7 +1288,7 @@ export default function VorlageErstellenPage() {
     /* ────── Slide 4: Über den Autor ────── */
     let s4 = await zip.file("ppt/slides/slide4.xml")!.async("string");
     s4 = replacePlaceholders(s4, [
-      ["Über die Autorin", "Über " + (form.geschlecht === "Autor" ? "den Autor" : "die Autorin")],
+      ["Über die Autorin", "Über " + (effGS === "Autor" ? "den Autor" : effGS === "Autorin" ? "die Autorin" : autorFull)],
       ["#1", autorFull],
       ["#2", form.autorHerkunft],
       ["#3", form.autorBeruf],
@@ -1396,7 +1405,8 @@ export default function VorlageErstellenPage() {
     try {
       // Auto-save if not yet saved
       let currentId = savedId;
-      const payload = { ...form, coverImg, autorImg };
+      const effectiveGeschlecht = form.geschlecht === "custom" ? (form.geschlechtCustom || "Autorin") : form.geschlecht;
+      const payload = { ...form, geschlecht: effectiveGeschlecht, type: "vorlage", coverImg, autorImg };
       if (!currentId) {
         const saveRes = await fetch("/api/bucharena/vorlagen", {
           method: "POST",
@@ -1559,7 +1569,7 @@ export default function VorlageErstellenPage() {
               <CharWarn value={form.autorName} field="autorName" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
-              <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
+              <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 kurze Sätze sind ideal.)</span></span>
               <textarea className={"input-base" + req(form.notes1)} rows={3} placeholder="z. B. In diesem Video erzähle ich dir vom Buch Hüter in Ausbildung - Eine Episode endet. Eine neue beginnt. - von Martina Zöchinger. Du erfährst von mir die wichtigsten Informationen, ohne dass ich zu viel verrate oder spoiler." value={form.notes1} onChange={(e) => set("notes1", e.target.value)} />
             </label>
           </div>
@@ -1582,7 +1592,7 @@ export default function VorlageErstellenPage() {
             </div>
             <div className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Geschlecht</span>
-              <div className="flex gap-4">
+              <div className="flex gap-4 flex-wrap">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="geschlecht" value="Autorin" checked={form.geschlecht === "Autorin"} onChange={() => set("geschlecht", "Autorin")} />
                   <span>Autorin</span>
@@ -1591,7 +1601,17 @@ export default function VorlageErstellenPage() {
                   <input type="radio" name="geschlecht" value="Autor" checked={form.geschlecht === "Autor"} onChange={() => set("geschlecht", "Autor")} />
                   <span>Autor</span>
                 </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="geschlecht" value="custom" checked={form.geschlecht === "custom"} onChange={() => set("geschlecht", "custom")} />
+                  <span>Eigener Begriff</span>
+                </label>
               </div>
+              {form.geschlecht === "custom" && (
+                <label className="grid gap-0.5 mt-1">
+                  <span className="text-xs text-arena-muted">Wie lautet die Bezeichnung? (z.&nbsp;B. Schriftstellerin)</span>
+                  <input className="input-base" value={form.geschlechtCustom} onChange={(e) => set("geschlechtCustom", e.target.value)} placeholder="z.&nbsp;B. Schriftstellerin" autoFocus />
+                </label>
+              )}
             </div>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Verlag <span className="text-arena-muted text-sm font-normal">(oder &quot;Selfpublisher&quot;)</span></span>
@@ -1626,7 +1646,7 @@ export default function VorlageErstellenPage() {
               <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImage(e, setCoverImg)} />
             </div>
             <label className="grid gap-1 text-[0.95rem]">
-              <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
+              <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 kurze Sätze sind ideal.)</span></span>
               <textarea className={"input-base" + req(form.notes2)} rows={3} placeholder="z. B. Das Buch wurde von Martina Zöchinger geschrieben und erschien 2025. Sie hat den Roman als Selfpublisher veröffentlicht und es gehört zum Genre Fantasy. Das Buch ist schön illustriert und verschiedene Zeichnungen stellen einzelne Szenen dar. Die Entstehungsgeschichte des Buches ist spannend: Die Autorin schrieb es in tiefer Trauer nach dem Tod ihres Vaters, um den Verlust zu verarbeiten. Sie schreibt über das Leben nach dem Tod und machte ihren Vater zum Helden der Geschichte." value={form.notes2} onChange={(e) => set("notes2", e.target.value)} />
             </label>
           </div>
@@ -1658,7 +1678,7 @@ export default function VorlageErstellenPage() {
               <CharWarn value={form.schwerpunkt} field="schwerpunkt" />
             </label>
             <label className="grid gap-1 text-[0.95rem]">
-              <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
+              <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 kurze Sätze sind ideal.)</span></span>
               <textarea className={"input-base" + req(form.notes3)} rows={3} placeholder="z. B. Die Handlung dreht sich um eine Hauptfigur, die sich nach dem Tod in einer neuen Existenz wiederfindet, nachdem er gestorben ist. In dieser Geschichte mischen sich Realität, Erinnerung und Magie. Die Erzählung behandelt, wie man mit Trauer umgeht, wie sich Bewusstsein und Erkenntnis des Lebens öffnen, wenn eine Episode endet und etwas Neues beginnt." value={form.notes3} onChange={(e) => set("notes3", e.target.value)} />
             </label>
           </div>
@@ -1667,7 +1687,7 @@ export default function VorlageErstellenPage() {
       case 3:
         return (
           <div className="grid gap-4">
-            <h2 className="text-lg font-bold">Folie 4 – {form.geschlecht === "Autor" ? "Über den Autor" : "Über die Autorin"}</h2>
+            <h2 className="text-lg font-bold">Folie 4 – {form.geschlecht === "Autor" ? "Über den Autor" : form.geschlecht === "custom" ? ("Über " + (autorFull || "die Autorin")) : "Über die Autorin"}</h2>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Herkunft / Land</span>
               <input className={"input-base" + req(form.autorHerkunft)} placeholder="z. B. Österreich, Steiermark" value={form.autorHerkunft} onChange={(e) => set("autorHerkunft", e.target.value)} />
@@ -1701,7 +1721,7 @@ export default function VorlageErstellenPage() {
               <input ref={autorRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImage(e, setAutorImg)} />
             </div>
             <label className="grid gap-1 text-[0.95rem]">
-              <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
+              <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 kurze Sätze sind ideal.)</span></span>
               <textarea className={"input-base" + req(form.notes4)} rows={3} placeholder="z. B. Martina Zöchinger ist eine österreichische Autorin, Medienfachfrau und Mentaltrainerin. Sie ist Mutter und hat sich schon früh mit Themen wie Bewusstsein, Leben und Spiritualität beschäftigt – sowohl beruflich als auch persönlich. Mit Hüter in Ausbildung legt sie ein Werk vor, das stark mit ihrem Leben und ihren Erfahrungen verbunden ist." value={form.notes4} onChange={(e) => set("notes4", e.target.value)} />
             </label>
           </div>
@@ -1722,7 +1742,7 @@ export default function VorlageErstellenPage() {
               </div>
             ))}
             <label className="grid gap-1 text-[0.95rem]">
-              <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 bis 3 kurze Sätze sind ideal.)</span></span>
+              <span className="font-medium">Sprechertext <span className="text-arena-muted text-sm font-normal">(erscheint in den PowerPoint-Notizen unter der Folie – dieser Text wird während des Videos von den Sprechern gesprochen. Fass dich kurz: 2 kurze Sätze sind ideal.)</span></span>
               <textarea className={"input-base" + req(form.notes5)} rows={3} placeholder="z. B. Ich empfehle dir dieses Buch, weil es nicht nur Trost spendet, sondern auch Mut macht, nach Verlust und Schmerz eine neue Perspektive zu finden. Es verbindet magische Elemente mit sehr menschlichen Themen – ideal, wenn du Geschichten magst, die emotional berühren und zum Nachdenken anregen." value={form.notes5} onChange={(e) => set("notes5", e.target.value)} />
             </label>
           </div>
@@ -1743,7 +1763,7 @@ export default function VorlageErstellenPage() {
           <strong>Hinweis:</strong> Jeder eingereichte Text wird zunächst von einem unserer Sprecher eingelesen. Bitte rechne daher von der Einreichung bis zur Veröffentlichung mit einer Dauer von <strong>2 bis 6 Wochen</strong>.
         </div>
 
-        {/* ── Toolbar: Öffnen / Speichern / Herunterladen / Einreichen ── */}
+        {/* ── Toolbar: Vorlagen verwalten + Einreichen ── */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
           <button type="button" className="btn btn-sm" onClick={() => setShowVorlagen((v) => !v)}>
             <FolderOpenIcon className="size-4" />
@@ -1760,14 +1780,9 @@ export default function VorlageErstellenPage() {
             {saving ? <ArrowPathIcon className="size-4 animate-spin" /> : <CloudArrowUpIcon className="size-4" />}
             <span className="truncate">{saving ? "Speichern …" : "Speichern"}</span>
           </button>
-          <button type="button" className="btn btn-sm" onClick={() => generatePptx("querformat")} disabled={generating}>
-            <DocumentArrowDownIcon className="size-4" />
-            <span className="hidden sm:inline">Querformat</span><span className="sm:hidden">Quer</span>
-          </button>
-          <button type="button" className="btn btn-sm" onClick={() => generatePptx("hochformat")} disabled={generating}>
-            <DocumentArrowDownIcon className="size-4" />
-            <span className="hidden sm:inline">Hochformat</span><span className="sm:hidden">Hoch</span>
-          </button>
+
+          <span className="hidden sm:inline text-arena-border">|</span>
+
           <button
             type="button"
             className="btn btn-sm btn-primary col-span-2 sm:col-span-1"

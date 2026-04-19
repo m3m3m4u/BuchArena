@@ -6,8 +6,9 @@
 import path from "path";
 import fs from "fs/promises";
 import JSZip from "jszip";
+import sharp from "sharp";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
-import type { BucharenaVorlageDoc } from "./bucharena-db";
+import type { BucharenaVorlageDoc, BucharenaReelVorlageDoc } from "./bucharena-db";
 import { getWebdavClient } from "./webdav-storage";
 
 const A_NS = "http://schemas.openxmlformats.org/drawingml/2006/main";
@@ -26,6 +27,21 @@ async function imageToBytes(src: string): Promise<Buffer> {
   const client = getWebdavClient();
   const data = await client.getFileContents(remotePath);
   return Buffer.from(data as ArrayBuffer);
+}
+
+/** Crop an image to a centered square using sharp */
+async function cropToSquare(src: string): Promise<Buffer> {
+  const raw = await imageToBytes(src);
+  const meta = await sharp(raw).metadata();
+  const w = meta.width ?? 0;
+  const h = meta.height ?? 0;
+  const size = Math.min(w, h);
+  const left = Math.floor((w - size) / 2);
+  const top = Math.floor((h - size) / 2);
+  return sharp(raw)
+    .extract({ left, top, width: size, height: size })
+    .jpeg({ quality: 90 })
+    .toBuffer();
 }
 
 export function getAutorFull(vorlage: Pick<BucharenaVorlageDoc, "autorName" | "autorVorname" | "autorNachname">): string {
@@ -224,7 +240,7 @@ export async function buildVorlagePptx(vorlage: BucharenaVorlageDoc): Promise<Bu
   /* Slide 4 */
   let s4 = await zip.file("ppt/slides/slide4.xml")!.async("string");
   s4 = replaceParagraphTexts(s4, [
-    ["Über die Autorin", "Über " + (vorlage.geschlecht === "Autor" ? "den Autor" : "die Autorin")],
+    ["Über die Autorin", "Über " + (vorlage.geschlecht === "Autor" ? "den Autor" : vorlage.geschlecht === "Autorin" ? "die Autorin" : autorFull)],
     ["Martina Zöchinger", autorFull],
     ["Österreich, Steiermark", vorlage.autorHerkunft],
     ["Mutter, Medienfachfrau, Mentaltrainerin", vorlage.autorBeruf],
@@ -327,7 +343,7 @@ export async function buildShortsVorlagePptx(vorlage: BucharenaVorlageDoc): Prom
   /* Slide 4 */
   let s4 = await zip.file("ppt/slides/slide4.xml")!.async("string");
   s4 = replacePlaceholders(s4, [
-    ["Über die Autorin", "Über " + (vorlage.geschlecht === "Autor" ? "den Autor" : "die Autorin")],
+    ["Über die Autorin", "Über " + (vorlage.geschlecht === "Autor" ? "den Autor" : vorlage.geschlecht === "Autorin" ? "die Autorin" : autorFull)],
     ["#1", autorFull],
     ["#2", vorlage.autorHerkunft],
     ["#3", vorlage.autorBeruf],
@@ -349,6 +365,58 @@ export async function buildShortsVorlagePptx(vorlage: BucharenaVorlageDoc): Prom
 
   /* Notes */
   await applyNotesMap(zip, vorlage);
+
+  return zip.generateAsync({ type: "nodebuffer" }) as Promise<Buffer>;
+}
+
+/** Generate the Kurzvideo (Reel, portrait 9:16) PPTX from the Kurzvideo template */
+export async function buildKurzVideoPptx(vorlage: BucharenaReelVorlageDoc): Promise<Buffer> {
+  const templatePath = path.join(process.cwd(), "public", "Kurzvideo.pptx");
+  const templateBytes = await fs.readFile(templatePath);
+  const zip = await JSZip.loadAsync(templateBytes);
+
+  const autorFull = vorlage.autorName?.trim() || "Unbekannt";
+  const geschlecht = vorlage.geschlecht || "Autorin";
+
+  /* Slide 1: Allgemeine Infos */
+  const coverDesignText = vorlage.coverDesign?.trim()
+    ? "Coverdesign: " + vorlage.coverDesign
+    : geschlecht + " & Coverdesign: " + autorFull;
+  let s1 = await zip.file("ppt/slides/slide1.xml")!.async("string");
+  s1 = replaceParagraphTexts(s1, [
+    ["Autorin: Martina Z�chinger", geschlecht + ": " + autorFull],
+    ["Erscheinungsjahr: 2025", "Erscheinungsjahr: " + vorlage.erscheinungsjahr],
+    ["Genre: Fantasy, Spiritualit�t", vorlage.genre?.trim() ? "Genre: " + vorlage.genre : ""],
+    ["Hintergrund: basiert auf einer wahren Begebenheit", vorlage.hintergrund?.trim() ? "Hintergrund: " + vorlage.hintergrund : ""],
+    ["H�ter - Die Ausbildung beginnt", vorlage.buchtitel],
+    ["Autorin & Coverdesign: Martina Z�chinger", coverDesignText],
+    ["Verlag: Independently published", vorlage.verlag?.trim() ? "Verlag: " + vorlage.verlag : ""],
+  ]);
+  zip.file("ppt/slides/slide1.xml", s1);
+
+  /* Slide 2: Worum geht's? */
+  let s2 = await zip.file("ppt/slides/slide2.xml")!.async("string");
+  s2 = replaceParagraphTexts(s2, [
+    ["Thema: Tod & Jenseits", vorlage.thema?.trim() ? "Thema: " + vorlage.thema : ""],
+    ["Hauptfigur: ein Verstorbener auf dem Weg zum H�ter", vorlage.hauptfigur?.trim() ? "Hauptfigur: " + vorlage.hauptfigur : ""],
+    ["Inhalte: Wahrheitssuche, Pr�fungen", vorlage.inhalte?.trim() ? "Inhalte: " + vorlage.inhalte : ""],
+  ]);
+  zip.file("ppt/slides/slide2.xml", s2);
+
+  /* Slide 3: �ber die Autorin */
+  let s3 = await zip.file("ppt/slides/slide3.xml")!.async("string");
+  s3 = replaceParagraphTexts(s3, [
+    ["Über die Autorin", geschlecht === "Autorin" ? "Über die Autorin" : geschlecht === "Autor" ? "Über den Autor" : "Über " + geschlecht],
+    ["Martina Z�chinger", autorFull],
+    ["�sterreich, Steiermark", vorlage.autorHerkunft || ""],
+    ["Mutter, Medienfachfrau, Mentaltrainerin", vorlage.autorBeruf || ""],
+    ["Stil: authentisch, autobiografisch", vorlage.autorStil?.trim() ? "Stil: " + vorlage.autorStil : ""],
+  ]);
+  zip.file("ppt/slides/slide3.xml", s3);
+
+  /* Images: cover → image2.jpeg, author → image6.jpeg */
+  if (vorlage.coverImg) zip.file("ppt/media/image2.jpeg", await imageToBytes(vorlage.coverImg));
+  if (vorlage.autorImg) zip.file("ppt/media/image6.jpeg", await cropToSquare(vorlage.autorImg));
 
   return zip.generateAsync({ type: "nodebuffer" }) as Promise<Buffer>;
 }
