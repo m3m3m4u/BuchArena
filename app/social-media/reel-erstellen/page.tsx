@@ -859,7 +859,7 @@ export default function ReelErstellenPage() {
             <button
               type="button"
               className="btn btn-sm text-orange-600 border-orange-300 hover:bg-orange-50 col-span-2 sm:col-span-1"
-              onClick={withdrawReel}
+              onClick={() => withdrawReel()}
               disabled={submitting}
             >
               Zurückziehen
