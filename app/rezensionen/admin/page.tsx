@@ -87,6 +87,20 @@ export default function ReviewsAdminPage() {
   };
 
   const handleExport = () => window.open("/api/bucharena/reviews/export", "_blank");
+  const handleExportPending = () => window.open("/api/bucharena/reviews/export?status=pending", "_blank");
+
+  const handleMarkAllPendingProcessed = async () => {
+    if (pendingCount === 0) return;
+    if (!confirm(`Alle ${pendingCount} ausstehenden Rezensionen als bearbeitet markieren?`)) return;
+    setActionLoading("bulk");
+    try {
+      const res = await fetch("/api/bucharena/reviews/admin", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "mark-all-pending-processed" }) });
+      const data = await res.json();
+      if (data.success) await loadReviews();
+      else alert(data.error || "Fehler");
+    } catch { alert("Netzwerkfehler"); }
+    finally { setActionLoading(null); }
+  };
 
   if (account?.role !== "SUPERADMIN") return null;
 
@@ -103,9 +117,17 @@ export default function ReviewsAdminPage() {
             <h1>Rezensionen verwalten</h1>
             <p className="text-arena-muted mt-1">Übersicht aller eingereichten Buchrezensionen</p>
           </div>
-          <button onClick={handleExport} className="btn flex items-center gap-1.5" disabled={reviews.length === 0}>
-            <ArrowDownTrayIcon className="w-4 h-4" />Als XLSX exportieren
-          </button>
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={handleExportPending} className="btn flex items-center gap-1.5" disabled={pendingCount === 0}>
+              <ArrowDownTrayIcon className="w-4 h-4" />Ausstehende als Excel
+            </button>
+            <button onClick={handleMarkAllPendingProcessed} className="btn flex items-center gap-1.5 bg-green-50 text-green-800" disabled={pendingCount === 0 || actionLoading === "bulk"}>
+              <CheckCircleIcon className="w-4 h-4" />{actionLoading === "bulk" ? "Wird markiert..." : "Alle ausstehenden bearbeitet"}
+            </button>
+            <button onClick={handleExport} className="btn flex items-center gap-1.5" disabled={reviews.length === 0}>
+              <ArrowDownTrayIcon className="w-4 h-4" />Alle exportieren
+            </button>
+          </div>
         </div>
 
         {/* Stats */}

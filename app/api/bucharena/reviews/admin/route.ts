@@ -69,6 +69,30 @@ export async function PUT(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  try {
+    const admin = await requireSuperAdmin();
+    if (!admin) return NextResponse.json({ success: false, error: "Keine Berechtigung" }, { status: 403 });
+
+    const body = await request.json();
+    const { action } = body;
+
+    if (action === "mark-all-pending-processed") {
+      const col = await getBucharenaReviewsCollection();
+      const result = await col.updateMany(
+        { status: "pending" },
+        { $set: { status: "processed", processedBy: admin.email, processedAt: new Date(), updatedAt: new Date() } }
+      );
+      return NextResponse.json({ success: true, count: result.modifiedCount });
+    }
+
+    return NextResponse.json({ success: false, error: "Unbekannte Aktion" }, { status: 400 });
+  } catch (error) {
+    console.error("Fehler beim Bulk-Update:", error);
+    return NextResponse.json({ success: false, error: "Bulk-Update fehlgeschlagen." }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     const admin = await requireSuperAdmin();
