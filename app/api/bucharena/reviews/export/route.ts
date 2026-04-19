@@ -13,7 +13,9 @@ export async function GET(request: Request) {
     const statusFilter = searchParams.get("status");
 
     const col = await getBucharenaReviewsCollection();
-    const query = statusFilter ? { status: statusFilter } : {};
+    const query = statusFilter === "pending" || statusFilter === "processed"
+      ? { status: statusFilter as "pending" | "processed" }
+      : {};
     const reviews = await col.find(query).sort({ createdAt: -1 }).limit(5000).toArray();
 
     const headers = ["Buchtitel", "Autor", "Instagram", "Rezension"];
