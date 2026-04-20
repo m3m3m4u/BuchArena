@@ -210,17 +210,7 @@ export default function AdminPage() {
         setBdwSpeakerUsername(d.buchDerWoche.speakerUsername ?? "");
       }
     }).catch(() => {});
-    // Bücher und Sprecher laden
-    fetch("/api/books/discover").then(r => r.json()).then(d => {
-      const books = (d.books ?? []).map((b: Record<string, unknown>) => ({
-        id: b.id as string,
-        title: b.title as string,
-        author: (b.authorDisplayName ?? b.ownerUsername) as string,
-        ownerUsername: b.ownerUsername as string,
-        buyLinks: (b.buyLinks ?? []) as string[],
-      }));
-      setBdwBooks(books);
-    }).catch(() => {});
+    // Sprecher laden
     fetch("/api/speakers/discover").then(r => r.json()).then(d => {
       setBdwSpeakers((d.speakers ?? []).map((s: Record<string, unknown>) => ({
         username: s.username as string,
@@ -228,6 +218,27 @@ export default function AdminPage() {
       })));
     }).catch(() => {});
   }, [mainTab, bdwLoaded]);
+
+  // Bücher server-seitig suchen (debounced)
+  useEffect(() => {
+    const q = bdwBookQuery.trim();
+    if (q.length < 2) { setBdwBooks([]); return; }
+    const timer = setTimeout(() => {
+      fetch(`/api/books/discover?q=${encodeURIComponent(q)}`)
+        .then(r => r.json())
+        .then(d => {
+          setBdwBooks((d.books ?? []).map((b: Record<string, unknown>) => ({
+            id: b.id as string,
+            title: b.title as string,
+            author: (b.authorDisplayName ?? b.ownerUsername) as string,
+            ownerUsername: b.ownerUsername as string,
+            buyLinks: (b.buyLinks ?? []) as string[],
+          })));
+        })
+        .catch(() => {});
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [bdwBookQuery]);
 
   // Analytics laden
   const loadAnalytics = useCallback(async () => {
@@ -575,10 +586,7 @@ export default function AdminPage() {
                 placeholder="Buchtitel suchen…"
               />
               {bdwBookOpen && bdwBookQuery.trim().length > 0 && (() => {
-                const q = bdwBookQuery.toLowerCase();
-                const filtered = bdwBooks.filter(b =>
-                  b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)
-                ).slice(0, 10);
+                const filtered = bdwBooks.slice(0, 10);
                 return filtered.length > 0 ? (
                   <ul className="absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                     {filtered.map(b => (

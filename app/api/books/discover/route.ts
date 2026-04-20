@@ -1,30 +1,36 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getBooksCollection, getUsersCollection, getDatabase } from "@/lib/mongodb";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const books = await getBooksCollection();
     const db = await getDatabase();
     const empfCol = db.collection("buchempfehlungen");
 
+    // Optional: Server-seitige Suche per ?q=
+    const q = request.nextUrl.searchParams.get("q")?.trim();
+    const matchStage = q
+      ? { $match: { title: { $regex: q, $options: "i" } } }
+      : null;
+
     // Bücher laden, deaktivierte User per Lookup ausschließen
-    const raw = await books
-      .aggregate([
-        { $sort: { createdAt: -1 as const } },
-        { $limit: 500 },
-        {
-          $lookup: {
-            from: "users",
-            localField: "ownerUsername",
-            foreignField: "username",
-            as: "_owner",
-            pipeline: [{ $project: { status: 1, username: 1, "profile.name.value": 1 } }],
-          },
+    const pipeline: object[] = [
+      ...(matchStage ? [matchStage] : []),
+      { $sort: { createdAt: -1 as const } },
+      ...(q ? [] : [{ $limit: 500 }]),
+      {
+        $lookup: {
+          from: "users",
+          localField: "ownerUsername",
+          foreignField: "username",
+          as: "_owner",
+          pipeline: [{ $project: { status: 1, username: 1, "profile.name.value": 1 } }],
         },
-        { $unwind: { path: "$_owner", preserveNullAndEmptyArrays: true } },
-        { $match: { "_owner.status": { $ne: "deactivated" } } },
-      ])
-      .toArray();
+      },
+      { $unwind: { path: "$_owner", preserveNullAndEmptyArrays: true } },
+      { $match: { "_owner.status": { $ne: "deactivated" } } },
+    ];
+    const raw = await books.aggregate(pipeline).toArray();
 
     // Empfehlungen-Anzahl pro Buch laden
     const empfCounts = await empfCol
