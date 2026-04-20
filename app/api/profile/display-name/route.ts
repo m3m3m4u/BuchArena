@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { getBlogCollection } from "@/lib/blog";
 
 type SaveDisplayNamePayload = {
   username?: string;
@@ -34,6 +35,13 @@ export async function POST(request: Request) {
         { status: 404 },
       );
     }
+
+    // Blog-Beiträge des Nutzers ebenfalls aktualisieren
+    const blog = await getBlogCollection();
+    await blog.updateMany(
+      { authorUsername: username },
+      { $set: { authorDisplayName: displayName || username } },
+    );
 
     return NextResponse.json({ message: "Angezeigter Name gespeichert." });
   } catch {
