@@ -44,15 +44,24 @@ export default function LektorenPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [page, setPage] = useState(1);
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     async function loadLektoren() {
       setIsLoading(true);
       setMessage("");
       try {
-        const res = await fetch("/api/lektoren/discover", { method: "GET" });
+        const url = debouncedQuery
+          ? `/api/lektoren/discover?q=${encodeURIComponent(debouncedQuery)}`
+          : "/api/lektoren/discover";
+        const res = await fetch(url, { method: "GET" });
         const data = (await res.json()) as { lektoren?: DiscoverLektor[]; message?: string };
         if (!res.ok) throw new Error(data.message ?? "Lektoren konnten nicht geladen werden.");
         setLektoren(data.lektoren ?? []);
@@ -63,18 +72,11 @@ export default function LektorenPage() {
       }
     }
     void loadLektoren();
-  }, []);
+  }, [debouncedQuery]);
 
   const filteredLektoren = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    const base = q
-      ? lektoren.filter((lk) =>
-          lk.displayName.toLowerCase().includes(q) ||
-          lk.username.toLowerCase().includes(q)
-        )
-      : lektoren;
-    return weightedShuffle(base, seed);
-  }, [lektoren, searchQuery, seed]);
+    return weightedShuffle(lektoren, seed);
+  }, [lektoren, seed]);
 
   const totalPages = Math.max(1, Math.ceil(filteredLektoren.length / PAGE_SIZE));
   const paged = filteredLektoren.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

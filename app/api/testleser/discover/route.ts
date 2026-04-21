@@ -27,7 +27,6 @@ export async function GET() {
         },
         { projection: { username: 1, profile: 1, testleserProfile: 1, displayName: 1, profileSlug: 1 } }
       )
-      .limit(500)
       .toArray();
 
     const testleser: TestleserDiscoverItem[] = [];

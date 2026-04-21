@@ -14,19 +14,25 @@ type LektorenDiscoverItem = {
   lesezeichenTotal: number;
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const usersCollection = await getUsersCollection();
+    const q = new URL(request.url).searchParams.get("q")?.trim();
+
+    const baseFilter: Record<string, unknown> = {
+      lektorenProfile: { $exists: true },
+      $or: [{ status: { $exists: false } }, { status: "active" }],
+    };
+    if (q) {
+      baseFilter.$or = [
+        { username: { $regex: q, $options: "i" } },
+        { displayName: { $regex: q, $options: "i" } },
+        { "lektorenProfile.name.value": { $regex: q, $options: "i" } },
+      ];
+    }
 
     const users = await usersCollection
-      .find(
-        {
-          lektorenProfile: { $exists: true },
-          $or: [{ status: { $exists: false } }, { status: "active" }],
-        },
-        { projection: { username: 1, profile: 1, lektorenProfile: 1, displayName: 1, profileSlug: 1 } }
-      )
-      .limit(500)
+      .find(baseFilter, { projection: { username: 1, profile: 1, lektorenProfile: 1, displayName: 1, profileSlug: 1 } })
       .toArray();
 
     const lektoren: LektorenDiscoverItem[] = [];

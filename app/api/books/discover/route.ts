@@ -10,7 +10,16 @@ export async function GET(request: NextRequest) {
     // Optional: Server-seitige Suche per ?q=
     const q = request.nextUrl.searchParams.get("q")?.trim();
     const matchStage = q
-      ? { $match: { title: { $regex: q, $options: "i" } } }
+      ? {
+          $match: {
+            $or: [
+              { title: { $regex: q, $options: "i" } },
+              { publisher: { $regex: q, $options: "i" } },
+              { isbn: { $regex: q, $options: "i" } },
+              { ownerUsername: { $regex: q, $options: "i" } },
+            ],
+          },
+        }
       : null;
 
     // Bücher laden, deaktivierte User per Lookup ausschließen

@@ -68,13 +68,22 @@ function BuecherContent() {
   const [message, setMessage] = useState("");
   const [page, setPage] = useState(1);
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     async function loadBooks() {
       setIsLoading(true);
       setMessage("");
       try {
-        const response = await fetch("/api/books/discover", { method: "GET" });
+        const url = debouncedQuery
+          ? `/api/books/discover?q=${encodeURIComponent(debouncedQuery)}`
+          : "/api/books/discover";
+        const response = await fetch(url, { method: "GET" });
         const data = (await response.json()) as { books?: DiscoverBook[]; message?: string };
         if (!response.ok) throw new Error(data.message ?? "Bücher konnten nicht geladen werden.");
         setBooks(data.books ?? []);
@@ -85,7 +94,7 @@ function BuecherContent() {
       }
     }
     void loadBooks();
-  }, []);
+  }, [debouncedQuery]);
 
   const genres = useMemo(() => {
     const unique = new Set(
@@ -102,15 +111,19 @@ function BuecherContent() {
       const genreList = (book.genre ?? "").split(",").map((g) => normalizeGenre(g.trim()));
       const matchesGenre = !genreFilter || genreList.includes(genreFilter);
       const matchesAge = !hasAge || (book.ageFrom <= age && age <= book.ageTo);
-      const matchesSearch = !q ||
-        book.title.toLowerCase().includes(q) ||
-        book.authorDisplayName.toLowerCase().includes(q) ||
-        (book.publisher ?? "").toLowerCase().includes(q) ||
-        (book.isbn ?? "").toLowerCase().includes(q);
+      // Bei Server-seitiger Suche wurde bereits gefiltert; nur Genre + Alter client-seitig anwenden.
+      // Ohne aktive Server-Suche (Erst-Laden): Volltext client-seitig prüfen.
+      const matchesSearch = debouncedQuery
+        ? true
+        : !q ||
+          book.title.toLowerCase().includes(q) ||
+          book.authorDisplayName.toLowerCase().includes(q) ||
+          (book.publisher ?? "").toLowerCase().includes(q) ||
+          (book.isbn ?? "").toLowerCase().includes(q);
       return matchesGenre && matchesAge && matchesSearch;
     });
     return weightedShuffleBooks(filtered, seed);
-  }, [books, genreFilter, ageFilter, searchQuery, seed]);
+  }, [books, genreFilter, ageFilter, searchQuery, debouncedQuery, seed]);
 
   // Reset page when filter changes
   useEffect(() => { setPage(1); }, [genreFilter, ageFilter, searchQuery]);
