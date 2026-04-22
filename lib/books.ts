@@ -1,5 +1,12 @@
 import type { ObjectId } from "mongodb";
 
+export type CoAuthorEntry = {
+  username: string;
+  status: "pending" | "confirmed" | "declined";
+  invitedAt: Date;
+  confirmedAt?: Date;
+};
+
 export type BookExcerpt = {
   id: string;
   type: "text" | "mp3";
@@ -29,6 +36,7 @@ export type BookDocument = {
   presentationVideoUrl: string;
   presentationVideoInternal: boolean;
   excerpts: BookExcerpt[];
+  coAuthors?: CoAuthorEntry[];
   createdAt: Date;
 };
 

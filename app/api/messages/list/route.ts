@@ -40,6 +40,7 @@ export async function GET(request: Request) {
         readAt: d.readAt?.toISOString() ?? null,
         threadId: d.threadId?.toHexString() ?? null,
         kooperationId: d.kooperationId ?? null,
+        bookCoAuthorId: d.bookCoAuthorId ?? null,
         createdAt: d.createdAt.toISOString(),
       }));
 
@@ -70,6 +71,7 @@ export async function GET(request: Request) {
         readAt: d.readAt?.toISOString() ?? null,
         threadId: d.threadId?.toHexString() ?? null,
         kooperationId: d.kooperationId ?? null,
+        bookCoAuthorId: d.bookCoAuthorId ?? null,
         createdAt: d.createdAt.toISOString(),
       }));
 

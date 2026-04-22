@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     }
 
     const books = await getBooksCollection();
-    await books.insertOne({
+    const result = await books.insertOne({
       ownerUsername,
       coverImageUrl: coverImageUrl.slice(0, 1000),
       title,
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     // Lesezeichen: Bücher hochgeladen
     const lesezeichen = await awardBuecherHochgeladen(account.username).catch(() => 0);
 
-    return NextResponse.json({ message: "Buch angelegt.", lesezeichen }, { status: 201 });
+    return NextResponse.json({ message: "Buch angelegt.", lesezeichen, bookId: result.insertedId.toString() }, { status: 201 });
   } catch {
     return NextResponse.json(
       { message: "Buch konnte nicht angelegt werden." },

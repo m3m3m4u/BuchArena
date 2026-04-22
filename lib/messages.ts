@@ -13,6 +13,7 @@ export type MessageDocument = {
   deletedByRecipient: boolean;
   broadcast?: boolean;
   kooperationId?: string;
+  bookCoAuthorId?: string;
   createdAt: Date;
 };
 

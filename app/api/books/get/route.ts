@@ -37,6 +37,19 @@ export async function GET(request: Request) {
     const authorName =
       profile.name?.visibility === "public" ? profile.name.value : "";
 
+    // Mitautoren (nur confirmed) mit öffentlichen Profilinfos laden
+    const confirmedCoAuthors = (book.coAuthors ?? []).filter((c) => c.status === "confirmed");
+    const coAuthorInfos: { username: string; name: string; imageUrl: string }[] = [];
+    for (const ca of confirmedCoAuthors) {
+      const caUser = await users.findOne({ username: ca.username }, { projection: { profile: 1, displayName: 1 } });
+      const caProfile = caUser?.profile ?? createDefaultProfile();
+      coAuthorInfos.push({
+        username: ca.username,
+        name: caProfile.name?.visibility === "public" ? (caProfile.name.value ?? "") : "",
+        imageUrl: caProfile.profileImage?.visibility === "public" ? (caProfile.profileImage.value ?? "") : "",
+      });
+    }
+
     return NextResponse.json({
       book: {
         id: book._id.toString(),
@@ -63,6 +76,7 @@ export async function GET(request: Request) {
         name: authorName,
         imageUrl: authorImageUrl,
       },
+      coAuthors: coAuthorInfos,
     });
   } catch {
     return NextResponse.json(

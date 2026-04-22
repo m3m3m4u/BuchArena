@@ -27,6 +27,7 @@ type ChatMessage = {
   readAt: string | null;
   threadId: string | null;
   kooperationId: string | null;
+  bookCoAuthorId: string | null;
   createdAt: string;
 };
 
@@ -107,6 +108,10 @@ export default function NachrichtenPage() {
   // Kooperations-Buttons Status
   const [handledKoopIds, setHandledKoopIds] = useState<Record<string, "confirmed" | "rejected">>({});
   const [koopActionLoading, setKoopActionLoading] = useState<string | null>(null);
+
+  // Mitautoren-Einladungs-Buttons Status
+  const [handledCoAuthorIds, setHandledCoAuthorIds] = useState<Record<string, "confirmed" | "rejected">>({})
+  const [coAuthorActionLoading, setCoAuthorActionLoading] = useState<string | null>(null);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -372,6 +377,36 @@ export default function NachrichtenPage() {
     setKoopActionLoading(null);
   }
 
+  async function handleCoAuthorConfirm(bookId: string) {
+    setCoAuthorActionLoading(bookId);
+    try {
+      const res = await fetch("/api/books/co-authors/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookId }),
+      });
+      if (res.ok) {
+        setHandledCoAuthorIds((prev) => ({ ...prev, [bookId]: "confirmed" }));
+      }
+    } catch { /* ignore */ }
+    setCoAuthorActionLoading(null);
+  }
+
+  async function handleCoAuthorDecline(bookId: string) {
+    setCoAuthorActionLoading(bookId);
+    try {
+      const res = await fetch("/api/books/co-authors/decline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookId }),
+      });
+      if (res.ok) {
+        setHandledCoAuthorIds((prev) => ({ ...prev, [bookId]: "rejected" }));
+      }
+    } catch { /* ignore */ }
+    setCoAuthorActionLoading(null);
+  }
+
   /* ── Datums-Trenner berechnen ── */
   function renderMessages() {
     let lastDate = "";
@@ -421,6 +456,30 @@ export default function NachrichtenPage() {
                       className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 border-none cursor-pointer hover:bg-gray-300 disabled:opacity-50"
                       disabled={koopActionLoading === msg.kooperationId}
                       onClick={() => handleKoopReject(msg.kooperationId!)}
+                    >
+                      ✕ Ablehnen
+                    </button>
+                  </div>
+                );
+              })()}
+              {/* Mitautoren-Einladungs-Buttons direkt in der Nachricht */}
+              {msg.bookCoAuthorId && msg.recipientUsername === username && (() => {
+                const status = handledCoAuthorIds[msg.bookCoAuthorId!];
+                if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Mitautorenschaft bestätigt!</p>;
+                if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Einladung abgelehnt.</p>;
+                return (
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white border-none cursor-pointer hover:bg-green-700 disabled:opacity-50"
+                      disabled={coAuthorActionLoading === msg.bookCoAuthorId}
+                      onClick={() => handleCoAuthorConfirm(msg.bookCoAuthorId!)}
+                    >
+                      ✓ Bestätigen
+                    </button>
+                    <button
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 border-none cursor-pointer hover:bg-gray-300 disabled:opacity-50"
+                      disabled={coAuthorActionLoading === msg.bookCoAuthorId}
+                      onClick={() => handleCoAuthorDecline(msg.bookCoAuthorId!)}
                     >
                       ✕ Ablehnen
                     </button>

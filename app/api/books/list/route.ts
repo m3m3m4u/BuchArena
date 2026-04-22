@@ -17,7 +17,12 @@ export async function POST(request: Request) {
 
     const books = await getBooksCollection();
     const list = await books
-      .find({ ownerUsername })
+      .find({
+        $or: [
+          { ownerUsername },
+          { coAuthors: { $elemMatch: { username: ownerUsername, status: "confirmed" } } },
+        ],
+      })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -40,6 +45,12 @@ export async function POST(request: Request) {
         presentationVideoUrl: book.presentationVideoUrl,
         presentationVideoInternal: book.presentationVideoInternal,
         excerpts: book.excerpts ?? [],
+        coAuthors: (book.coAuthors ?? []).map((c) => ({
+          username: c.username,
+          status: c.status,
+          invitedAt: c.invitedAt,
+          confirmedAt: c.confirmedAt,
+        })),
         createdAt: book.createdAt,
       })),
     });

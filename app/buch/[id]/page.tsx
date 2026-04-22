@@ -83,6 +83,7 @@ type BookDetail = {
 };
 
 type AuthorInfo = { username: string; name: string; imageUrl: string };
+type CoAuthorInfo = { username: string; name: string; imageUrl: string };
 type PageProps = { params: Promise<{ id: string }> };
 
 type Empfehlung = {
@@ -97,6 +98,7 @@ export default function BookDetailPage({ params }: PageProps) {
   const [bookId, setBookId] = useState("");
   const [book, setBook] = useState<BookDetail | null>(null);
   const [author, setAuthor] = useState<AuthorInfo | null>(null);
+  const [coAuthors, setCoAuthors] = useState<CoAuthorInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -128,10 +130,11 @@ export default function BookDetailPage({ params }: PageProps) {
       setMessage("");
       try {
         const res = await fetch(`/api/books/get?id=${encodeURIComponent(bookId)}`, { method: "GET" });
-        const data = (await res.json()) as { book?: BookDetail; author?: AuthorInfo; message?: string };
+        const data = (await res.json()) as { book?: BookDetail; author?: AuthorInfo; coAuthors?: CoAuthorInfo[]; message?: string };
         if (!res.ok) throw new Error(data.message ?? "Buch konnte nicht geladen werden.");
         setBook(data.book ?? null);
         setAuthor(data.author ?? null);
+        setCoAuthors(data.coAuthors ?? []);
       } catch {
         setMessage("Buch konnte nicht geladen werden.");
       } finally {
@@ -233,7 +236,9 @@ export default function BookDetailPage({ params }: PageProps) {
                   "@context": "https://schema.org",
                   "@type": "Book",
                   name: book.title,
-                  ...(author && { author: { "@type": "Person", name: author.name || author.username } }),
+                  ...(author && { author: coAuthors.length > 0
+                    ? [{ "@type": "Person", name: author.name || author.username }, ...coAuthors.map((ca) => ({ "@type": "Person", name: ca.name || ca.username }))]
+                    : { "@type": "Person", name: author.name || author.username } }),
                   ...(book.isbn && { isbn: book.isbn }),
                   ...(book.publisher && { publisher: { "@type": "Organization", name: book.publisher } }),
                   ...(book.publicationYear > 0 && { datePublished: String(book.publicationYear) }),
@@ -271,6 +276,17 @@ export default function BookDetailPage({ params }: PageProps) {
                       <Link href={`/autor/${author.username}`} className="no-underline text-inherit hover:underline">
                         {author.name || author.username}
                       </Link>
+                    </p>
+                  )}
+                  {coAuthors.length > 0 && (
+                    <p className="my-1"><strong>{coAuthors.length === 1 ? "Weitere Autor*in:" : "Weitere Autoren:"}</strong>{" "}
+                      {coAuthors.map((ca, i) => (
+                        <span key={ca.username}>{i > 0 && ", "}
+                          <Link href={`/autor/${ca.username}`} className="no-underline text-inherit hover:underline">
+                            {ca.name || ca.username}
+                          </Link>
+                        </span>
+                      ))}
                     </p>
                   )}
                   {book.genre && <p className="my-1"><strong>Genre:</strong> {book.genre.split(",").map((g) => normalizeGenre(g.trim())).filter(Boolean).map((g, i) => (<span key={g}>{i > 0 && ", "}<Link href={`/buecher?genre=${encodeURIComponent(g)}`} className="no-underline text-inherit hover:underline">{g}</Link></span>))}</p>}

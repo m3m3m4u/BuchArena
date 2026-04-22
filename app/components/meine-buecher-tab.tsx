@@ -15,6 +15,13 @@ type BookExcerpt = {
   createdAt: string;
 };
 
+type CoAuthor = {
+  username: string;
+  status: "pending" | "confirmed" | "declined";
+  invitedAt: string;
+  confirmedAt?: string;
+};
+
 type Book = {
   id: string;
   ownerUsername: string;
@@ -33,6 +40,7 @@ type Book = {
   presentationVideoUrl: string;
   presentationVideoInternal: boolean;
   excerpts: BookExcerpt[];
+  coAuthors: CoAuthor[];
   createdAt: string;
 };
 
@@ -63,6 +71,15 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
   const [isBookOverlayOpen, setIsBookOverlayOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
+
+  /* ── co-author state ── */
+  const [coAuthorInput, setCoAuthorInput] = useState("");
+  const [coAuthorBusy, setCoAuthorBusy] = useState(false);
+  const [coAuthorMsg, setCoAuthorMsg] = useState("");
+  const [coAuthorIsError, setCoAuthorIsError] = useState(false);
+  const [currentCoAuthors, setCurrentCoAuthors] = useState<CoAuthor[]>([]);
+  // Beim Anlegen: Liste der Benutzernamen, die nach dem Speichern eingeladen werden
+  const [pendingCoAuthorUsernames, setPendingCoAuthorUsernames] = useState<string[]>([]);
 
   /* ── excerpt state ── */
   const [excerptTitle, setExcerptTitle] = useState("");
@@ -134,6 +151,11 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     setExcerptContent("");
     setExcerptFile(null);
     setCurrentBookExcerpts([]);
+    setCoAuthorInput("");
+    setCoAuthorMsg("");
+    setCoAuthorIsError(false);
+    setCurrentCoAuthors([]);
+    setPendingCoAuthorUsernames([]);
     setIsBookOverlayOpen(false);
   }
 
@@ -157,6 +179,11 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     setExcerptContent("");
     setExcerptFile(null);
     setCurrentBookExcerpts([]);
+    setCoAuthorInput("");
+    setCoAuthorMsg("");
+    setCoAuthorIsError(false);
+    setCurrentCoAuthors([]);
+    setPendingCoAuthorUsernames([]);
     setIsBookOverlayOpen(true);
   }
 
@@ -194,7 +221,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
         }),
       });
 
-      const data = (await response.json()) as { message?: string; lesezeichen?: number };
+      const data = (await response.json()) as { message?: string; lesezeichen?: number; bookId?: string };
       if (!response.ok) {
         throw new Error(
           data.message ?? (editingBookId ? "Buch konnte nicht gespeichert werden." : "Buch konnte nicht angelegt werden.")
@@ -202,6 +229,18 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
       }
 
       if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
+
+      // Beim Anlegen: Mitautoren einladen
+      if (!editingBookId && data.bookId && pendingCoAuthorUsernames.length > 0) {
+        for (const coAuthorUsername of pendingCoAuthorUsernames) {
+          await fetch("/api/books/co-authors", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ bookId: data.bookId, coAuthorUsername }),
+          }).catch(() => {});
+        }
+      }
+
       setMessage(editingBookId ? "Buch gespeichert." : "Buch angelegt.");
       resetForm();
       await refreshBooks();
@@ -229,6 +268,10 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     setBuyLinksText(book.buyLinks.join("\n"));
     setPresentationVideoUrl(book.presentationVideoUrl);
     setCurrentBookExcerpts(book.excerpts ?? []);
+    setCoAuthorInput("");
+    setCoAuthorMsg("");
+    setCoAuthorIsError(false);
+    setCurrentCoAuthors(book.coAuthors ?? []);
     setExcerptTitle("");
     setExcerptType("text");
     setExcerptContent("");
@@ -404,6 +447,74 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     }
   }
 
+  async function onInviteCoAuthor() {
+    if (!username || !editingBookId || !coAuthorInput.trim()) return;
+    setCoAuthorBusy(true);
+    setCoAuthorMsg("");
+    setCoAuthorIsError(false);
+    try {
+      const res = await fetch("/api/books/co-authors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookId: editingBookId, coAuthorUsername: coAuthorInput.trim() }),
+      });
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Fehler beim Einladen.");
+      setCoAuthorMsg(data.message ?? "Einladung gesendet!");
+      setCoAuthorInput("");
+      // Mitautoren-Liste aktualisieren
+      const refreshed = await fetch("/api/books/list", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ownerUsername: username }) });
+      const refreshedData = (await refreshed.json()) as { books?: Book[] };
+      const updatedBook = refreshedData.books?.find((b) => b.id === editingBookId);
+      if (updatedBook) setCurrentCoAuthors(updatedBook.coAuthors ?? []);
+      await refreshBooks();
+    } catch (err) {
+      setCoAuthorIsError(true);
+      setCoAuthorMsg(err instanceof Error ? err.message : "Fehler beim Einladen.");
+    } finally {
+      setCoAuthorBusy(false);
+    }
+  }
+
+  async function onRemoveCoAuthor(coAuthorUsername: string) {
+    if (!editingBookId) return;
+    setCoAuthorBusy(true);
+    setCoAuthorMsg("");
+    setCoAuthorIsError(false);
+    try {
+      const res = await fetch(`/api/books/co-authors?bookId=${encodeURIComponent(editingBookId)}&username=${encodeURIComponent(coAuthorUsername)}`, { method: "DELETE" });
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Fehler beim Entfernen.");
+      setCurrentCoAuthors((prev) => prev.filter((c) => c.username !== coAuthorUsername));
+      setCoAuthorMsg("Mitautor*in entfernt.");
+      await refreshBooks();
+    } catch (err) {
+      setCoAuthorIsError(true);
+      setCoAuthorMsg(err instanceof Error ? err.message : "Fehler beim Entfernen.");
+    } finally {
+      setCoAuthorBusy(false);
+    }
+  }
+
+  async function onRemoveSelfAsCoAuthor(bookId: string) {
+    try {
+      const res = await fetch(`/api/books/co-authors?bookId=${encodeURIComponent(bookId)}`, { method: "DELETE" });
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Fehler.");
+      setMessage("Mitautorenschaft entfernt.");
+      await refreshBooks();
+    } catch (err) {
+      setIsError(true);
+      setMessage(err instanceof Error ? err.message : "Fehler beim Entfernen.");
+    }
+  }
+
+  function getCoAuthorStatusLabel(status: CoAuthor["status"]) {
+    if (status === "confirmed") return { label: "bestätigt", cls: "text-green-700" };
+    if (status === "declined") return { label: "abgelehnt", cls: "text-red-600" };
+    return { label: "ausstehend", cls: "text-arena-muted" };
+  }
+
   return (
     <>
       <button type="button" className="btn" onClick={openCreateOverlay}>
@@ -433,48 +544,66 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
         <p>Noch keine Bücher angelegt.</p>
       ) : (
         <div className="grid gap-3 min-[1200px]:grid-cols-2">
-          {[...books].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((book, index) => (
-            <article className="rounded-lg border border-arena-border p-3" key={`${book.title}-${book.createdAt}-${index}`}>
-              <Link href={`/buch/${book.id}`} className="block no-underline text-inherit hover:opacity-90">
-                <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[400px]:grid-cols-1">
-                  <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px]">
-                    {book.coverImageUrl ? (
-                      <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" />
-                    ) : (
-                      <span className="px-6 py-10">Kein Cover</span>
-                    )}
+          {[...books].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((book, index) => {
+            const isOwner = book.ownerUsername === username;
+            return (
+              <article className="rounded-lg border border-arena-border p-3" key={`${book.title}-${book.createdAt}-${index}`}>
+                <Link href={`/buch/${book.id}`} className="block no-underline text-inherit hover:opacity-90">
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[400px]:grid-cols-1">
+                    <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px]">
+                      {book.coverImageUrl ? (
+                        <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" />
+                      ) : (
+                        <span className="px-6 py-10">Kein Cover</span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="mb-1 mt-0 truncate">{book.title}</h3>
+                      {!isOwner && (
+                        <span className="inline-block mb-1 text-xs bg-arena-blue/10 text-arena-blue px-2 py-0.5 rounded-full font-medium">Mitautor*in</span>
+                      )}
+                      {(() => {
+                        const lines: { label: string; value: string }[] = [];
+                        if (book.genre) lines.push({ label: "Genre", value: parseGenres(book.genre).join(", ") || book.genre });
+                        if (book.ageFrom > 0 || book.ageTo > 0) lines.push({ label: "Alter", value: `${book.ageFrom} bis ${book.ageTo}` });
+                        if (book.publicationYear) lines.push({ label: "Erscheinungsjahr", value: String(book.publicationYear) });
+                        if (book.publisher) lines.push({ label: "Verlag", value: book.publisher });
+                        if (book.isbn) lines.push({ label: "ISBN", value: book.isbn });
+                        if (book.pageCount && book.pageCount > 0) lines.push({ label: "Seitenanzahl", value: String(book.pageCount) });
+                        return lines.slice(0, 5).map((l) => (
+                          <p key={l.label} className="my-0.5 truncate">{l.label}: {l.value}</p>
+                        ));
+                      })()}
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="mb-1 mt-0 truncate">{book.title}</h3>
-                    {(() => {
-                      const lines: { label: string; value: string }[] = [];
-                      if (book.genre) lines.push({ label: "Genre", value: parseGenres(book.genre).join(", ") || book.genre });
-                      if (book.ageFrom > 0 || book.ageTo > 0) lines.push({ label: "Alter", value: `${book.ageFrom} bis ${book.ageTo}` });
-                      if (book.publicationYear) lines.push({ label: "Erscheinungsjahr", value: String(book.publicationYear) });
-                      if (book.publisher) lines.push({ label: "Verlag", value: book.publisher });
-                      if (book.isbn) lines.push({ label: "ISBN", value: book.isbn });
-                      if (book.pageCount && book.pageCount > 0) lines.push({ label: "Seitenanzahl", value: String(book.pageCount) });
-                      return lines.slice(0, 5).map((l) => (
-                        <p key={l.label} className="my-0.5 truncate">{l.label}: {l.value}</p>
-                      ));
-                    })()}
-                  </div>
+                </Link>
+                <div className="flex gap-2 flex-wrap mt-3">
+                  {isOwner ? (
+                    <>
+                      <button type="button" className="btn btn-sm" onClick={() => onEditBook(book)}>
+                        Bearbeiten
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => onDeleteBook(book.id)}
+                      >
+                        Löschen
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      onClick={() => onRemoveSelfAsCoAuthor(book.id)}
+                    >
+                      Mitautorenschaft entfernen
+                    </button>
+                  )}
                 </div>
-              </Link>
-              <div className="flex gap-2 flex-wrap mt-3">
-                <button type="button" className="btn btn-sm" onClick={() => onEditBook(book)}>
-                  Bearbeiten
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-sm"
-                  onClick={() => onDeleteBook(book.id)}
-                >
-                  Löschen
-                </button>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
 
@@ -482,6 +611,10 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
         <div className="overlay-backdrop" onClick={resetForm}>
           <section className="w-[min(960px,100%)] bg-white rounded-xl p-4 box-border grid gap-2.5" onClick={(event) => event.stopPropagation()}>
             <h2>{editingBookId ? "Buch bearbeiten" : "Neues Buch"}</h2>
+
+            {!editingBookId && (
+              <p className="text-sm text-arena-muted mt-0 mb-1">Weitere Daten (Textausschnitte, Cover etc.) können beim Bearbeiten des Buches nachträglich hinzugefügt werden.</p>
+            )}
 
             <div className="grid grid-cols-[2fr_1fr] gap-4 items-start max-[900px]:grid-cols-1">
               <div className="grid gap-2">
@@ -608,6 +741,106 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                 </div>
 
                 {isUploadingCover && <span className="text-xs text-arena-muted">Cover wird hochgeladen ...</span>}
+
+                {/* ── Weitere Autoren ── */}
+                <div className="mt-5 pt-4 border-t border-arena-border-light">
+                  <h3 className="mt-0 mb-3">Weitere Autoren</h3>
+
+                  {/* Bestehende Mitautoren (nur beim Bearbeiten) */}
+                  {editingBookId && currentCoAuthors.length > 0 && (
+                    <div className="flex flex-col gap-2 mb-3">
+                      {currentCoAuthors.map((ca) => {
+                        const { label, cls } = getCoAuthorStatusLabel(ca.status);
+                        return (
+                          <div key={ca.username} className="flex items-center justify-between gap-2 px-3 py-2 bg-[#f9f9f9] border border-arena-border-light rounded-md">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <span className="font-medium truncate">{ca.username}</span>
+                              <span className={`text-xs ${cls}`}>({label})</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="btn btn-sm"
+                              onClick={() => onRemoveCoAuthor(ca.username)}
+                              disabled={coAuthorBusy}
+                            >
+                              Entfernen
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Noch nicht gespeicherte Liste (beim Anlegen) */}
+                  {!editingBookId && pendingCoAuthorUsernames.length > 0 && (
+                    <div className="flex flex-col gap-2 mb-3">
+                      {pendingCoAuthorUsernames.map((u) => (
+                        <div key={u} className="flex items-center justify-between gap-2 px-3 py-2 bg-[#f9f9f9] border border-arena-border-light rounded-md">
+                          <span className="font-medium truncate">{u}</span>
+                          <button
+                            type="button"
+                            className="btn btn-sm"
+                            onClick={() => setPendingCoAuthorUsernames((prev) => prev.filter((x) => x !== u))}
+                          >
+                            Entfernen
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 items-end">
+                    <label className="grid gap-1 text-[0.95rem] flex-1">
+                      Benutzername hinzufügen
+                      <input
+                        className="input-base"
+                        value={coAuthorInput}
+                        onChange={(e) => setCoAuthorInput(e.target.value)}
+                        placeholder="Benutzername eingeben"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (editingBookId) {
+                              void onInviteCoAuthor();
+                            } else {
+                              const val = coAuthorInput.trim();
+                              if (val && !pendingCoAuthorUsernames.includes(val)) {
+                                setPendingCoAuthorUsernames((prev) => [...prev, val]);
+                                setCoAuthorInput("");
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      disabled={coAuthorBusy || !coAuthorInput.trim()}
+                      onClick={() => {
+                        if (editingBookId) {
+                          void onInviteCoAuthor();
+                        } else {
+                          const val = coAuthorInput.trim();
+                          if (val && !pendingCoAuthorUsernames.includes(val)) {
+                            setPendingCoAuthorUsernames((prev) => [...prev, val]);
+                          }
+                          setCoAuthorInput("");
+                        }
+                      }}
+                    >
+                      {coAuthorBusy ? "..." : "Hinzufügen"}
+                    </button>
+                  </div>
+                  {coAuthorMsg && (
+                    <p className={`text-xs mt-1 ${coAuthorIsError ? "text-red-600" : "text-green-700"}`}>{coAuthorMsg}</p>
+                  )}
+                  <p className="text-xs text-arena-muted mt-1">
+                    {editingBookId
+                      ? "Die eingeladene Person erhält eine Nachricht und kann die Mitautorenschaft bestätigen oder ablehnen."
+                      : "Die angegebenen Personen werden nach dem Anlegen eingeladen und können die Mitautorenschaft bestätigen."}
+                  </p>
+                </div>
 
                 {/* ── Textausschnitte ── */}
                 {editingBookId && (

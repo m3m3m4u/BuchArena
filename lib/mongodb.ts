@@ -145,6 +145,7 @@ async function initializeDatabase(db: Db) {
   await users.createIndex({ email: 1 }, { unique: true });
   await users.createIndex({ profileSlug: 1 }, { unique: true, sparse: true });
   await books.createIndex({ ownerUsername: 1, createdAt: -1 });
+  await books.createIndex({ "coAuthors.username": 1, "coAuthors.status": 1 });
 
   const support = db.collection<SupportPost>("support");
   await support.createIndex({ createdAt: -1 });
