@@ -19,6 +19,9 @@ import {
   FolderOpenIcon,
   PaperAirplaneIcon,
   CheckCircleIcon,
+  MusicalNoteIcon,
+  PlayIcon,
+  StopIcon,
 } from "@heroicons/react/24/outline";
 
 /* ── helpers ── */
@@ -111,7 +114,7 @@ const INITIAL: FormData = {
   notiz: "",
 };
 
-const STEP_LABELS = ["Allgemeine Infos", "Worum geht's?", "Über den Autor"];
+const STEP_LABELS = ["Allgemeine Infos", "Worum geht's?", "Über den Autor", "Musik auswählen"];
 
 const CHAR_LIMITS: Record<string, number> = {
   buchtitel: 40,
@@ -141,6 +144,100 @@ function CharWarn({ value, field }: { value: string; field: string }) {
 
 const CACHE_KEY = "bucharena_reel_vorlagen_cache";
 
+interface MusikTrack {
+  id: string;
+  title: string;
+  style: string;
+  description: string;
+  fileUrl: string;
+  fileName: string;
+  fileSize: number | null;
+}
+
+/* ── WAV encoder ── */
+function writeString(view: DataView, offset: number, str: string) {
+  for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+}
+
+function audioBufferToWav(buf: AudioBuffer): ArrayBuffer {
+  const numCh = buf.numberOfChannels;
+  const sr = buf.sampleRate;
+  const numSamples = buf.length;
+  const dataSize = numSamples * numCh * 2;
+  const wav = new ArrayBuffer(44 + dataSize);
+  const v = new DataView(wav);
+  writeString(v, 0, "RIFF");
+  v.setUint32(4, 36 + dataSize, true);
+  writeString(v, 8, "WAVE");
+  writeString(v, 12, "fmt ");
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true);
+  v.setUint16(22, numCh, true);
+  v.setUint32(24, sr, true);
+  v.setUint32(28, sr * numCh * 2, true);
+  v.setUint16(32, numCh * 2, true);
+  v.setUint16(34, 16, true);
+  writeString(v, 36, "data");
+  v.setUint32(40, dataSize, true);
+  let off = 44;
+  for (let i = 0; i < numSamples; i++) {
+    for (let ch = 0; ch < numCh; ch++) {
+      const s = Math.max(-1, Math.min(1, buf.getChannelData(ch)[i]));
+      v.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+      off += 2;
+    }
+  }
+  return wav;
+}
+
+/** Trim newAudioBytes to the same duration as origMp3Bytes, apply 1s fade-out, return WAV bytes */
+async function processMusikForPptx(
+  origMp3Bytes: ArrayBuffer,
+  newAudioUrl: string,
+): Promise<Uint8Array> {
+  const ctx = new AudioContext();
+  const origBuf = await ctx.decodeAudioData(origMp3Bytes.slice(0));
+  const targetDur = origBuf.duration;
+
+  const newResp = await fetch(newAudioUrl);
+  const newAb = await newResp.arrayBuffer();
+  const newBuf = await ctx.decodeAudioData(newAb);
+
+  const sr = newBuf.sampleRate;
+  const numCh = newBuf.numberOfChannels;
+  const targetSamples = Math.round(targetDur * sr);
+
+  const offCtx = new OfflineAudioContext(numCh, targetSamples, sr);
+
+  // create trimmed buffer (loop if shorter)
+  const srcBuf = offCtx.createBuffer(numCh, targetSamples, sr);
+  for (let ch = 0; ch < numCh; ch++) {
+    const srcData = newBuf.getChannelData(ch);
+    const dest = srcBuf.getChannelData(ch);
+    for (let i = 0; i < targetSamples; i++) {
+      dest[i] = srcData[i % srcData.length] ?? 0;
+    }
+  }
+
+  const source = offCtx.createBufferSource();
+  source.buffer = srcBuf;
+
+  const gain = offCtx.createGain();
+  source.connect(gain);
+  gain.connect(offCtx.destination);
+
+  const fadeStart = Math.max(0, targetDur - 1);
+  gain.gain.setValueAtTime(1, 0);
+  gain.gain.setValueAtTime(1, fadeStart);
+  gain.gain.linearRampToValueAtTime(0, targetDur);
+
+  source.start(0);
+  await ctx.close();
+
+  const rendered = await offCtx.startRendering();
+  return new Uint8Array(audioBufferToWav(rendered));
+}
+
 export default function ReelErstellenPage() {
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
   const [accountLoaded, setAccountLoaded] = useState(false);
@@ -162,6 +259,14 @@ export default function ReelErstellenPage() {
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState("");
 
+  // Musik
+  const [musikTracks, setMusikTracks] = useState<MusikTrack[]>([]);
+  const [selectedMusikId, setSelectedMusikId] = useState<string | null>(null);
+  const [previewingId, setPreviewingId] = useState<string | null>(null);
+  const [origMusikDuration, setOrigMusikDuration] = useState<number | null>(null);
+  const previewContextRef = useRef<AudioContext | null>(null);
+  const previewSourceRef = useRef<AudioBufferSourceNode | null>(null);
+
   const coverRef = useRef<HTMLInputElement>(null);
   const autorRef = useRef<HTMLInputElement>(null);
   const feedbackRef = useRef<HTMLDivElement>(null);
@@ -181,9 +286,72 @@ export default function ReelErstellenPage() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
 
+  useEffect(() => {
+    fetch("/api/musik")
+      .then((r) => r.json())
+      .then((d) => { if (d.tracks) setMusikTracks(d.tracks); })
+      .catch(() => { /* stille Fehlerbehandlung */ });
+  }, []);
+
+  // Originaldauer der PPTX-MP3 laden, sobald Musik-Reiter betreten wird
+  useEffect(() => {
+    if (step !== 3 || origMusikDuration !== null) return;
+    (async () => {
+      try {
+        const resp = await fetch("/Kurzvideo.pptx");
+        const ab = await resp.arrayBuffer();
+        const { default: JSZip } = await import("jszip");
+        const zip = await JSZip.loadAsync(ab);
+        const entry = zip.file("ppt/media/media1.mp3");
+        if (!entry) return;
+        const mp3Ab = await entry.async("arraybuffer") as ArrayBuffer;
+        const ctx = new AudioContext();
+        const decoded = await ctx.decodeAudioData(mp3Ab);
+        await ctx.close();
+        setOrigMusikDuration(decoded.duration);
+      } catch { /* ignorieren */ }
+    })();
+  }, [step, origMusikDuration]);
+
   function set<K extends keyof FormData>(key: K, val: FormData[K]) {
     setForm((f) => ({ ...f, [key]: val }));
     setDirty(true);
+  }
+
+  function stopPreview() {
+    try { previewSourceRef.current?.stop(); } catch { /* ignorieren */ }
+    previewContextRef.current?.close().catch(() => { /* ignorieren */ });
+    previewSourceRef.current = null;
+    previewContextRef.current = null;
+    setPreviewingId(null);
+  }
+
+  async function playTrimmedPreview(trackId: string, trackUrl: string) {
+    stopPreview();
+    setPreviewingId(trackId);
+    try {
+      const resp = await fetch(trackUrl);
+      const ab = await resp.arrayBuffer();
+      const ctx = new AudioContext();
+      previewContextRef.current = ctx;
+      const buf = await ctx.decodeAudioData(ab);
+      const targetDur = origMusikDuration ?? buf.duration;
+      const source = ctx.createBufferSource();
+      source.buffer = buf;
+      source.loop = buf.duration < targetDur;
+      source.loopEnd = buf.duration;
+      const gain = ctx.createGain();
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      const fadeStart = Math.max(0, targetDur - 1);
+      gain.gain.setValueAtTime(1, 0);
+      gain.gain.setValueAtTime(1, ctx.currentTime + fadeStart);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + targetDur);
+      source.start(0);
+      source.stop(ctx.currentTime + targetDur);
+      previewSourceRef.current = source;
+      source.onended = () => { ctx.close().catch(() => { /* ignorieren */ }); setPreviewingId(null); };
+    } catch { setPreviewingId(null); }
   }
 
   /* ── save / load ── */
@@ -377,6 +545,44 @@ export default function ReelErstellenPage() {
       if (coverImg) zip.file("ppt/media/image2.jpeg", dataUrlToBytes(coverImg));
       if (autorImg) zip.file("ppt/media/image6.jpeg", dataUrlToBytes(autorImg));
 
+      /* ── Musik ersetzen ── */
+      if (selectedMusikId) {
+        const track = musikTracks.find((t) => t.id === selectedMusikId);
+        if (track) {
+          const origEntry = zip.file("ppt/media/media1.mp3");
+          if (origEntry) {
+            const origMp3Ab = (await origEntry.async("arraybuffer")) as ArrayBuffer;
+            const wavBytes = await processMusikForPptx(origMp3Ab, track.fileUrl);
+
+            // Alte MP3 entfernen, neue WAV hinzufügen
+            zip.remove("ppt/media/media1.mp3");
+            zip.file("ppt/media/media1.wav", wavBytes);
+
+            // Relationships aktualisieren: mp3 → wav
+            const relsPath = "ppt/slides/_rels/slide1.xml.rels";
+            const relsEntry = zip.file(relsPath);
+            if (relsEntry) {
+              let relsXml = await relsEntry.async("string") as string;
+              relsXml = relsXml.replaceAll("media1.mp3", "media1.wav");
+              zip.file(relsPath, relsXml);
+            }
+
+            // Content_Types.xml: wav hinzufügen falls nicht vorhanden
+            const ctEntry = zip.file("[Content_Types].xml");
+            if (ctEntry) {
+              let ctXml = await ctEntry.async("string") as string;
+              if (!ctXml.includes('Extension="wav"')) {
+                ctXml = ctXml.replace(
+                  '<Default Extension="mp3"',
+                  '<Default Extension="wav" ContentType="audio/wav"/><Default Extension="mp3"',
+                );
+              }
+              zip.file("[Content_Types].xml", ctXml);
+            }
+          }
+        }
+      }
+
       const blob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -447,6 +653,7 @@ export default function ReelErstellenPage() {
       case 0: return !!form.buchtitel.trim() && !!form.autorName.trim();
       case 1: return !!form.thema.trim() && !!form.hauptfigur.trim() && !!form.inhalte.trim() && !!form.beschreibung.trim();
       case 2: return !!form.autorHerkunft.trim() && !!form.autorBeruf.trim() && !!form.autorStil.trim() && !!autorImg;
+      case 3: return !!selectedMusikId;
       default: return false;
     }
   }
@@ -786,6 +993,64 @@ export default function ReelErstellenPage() {
         </div>
       );
 
+      case 3: {
+        return (
+          <div className="grid gap-3">
+            <div>
+              <h2 className="text-lg font-bold">Musik auswählen</h2>
+              <p className="text-sm text-arena-muted mt-0.5">
+                Der gewählte Track wird auf die Länge der Original-Musik zugeschnitten{origMusikDuration ? ` (${origMusikDuration.toFixed(1)} s)` : ""} und mit 1&thinsp;s Ausblenden am Ende versehen.
+              </p>
+            </div>
+            {musikTracks.map((track) => {
+              const isSelected = selectedMusikId === track.id;
+              const isPreviewing = previewingId === track.id;
+              return (
+                <label
+                  key={track.id}
+                  className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors ${
+                    isSelected ? "border-arena-blue bg-blue-50" : "border-arena-border bg-white hover:bg-gray-50"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="musikTrack"
+                    className="accent-arena-blue shrink-0"
+                    checked={isSelected}
+                    onChange={() => { stopPreview(); setSelectedMusikId(track.id); }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{track.title}</p>
+                    {track.style && <p className="text-xs text-arena-muted">{track.style}</p>}
+                  </div>
+                  {track.fileUrl && (
+                    <button
+                      type="button"
+                      className="btn btn-sm shrink-0"
+                      title={isPreviewing ? "Stopp" : "Vorschau (zugeschnitten)"}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (isPreviewing) {
+                          stopPreview();
+                        } else {
+                          void playTrimmedPreview(track.id, track.fileUrl!);
+                        }
+                      }}
+                    >
+                      {isPreviewing ? <StopIcon className="size-4" /> : <PlayIcon className="size-4" />}
+                      <span className="hidden sm:inline text-xs">{isPreviewing ? "Stopp" : "Vorschau"}</span>
+                    </button>
+                  )}
+                </label>
+              );
+            })}
+            {musikTracks.length === 0 && (
+              <p className="text-xs text-arena-muted italic">Keine zusätzlichen Tracks vorhanden.</p>
+            )}
+          </div>
+        );
+      }
+
       default: return null;
     }
   }
@@ -930,7 +1195,7 @@ export default function ReelErstellenPage() {
         )}
 
         {/* ── Step-Tabs ── */}
-        <div className="grid grid-cols-3 gap-1 py-1.5 px-1.5 rounded-lg border border-gray-300 bg-gray-100">
+        <div className="grid grid-cols-4 gap-1 py-1.5 px-1.5 rounded-lg border border-gray-300 bg-gray-100">
           {STEP_LABELS.map((label, i) => (
             <button
               key={i}
@@ -950,15 +1215,17 @@ export default function ReelErstellenPage() {
         </div>
 
         {/* ── Hauptlayout: Formular + Vorschau ── */}
-        <div className="grid gap-6 md:grid-cols-[1fr_200px] items-start">
+        <div className={`grid gap-6 items-start ${step < 3 ? "md:grid-cols-[1fr_200px]" : ""}`}>
           {renderStep()}
 
-          {/* Vorschau-Sidebar */}
-          <div className="sticky top-4">
-            <p className="text-xs text-arena-muted mb-1 text-center">Vorschau – Folie {step + 1}/3</p>
-            {renderSlidePreview(step)}
-            <p className="text-center text-[10px] text-arena-muted mt-1">Hochformat (Shorts)</p>
-          </div>
+          {/* Vorschau-Sidebar (nur Schritte 0–2) */}
+          {step < 3 && (
+            <div className="sticky top-4">
+              <p className="text-xs text-arena-muted mb-1 text-center">Vorschau – Folie {step + 1}/3</p>
+              {renderSlidePreview(step)}
+              <p className="text-center text-[10px] text-arena-muted mt-1">Hochformat (Shorts)</p>
+            </div>
+          )}
         </div>
 
         {/* ── Feedback ── */}
