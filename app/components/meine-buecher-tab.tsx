@@ -22,6 +22,11 @@ type CoAuthor = {
   confirmedAt?: string;
 };
 
+type CoAuthorSuggestion = {
+  username: string;
+  displayName: string;
+};
+
 type Book = {
   id: string;
   ownerUsername: string;
@@ -78,8 +83,10 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
   const [coAuthorMsg, setCoAuthorMsg] = useState("");
   const [coAuthorIsError, setCoAuthorIsError] = useState(false);
   const [currentCoAuthors, setCurrentCoAuthors] = useState<CoAuthor[]>([]);
-  // Beim Anlegen: Liste der Benutzernamen, die nach dem Speichern eingeladen werden
   const [pendingCoAuthorUsernames, setPendingCoAuthorUsernames] = useState<string[]>([]);
+  const [coAuthorSuggestions, setCoAuthorSuggestions] = useState<CoAuthorSuggestion[]>([]);
+  const [coAuthorSuggestionsOpen, setCoAuthorSuggestionsOpen] = useState(false);
+  const coAuthorWrapperRef = useRef<HTMLDivElement>(null);
 
   /* ── excerpt state ── */
   const [excerptTitle, setExcerptTitle] = useState("");
@@ -119,6 +126,37 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     void loadBooks();
   }, [username]);
 
+  /* ── Autocomplete: Autoren-Suche nach 3 Zeichen ── */
+  useEffect(() => {
+    if (coAuthorInput.length < 3) {
+      setCoAuthorSuggestions([]);
+      setCoAuthorSuggestionsOpen(false);
+      return;
+    }
+    const controller = new AbortController();
+    fetch(`/api/kooperationen/search-users?q=${encodeURIComponent(coAuthorInput)}&role=autor`, {
+      signal: controller.signal,
+    })
+      .then((r) => r.json())
+      .then((d: { users?: CoAuthorSuggestion[] }) => {
+        setCoAuthorSuggestions(d.users ?? []);
+        setCoAuthorSuggestionsOpen(true);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [coAuthorInput]);
+
+  /* ── Dropdown bei Klick außerhalb schließen ── */
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (coAuthorWrapperRef.current && !coAuthorWrapperRef.current.contains(e.target as Node)) {
+        setCoAuthorSuggestionsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   async function refreshBooks() {
     const refresh = await fetch("/api/books/list", {
       method: "POST",
@@ -156,6 +194,8 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     setCoAuthorIsError(false);
     setCurrentCoAuthors([]);
     setPendingCoAuthorUsernames([]);
+    setCoAuthorSuggestions([]);
+    setCoAuthorSuggestionsOpen(false);
     setIsBookOverlayOpen(false);
   }
 
@@ -184,6 +224,8 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     setCoAuthorIsError(false);
     setCurrentCoAuthors([]);
     setPendingCoAuthorUsernames([]);
+    setCoAuthorSuggestions([]);
+    setCoAuthorSuggestionsOpen(false);
     setIsBookOverlayOpen(true);
   }
 
@@ -447,35 +489,6 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     }
   }
 
-  async function onInviteCoAuthor() {
-    if (!username || !editingBookId || !coAuthorInput.trim()) return;
-    setCoAuthorBusy(true);
-    setCoAuthorMsg("");
-    setCoAuthorIsError(false);
-    try {
-      const res = await fetch("/api/books/co-authors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookId: editingBookId, coAuthorUsername: coAuthorInput.trim() }),
-      });
-      const data = (await res.json()) as { message?: string };
-      if (!res.ok) throw new Error(data.message ?? "Fehler beim Einladen.");
-      setCoAuthorMsg(data.message ?? "Einladung gesendet!");
-      setCoAuthorInput("");
-      // Mitautoren-Liste aktualisieren
-      const refreshed = await fetch("/api/books/list", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ownerUsername: username }) });
-      const refreshedData = (await refreshed.json()) as { books?: Book[] };
-      const updatedBook = refreshedData.books?.find((b) => b.id === editingBookId);
-      if (updatedBook) setCurrentCoAuthors(updatedBook.coAuthors ?? []);
-      await refreshBooks();
-    } catch (err) {
-      setCoAuthorIsError(true);
-      setCoAuthorMsg(err instanceof Error ? err.message : "Fehler beim Einladen.");
-    } finally {
-      setCoAuthorBusy(false);
-    }
-  }
-
   async function onRemoveCoAuthor(coAuthorUsername: string) {
     if (!editingBookId) return;
     setCoAuthorBusy(true);
@@ -513,6 +526,48 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     if (status === "confirmed") return { label: "bestätigt", cls: "text-green-700" };
     if (status === "declined") return { label: "abgelehnt", cls: "text-red-600" };
     return { label: "ausstehend", cls: "text-arena-muted" };
+  }
+
+  function addCoAuthor(username: string) {
+    const val = username.trim();
+    if (!val) return;
+    if (editingBookId) {
+      setCoAuthorInput(val);
+      setCoAuthorSuggestionsOpen(false);
+      // Bei bestehenden Büchern: sofort einladen (nutzt coAuthorInput via Ref wäre nötig, daher direkt aufrufen)
+      void (async () => {
+        setCoAuthorBusy(true);
+        setCoAuthorMsg("");
+        setCoAuthorIsError(false);
+        try {
+          const res = await fetch("/api/books/co-authors", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ bookId: editingBookId, coAuthorUsername: val }),
+          });
+          const data = (await res.json()) as { message?: string };
+          if (!res.ok) throw new Error(data.message ?? "Fehler beim Einladen.");
+          setCoAuthorMsg(data.message ?? "Einladung gesendet!");
+          setCoAuthorInput("");
+          const refreshed = await fetch("/api/books/list", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ownerUsername: username }) });
+          const refreshedData = (await refreshed.json()) as { books?: Book[] };
+          const updatedBook = refreshedData.books?.find((b) => b.id === editingBookId);
+          if (updatedBook) setCurrentCoAuthors(updatedBook.coAuthors ?? []);
+          await refreshBooks();
+        } catch (err) {
+          setCoAuthorIsError(true);
+          setCoAuthorMsg(err instanceof Error ? err.message : "Fehler beim Einladen.");
+        } finally {
+          setCoAuthorBusy(false);
+        }
+      })();
+    } else {
+      if (!pendingCoAuthorUsernames.includes(val)) {
+        setPendingCoAuthorUsernames((prev) => [...prev, val]);
+      }
+      setCoAuthorInput("");
+      setCoAuthorSuggestionsOpen(false);
+    }
   }
 
   return (
@@ -789,56 +844,53 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                     </div>
                   )}
 
-                  <div className="flex gap-2 items-end">
-                    <label className="grid gap-1 text-[0.95rem] flex-1">
-                      Benutzername hinzufügen
+                  <div ref={coAuthorWrapperRef} className="relative">
+                    <label className="grid gap-1 text-[0.95rem]">
+                      Autor*in hinzufügen
                       <input
                         className="input-base"
                         value={coAuthorInput}
-                        onChange={(e) => setCoAuthorInput(e.target.value)}
-                        placeholder="Benutzername eingeben"
+                        onChange={(e) => {
+                          setCoAuthorInput(e.target.value);
+                          setCoAuthorMsg("");
+                        }}
+                        placeholder="Name oder Benutzername (min. 3 Zeichen)"
+                        autoComplete="off"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
-                            if (editingBookId) {
-                              void onInviteCoAuthor();
-                            } else {
-                              const val = coAuthorInput.trim();
-                              if (val && !pendingCoAuthorUsernames.includes(val)) {
-                                setPendingCoAuthorUsernames((prev) => [...prev, val]);
-                                setCoAuthorInput("");
-                              }
-                            }
+                            if (coAuthorInput.trim()) addCoAuthor(coAuthorInput.trim());
                           }
+                          if (e.key === "Escape") setCoAuthorSuggestionsOpen(false);
                         }}
+                        onFocus={() => { if (coAuthorSuggestions.length > 0) setCoAuthorSuggestionsOpen(true); }}
+                        disabled={coAuthorBusy}
                       />
                     </label>
-                    <button
-                      type="button"
-                      className="btn btn-sm"
-                      disabled={coAuthorBusy || !coAuthorInput.trim()}
-                      onClick={() => {
-                        if (editingBookId) {
-                          void onInviteCoAuthor();
-                        } else {
-                          const val = coAuthorInput.trim();
-                          if (val && !pendingCoAuthorUsernames.includes(val)) {
-                            setPendingCoAuthorUsernames((prev) => [...prev, val]);
-                          }
-                          setCoAuthorInput("");
-                        }
-                      }}
-                    >
-                      {coAuthorBusy ? "..." : "Hinzufügen"}
-                    </button>
+                    {coAuthorSuggestionsOpen && coAuthorSuggestions.length > 0 && (
+                      <ul className="absolute z-50 mt-1 w-full rounded-lg border border-arena-border bg-white shadow-lg max-h-52 overflow-y-auto">
+                        {coAuthorSuggestions.map((s) => (
+                          <li key={s.username}>
+                            <button
+                              type="button"
+                              className="w-full text-left px-3 py-2 hover:bg-arena-bg flex items-baseline gap-2 text-sm"
+                              onMouseDown={(e) => { e.preventDefault(); addCoAuthor(s.username); }}
+                            >
+                              <span className="font-medium">{s.username}</span>
+                              {s.displayName !== s.username && (
+                                <span className="text-arena-muted truncate">{s.displayName}</span>
+                              )}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                   {coAuthorMsg && (
                     <p className={`text-xs mt-1 ${coAuthorIsError ? "text-red-600" : "text-green-700"}`}>{coAuthorMsg}</p>
                   )}
                   <p className="text-xs text-arena-muted mt-1">
-                    {editingBookId
-                      ? "Die eingeladene Person erhält eine Nachricht und kann die Mitautorenschaft bestätigen oder ablehnen."
-                      : "Die angegebenen Personen werden nach dem Anlegen eingeladen und können die Mitautorenschaft bestätigen."}
+                    Nur, wenn der Autor ein Profil hat. Autoren ohne Profil in der BuchArena kannst du bei der Beschreibung angeben. Änderungen sind jederzeit möglich.
                   </p>
                 </div>
 
