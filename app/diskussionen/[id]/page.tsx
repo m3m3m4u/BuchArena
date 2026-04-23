@@ -204,6 +204,9 @@ export default function DiskussionDetailPage() {
   const [isSending, setIsSending] = useState(false);
   const [username, setUsername] = useState("");
   const [replyingTo, setReplyingTo] = useState<{ id: string; author: string } | null>(null);
+  const [inlineReplyId, setInlineReplyId] = useState<string | null>(null);
+  const [inlineReplyBody, setInlineReplyBody] = useState("");
+  const [lastReadAt, setLastReadAt] = useState<Date | null>(null);
 
   // Editing state for the discussion itself
   const [isEditingDiscussion, setIsEditingDiscussion] = useState(false);
@@ -244,6 +247,10 @@ export default function DiskussionDetailPage() {
     setIsLoading(true);
     setMessage("");
 
+    // Letzten Lesezeitpunkt aus localStorage holen, bevor wir als gelesen markieren
+    const stored = typeof window !== "undefined" ? localStorage.getItem(`discussion-read-${discussionId}`) : null;
+    const prevReadAt = stored ? new Date(stored) : null;
+
     try {
       const response = await fetch("/api/discussions/get", {
         method: "POST",
@@ -260,9 +267,13 @@ export default function DiskussionDetailPage() {
         throw new Error(data.message ?? "Fehler beim Laden.");
       }
 
+      setLastReadAt(prevReadAt);
       setDiscussion(data.discussion ?? null);
       // Als gelesen markieren
       if (data.discussion?.id) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`discussion-read-${discussionId}`, new Date().toISOString());
+        }
         fetch("/api/discussions/mark-read", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -313,6 +324,33 @@ export default function DiskussionDetailPage() {
       setMessage(
         error instanceof Error ? error.message : "Antwort konnte nicht gesendet werden."
       );
+    } finally {
+      setIsSending(false);
+    }
+  }
+
+  async function handleInlineReply(parentReplyId: string) {
+    if (!inlineReplyBody.trim()) return;
+    setIsSending(true);
+    try {
+      const response = await fetch("/api/discussions/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          discussionId,
+          authorUsername: username,
+          body: inlineReplyBody.trim(),
+          parentReplyId,
+        }),
+      });
+      const data = (await response.json()) as { message?: string; lesezeichen?: number };
+      if (!response.ok) throw new Error(data.message ?? "Fehler");
+      if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
+      setInlineReplyBody("");
+      setInlineReplyId(null);
+      await loadDiscussion();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Antwort konnte nicht gesendet werden.");
     } finally {
       setIsSending(false);
     }
@@ -490,6 +528,28 @@ export default function DiskussionDetailPage() {
               />
             </article>
 
+            {/* Reply form – direkt unter der Frage */}
+            <div className="grid gap-2 mt-2 border-t border-arena-border-light pt-4">
+              <p className="text-xs text-arena-muted m-0">
+                Formatierung: **fett**, *kursiv*, [Linktext](URL) und direkte URLs werden erkannt.
+              </p>
+              <textarea
+                className="input-base"
+                value={replyBody}
+                onChange={(e) => setReplyBody(e.target.value)}
+                maxLength={3000}
+                rows={3}
+                placeholder="Deine Antwort zur Diskussion …"
+              />
+              <button
+                className="btn self-start"
+                onClick={handleReply}
+                disabled={isSending || !replyBody.trim()}
+              >
+                {isSending ? "Wird gesendet …" : "Antworten"}
+              </button>
+            </div>
+
             {/* Replies */}
             <div className="grid gap-3 mt-4">
               <h2>
@@ -521,9 +581,12 @@ export default function DiskussionDetailPage() {
                         <div key={reply.id} style={{ marginLeft: depth > 0 ? Math.min(depth * 20, 60) : 0 }}>
                           <article className="rounded-lg border border-arena-border-light p-3 ml-3 sm:ml-6">
                             <div className="flex items-center justify-between gap-2 mb-2">
-                              <span>
+                              <span className="flex items-center gap-1.5 flex-wrap">
                                 <strong>{reply.displayName || reply.authorUsername}</strong>{" "}
                                 <RoleBadges username={reply.authorUsername} hasProfile={reply.hasProfile} hasSpeakerProfile={reply.hasSpeakerProfile} hasBloggerProfile={reply.hasBloggerProfile} />
+                                {lastReadAt && new Date(reply.createdAt) > lastReadAt && (
+                                  <span className="text-xs bg-arena-yellow text-arena-blue px-1.5 py-0.5 rounded font-medium">Neu</span>
+                                )}
                               </span>
                               <span className="text-xs text-arena-muted">
                                 {timeAgo(reply.createdAt)}
@@ -539,11 +602,16 @@ export default function DiskussionDetailPage() {
                               <button
                                 className="btn btn-sm text-xs"
                                 onClick={() => {
-                                  setReplyingTo({ id: reply.id, author: reply.authorUsername });
-                                  setTimeout(() => document.getElementById("reply-form")?.scrollIntoView({ behavior: "smooth" }), 100);
+                                  if (inlineReplyId === reply.id) {
+                                    setInlineReplyId(null);
+                                    setInlineReplyBody("");
+                                  } else {
+                                    setInlineReplyId(reply.id);
+                                    setInlineReplyBody("");
+                                  }
                                 }}
                               >
-                                Antworten
+                                {inlineReplyId === reply.id ? "Abbrechen" : "Antworten"}
                               </button>
                               {reply.authorUsername === username && (
                                 <button
@@ -563,6 +631,37 @@ export default function DiskussionDetailPage() {
                               onReact={(emoji) => handleReact(emoji, reply.id)}
                             />
                           </article>
+
+                          {/* Inline Antwortformular */}
+                          {inlineReplyId === reply.id && (
+                            <div className="mt-2 ml-3 sm:ml-6 pl-3 border-l-2 border-arena-blue/30 grid gap-2">
+                              <textarea
+                                className="input-base text-sm"
+                                value={inlineReplyBody}
+                                onChange={(e) => setInlineReplyBody(e.target.value)}
+                                maxLength={3000}
+                                rows={3}
+                                placeholder={`Antwort an ${reply.displayName || reply.authorUsername} …`}
+                                autoFocus
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  className="btn btn-sm"
+                                  onClick={() => handleInlineReply(reply.id)}
+                                  disabled={isSending || !inlineReplyBody.trim()}
+                                >
+                                  {isSending ? "Sende …" : "Absenden"}
+                                </button>
+                                <button
+                                  className="btn btn-sm"
+                                  onClick={() => { setInlineReplyId(null); setInlineReplyBody(""); }}
+                                >
+                                  Abbrechen
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
                           {children.length > 0 && (
                             <div className="grid gap-3 mt-3">
                               {children.map((child) => renderReply(child, depth + 1))}
@@ -576,41 +675,6 @@ export default function DiskussionDetailPage() {
                   })()}
                 </div>
               )}
-
-              {/* Reply form */}
-              <div id="reply-form" className="grid gap-2 mt-4">
-                <h3>Antworten</h3>
-                {replyingTo && (
-                  <div className="flex items-center gap-2 text-sm text-arena-muted bg-gray-50 rounded-lg px-3 py-2">
-                    <span>Antwort auf <strong>{replyingTo.author}</strong></span>
-                    <button
-                      className="btn btn-sm text-xs"
-                      onClick={() => setReplyingTo(null)}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-                <p className="text-xs text-arena-muted">
-                  Formatierung: **fett**, *kursiv*, [Linktext](URL) und direkte
-                  URLs werden erkannt.
-                </p>
-                <textarea
-                  className="input-base"
-                  value={replyBody}
-                  onChange={(e) => setReplyBody(e.target.value)}
-                  maxLength={3000}
-                  rows={5}
-                  placeholder="Deine Antwort ..."
-                />
-                <button
-                  className="btn"
-                  onClick={handleReply}
-                  disabled={isSending || !replyBody.trim()}
-                >
-                  {isSending ? "Wird gesendet ..." : "Antworten"}
-                </button>
-              </div>
             </div>
           </>
         )}

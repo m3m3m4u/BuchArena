@@ -94,6 +94,7 @@ export default function DiskussionenPage() {
   /* ── Filter / Suche ── */
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTopic, setFilterTopic] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "activity">("activity");
 
   /* ── Poll state ── */
   const [polls, setPolls] = useState<PollItem[]>([]);
@@ -267,24 +268,47 @@ export default function DiskussionenPage() {
         {message && <p className="text-red-700">{message}</p>}
 
         {/* ═══ Such- und Filterleiste ═══ */}
-        <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-          <input
-            type="text"
-            className="input-base text-sm"
-            placeholder="Diskussionen durchsuchen …"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <select
-            className="input-base text-sm"
-            value={filterTopic}
-            onChange={(e) => setFilterTopic(e.target.value)}
-          >
-            <option value="">Alle Themen</option>
-            {DISCUSSION_TOPICS.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
+        <div className="grid gap-2">
+          <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+            <input
+              type="text"
+              className="input-base text-sm"
+              placeholder="Diskussionen durchsuchen …"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <select
+              className="input-base text-sm"
+              value={filterTopic}
+              onChange={(e) => setFilterTopic(e.target.value)}
+            >
+              <option value="">Alle Themen</option>
+              {DISCUSSION_TOPICS.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-arena-muted text-xs">Sortieren:</span>
+            <div className="flex gap-1 border border-arena-border-light rounded-lg p-0.5">
+              <button
+                className={`text-xs px-2.5 py-1 rounded transition-colors ${
+                  sortBy === "activity" ? "bg-arena-blue text-white font-medium" : "text-arena-muted hover:text-arena-text"
+                }`}
+                onClick={() => setSortBy("activity")}
+              >
+                Neueste Aktivität
+              </button>
+              <button
+                className={`text-xs px-2.5 py-1 rounded transition-colors ${
+                  sortBy === "newest" ? "bg-arena-blue text-white font-medium" : "text-arena-muted hover:text-arena-text"
+                }`}
+                onClick={() => setSortBy("newest")}
+              >
+                Neueste Themen
+              </button>
+            </div>
+          </div>
         </div>
 
         {isLoading ? (
@@ -311,7 +335,19 @@ export default function DiskussionenPage() {
           const items: ListItem[] = [
             ...filteredDiscussions.map((d) => ({ type: "discussion" as const, data: d })),
             ...filteredPolls.map((p) => ({ type: "poll" as const, data: p })),
-          ].sort((a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime());
+          ].sort((a, b) => {
+            if (sortBy === "newest") {
+              return new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime();
+            }
+            // activity: lastActivityAt für Diskussionen, createdAt für Abstimmungen
+            const aTime = a.type === "discussion"
+              ? new Date((a.data as DiscussionItem).lastActivityAt ?? a.data.createdAt).getTime()
+              : new Date(a.data.createdAt).getTime();
+            const bTime = b.type === "discussion"
+              ? new Date((b.data as DiscussionItem).lastActivityAt ?? b.data.createdAt).getTime()
+              : new Date(b.data.createdAt).getTime();
+            return bTime - aTime;
+          });
 
           if (items.length === 0) {
             if (search || filterTopic) return <p className="text-arena-muted text-sm">Keine Ergebnisse für diese Filter.</p>;
@@ -327,14 +363,19 @@ export default function DiskussionenPage() {
                     <div
                       key={`d-${d.id}`}
                       onClick={() => router.push(`/diskussionen/${d.id}`)}
-                      className={`rounded-lg border p-3 sm:p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit ${d.unread ? "border-arena-accent bg-arena-accent/5" : "border-arena-border"}`}
+                      className={`rounded-lg border p-3 sm:p-3.5 cursor-pointer transition-colors no-underline text-inherit ${d.unread ? "border-arena-yellow bg-arena-yellow/5 hover:bg-arena-yellow/10" : "border-arena-border hover:border-gray-500"}`}
                     >
                       <div className="flex items-start justify-between gap-2 sm:gap-3">
                         <span className={`text-sm sm:text-base line-clamp-2 flex items-center gap-1.5 ${d.unread ? "font-bold" : "font-semibold"}`}>
-                          {d.unread && <span className="inline-block w-2 h-2 rounded-full bg-arena-accent flex-shrink-0" />}
+                          {d.unread && (
+                            <span className="inline-flex items-center gap-1 text-xs bg-arena-yellow text-arena-blue px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">
+                              <span className="inline-block w-1.5 h-1.5 rounded-full bg-arena-blue/60" />
+                              Neu
+                            </span>
+                          )}
                           {d.title}
                           {d.topic && d.topic !== "Allgemein" && (
-                            <span className="text-xs bg-arena-accent/10 text-arena-accent px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">{d.topic}</span>
+                            <span className="text-xs bg-arena-blue/10 text-arena-blue px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">{d.topic}</span>
                           )}
                         </span>
                         <span className="text-xs text-arena-muted whitespace-nowrap flex-shrink-0">
@@ -347,7 +388,7 @@ export default function DiskussionenPage() {
                           <RoleBadges username={d.authorUsername} hasProfile={d.hasProfile} hasSpeakerProfile={d.hasSpeakerProfile} hasBloggerProfile={d.hasBloggerProfile} />
                         </span>
                         <span className="text-xs text-arena-muted flex-shrink-0">
-                          {timeAgo(d.lastActivityAt)}
+                          zuletzt aktiv {timeAgo(d.lastActivityAt)}
                         </span>
                       </div>
                     </div>
