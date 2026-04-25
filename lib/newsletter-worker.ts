@@ -22,6 +22,12 @@ function buildUnsubscribeLink(email: string): string {
   return `${baseUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(token)}`;
 }
 
+function makeImagesAbsolute(html: string): string {
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "https://bucharena.org").replace(/\/+$/, "");
+  // Ersetze alle src="/" oder src='/' mit absolutem Basis-URL
+  return html.replace(/(<img[^>]+src=["'])(\/)([^"']*["'])/gi, `$1${baseUrl}/$3`);
+}
+
 function appendUnsubscribeFooter(html: string, email: string): string {
   const link = buildUnsubscribeLink(email);
   const footer = `
@@ -44,7 +50,8 @@ async function processNextQueueEntry(): Promise<boolean> {
   if (!entry) return false; // Queue leer
 
   try {
-    const htmlWithFooter = appendUnsubscribeFooter(entry.htmlContent, entry.email);
+    const htmlAbsolute = makeImagesAbsolute(entry.htmlContent);
+    const htmlWithFooter = appendUnsubscribeFooter(htmlAbsolute, entry.email);
     await sendMail(entry.email, entry.subject, htmlWithFooter);
 
     await queue.updateOne(
