@@ -9,7 +9,8 @@
  */
 
 import { getNewsletterQueueCollection, createUnsubscribeToken } from "@/lib/newsletter";
-import { sendMail } from "@/lib/mail";
+import { sendMail, type MailAttachment } from "@/lib/mail";
+import { getWebdavClient, isAllowedRemotePath } from "@/lib/webdav-storage";
 
 const SEND_INTERVAL_MS = 30_000;   // 30 Sekunden zwischen zwei E-Mails
 const IDLE_INTERVAL_MS = 60_000;   // 60 Sekunden Pause wenn Queue leer
@@ -22,10 +23,76 @@ function buildUnsubscribeLink(email: string): string {
   return `${baseUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(token)}`;
 }
 
-function makeImagesAbsolute(html: string): string {
-  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "https://bucharena.org").replace(/\/+$/, "");
-  // Ersetze alle src="/" oder src='/' mit absolutem Basis-URL
-  return html.replace(/(<img[^>]+src=["'])(\/)([^"']*["'])/gi, `$1${baseUrl}/$3`);
+function mimeFromPath(p: string): string {
+  const lower = p.toLowerCase();
+  if (lower.endsWith(".png")) return "image/png";
+  if (lower.endsWith(".webp")) return "image/webp";
+  if (lower.endsWith(".gif")) return "image/gif";
+  return "image/jpeg";
+}
+
+async function embedImages(
+  html: string
+): Promise<{ html: string; attachments: MailAttachment[] }> {
+  const attachments: MailAttachment[] = [];
+  const cidMap = new Map<string, string>(); // path -> cid
+
+  // Alle <img src="/api/profile/image?path=..."> oder src="/..."-URLs finden
+  const imgRegex = /<img([^>]*?)src=["'](\/[^"']+)["']([^>]*?)>/gi;
+  let match: RegExpExecArray | null;
+  const replacements: Array<{ original: string; replacement: string }> = [];
+
+  while ((match = imgRegex.exec(html)) !== null) {
+    const fullTag = match[0];
+    const before = match[1];
+    const src = match[2];
+    const after = match[3];
+
+    let remotePath: string | null = null;
+
+    // Intern: /api/profile/image?path=...
+    if (src.startsWith("/api/profile/image")) {
+      try {
+        const u = new URL(src, "http://localhost");
+        remotePath = u.searchParams.get("path");
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!remotePath || !isAllowedRemotePath(remotePath)) continue;
+
+    let cid = cidMap.get(remotePath);
+    if (!cid) {
+      try {
+        const client = getWebdavClient();
+        const content = (await client.getFileContents(remotePath, {
+          format: "binary",
+        })) as Buffer;
+        cid = `img-${attachments.length}-${Date.now()}`;
+        attachments.push({
+          filename: remotePath.split("/").pop() ?? "image",
+          content,
+          content_type: mimeFromPath(remotePath),
+          content_id: cid,
+        });
+        cidMap.set(remotePath, cid);
+      } catch {
+        // Bild nicht erreichbar – überspringen
+        continue;
+      }
+    }
+
+    const newTag = `<img${before}src="cid:${cid}"${after}>`;
+    replacements.push({ original: fullTag, replacement: newTag });
+  }
+
+  let result = html;
+  for (const { original, replacement } of replacements) {
+    result = result.replace(original, replacement);
+  }
+
+  return { html: result, attachments };
 }
 
 function appendUnsubscribeFooter(html: string, email: string): string {
@@ -50,9 +117,9 @@ async function processNextQueueEntry(): Promise<boolean> {
   if (!entry) return false; // Queue leer
 
   try {
-    const htmlAbsolute = makeImagesAbsolute(entry.htmlContent);
-    const htmlWithFooter = appendUnsubscribeFooter(htmlAbsolute, entry.email);
-    await sendMail(entry.email, entry.subject, htmlWithFooter);
+    const { html: htmlEmbedded, attachments } = await embedImages(entry.htmlContent);
+    const htmlWithFooter = appendUnsubscribeFooter(htmlEmbedded, entry.email);
+    await sendMail(entry.email, entry.subject, htmlWithFooter, attachments.length > 0 ? attachments : undefined);
 
     await queue.updateOne(
       { _id: entry._id },
