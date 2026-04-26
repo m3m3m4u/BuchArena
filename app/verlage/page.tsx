@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+
+const ProfileMapView = dynamic(() => import("@/app/components/profile-map"), { ssr: false });
 
 const monthLabels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
@@ -19,6 +22,7 @@ export default function VerlagePage() {
   const [verlage, setVerlage] = useState<DiscoverVerlag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     async function loadVerlage() {
@@ -41,7 +45,11 @@ export default function VerlagePage() {
   return (
     <main className="top-centered-main">
       <section className="card">
-        <h1>Verlage entdecken</h1>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h1 className="m-0">Verlage entdecken</h1>
+          <button type="button" className="btn" onClick={() => setShowMap(true)}>📍 Suche nach Wohnort</button>
+        </div>
+        {showMap && <ProfileMapView category="verlage" categoryLabel="Verlage" onClose={() => setShowMap(false)} />}
         <p className="text-arena-muted text-[0.95rem]">
           Hier findest du Verlage und ihre Verfügbarkeit.
         </p>

@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { parseGenres } from "@/app/components/genre-picker";
+import dynamic from "next/dynamic";
+
+const ProfileMapView = dynamic(() => import("@/app/components/profile-map"), { ssr: false });
 
 const PAGE_SIZE = 10;
 
@@ -45,6 +48,7 @@ export default function TestleserPage() {
   const [filterGenre, setFilterGenre] = useState("");
   const [page, setPage] = useState(1);
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     async function loadTestleser() {
@@ -88,7 +92,11 @@ export default function TestleserPage() {
   return (
     <main className="top-centered-main">
       <section className="card">
-        <h1>Testleser entdecken</h1>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h1 className="m-0">Testleser entdecken</h1>
+          <button type="button" className="btn" onClick={() => setShowMap(true)}>📍 Suche nach Wohnort</button>
+        </div>
+        {showMap && <ProfileMapView category="testleser" categoryLabel="Testleser" onClose={() => setShowMap(false)} />}
         <p className="text-arena-muted text-[0.95rem]">
           Hier findest du Testleser und ihre bevorzugten Genres.
         </p>

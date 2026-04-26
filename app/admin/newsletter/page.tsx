@@ -50,10 +50,9 @@ const ResizableImage = Image.extend({
     if (align) attrs["data-align"] = align;
     // E-Mail-kompatible Attribute direkt ausgeben (kein CSS float/margin)
     attrs.style = "display:block;max-width:100%;height:auto;";
-    if (width) {
-      const w = String(width);
-      attrs.width = w.endsWith("%") ? w : w.replace("px", "");
-    }
+    // Wenn keine Breite gesetzt: 100% damit Outlook nicht Originalgröße nimmt
+    const widthVal = width ? (String(width).endsWith("%") ? String(width) : String(width).replace("px", "")) : "100%";
+    attrs.width = widthVal;
     if (align === "left") {
       attrs.align = "left";
       attrs.style = "display:block;max-width:100%;height:auto;margin-right:16px;margin-bottom:8px;";

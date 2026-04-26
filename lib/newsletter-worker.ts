@@ -72,9 +72,11 @@ export function prepareEmailHtml(html: string): string {
     }
 
     // E-Mail-kompatibles <img>-Tag aufbauen (kein float-CSS, stattdessen align-Attribut)
+    // Wenn keine Breite gesetzt: 100% damit Outlook nicht Originalgröße nimmt
+    const effectiveWidth = width || "100%";
     let imgTag = `<img src="${absoluteSrc}"`;
     if (alt) imgTag += ` alt="${alt}"`;
-    if (width) imgTag += ` width="${width}"`;
+    imgTag += ` width="${effectiveWidth}"`;
     if (dataAlign === "left") imgTag += ` align="left"`;
     else if (dataAlign === "right") imgTag += ` align="right"`;
     imgTag += ` style="display:block;max-width:100%;height:auto;" border="0">`;

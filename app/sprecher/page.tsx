@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+
+const ProfileMapView = dynamic(() => import("@/app/components/profile-map"), { ssr: false });
 
 function mulberry32(seed: number) {
   return () => {
@@ -41,6 +44,7 @@ export default function SprecherPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     async function loadSpeakers() {
@@ -65,7 +69,11 @@ export default function SprecherPage() {
   return (
     <main className="top-centered-main">
       <section className="card">
-        <h1>Hörbuchsprecher entdecken</h1>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h1 className="m-0">Hörbuchsprecher entdecken</h1>
+          <button type="button" className="btn" onClick={() => setShowMap(true)}>📍 Suche nach Wohnort</button>
+        </div>
+        {showMap && <ProfileMapView category="sprecher" categoryLabel="Sprecher" onClose={() => setShowMap(false)} />}
         <p className="text-arena-muted text-[0.95rem]">
           Hier findest du Hörbuchsprecher und ihre Sprechproben.
         </p>
