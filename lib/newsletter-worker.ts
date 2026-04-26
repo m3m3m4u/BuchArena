@@ -31,14 +31,16 @@ function mimeFromPath(p: string): string {
   return "image/jpeg";
 }
 
-async function embedImages(
+export async function embedImages(
   html: string
 ): Promise<{ html: string; attachments: MailAttachment[] }> {
   const attachments: MailAttachment[] = [];
   const cidMap = new Map<string, string>(); // path -> cid
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "https://bucharena.org").replace(/\/+$/, "");
 
-  // Alle <img src="/api/profile/image?path=..."> oder src="/..."-URLs finden
-  const imgRegex = /<img([^>]*?)src=["'](\/[^"']+)["']([^>]*?)>/gi;
+  // Alle <img src="/...">-URLs finden (relative Pfade)
+  // Unterstützt sowohl <img ...> als auch <img ... /> (self-closing)
+  const imgRegex = /<img([^>]*?)src=["'](\/[^"']+)["']([^>]*?)\/?>/gi;
   let match: RegExpExecArray | null;
   const replacements: Array<{ original: string; replacement: string }> = [];
 
@@ -60,7 +62,14 @@ async function embedImages(
       }
     }
 
-    if (!remotePath || !isAllowedRemotePath(remotePath)) continue;
+    // Wenn kein gültiger WebDAV-Pfad: relative URL → absolute URL umwandeln
+    if (!remotePath || !isAllowedRemotePath(remotePath)) {
+      const absoluteSrc = `${baseUrl}${src}`;
+      const newTag = `<img${before}src="${absoluteSrc}"${after}>`;
+      replacements.push({ original: fullTag, replacement: newTag });
+      console.warn(`[Newsletter] Bild als absolute URL eingebettet: ${absoluteSrc}`);
+      continue;
+    }
 
     let cid = cidMap.get(remotePath);
     if (!cid) {
@@ -77,8 +86,13 @@ async function embedImages(
           content_id: cid,
         });
         cidMap.set(remotePath, cid);
-      } catch {
-        // Bild nicht erreichbar – überspringen
+        console.log(`[Newsletter] Bild eingebettet: ${remotePath}`);
+      } catch (err) {
+        // WebDAV-Fehler: als absolute URL einbetten
+        const absoluteSrc = `${baseUrl}${src}`;
+        const newTag = `<img${before}src="${absoluteSrc}"${after}>`;
+        replacements.push({ original: fullTag, replacement: newTag });
+        console.error(`[Newsletter] Bild nicht erreichbar (${remotePath}), als absolute URL: ${absoluteSrc}`, err instanceof Error ? err.message : err);
         continue;
       }
     }

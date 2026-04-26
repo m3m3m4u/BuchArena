@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
 import { sendMail } from "@/lib/mail";
 import { createUnsubscribeToken } from "@/lib/newsletter";
+import { embedImages } from "@/lib/newsletter-worker";
 
 /**
  * POST /api/newsletter/test
@@ -53,7 +54,9 @@ export async function POST(request: Request) {
 
     const fullHtml = testBanner + htmlContent + footer;
 
-    await sendMail(testEmail, `[TEST] ${subject}`, fullHtml);
+    const { html: embeddedHtml, attachments } = await embedImages(fullHtml);
+
+    await sendMail(testEmail, `[TEST] ${subject}`, embeddedHtml, attachments.length > 0 ? attachments : undefined);
 
     return NextResponse.json({ message: `Testzusendung erfolgreich an ${testEmail} gesendet.` });
   } catch (err) {
