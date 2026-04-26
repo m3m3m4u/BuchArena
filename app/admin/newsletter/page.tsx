@@ -45,17 +45,22 @@ const ResizableImage = Image.extend({
   renderHTML({ node, HTMLAttributes }: { node: { attrs: Record<string, unknown> }; HTMLAttributes: Record<string, unknown> }) {
     const width = node.attrs.width as string | null;
     const align = node.attrs.align as string | null;
-    const styles: string[] = [];
-    if (width) {
-      const w = String(width);
-      styles.push(w.endsWith("%") ? `width: ${w}; max-width: 100%` : `width: ${w}px; max-width: 100%`);
-    }
-    if (align === "center") styles.push("display: block; margin-left: auto; margin-right: auto");
-    else if (align === "left") styles.push("float: left; margin-right: 1rem; margin-bottom: 0.5rem");
-    else if (align === "right") styles.push("float: right; margin-left: 1rem; margin-bottom: 0.5rem");
+
     const attrs: Record<string, unknown> = { ...HTMLAttributes };
     if (align) attrs["data-align"] = align;
-    if (styles.length) attrs.style = styles.join("; ");
+    // E-Mail-kompatible Attribute direkt ausgeben (kein CSS float/margin)
+    attrs.style = "display:block;max-width:100%;height:auto;";
+    if (width) {
+      const w = String(width);
+      attrs.width = w.endsWith("%") ? w : w.replace("px", "");
+    }
+    if (align === "left") attrs.align = "left";
+    else if (align === "right") attrs.align = "right";
+
+    // Zentriert: in <div> einwickeln
+    if (align === "center") {
+      return ["div", { style: "text-align:center;margin:0 auto;" }, ["img", attrs]];
+    }
     return ["img", attrs];
   },
 });
