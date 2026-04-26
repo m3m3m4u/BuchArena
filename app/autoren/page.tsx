@@ -3,9 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { normalizeGenre } from "@/lib/genres";
-import dynamic from "next/dynamic";
-
-const ProfileMapView = dynamic(() => import("@/app/components/profile-map"), { ssr: false });
 
 type AuthorBook = { title: string; genre: string; ageFrom: number; ageTo: number };
 type DiscoverAuthor = { username: string; displayName: string; profileSlug: string; profileImageUrl: string; profileImageCrop?: { x: number; y: number; zoom: number }; lastOnline: string | null; lesezeichenTotal: number; books: AuthorBook[] };
@@ -44,7 +41,6 @@ export default function AutorenPage() {
   const [message, setMessage] = useState("");
   const [page, setPage] = useState(1);
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
-  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     async function loadAuthors() {
@@ -129,9 +125,8 @@ export default function AutorenPage() {
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <h1 className="m-0">Autoren entdecken</h1>
-          <button type="button" className="btn" onClick={() => setShowMap(true)}>📍 Suche nach Wohnort</button>
+          <Link href="/wohnort-karte/autoren" className="btn">Suche nach Wohnort</Link>
         </div>
-        {showMap && <ProfileMapView category="autoren" categoryLabel="Autoren" onClose={() => setShowMap(false)} />}
 
         <label className="grid gap-1 text-[0.95rem]">
           Suche

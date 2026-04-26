@@ -59,11 +59,10 @@ const CATEGORY_COLOR: Record<Category, string> = {
 
 type Props = {
   category: Category;
-  onClose: () => void;
   categoryLabel: string;
 };
 
-export default function ProfileMapView({ category, onClose, categoryLabel }: Props) {
+export default function ProfileMapView({ category, categoryLabel }: Props) {
   const [users, setUsers] = useState<MapUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [geocodeProgress, setGeocodeProgress] = useState<{ done: number; total: number } | null>(null);
@@ -224,55 +223,37 @@ export default function ProfileMapView({ category, onClose, categoryLabel }: Pro
       : null;
 
   return (
-    <div className="overlay-backdrop" onClick={onClose}>
-      <div
-        className="bg-white rounded-xl shadow-2xl flex flex-col"
-        style={{ width: "min(900px, 96vw)", maxHeight: "90vh" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2 border-b border-arena-border">
-          <div>
-            <h2 className="m-0 text-lg">Suche nach Wohnort – {categoryLabel}</h2>
-            {geocodeProgress && geocodeProgress.done < geocodeProgress.total && (
-              <p className="text-xs text-arena-muted m-0">
-                Orte werden ermittelt … {geocodeProgress.done}/{geocodeProgress.total}
-              </p>
-            )}
-            {locatedPercent !== null && (
-              <p className="text-xs text-arena-muted m-0">
-                {locatedPercent} von {users.length} Einträgen auf der Karte
-              </p>
-            )}
-          </div>
-          <button
-            type="button"
-            className="btn btn-sm"
-            onClick={onClose}
-            style={{ flexShrink: 0 }}
-          >
-            ✕ Schließen
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="flex-1 overflow-hidden relative">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full min-h-[400px] text-arena-muted">
-              Lade Daten …
-            </div>
-          ) : users.length === 0 ? (
-            <div className="flex items-center justify-center h-full min-h-[400px] text-arena-muted">
-              Noch keine Einträge mit Postleitzahl vorhanden.
-            </div>
-          ) : (
-            <div
-              ref={mapContainer}
-              style={{ width: "100%", height: "100%", minHeight: 420 }}
-            />
-          )}
-        </div>
+    <div>
+      {/* Header */}
+      <div className="mb-3">
+        <h2 className="m-0 text-lg">Suche nach Wohnort – {categoryLabel}</h2>
+        {geocodeProgress && geocodeProgress.done < geocodeProgress.total && (
+          <p className="text-xs text-arena-muted m-0">
+            Orte werden ermittelt … {geocodeProgress.done}/{geocodeProgress.total}
+          </p>
+        )}
+        {locatedPercent !== null && (
+          <p className="text-xs text-arena-muted m-0">
+            {locatedPercent} von {users.length} Einträgen auf der Karte
+          </p>
+        )}
       </div>
+
+      {/* Map body */}
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[400px] text-arena-muted">
+          Lade Daten …
+        </div>
+      ) : users.length === 0 ? (
+        <div className="flex items-center justify-center min-h-[400px] text-arena-muted">
+          Noch keine Einträge mit Postleitzahl vorhanden.
+        </div>
+      ) : (
+        <div
+          ref={mapContainer}
+          style={{ width: "100%", height: "calc(100vh - 220px)", minHeight: 420 }}
+        />
+      )}
     </div>
   );
 }

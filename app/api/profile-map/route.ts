@@ -22,7 +22,7 @@ function getLocationField(profile: Record<string, any> | undefined, field: strin
   const f = profile[field];
   if (!f) return "";
   if (typeof f === "string") return f;
-  if (typeof f === "object" && f.visibility !== "hidden") return f.value ?? "";
+  if (typeof f === "object" && f.visibility === "public") return f.value ?? "";
   return "";
 }
 
