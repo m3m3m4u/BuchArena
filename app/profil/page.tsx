@@ -1220,6 +1220,19 @@ function ProfilPageInner() {
         />
 
         <FieldWithVisibility
+          label="Postleitzahl"
+          value={profile.postalCode.value}
+          visibility={profile.postalCode.visibility}
+          onValueChange={(value) =>
+            setProfile((current) => ({
+              ...current,
+              postalCode: { ...current.postalCode, value },
+            }))
+          }
+          onVisibilityChange={(visibility) => updateVisibility("postalCode", visibility)}
+        />
+
+        <FieldWithVisibility
           label="Ort"
           value={profile.city.value}
           visibility={profile.city.visibility}
@@ -1554,6 +1567,30 @@ function ProfilPageInner() {
           }
           onVisibilityChange={(visibility) =>
             setSpeakerProfile((c) => ({ ...c, ort: { ...c.ort, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Postleitzahl"
+          value={speakerProfile.postalCode?.value ?? ""}
+          visibility={speakerProfile.postalCode?.visibility ?? "internal"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, postalCode: { ...c.postalCode, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, postalCode: { ...c.postalCode, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Land"
+          value={speakerProfile.country?.value ?? ""}
+          visibility={speakerProfile.country?.visibility ?? "internal"}
+          onValueChange={(value) =>
+            setSpeakerProfile((c) => ({ ...c, country: { ...c.country, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setSpeakerProfile((c) => ({ ...c, country: { ...c.country, visibility } }))
           }
         />
 
@@ -1928,6 +1965,42 @@ function ProfilPageInner() {
         </div>
 
         <FieldWithVisibility
+          label="Postleitzahl"
+          value={bloggerProfile.postalCode?.value ?? ""}
+          visibility={bloggerProfile.postalCode?.visibility ?? "internal"}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, postalCode: { ...c.postalCode, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, postalCode: { ...c.postalCode, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Wohnort"
+          value={bloggerProfile.city?.value ?? ""}
+          visibility={bloggerProfile.city?.visibility ?? "internal"}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, city: { ...c.city, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, city: { ...c.city, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
+          label="Land"
+          value={bloggerProfile.country?.value ?? ""}
+          visibility={bloggerProfile.country?.visibility ?? "internal"}
+          onValueChange={(value) =>
+            setBloggerProfile((c) => ({ ...c, country: { ...c.country, value } }))
+          }
+          onVisibilityChange={(visibility) =>
+            setBloggerProfile((c) => ({ ...c, country: { ...c.country, visibility } }))
+          }
+        />
+
+        <FieldWithVisibility
           label="Social Media: Instagram"
           value={bloggerProfile.socialInstagram.value}
           visibility={bloggerProfile.socialInstagram.visibility}
@@ -2204,6 +2277,11 @@ function ProfilPageInner() {
           </button>
         </div>
 
+        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Standort</h3>
+        <FieldWithVisibility label="Postleitzahl" value={testleserProfile.postalCode?.value ?? ""} visibility={testleserProfile.postalCode?.visibility ?? "internal"} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, postalCode: { ...c.postalCode, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, postalCode: { ...c.postalCode, visibility } }))} />
+        <FieldWithVisibility label="Wohnort" value={testleserProfile.city?.value ?? ""} visibility={testleserProfile.city?.visibility ?? "internal"} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, city: { ...c.city, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, city: { ...c.city, visibility } }))} />
+        <FieldWithVisibility label="Land" value={testleserProfile.country?.value ?? ""} visibility={testleserProfile.country?.visibility ?? "internal"} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, country: { ...c.country, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, country: { ...c.country, visibility } }))} />
+
         <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Kontakt / Social Media</h3>
         <FieldWithVisibility label="Social Media: Instagram" value={testleserProfile.socialInstagram.value} visibility={testleserProfile.socialInstagram.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, visibility } }))} />
         <FieldWithVisibility label="Social Media: Facebook" value={testleserProfile.socialFacebook.value} visibility={testleserProfile.socialFacebook.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, visibility } }))} />
@@ -2346,6 +2424,11 @@ function ProfilPageInner() {
             })}
           </div>
         </div>
+
+        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Standort</h3>
+        <FieldWithVisibility label="Postleitzahl" value={lektorenProfile.postalCode?.value ?? ""} visibility={lektorenProfile.postalCode?.visibility ?? "internal"} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, postalCode: { ...c.postalCode, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, postalCode: { ...c.postalCode, visibility } }))} />
+        <FieldWithVisibility label="Wohnort" value={lektorenProfile.city?.value ?? ""} visibility={lektorenProfile.city?.visibility ?? "internal"} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, city: { ...c.city, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, city: { ...c.city, visibility } }))} />
+        <FieldWithVisibility label="Land" value={lektorenProfile.country?.value ?? ""} visibility={lektorenProfile.country?.visibility ?? "internal"} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, country: { ...c.country, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, country: { ...c.country, visibility } }))} />
 
         <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Kontakt / Social Media</h3>
         <FieldWithVisibility label="Website" value={lektorenProfile.socialWebsite.value} visibility={lektorenProfile.socialWebsite.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, visibility } }))} />
@@ -2508,6 +2591,11 @@ function ProfilPageInner() {
             })}
           </div>
         </div>
+
+        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Standort</h3>
+        <FieldWithVisibility label="Postleitzahl" value={verlageProfile.postalCode?.value ?? ""} visibility={verlageProfile.postalCode?.visibility ?? "internal"} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, postalCode: { ...c.postalCode, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, postalCode: { ...c.postalCode, visibility } }))} />
+        <FieldWithVisibility label="Wohnort" value={verlageProfile.city?.value ?? ""} visibility={verlageProfile.city?.visibility ?? "internal"} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, city: { ...c.city, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, city: { ...c.city, visibility } }))} />
+        <FieldWithVisibility label="Land" value={verlageProfile.country?.value ?? ""} visibility={verlageProfile.country?.visibility ?? "internal"} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, country: { ...c.country, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, country: { ...c.country, visibility } }))} />
 
         <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Webseite / Social Media</h3>
         <FieldWithVisibility label="Website" value={verlageProfile.socialWebsite.value} visibility={verlageProfile.socialWebsite.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, visibility } }))} />

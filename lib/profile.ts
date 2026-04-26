@@ -22,6 +22,7 @@ export type ProfileData = {
   motto: ProfileField;
   ueberMich: ProfileField;
   beruf: ProfileField;
+  postalCode: ProfileField;
   city: ProfileField;
   country: ProfileField;
   socialInstagram: ProfileField;
@@ -53,7 +54,9 @@ export type SpeakerProfileData = {
     crop: ProfileImageCrop;
   };
   name: ProfileField;
+  postalCode: ProfileField;
   ort: ProfileField;
+  country: ProfileField;
   motto: ProfileField;
   ueberMich: ProfileField;
   webseite: ProfileField;
@@ -97,6 +100,10 @@ export function createDefaultProfile(): ProfileData {
       visibility: "internal",
     },
     beruf: {
+      value: "",
+      visibility: "internal",
+    },
+    postalCode: {
       value: "",
       visibility: "internal",
     },
@@ -171,6 +178,9 @@ export type BloggerProfileData = {
   beschreibung: ProfileField;
   lieblingsbuch: ProfileField;
   genres: string; // kommasepariert
+  postalCode: ProfileField;
+  city: ProfileField;
+  country: ProfileField;
   socialInstagram: ProfileField;
   socialFacebook: ProfileField;
   socialLinkedin: ProfileField;
@@ -193,7 +203,9 @@ export function createDefaultSpeakerProfile(): SpeakerProfileData {
       crop: { x: 50, y: 50, zoom: 1 },
     },
     name: { value: "", visibility: "internal" },
+    postalCode: { value: "", visibility: "internal" },
     ort: { value: "", visibility: "internal" },
+    country: { value: "", visibility: "internal" },
     motto: { value: "", visibility: "internal" },
     ueberMich: { value: "", visibility: "internal" },
     webseite: { value: "", visibility: "internal" },
@@ -226,6 +238,9 @@ export function createDefaultBloggerProfile(): BloggerProfileData {
     beschreibung: { value: "", visibility: "internal" },
     lieblingsbuch: { value: "", visibility: "internal" },
     genres: "",
+    postalCode: { value: "", visibility: "internal" },
+    city: { value: "", visibility: "internal" },
+    country: { value: "", visibility: "internal" },
     socialInstagram: { value: "", visibility: "hidden" },
     socialFacebook: { value: "", visibility: "hidden" },
     socialLinkedin: { value: "", visibility: "hidden" },
@@ -252,6 +267,9 @@ export type TestleserProfileData = {
   zuMir: string;
   genres: string; // kommasepariert
   verfuegbar: boolean; // freie Kapazitäten
+  postalCode: ProfileField;
+  city: ProfileField;
+  country: ProfileField;
   socialInstagram: ProfileField;
   socialFacebook: ProfileField;
   socialLinkedin: ProfileField;
@@ -277,6 +295,9 @@ export function createDefaultTestleserProfile(): TestleserProfileData {
     zuMir: "",
     genres: "",
     verfuegbar: false,
+    postalCode: { value: "", visibility: "internal" },
+    city: { value: "", visibility: "internal" },
+    country: { value: "", visibility: "internal" },
     socialInstagram: { value: "", visibility: "hidden" },
     socialFacebook: { value: "", visibility: "hidden" },
     socialLinkedin: { value: "", visibility: "hidden" },
@@ -303,6 +324,9 @@ export type LektorenProfileData = {
   motto: string;
   zuMir: string;
   kapazitaeten: number[]; // Monatsnummern 1–12 mit Kapazität
+  postalCode: ProfileField;
+  city: ProfileField;
+  country: ProfileField;
   socialInstagram: ProfileField;
   socialFacebook: ProfileField;
   socialLinkedin: ProfileField;
@@ -328,6 +352,9 @@ export function createDefaultLektorenProfile(): LektorenProfileData {
     motto: "",
     zuMir: "",
     kapazitaeten: [],
+    postalCode: { value: "", visibility: "internal" },
+    city: { value: "", visibility: "internal" },
+    country: { value: "", visibility: "internal" },
     socialInstagram: { value: "", visibility: "hidden" },
     socialFacebook: { value: "", visibility: "hidden" },
     socialLinkedin: { value: "", visibility: "hidden" },
@@ -356,6 +383,9 @@ export type VerlageProfileData = {
   ansprechperson: string;
   voraussetzungen: string;
   kapazitaeten: number[]; // Monatsnummern 1–12 mit Kapazität
+  postalCode: ProfileField;
+  city: ProfileField;
+  country: ProfileField;
   socialInstagram: ProfileField;
   socialFacebook: ProfileField;
   socialLinkedin: ProfileField;
@@ -383,6 +413,9 @@ export function createDefaultVerlageProfile(): VerlageProfileData {
     ansprechperson: "",
     voraussetzungen: "",
     kapazitaeten: [],
+    postalCode: { value: "", visibility: "internal" },
+    city: { value: "", visibility: "internal" },
+    country: { value: "", visibility: "internal" },
     socialInstagram: { value: "", visibility: "hidden" },
     socialFacebook: { value: "", visibility: "hidden" },
     socialLinkedin: { value: "", visibility: "hidden" },

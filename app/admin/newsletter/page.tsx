@@ -54,8 +54,15 @@ const ResizableImage = Image.extend({
       const w = String(width);
       attrs.width = w.endsWith("%") ? w : w.replace("px", "");
     }
-    if (align === "left") attrs.align = "left";
-    else if (align === "right") attrs.align = "right";
+    if (align === "left") {
+      attrs.align = "left";
+      attrs.style = "display:block;max-width:100%;height:auto;margin-right:16px;margin-bottom:8px;";
+    } else if (align === "right") {
+      attrs.align = "right";
+      attrs.style = "display:block;max-width:100%;height:auto;margin-left:16px;margin-bottom:8px;";
+    } else {
+      attrs.style = "display:block;max-width:100%;height:auto;margin-bottom:12px;";
+    }
 
     // Zentriert: in <div> einwickeln
     if (align === "center") {

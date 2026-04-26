@@ -55,6 +55,7 @@ function sanitizeProfile(input: ProfileData | undefined): ProfileData {
     motto: sanitizeField(source.motto, base.motto, 300),
     ueberMich: sanitizeField(source.ueberMich, base.ueberMich, 2000),
     beruf: sanitizeField(source.beruf, base.beruf, 120),
+    postalCode: sanitizeField(source.postalCode, base.postalCode, 20),
     city: sanitizeField(source.city, base.city, 120),
     country: sanitizeField(source.country, base.country, 120),
     socialInstagram: sanitizeField(source.socialInstagram, base.socialInstagram, 250),
