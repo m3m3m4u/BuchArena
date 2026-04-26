@@ -25,7 +25,7 @@ function buildUnsubscribeLink(email: string): string {
 export function makeImagesAbsolute(html: string): string {
   const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "https://bucharena.org").replace(/\/+$/, "");
   // Max-Breite für Newsletter-Bilder (wird als WebP mit quality=80 geliefert)
-  const NEWSLETTER_IMG_WIDTH = 600;
+  const NEWSLETTER_IMG_WIDTH = 1200;
 
   // Alle <img src="/...">-URLs (relative Pfade) → absolute URLs umwandeln
   return html.replace(
