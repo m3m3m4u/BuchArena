@@ -22,27 +22,69 @@ function buildUnsubscribeLink(email: string): string {
   return `${baseUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(token)}`;
 }
 
-export function makeImagesAbsolute(html: string): string {
+/**
+ * Bereitet HTML für den E-Mail-Versand vor:
+ * - Relative Bild-URLs → absolute URLs (mit Komprimierung via ?w=)
+ * - CSS-Styles → E-Mail-kompatible HTML-Attribute (width, align, centering-div)
+ */
+export function prepareEmailHtml(html: string): string {
   const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "https://bucharena.org").replace(/\/+$/, "");
-  // Max-Breite für Newsletter-Bilder (wird als WebP mit quality=80 geliefert)
   const NEWSLETTER_IMG_WIDTH = 1200;
 
-  // Alle <img src="/...">-URLs (relative Pfade) → absolute URLs umwandeln
-  return html.replace(
-    /<img([^>]*?)src=["'](\/[^"']+)["']([^>]*?)\/?>/gi,
-    (_fullTag, before, src, after) => {
-      let absoluteSrc: string;
-      // /api/profile/image?path=... → Komprimierung via ?w= aktivieren
+  return html.replace(/<img([^>]*?)>/gi, (_fullTag, innerAttrs: string) => {
+    // src extrahieren
+    const srcMatch = innerAttrs.match(/src=["']([^"']*)["']/i);
+    if (!srcMatch) return _fullTag;
+    const src = srcMatch[1];
+
+    // alt extrahieren
+    const altMatch = innerAttrs.match(/alt=["']([^"']*)["']/i);
+    const alt = altMatch ? altMatch[1] : "";
+
+    // data-align extrahieren (vom ResizableImage-Node gesetzt)
+    const dataAlignMatch = innerAttrs.match(/data-align=["']([^"']*)["']/i);
+    const dataAlign = dataAlignMatch ? dataAlignMatch[1] : null;
+
+    // Breite aus style extrahieren (z.B. "width: 600px" oder "width: 100%")
+    const styleMatch = innerAttrs.match(/style=["']([^"']*)["']/i);
+    const styleStr = styleMatch ? styleMatch[1] : "";
+    const widthMatch = styleStr.match(/width:\s*([\d.]+%|[\d.]+px)/i);
+    let width = "";
+    if (widthMatch) {
+      const w = widthMatch[1];
+      width = w.endsWith("%") ? w : w.replace("px", "");
+    }
+
+    // Zentrierungslogik aus Style (margin: auto = zentriert)
+    const isCentered = dataAlign === "center" ||
+      (styleStr.includes("margin-left: auto") || styleStr.includes("margin-left:auto"));
+
+    // Absolute src aufbauen
+    let absoluteSrc = src;
+    if (src.startsWith("/")) {
       if (src.startsWith("/api/profile/image")) {
-        const separator = src.includes("?") ? "&" : "?";
-        absoluteSrc = `${baseUrl}${src}${separator}w=${NEWSLETTER_IMG_WIDTH}`;
+        const sep = src.includes("?") ? "&" : "?";
+        absoluteSrc = `${baseUrl}${src}${sep}w=${NEWSLETTER_IMG_WIDTH}`;
       } else {
         absoluteSrc = `${baseUrl}${src}`;
       }
-      console.log(`[Newsletter] Bild als absolute URL: ${absoluteSrc}`);
-      return `<img${before}src="${absoluteSrc}"${after}>`;
+      console.log(`[Newsletter] Bild: ${absoluteSrc}`);
     }
-  );
+
+    // E-Mail-kompatibles <img>-Tag aufbauen (kein float-CSS, stattdessen align-Attribut)
+    let imgTag = `<img src="${absoluteSrc}"`;
+    if (alt) imgTag += ` alt="${alt}"`;
+    if (width) imgTag += ` width="${width}"`;
+    if (dataAlign === "left") imgTag += ` align="left"`;
+    else if (dataAlign === "right") imgTag += ` align="right"`;
+    imgTag += ` style="display:block;max-width:100%;height:auto;" border="0">`;
+
+    // Zentriert: in <div> einwickeln
+    if (isCentered) {
+      return `<div style="text-align:center;margin:0 auto;">${imgTag}</div>`;
+    }
+    return imgTag;
+  });
 }
 
 function appendUnsubscribeFooter(html: string, email: string): string {
@@ -67,7 +109,7 @@ async function processNextQueueEntry(): Promise<boolean> {
   if (!entry) return false; // Queue leer
 
   try {
-    const htmlWithImages = makeImagesAbsolute(entry.htmlContent);
+    const htmlWithImages = prepareEmailHtml(entry.htmlContent);
     const htmlWithFooter = appendUnsubscribeFooter(htmlWithImages, entry.email);
     await sendMail(entry.email, entry.subject, htmlWithFooter);
 

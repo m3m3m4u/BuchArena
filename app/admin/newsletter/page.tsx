@@ -61,6 +61,40 @@ const ResizableImage = Image.extend({
 });
 
 /* ══════════════════════════════════════════════════════════════
+   E-Mail-Vorschau (600px-Container wie echter E-Mail-Client)
+══════════════════════════════════════════════════════════════ */
+
+function EmailPreview({ html }: { html: string }) {
+  const doc = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;padding:16px;background:#f3f4f6;font-family:system-ui,-apple-system,Arial,sans-serif;font-size:15px;color:#1f2937;line-height:1.6;}
+.wrap{max-width:600px;margin:0 auto;background:#fff;padding:28px 32px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+img{max-width:100%;height:auto;}
+h1{font-size:1.6em;margin:.2em 0 .5em;}
+h2{font-size:1.3em;margin:.2em 0 .5em;}
+h3{font-size:1.1em;margin:.2em 0 .5em;}
+p{margin:0 0 .9em;}
+a{color:#2563eb;}
+blockquote{border-left:3px solid #e5e7eb;margin:0 0 1em;padding-left:1em;color:#6b7280;}
+ul,ol{margin:0 0 1em;padding-left:1.5em;}
+hr{border:none;border-top:1px solid #e5e7eb;margin:1.5em 0;}
+</style></head>
+<body><div class="wrap">${html}</div></body></html>`;
+
+  return (
+    <iframe
+      srcDoc={doc}
+      title="E-Mail-Vorschau"
+      className="w-full bg-white border-x border-b border-gray-300 rounded-b-lg"
+      style={{ minHeight: "500px" }}
+      sandbox="allow-same-origin"
+    />
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
    Toolbar
 ══════════════════════════════════════════════════════════════ */
 
@@ -150,7 +184,7 @@ function UrlInputModal({ config, onClose }: { config: UrlModalConfig; onClose: (
   );
 }
 
-function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | null; htmlMode: boolean; onToggleHtml: () => void }) {
+function EditorToolbar({ editor, htmlMode, onToggleHtml, showPreview, onTogglePreview }: { editor: Editor | null; htmlMode: boolean; onToggleHtml: () => void; showPreview: boolean; onTogglePreview: () => void }) {
   const imgInputRef = useRef<HTMLInputElement>(null);
   const [urlModal, setUrlModal] = useState<UrlModalConfig | null>(null);
 
@@ -310,6 +344,7 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
         <ToolbarButton onClick={() => editor.chain().focus().redo().run()} active={false} title="Wiederholen">↪</ToolbarButton>
         <span className="border-l border-gray-300 mx-1" />
         <ToolbarButton onClick={onToggleHtml} active={htmlMode} title="HTML-Quelltext bearbeiten">&lt;/&gt; HTML</ToolbarButton>
+        <ToolbarButton onClick={onTogglePreview} active={showPreview} title="E-Mail-Vorschau (600px)">👁 Vorschau</ToolbarButton>
         <input
           ref={imgInputRef}
           type="file"
@@ -465,6 +500,7 @@ export default function NewsletterAdminPage() {
 
   const [htmlMode, setHtmlMode] = useState(false);
   const [htmlSource, setHtmlSource] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
 
   const [testEmail, setTestEmail] = useState("");
   const [testStatus, setTestStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
@@ -543,11 +579,22 @@ export default function NewsletterAdminPage() {
     if (!htmlMode) {
       setHtmlSource(editor.getHTML());
       setHtmlMode(true);
+      setShowPreview(false);
     } else {
       editor.commands.setContent(htmlSource);
       setHtmlMode(false);
     }
   }, [editor, htmlMode, htmlSource]);
+
+  const togglePreviewMode = useCallback(() => {
+    if (!editor) return;
+    if (!showPreview && htmlMode) {
+      // HTML-Modus verlassen wenn Vorschau geöffnet wird
+      editor.commands.setContent(htmlSource);
+      setHtmlMode(false);
+    }
+    setShowPreview((v) => !v);
+  }, [editor, showPreview, htmlMode, htmlSource]);
 
   const handleSend = useCallback(async () => {
     if (!editor) return;
@@ -768,8 +815,10 @@ export default function NewsletterAdminPage() {
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">Inhalt</label>
             <div className="border border-gray-300 rounded-lg overflow-hidden shadow-sm">
-              <EditorToolbar editor={editor} htmlMode={htmlMode} onToggleHtml={toggleHtmlMode} />
-              {htmlMode ? (
+              <EditorToolbar editor={editor} htmlMode={htmlMode} onToggleHtml={toggleHtmlMode} showPreview={showPreview} onTogglePreview={togglePreviewMode} />
+              {showPreview ? (
+                <EmailPreview html={editor?.getHTML() ?? ""} />
+              ) : htmlMode ? (
                 <textarea
                   value={htmlSource}
                   onChange={(e) => setHtmlSource(e.target.value)}
@@ -781,7 +830,7 @@ export default function NewsletterAdminPage() {
               )}
             </div>
             <p className="text-xs text-gray-400 mt-1">
-              Abmelde-Link wird automatisch angehängt. Bilder werden als Base64 eingebettet.
+              Abmelde-Link wird automatisch angehängt. Die Vorschau zeigt das Layout im 600px-E-Mail-Container.
             </p>
           </div>
 

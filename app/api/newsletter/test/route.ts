@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
 import { sendMail } from "@/lib/mail";
 import { createUnsubscribeToken } from "@/lib/newsletter";
-import { makeImagesAbsolute } from "@/lib/newsletter-worker";
+import { prepareEmailHtml } from "@/lib/newsletter-worker";
 
 /**
  * POST /api/newsletter/test
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
 
     const fullHtml = testBanner + htmlContent + footer;
 
-    const embeddedHtml = makeImagesAbsolute(fullHtml);
+    const embeddedHtml = prepareEmailHtml(fullHtml);
 
     await sendMail(testEmail, `[TEST] ${subject}`, embeddedHtml);
 
