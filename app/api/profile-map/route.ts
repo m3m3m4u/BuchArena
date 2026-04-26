@@ -54,8 +54,8 @@ export async function GET(request: Request) {
 
     const query2 = {
       ...query,
-      $or: [{ status: { $exists: false } }, { status: "active" }],
-    };
+      $or: [{ status: { $exists: false } }, { status: "active" as const }],
+    } as import("mongodb").Filter<import("@/lib/mongodb").UserDocument>;
 
     const docs = await users
       .find(query2, {
