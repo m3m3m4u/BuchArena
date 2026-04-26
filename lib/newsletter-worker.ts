@@ -71,15 +71,19 @@ export function prepareEmailHtml(html: string): string {
       console.log(`[Newsletter] Bild: ${absoluteSrc}`);
     }
 
-    // E-Mail-kompatibles <img>-Tag aufbauen (kein float-CSS, stattdessen align-Attribut)
-    // Wenn keine Breite gesetzt: 100% damit Outlook nicht Originalgröße nimmt
+    // E-Mail-kompatibles <img>-Tag aufbauen
+    // width-Attribut für Outlook, width im style für Gmail
     const effectiveWidth = width || "100%";
+    const widthCss = effectiveWidth.endsWith("%") ? `width:${effectiveWidth};` : `width:${effectiveWidth}px;`;
+    let marginCss = "margin-bottom:12px;";
+    if (dataAlign === "left") marginCss = "margin-right:16px;margin-bottom:8px;";
+    else if (dataAlign === "right") marginCss = "margin-left:16px;margin-bottom:8px;";
     let imgTag = `<img src="${absoluteSrc}"`;
     if (alt) imgTag += ` alt="${alt}"`;
     imgTag += ` width="${effectiveWidth}"`;
     if (dataAlign === "left") imgTag += ` align="left"`;
     else if (dataAlign === "right") imgTag += ` align="right"`;
-    imgTag += ` style="display:block;max-width:100%;height:auto;" border="0">`;
+    imgTag += ` style="display:block;${widthCss}max-width:100%;height:auto;${marginCss}" border="0">`;
 
     // Zentriert: in <div> einwickeln
     if (isCentered) {

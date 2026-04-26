@@ -48,19 +48,19 @@ const ResizableImage = Image.extend({
 
     const attrs: Record<string, unknown> = { ...HTMLAttributes };
     if (align) attrs["data-align"] = align;
-    // E-Mail-kompatible Attribute direkt ausgeben (kein CSS float/margin)
-    attrs.style = "display:block;max-width:100%;height:auto;";
-    // Wenn keine Breite gesetzt: 100% damit Outlook nicht Originalgröße nimmt
+    // Breite: 100% als Fallback wenn nicht gesetzt
     const widthVal = width ? (String(width).endsWith("%") ? String(width) : String(width).replace("px", "")) : "100%";
+    // width-Attribut für Outlook, width im style für Gmail
     attrs.width = widthVal;
+    const widthCss = widthVal.endsWith("%") ? `width:${widthVal};` : `width:${widthVal}px;`;
     if (align === "left") {
       attrs.align = "left";
-      attrs.style = "display:block;max-width:100%;height:auto;margin-right:16px;margin-bottom:8px;";
+      attrs.style = `display:block;${widthCss}max-width:100%;height:auto;margin-right:16px;margin-bottom:8px;`;
     } else if (align === "right") {
       attrs.align = "right";
-      attrs.style = "display:block;max-width:100%;height:auto;margin-left:16px;margin-bottom:8px;";
+      attrs.style = `display:block;${widthCss}max-width:100%;height:auto;margin-left:16px;margin-bottom:8px;`;
     } else {
-      attrs.style = "display:block;max-width:100%;height:auto;margin-bottom:12px;";
+      attrs.style = `display:block;${widthCss}max-width:100%;height:auto;margin-bottom:12px;`;
     }
 
     // Zentriert: in <div> einwickeln
