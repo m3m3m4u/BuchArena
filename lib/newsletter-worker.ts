@@ -24,12 +24,21 @@ function buildUnsubscribeLink(email: string): string {
 
 export function makeImagesAbsolute(html: string): string {
   const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "https://bucharena.org").replace(/\/+$/, "");
+  // Max-Breite für Newsletter-Bilder (wird als WebP mit quality=80 geliefert)
+  const NEWSLETTER_IMG_WIDTH = 600;
 
   // Alle <img src="/...">-URLs (relative Pfade) → absolute URLs umwandeln
   return html.replace(
     /<img([^>]*?)src=["'](\/[^"']+)["']([^>]*?)\/?>/gi,
     (_fullTag, before, src, after) => {
-      const absoluteSrc = `${baseUrl}${src}`;
+      let absoluteSrc: string;
+      // /api/profile/image?path=... → Komprimierung via ?w= aktivieren
+      if (src.startsWith("/api/profile/image")) {
+        const separator = src.includes("?") ? "&" : "?";
+        absoluteSrc = `${baseUrl}${src}${separator}w=${NEWSLETTER_IMG_WIDTH}`;
+      } else {
+        absoluteSrc = `${baseUrl}${src}`;
+      }
       console.log(`[Newsletter] Bild als absolute URL: ${absoluteSrc}`);
       return `<img${before}src="${absoluteSrc}"${after}>`;
     }
