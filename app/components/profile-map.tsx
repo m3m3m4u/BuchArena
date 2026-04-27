@@ -246,7 +246,7 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
         </div>
       ) : users.length === 0 ? (
         <div className="flex items-center justify-center min-h-[400px] text-arena-muted">
-          Noch keine Einträge mit Postleitzahl vorhanden.
+          Noch keine Einträge mit Ortsinformationen vorhanden.
         </div>
       ) : (
         <div

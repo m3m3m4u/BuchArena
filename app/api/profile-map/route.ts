@@ -82,7 +82,7 @@ export async function GET(request: Request) {
           : getLocationField(profile, "city");
       const country = getLocationField(profile, "country");
 
-      if (!postalCode) continue;
+      if (!postalCode && !city) continue;
 
       const displayName =
         doc.displayName ??
