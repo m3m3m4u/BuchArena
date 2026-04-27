@@ -561,19 +561,19 @@ export default function AdminPage() {
         {/* ══ Tab: Buch der Woche ══ */}
         {mainTab === "bdw" && (
           <div className="grid gap-2">
-            <label className="flex items-center gap-3 cursor-pointer">
+            <div className="flex items-center gap-3">
               <span className="text-sm font-semibold">Aktiv</span>
               <button
                 type="button"
                 role="switch"
                 aria-checked={bdwActive}
                 onClick={() => setBdwActive(!bdwActive)}
-                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${bdwActive ? "bg-arena-blue" : "bg-gray-300"}`}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${bdwActive ? "bg-arena-blue" : "bg-gray-300"}`}
               >
                 <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${bdwActive ? "translate-x-5" : "translate-x-0"}`} />
               </button>
               <span className="text-xs text-arena-muted">{bdwActive ? "Wird angezeigt" : "Ausgeblendet"}</span>
-            </label>
+            </div>
 
             {/* Buch-Suche */}
             <div className="block relative">
