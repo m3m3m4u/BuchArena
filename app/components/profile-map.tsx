@@ -85,28 +85,34 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
       .finally(() => setIsLoading(false));
   }, [category]);
 
-  // Geocode all users once loaded
+  // Geocode all users once loaded (parallel batches)
   useEffect(() => {
     if (users.length === 0) return;
-    let cancelled = false;
+    const signal = { cancelled: false };
 
     (async () => {
+      const CONCURRENCY = 8;
       setGeocodeProgress({ done: 0, total: users.length });
       const results: Record<string, [number, number]> = {};
       let done = 0;
-      for (const user of users) {
-        if (cancelled) return;
-        const coords = await geocodeUser(user);
-        if (coords) {
-          results[user.username] = jitter(coords);
-        }
-        done++;
-        if (!cancelled) setGeocodeProgress({ done, total: users.length });
+
+      for (let i = 0; i < users.length; i += CONCURRENCY) {
+        if (signal.cancelled) return;
+        const batch = users.slice(i, i + CONCURRENCY);
+        await Promise.all(
+          batch.map(async (user) => {
+            const coords = await geocodeUser(user);
+            if (coords) results[user.username] = jitter(coords);
+            done++;
+            if (!signal.cancelled) setGeocodeProgress({ done, total: users.length });
+          })
+        );
       }
-      if (!cancelled) setUserCoords(results);
+
+      if (!signal.cancelled) setUserCoords(results);
     })();
 
-    return () => { cancelled = true; };
+    return () => { signal.cancelled = true; };
   }, [users]);
 
   // Initialize / update Leaflet map
