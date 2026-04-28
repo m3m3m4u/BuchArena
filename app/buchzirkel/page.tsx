@@ -115,7 +115,7 @@ export default function BuchzirkelPage() {
         <div className="rounded-xl border-2 border-red-300 bg-red-50 p-4">
           <p className="font-semibold m-0 text-red-800">🔒 Betaleser-Zirkel</p>
           <p className="text-sm text-red-700 m-0 mt-1">
-            Unveröffentlichte Manuskripte – streng vertraulich. Alle Teilnehmer unterschreiben eine Verschwiegenheitserklärung.
+            Unveröffentlichte Manuskripte – streng vertraulich. Alle Teilnehmer bestätigen eine Verschwiegenheitserklärung.
           </p>
         </div>
       </section>
