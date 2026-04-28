@@ -122,7 +122,7 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
               {error}
             </div>
           ) : (
-            <div ref={viewerRef} className="w-full h-full relative overflow-hidden" />
+            <div ref={viewerRef} className="w-full h-full relative" style={{ clipPath: "inset(0)" }} />
           )}
         </div>
 
