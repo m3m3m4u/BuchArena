@@ -187,6 +187,7 @@ export const GENRE_OPTIONS = [
   "Krimi / Thriller",
   "Horror",
   "Liebesroman / Romance",
+  "Romantasy",
   "Historischer Roman",
   "Abenteuer",
   "Biografie / Autobiografie",

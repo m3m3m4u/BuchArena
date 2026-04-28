@@ -41,6 +41,7 @@ export const GENRE_OPTIONS = [
   "Psychothriller",
   "Ratgeber / Selbsthilfe",
   "Reisebericht / Reiseführer",
+  "Romantasy",
   "Sachbuch",
   "Sachbuch – Geschichte",
   "Sachbuch – Naturwissenschaft",

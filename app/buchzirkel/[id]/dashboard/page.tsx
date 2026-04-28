@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
-import { GENRE_OPTIONS } from "@/lib/genres";
+import GenrePicker from "@/app/components/genre-picker";
 import { STANDARD_AGB_TEXT } from "@/lib/buchzirkel";
 
 type Bewerber = {
@@ -478,12 +478,8 @@ export default function BuchzirkelDashboardPage() {
                 <textarea className="input-base w-full" rows={3} value={editBeschreibung} onChange={(e) => setEditBeschreibung(e.target.value)} />
               </div>
               <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-                <div className="grid gap-1">
-                  <label className="text-sm font-semibold">Genre</label>
-                  <select className="input-base w-full" value={editGenre} onChange={(e) => setEditGenre(e.target.value)}>
-                    <option value="">Bitte wählen…</option>
-                    {GENRE_OPTIONS.map((g) => <option key={g} value={g}>{g}</option>)}
-                  </select>
+              <div className="grid gap-1">
+                  <GenrePicker label="Genre" value={editGenre} onChange={setEditGenre} />
                 </div>
                 <div className="grid gap-1">
                   <label className="text-sm font-semibold">Cover-URL</label>

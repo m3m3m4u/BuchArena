@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { GENRE_OPTIONS } from "@/lib/genres";
+import GenrePicker from "@/app/components/genre-picker";
 import { STANDARD_AGB_TEXT, STANDARD_TOPICS } from "@/lib/buchzirkel";
 
 type Leseabschnitt = { id: string; titel: string; deadline?: string; beschreibung: string };
@@ -197,11 +197,7 @@ export default function BuchzirkelErstellenPage() {
               <textarea id="beschreibung" className="input-base w-full" rows={3} value={beschreibung} onChange={(e) => setBeschreibung(e.target.value)} placeholder="Kurzbeschreibung des Buches / Projekts" />
             </div>
             <div className="grid gap-1">
-              <label className="text-sm font-semibold" htmlFor="genre">Genre</label>
-              <select id="genre" className="input-base w-full" value={genre} onChange={(e) => setGenre(e.target.value)}>
-                <option value="">Bitte wählen…</option>
-                {GENRE_OPTIONS.map((g) => <option key={g} value={g}>{g}</option>)}
-              </select>
+              <GenrePicker label="Genre" value={genre} onChange={setGenre} />
             </div>
             <div className="grid gap-1">
               <label className="text-sm font-semibold" htmlFor="coverImageUrl">Cover-URL (optional)</label>
