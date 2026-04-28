@@ -165,7 +165,7 @@ export default function TeilnehmerBereichPage() {
       <section className="card">
         <Link href={`/buchzirkel/${zirkel._id}`} className="text-arena-muted text-xs hover:underline">← Zurück</Link>
         <div className="flex items-center justify-between gap-3 mt-1 flex-wrap">
-          <h1 className="text-xl font-bold m-0">📚 {zirkel.titel}</h1>
+          <h1 className="text-xl font-bold m-0">{zirkel.titel}</h1>
           {zirkel.isVeranstalter && (
             <Link href={`/buchzirkel/${zirkel._id}/dashboard`} className="btn btn-secondary btn-sm">Dashboard →</Link>
           )}
@@ -186,9 +186,9 @@ export default function TeilnehmerBereichPage() {
       {/* Tabs */}
       <nav className="flex gap-0 mt-3 border-b border-arena-border-light overflow-x-auto">
         {[
-          { key: "diskussion" as const, label: "💬 Diskussion" },
+          { key: "diskussion" as const, label: "Diskussion" },
           { key: "dateien" as const, label: "📄 Dateien" },
-          { key: "fortschritt" as const, label: "✅ Fortschritt" },
+          { key: "fortschritt" as const, label: "Fortschritt" },
           { key: "rezensionen" as const, label: "⭐ Rezensionen" },
           ...(zirkel.fragebogen.length > 0 ? [{ key: "fragebogen" as const, label: "📝 Fragebogen" }] : []),
         ].map((t) => (
@@ -330,7 +330,7 @@ export default function TeilnehmerBereichPage() {
                     <div>
                       <p className="font-medium text-sm m-0">{a.titel}</p>
                       <p className={`text-xs m-0 mt-0.5 ${fällig ? "text-red-600 font-medium" : "text-arena-muted"}`}>
-                        📅 {deadline.toLocaleDateString("de-AT")} {fällig ? "– Überfällig!" : ""}
+                        {deadline.toLocaleDateString("de-AT")} {fällig ? "– Überfällig!" : ""}
                       </p>
                     </div>
                     <button
@@ -521,7 +521,7 @@ function FragebogenTab({
             />
           </div>
         ))}
-        {saved && <p className="text-green-700 text-sm">✅ Antworten gespeichert.</p>}
+        {saved && <p className="text-green-700 text-sm">Antworten gespeichert.</p>}
         <button type="submit" disabled={saving} className="btn btn-primary self-start">
           {saving ? "Wird gespeichert…" : "Antworten absenden"}
         </button>

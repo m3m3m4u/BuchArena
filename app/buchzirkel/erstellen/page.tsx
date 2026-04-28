@@ -103,14 +103,14 @@ export default function BuchzirkelErstellenPage() {
   return (
     <main className="top-centered-main">
       <section className="card">
-        <h1 className="text-xl font-bold m-0">📚 Buchzirkel erstellen</h1>
+        <h1 className="text-xl font-bold m-0">Buchzirkel erstellen</h1>
         <p className="text-arena-muted text-sm m-0 mt-1">
           Starte eine Testleser- oder Betaleser-Runde für dein Buch.
         </p>
         <div className="mt-3 grid grid-cols-3 gap-2 max-sm:grid-cols-1 text-sm text-arena-muted">
-          <div className="flex gap-2 items-start"><span>✏️</span><span>Erstelle den Zirkel und lege Bewerbungsfragen sowie einen Zeitplan fest.</span></div>
-          <div className="flex gap-2 items-start"><span>👥</span><span>Leser bewerben sich – du entscheidest, wer teilnimmt.</span></div>
-          <div className="flex gap-2 items-start"><span>📖</span><span>Teilnehmer lesen, diskutieren und geben Feedback im geschlossenen Bereich.</span></div>
+          <div className="flex gap-2 items-start"><span>1.</span><span>Erstelle den Zirkel und lege Bewerbungsfragen sowie einen Zeitplan fest.</span></div>
+          <div className="flex gap-2 items-start"><span>2.</span><span>Leser bewerben sich – du entscheidest, wer teilnimmt.</span></div>
+          <div className="flex gap-2 items-start"><span>3.</span><span>Teilnehmer lesen, diskutieren und geben Feedback im geschlossenen Bereich.</span></div>
         </div>
       </section>
 
@@ -126,7 +126,7 @@ export default function BuchzirkelErstellenPage() {
                 typ === "testleser" ? "border-arena-blue bg-blue-50" : "border-arena-border hover:border-arena-blue"
               }`}
             >
-              <p className="font-bold m-0">📖 Testleser-Zirkel</p>
+              <p className="font-bold m-0">Testleser-Zirkel</p>
               <p className="text-sm text-arena-muted m-0 mt-1">
                 Für bereits veröffentlichte Bücher – Rezensionen auf Amazon, Goodreads & Co.
               </p>
@@ -210,7 +210,7 @@ export default function BuchzirkelErstellenPage() {
         <section className="card">
           <h2 className="text-base font-semibold m-0 mb-1">Verschwiegenheitserklärung</h2>
           {typ === "betaleser" ? (
-            <p className="text-sm text-red-700 m-0 mb-3">🔒 Bei Betaleser-Zirkeln ist die Verschwiegenheitserklärung Pflicht.</p>
+            <p className="text-sm text-red-700 m-0 mb-3">Bei Betaleser-Zirkeln ist die Verschwiegenheitserklärung Pflicht.</p>
           ) : (
             <label className="flex items-center gap-2 text-sm cursor-pointer mb-3">
               <input type="checkbox" checked={agbPflicht} onChange={(e) => setAgbPflicht(e.target.checked)} />
@@ -292,7 +292,7 @@ export default function BuchzirkelErstellenPage() {
             Als Entwurf speichern
           </button>
           <button type="submit" disabled={saving} onClick={(e) => handleSubmit(e, "bewerbung")} className="btn btn-primary">
-            {saving ? "Wird gespeichert…" : "✅ Veröffentlichen & Bewerbungen öffnen"}
+            {saving ? "Wird gespeichert…" : "Veröffentlichen & Bewerbungen öffnen"}
           </button>
         </div>
       </form>

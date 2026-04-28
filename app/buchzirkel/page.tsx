@@ -46,7 +46,7 @@ export default function BuchzirkelPage() {
       <section className="card">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold m-0 flex items-center gap-2">📚 Buchzirkel</h1>
+            <h1 className="text-2xl font-bold m-0 flex items-center gap-2">Buchzirkel</h1>
             <p className="text-arena-muted text-sm m-0 mt-1">
               Testleser- und Betaleser-Runden – direkt von Autoren und Verlagen
             </p>
@@ -61,7 +61,7 @@ export default function BuchzirkelPage() {
 
       {/* So funktioniert's */}
       <section className="card mt-3">
-        <h2 className="text-base font-semibold m-0 mb-3">📋 So funktioniert ein Buchzirkel</h2>
+        <h2 className="text-base font-semibold m-0 mb-3">So funktioniert ein Buchzirkel</h2>
         <ol className="flex flex-col gap-2 text-sm text-arena-text pl-0 list-none m-0">
           <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">1</span><span><strong>Autor erstellt einen Zirkel</strong> – mit Beschreibung, Bewerbungsfrist und optionalen Fragen an Interessenten.</span></li>
           <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">2</span><span><strong>Leser bewerben sich</strong> – innerhalb der Bewerbungsfrist können registrierte Mitglieder eine Bewerbung einreichen.</span></li>
@@ -90,7 +90,7 @@ export default function BuchzirkelPage() {
               typFilter === "testleser" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
             }`}
           >
-            📖 Testleser-Zirkel
+            Testleser-Zirkel
           </button>
           <button
             type="button"
@@ -107,7 +107,7 @@ export default function BuchzirkelPage() {
       {/* Erklär-Karten */}
       <section className="w-full grid grid-cols-2 gap-3 mt-3 max-sm:grid-cols-1">
         <div className="rounded-xl border-2 border-arena-blue-light bg-[#1a1a2e]/5 p-4">
-          <p className="font-semibold m-0 text-arena-blue">📖 Testleser-Zirkel</p>
+          <p className="font-semibold m-0 text-arena-blue">Testleser-Zirkel</p>
           <p className="text-sm text-arena-muted m-0 mt-1">
             Rezensionsexemplare für bereits veröffentlichte Bücher – Feedback und Bewertungen auf Amazon, Goodreads & Co.
           </p>
@@ -168,7 +168,7 @@ function ZirkelKarte({ zirkel }: { zirkel: Zirkel }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-start gap-2 flex-wrap">
           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
-            {isBeta ? "🔒 Betaleser" : "📖 Testleser"}
+            {isBeta ? "🔒 Betaleser" : "Testleser"}
           </span>
           {zirkel.genre && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">
@@ -188,11 +188,11 @@ function ZirkelKarte({ zirkel }: { zirkel: Zirkel }) {
         <p className="text-sm text-arena-muted m-0 mt-1 line-clamp-2">{zirkel.beschreibung}</p>
 
         <div className="flex items-center gap-3 mt-2 text-xs text-arena-muted">
-          <span>👥 max. {zirkel.maxTeilnehmer}</span>
+          <span>max. {zirkel.maxTeilnehmer} Teilnehmer</span>
           {expired ? (
             <span className="text-red-600 font-medium">Bewerbung beendet</span>
           ) : (
-            <span>📅 Frist: {frist.toLocaleDateString("de-AT")}</span>
+            <span>Frist: {frist.toLocaleDateString("de-AT")}</span>
           )}
         </div>
       </div>

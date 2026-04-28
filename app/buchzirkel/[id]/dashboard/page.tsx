@@ -528,7 +528,7 @@ export default function BuchzirkelDashboardPage() {
           <section className="card">
             <h2 className="text-base font-semibold m-0 mb-1">Verschwiegenheitserklärung</h2>
             {zirkel.typ === "betaleser" ? (
-              <p className="text-sm text-red-700 m-0 mb-3">🔒 Bei Betaleser-Zirkeln ist die Verschwiegenheitserklärung Pflicht.</p>
+              <p className="text-sm text-red-700 m-0 mb-3">Bei Betaleser-Zirkeln ist die Verschwiegenheitserklärung Pflicht.</p>
             ) : (
               <label className="flex items-center gap-2 text-sm cursor-pointer mb-3">
                 <input type="checkbox" checked={editAgbPflicht} onChange={(e) => setEditAgbPflicht(e.target.checked)} />
@@ -647,14 +647,14 @@ function BewerberKarte({
           {bewerber.testleserProfile?.genres?.value && (
             <span className="ml-2 text-xs text-arena-muted">· {bewerber.testleserProfile.genres.value}</span>
           )}
-          {bewerber.agbAkzeptiert && <span className="ml-2 text-xs text-green-700">✅ AGB akzeptiert</span>}
+          {bewerber.agbAkzeptiert && <span className="ml-2 text-xs text-green-700">AGB akzeptiert</span>}
           <p className="text-xs text-arena-muted m-0 mt-0.5">
             {new Date(bewerber.bewirbtSichAm).toLocaleDateString("de-AT")}
           </p>
         </div>
         <div className="flex gap-2">
           <button type="button" onClick={() => onEntscheidung(bewerber._id, "angenommen")} className="btn btn-primary btn-sm">
-            ✅ Annehmen
+            Annehmen
           </button>
           <button type="button" onClick={() => onEntscheidung(bewerber._id, "abgelehnt")} className="btn btn-secondary btn-sm text-red-600">
             ✕ Ablehnen
