@@ -72,7 +72,7 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
       renditionRef.current?.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url]);
+  }, [url, portalTarget]);
 
   function prevPage() {
     if (!renditionRef.current || typeof renditionRef.current.prev !== "function") return;
