@@ -61,10 +61,12 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
   }, [url]);
 
   function prevPage() {
-    renditionRef.current?.prev();
+    if (!renditionRef.current || typeof renditionRef.current.prev !== "function") return;
+    renditionRef.current.prev();
   }
   function nextPage() {
-    renditionRef.current?.next();
+    if (!renditionRef.current || typeof renditionRef.current.next !== "function") return;
+    renditionRef.current.next();
   }
 
   return (
@@ -94,11 +96,11 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
 
         {/* Navigation */}
         <div className="flex items-center justify-between px-4 py-2 border-t border-arena-border bg-gray-50">
-          <button onClick={prevPage} className="btn btn-secondary btn-sm">← Zurück</button>
+          <button onClick={prevPage} disabled={loading || !!error} className="btn btn-secondary btn-sm disabled:opacity-40">← Zurück</button>
           {totalPages > 0 && (
             <span className="text-xs text-arena-muted">{currentPage} / {totalPages}</span>
           )}
-          <button onClick={nextPage} className="btn btn-secondary btn-sm">Weiter →</button>
+          <button onClick={nextPage} disabled={loading || !!error} className="btn btn-secondary btn-sm disabled:opacity-40">Weiter →</button>
         </div>
       </div>
     </div>
