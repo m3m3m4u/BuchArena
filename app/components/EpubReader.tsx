@@ -61,8 +61,9 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         rendition.on("locationChanged", (location: any) => {
           if (destroyed) return;
           const total = book.locations.length();
-          if (total > 0 && location?.start?.percentage != null) {
-            setCurrentPage(Math.min(total, Math.max(1, Math.round(location.start.percentage * total) + 1)));
+          if (total > 0 && location?.start?.cfi) {
+            const idx = book.locations.locationFromCfi(location.start.cfi);
+            if (idx >= 0) setCurrentPage(idx + 1);
             setTotalPages(total);
           }
         });
