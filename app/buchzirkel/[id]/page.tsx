@@ -5,6 +5,48 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 
+/** Rendert Text mit Absätzen und klickbaren URLs */
+function RichText({ text, className }: { text: string; className?: string }) {
+  const URL_RE = /https?:\/\/[^\s<>"]+/g;
+
+  function renderLine(line: string, key: number) {
+    const parts: React.ReactNode[] = [];
+    let last = 0;
+    let match: RegExpExecArray | null;
+    URL_RE.lastIndex = 0;
+    while ((match = URL_RE.exec(line)) !== null) {
+      if (match.index > last) parts.push(line.slice(last, match.index));
+      const href = match[0];
+      parts.push(
+        <a key={match.index} href={href} target="_blank" rel="noopener noreferrer"
+           className="text-arena-link underline break-all">{href}</a>
+      );
+      last = match.index + href.length;
+    }
+    if (last < line.length) parts.push(line.slice(last));
+    return <span key={key}>{parts}</span>;
+  }
+
+  const paragraphs = text.split(/\n{2,}/);
+  return (
+    <div className={className}>
+      {paragraphs.map((para, pi) => {
+        const lines = para.split("\n");
+        return (
+          <p key={pi} className="m-0 mt-2 first:mt-0">
+            {lines.map((line, li) => (
+              <span key={li}>
+                {renderLine(line, li)}
+                {li < lines.length - 1 && <br />}
+              </span>
+            ))}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 type Leseabschnitt = { id: string; titel: string; deadline?: string };
 type Topic = { id: string; titel: string; typ: string };
 
@@ -125,7 +167,7 @@ export default function BuchzirkelDetailPage() {
             <p className="text-arena-muted text-sm m-0">
               von <Link href={`/autor/${zirkel.veranstalterUsername}`} className="hover:underline">{zirkel.veranstalterUsername}</Link>
             </p>
-            {zirkel.beschreibung && <p className="text-sm m-0 mt-2">{zirkel.beschreibung}</p>}
+            {zirkel.beschreibung && <RichText text={zirkel.beschreibung} className="text-sm mt-2" />}
 
             <div className="flex gap-4 mt-3 text-sm text-arena-muted flex-wrap">
               <span>max. {zirkel.maxTeilnehmer} Teilnehmer</span>
