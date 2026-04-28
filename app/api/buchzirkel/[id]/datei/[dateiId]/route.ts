@@ -9,6 +9,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
+import JSZip from "jszip";
 import {
   getBuchzirkelCollection,
   getBuchzirkelTeilnahmenCollection,
@@ -61,20 +62,46 @@ export async function GET(
       return NextResponse.json({ message: "Datei nicht gefunden." }, { status: 404 });
     }
 
-    // Nur PDFs werden mit Wasserzeichen versehen
-    const isEpub = datei.webdavPath.endsWith(".epub");
+    // EPUB: Wasserzeichen in alle HTML/XHTML-Inhalte injizieren
+    const isEpub = datei.webdavPath.toLowerCase().endsWith(".epub");
     if (isEpub) {
-      // EPUB: direkt streamen (kein clientseitiges Rendering möglich)
       const bytes = await davGet(datei.webdavPath);
       if (!bytes) {
         return NextResponse.json({ message: "Datei nicht verfügbar." }, { status: 404 });
       }
-      return new Response(bytes.buffer as ArrayBuffer, {
+
+      const watermarkText = `${account.username} · ${new Date().toLocaleDateString("de-AT")} · BuchArena – Vertraulich`;
+      const watermarkHtml = `<div style="position:fixed;bottom:8px;left:0;right:0;text-align:center;font-size:10px;color:rgba(0,0,0,0.35);font-family:sans-serif;pointer-events:none;z-index:9999;">${watermarkText}</div>`;
+
+      const zip = await JSZip.loadAsync(bytes);
+
+      const htmlFiles = Object.keys(zip.files).filter((name) =>
+        /\.(html|xhtml|htm)$/i.test(name)
+      );
+
+      for (const filename of htmlFiles) {
+        const file = zip.files[filename];
+        if (file.dir) continue;
+        let content = await file.async("string");
+
+        // Vor </body> injizieren, sonst ans Ende hängen
+        if (/<\/body>/i.test(content)) {
+          content = content.replace(/<\/body>/i, `${watermarkHtml}</body>`);
+        } else {
+          content += watermarkHtml;
+        }
+
+        zip.file(filename, content);
+      }
+
+      const watermarkedBuffer = await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+
+      return new Response(watermarkedBuffer.buffer as ArrayBuffer, {
         headers: {
           "Content-Type": "application/epub+zip",
           "Content-Disposition": `inline; filename="${datei.originalName}"`,
-          "X-Watermark": account.username,
-          "Cache-Control": "no-store",
+          "Cache-Control": "no-store, private",
+          "X-Robots-Tag": "noindex",
         },
       });
     }
