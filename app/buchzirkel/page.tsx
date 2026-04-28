@@ -42,6 +42,11 @@ export default function BuchzirkelPage() {
 
   return (
     <main className="top-centered-main">
+      {/* Beta-Hinweis */}
+      <div className="rounded-lg bg-[#e2b714]/15 border border-[#e2b714] px-4 py-3 text-sm text-arena-blue font-medium mb-3">
+        Dieses Tool wird aktuell noch getestet!
+      </div>
+
       {/* Header */}
       <section className="card">
         <div className="flex items-center justify-between gap-4 flex-wrap">
