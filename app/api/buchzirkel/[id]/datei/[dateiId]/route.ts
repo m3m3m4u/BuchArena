@@ -71,9 +71,9 @@ export async function GET(
       }
 
       const watermarkText = `${account.username} - ${new Date().toLocaleDateString("de-AT")} - BuchArena Vertraulich`;
-      // CSS ::after in <head> injizieren – keine Strukturaenderung am Body,
-      // kompatibel mit striktem XHTML/XML in EPUBs
-      const watermarkStyle = `<style>body::after{content:"${watermarkText}";position:fixed;bottom:6px;left:0;right:0;text-align:center;font-size:10px;color:rgba(0,0,0,0.3);font-family:sans-serif;pointer-events:none;display:block;z-index:9999;}</style>`;
+      // CDATA-wrapped style fuer striktes XHTML/XML; keine Sonderzeichen im content-Wert
+      const safeWatermarkText = watermarkText.replace(/['"\\<>&]/g, " ");
+      const watermarkStyle = `<style type="text/css">/*<![CDATA[*/body::after{content:"${safeWatermarkText}";position:fixed;bottom:6px;left:0;right:0;text-align:center;font-size:10px;color:rgba(0,0,0,0.3);font-family:sans-serif;pointer-events:none;display:block;z-index:9999;}/*]]>*/</style>`;
 
       const zip = await JSZip.loadAsync(bytes);
 
@@ -86,7 +86,7 @@ export async function GET(
         if (file.dir) continue;
         let content = await file.async("string");
 
-        // <style> vor </head> injizieren – kein Body-Eingriff, XML-sicher
+        // <style> vor </head> injizieren – kein Body-Eingriff
         if (/<\/head>/i.test(content)) {
           content = content.replace(/<\/head>/i, `${watermarkStyle}</head>`);
         }
