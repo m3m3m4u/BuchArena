@@ -44,7 +44,7 @@ export default function BuchzirkelPage() {
     <main className="top-centered-main">
       {/* Beta-Hinweis */}
       <div className="rounded-lg bg-[#e2b714]/15 border border-[#e2b714] px-4 py-3 text-sm text-arena-blue font-medium mb-3">
-        Dieses Tool wird aktuell noch getestet!
+        Dieses Tool wird aktuell noch getestet! Du kannst es gerne schon verwenden und uns rückmelden, was wir noch verbessern sollten!
       </div>
 
       {/* Header */}
