@@ -17,11 +17,9 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    setPortalTarget(document.getElementById("modal-root") ?? document.body);
-  }, []);
+  const [portalTarget] = useState<HTMLElement>(() =>
+    document.getElementById("modal-root") ?? document.body
+  );
 
   useEffect(() => {
     if (!viewerRef.current) return;
@@ -72,7 +70,7 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
       renditionRef.current?.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url, portalTarget]);
+  }, [url]);
 
   function prevPage() {
     if (!renditionRef.current || typeof renditionRef.current.prev !== "function") return;
@@ -138,5 +136,5 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
     </div>
   );
 
-  return portalTarget ? createPortal(modal, portalTarget) : null;
+  return createPortal(modal, portalTarget);
 }
