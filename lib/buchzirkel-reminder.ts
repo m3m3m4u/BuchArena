@@ -35,7 +35,7 @@ export async function sendBuchzirkelDeadlineReminders(): Promise<{ sent: number;
     if (!zirkel.leseabschnitte || zirkel.leseabschnitte.length === 0) continue;
 
     // Finde Abschnitte mit Deadline morgen
-    const abschnitteHeute = zirkel.leseabschnitte.filter((a: { id: string; titel: string; deadline: string }) => {
+    const abschnitteHeute = zirkel.leseabschnitte.filter((a) => {
       const d = new Date(a.deadline);
       return d >= windowStart && d < windowEnd;
     });
