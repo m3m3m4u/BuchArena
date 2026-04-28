@@ -289,7 +289,7 @@ export default function BuchzirkelDashboardPage() {
       </section>
 
       {/* Tab-Navigation */}
-      <nav className="flex gap-1 mt-3 border-b border-arena-border-light pb-0 overflow-x-auto">
+      <nav className="sticky top-0 z-20 flex gap-1 mt-3 border-b border-arena-border-light pb-0 overflow-x-auto bg-arena-bg -mx-0">
         {[
           { key: "bewerber" as const, label: `Bewerber (${ausstehend.length})` },
           { key: "teilnehmer" as const, label: `Teilnehmer (${angenommen.length})` },
