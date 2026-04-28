@@ -55,6 +55,13 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
           if (destroyed) return;
           const total = book.locations.length();
           setTotalPages(total);
+          // Aktuelle Position nachlesen, nachdem Locations fertig sind
+          const loc = rendition.currentLocation();
+          const cfi = loc?.start?.cfi;
+          if (cfi) {
+            const idx = book.locations.locationFromCfi(cfi);
+            if (idx >= 0) setCurrentPage(idx + 1);
+          }
         });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
