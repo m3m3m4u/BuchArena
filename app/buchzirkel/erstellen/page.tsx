@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { GENRE_OPTIONS } from "@/lib/genres";
 import { STANDARD_AGB_TEXT, STANDARD_TOPICS } from "@/lib/buchzirkel";
@@ -8,6 +8,7 @@ import { STANDARD_AGB_TEXT, STANDARD_TOPICS } from "@/lib/buchzirkel";
 type Leseabschnitt = { id: string; titel: string; deadline: string; beschreibung: string };
 type Topic = { id: string; titel: string; typ: string };
 type Frage = { id: string; frage: string };
+type MeinBuch = { id: string; title: string; genre?: string; coverImageUrl?: string; description?: string };
 
 export default function BuchzirkelErstellenPage() {
   const router = useRouter();
@@ -15,6 +16,8 @@ export default function BuchzirkelErstellenPage() {
   const [error, setError] = useState("");
 
   const [typ, setTyp] = useState<"testleser" | "betaleser">("testleser");
+  const [meineBuecher, setMeineBuecher] = useState<MeinBuch[]>([]);
+  const [gewaehlteBuchId, setGewaehlteBuchId] = useState<string>("");
   const [titel, setTitel] = useState("");
   const [beschreibung, setBeschreibung] = useState("");
   const [genre, setGenre] = useState("");
@@ -37,6 +40,25 @@ export default function BuchzirkelErstellenPage() {
 
   // Bei Betaleser: AGB immer Pflicht
   const effectiveAgbPflicht = typ === "betaleser" ? true : agbPflicht;
+
+  // Eigene Bücher laden (nur für Testleser relevant)
+  useEffect(() => {
+    fetch("/api/books/list", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
+      .then((r) => r.json())
+      .then((d: { books?: MeinBuch[] }) => { if (d.books) setMeineBuecher(d.books); })
+      .catch(() => {});
+  }, []);
+
+  function handleBuchWaehlen(id: string) {
+    setGewaehlteBuchId(id);
+    if (!id) return;
+    const buch = meineBuecher.find((b) => b.id === id);
+    if (!buch) return;
+    setTitel(buch.title);
+    if (buch.genre) setGenre(buch.genre);
+    if (buch.description) setBeschreibung(buch.description);
+    if (buch.coverImageUrl) setCoverImageUrl(buch.coverImageUrl);
+  }
 
   async function handleSubmit(e: React.FormEvent, status: "entwurf" | "bewerbung") {
     e.preventDefault();
@@ -150,6 +172,22 @@ export default function BuchzirkelErstellenPage() {
         <section className="card">
           <h2 className="text-base font-semibold m-0 mb-3">Buch-Informationen</h2>
           <div className="flex flex-col gap-3">
+            {typ === "testleser" && meineBuecher.length > 0 && (
+              <div className="grid gap-1">
+                <label className="text-sm font-semibold">Aus meinen Büchern übernehmen (optional)</label>
+                <select
+                  className="input-base w-full"
+                  value={gewaehlteBuchId}
+                  onChange={(e) => handleBuchWaehlen(e.target.value)}
+                >
+                  <option value="">– Buch auswählen –</option>
+                  {meineBuecher.map((b) => (
+                    <option key={b.id} value={b.id}>{b.title}{b.genre ? ` (${b.genre})` : ""}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-arena-muted">Felder werden automatisch aus dem Buch befüllt und können angepasst werden.</p>
+              </div>
+            )}
             <div className="grid gap-1">
               <label className="text-sm font-semibold" htmlFor="titel">Titel *</label>
               <input id="titel" className="input-base w-full" value={titel} onChange={(e) => setTitel(e.target.value)} placeholder="Buchtitel oder Arbeitstitel" required />
