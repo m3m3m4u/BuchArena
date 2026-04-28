@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import { getBucharenaBooksCollection } from "@/lib/bucharena-db";
+import { getBucharenaBooksCollection, getEffectiveAmazonUrl } from "@/lib/bucharena-db";
 import { requireSuperAdmin } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
@@ -20,7 +20,15 @@ export async function GET(
         { status: 404 }
       );
     }
-    return NextResponse.json({ success: true, book });
+    return NextResponse.json({
+      success: true,
+      book: {
+        ...book,
+        amazonUrlOriginal: book.amazonUrl ?? "",
+        amazonUrl: getEffectiveAmazonUrl(book) ?? "",
+        amazonUrlOverride: book.amazonUrlOverride ?? "",
+      },
+    });
   } catch (error) {
     console.error("Fehler beim Laden des Buchs:", error);
     return NextResponse.json(

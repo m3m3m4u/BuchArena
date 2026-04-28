@@ -15,6 +15,7 @@ export type BucharenaBookDoc = {
   speaker?: string;
   authorInstagram?: string;
   amazonUrl?: string;
+  amazonUrlOverride?: string;
   instareelUrl?: string;
   youtubeLangUrl?: string;
   youtubeShortUrl?: string;
@@ -224,6 +225,14 @@ export const AGE_RANGE_OPTIONS = [
 export async function getBucharenaBooksCollection(): Promise<Collection<BucharenaBookDoc>> {
   const db = await getDatabase();
   return db.collection<BucharenaBookDoc>("bucharenabooks");
+}
+
+export function getEffectiveAmazonUrl(book: Pick<BucharenaBookDoc, "amazonUrl" | "amazonUrlOverride">): string | undefined {
+  const overrideUrl = book.amazonUrlOverride?.trim();
+  if (overrideUrl) return overrideUrl;
+
+  const originalUrl = book.amazonUrl?.trim();
+  return originalUrl || undefined;
 }
 
 export async function getBucharenaReviewsCollection(): Promise<Collection<BucharenaReviewDoc>> {

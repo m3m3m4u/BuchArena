@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBooksCollection, getUsersCollection, getDatabase } from "@/lib/mongodb";
+import { applyAmazonOverride } from "@/lib/books";
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,6 +58,7 @@ export async function GET(request: NextRequest) {
         id: b._id.toString(),
         _id: undefined,
         _owner: undefined,
+        buyLinks: applyAmazonOverride(b.buyLinks, b.amazonOverrideUrl),
         authorDisplayName: displayName,
         empfehlungenCount: countMap.get(b._id.toString()) ?? 0,
       };

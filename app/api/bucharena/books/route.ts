@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   getBucharenaBooksCollection,
+  getEffectiveAmazonUrl,
   type BucharenaBookDoc,
 } from "@/lib/bucharena-db";
 import { requireSuperAdmin, getServerAccount } from "@/lib/server-auth";
@@ -26,7 +27,15 @@ export async function GET(request: Request) {
     const query = showAll ? {} : { isActive: true };
     const books = await col.find(query).sort({ title: 1 }).toArray();
 
-    return NextResponse.json({ success: true, books });
+    return NextResponse.json({
+      success: true,
+      books: books.map((book) => ({
+        ...book,
+        amazonUrlOriginal: book.amazonUrl ?? "",
+        amazonUrl: getEffectiveAmazonUrl(book) ?? "",
+        amazonUrlOverride: book.amazonUrlOverride ?? "",
+      })),
+    });
   } catch (error) {
     console.error("Fehler beim Laden der Bücher:", error);
     return NextResponse.json(

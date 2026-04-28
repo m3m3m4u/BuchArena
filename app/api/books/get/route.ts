@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getBooksCollection, getUsersCollection } from "@/lib/mongodb";
+import { applyAmazonOverride } from "@/lib/books";
 import { createDefaultProfile } from "@/lib/profile";
 
 export async function GET(request: Request) {
@@ -65,7 +66,7 @@ export async function GET(request: Request) {
         pageCount: book.pageCount ?? 0,
         language: book.language ?? "",
         description: book.description,
-        buyLinks: book.buyLinks ?? [],
+        buyLinks: applyAmazonOverride(book.buyLinks, book.amazonOverrideUrl),
         presentationVideoUrl: book.presentationVideoUrl,
         presentationVideoInternal: book.presentationVideoInternal,
         excerpts: book.excerpts ?? [],

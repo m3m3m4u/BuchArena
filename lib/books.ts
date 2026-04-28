@@ -33,6 +33,7 @@ export type BookDocument = {
   language: string;
   description: string;
   buyLinks: string[];
+  amazonOverrideUrl?: string;
   presentationVideoUrl: string;
   presentationVideoInternal: boolean;
   excerpts: BookExcerpt[];
@@ -54,5 +55,37 @@ export type CreateBookPayload = {
   language?: string;
   description?: string;
   buyLinks?: string[];
+  amazonOverrideUrl?: string;
   presentationVideoUrl?: string;
 };
+
+export function isAmazonLink(url: string): boolean {
+  try {
+    const normalizedUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    const hostname = new URL(normalizedUrl).hostname.toLowerCase();
+    return hostname.includes("amazon") || hostname.includes("amzn.to") || hostname.includes("amzn.eu");
+  } catch {
+    return /amazon|amzn\.to|amzn\.eu/i.test(url);
+  }
+}
+
+export function getFirstAmazonLink(buyLinks: string[] | undefined): string {
+  return (buyLinks ?? []).find((link) => isAmazonLink(link)) ?? "";
+}
+
+export function applyAmazonOverride(buyLinks: string[] | undefined, amazonOverrideUrl?: string): string[] {
+  const links = [...(buyLinks ?? [])];
+  const override = amazonOverrideUrl?.trim();
+  if (!override) return links;
+
+  let replaced = false;
+  const updatedLinks = links.map((link) => {
+    if (!replaced && isAmazonLink(link)) {
+      replaced = true;
+      return override;
+    }
+    return link;
+  });
+
+  return replaced ? updatedLinks : [...updatedLinks, override];
+}
