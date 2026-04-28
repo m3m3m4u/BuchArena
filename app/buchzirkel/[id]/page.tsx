@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 
-type Leseabschnitt = { id: string; titel: string; deadline: string };
+type Leseabschnitt = { id: string; titel: string; deadline?: string };
 type Topic = { id: string; titel: string; typ: string };
 
 type Zirkel = {
@@ -157,7 +157,7 @@ export default function BuchzirkelDetailPage() {
             {zirkel.leseabschnitte.map((a, i) => (
               <div key={a.id} className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-gray-50 border border-arena-border-light">
                 <span className="font-medium text-sm">{i + 1}. {a.titel}</span>
-                <span className="text-xs text-arena-muted">{new Date(a.deadline).toLocaleDateString("de-AT")}</span>
+                {a.deadline && <span className="text-xs text-arena-muted">{new Date(a.deadline).toLocaleDateString("de-AT")}</span>}
               </div>
             ))}
           </div>

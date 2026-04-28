@@ -44,7 +44,7 @@ type Zirkel = {
   bewerbungsFragen: string[];
   agbPflicht: boolean;
   agbText: string;
-  leseabschnitte: { id: string; titel: string; deadline: string }[];
+  leseabschnitte: { id: string; titel: string; deadline?: string }[];
   diskussionsTopics: { id: string; titel: string; typ: string }[];
   fragebogen: { id: string; frage: string }[];
   dateien: { id: string; originalName: string; abschnittId?: string; uploadedAt: string }[];
@@ -83,7 +83,7 @@ export default function BuchzirkelDashboardPage() {
   const [editFragen, setEditFragen] = useState<string[]>([]);
   const [editAgbPflicht, setEditAgbPflicht] = useState(false);
   const [editAgbText, setEditAgbText] = useState(STANDARD_AGB_TEXT);
-  const [editAbschnitte, setEditAbschnitte] = useState<{ id: string; titel: string; deadline: string }[]>([]);
+  const [editAbschnitte, setEditAbschnitte] = useState<{ id: string; titel: string; deadline?: string }[]>([]);
   const [editTopics, setEditTopics] = useState<{ id: string; titel: string; typ: string }[]>([]);
   const [editFragebogen, setEditFragebogen] = useState<{ id: string; frage: string }[]>([]);
   const [neuerAbschnittTitel, setNeuerAbschnittTitel] = useState("");
@@ -115,7 +115,7 @@ export default function BuchzirkelDashboardPage() {
       setEditFragen(z.bewerbungsFragen.length ? z.bewerbungsFragen : [""]);
       setEditAgbPflicht(z.agbPflicht);
       setEditAgbText(z.agbText || STANDARD_AGB_TEXT);
-      setEditAbschnitte(z.leseabschnitte.map((a) => ({ ...a, deadline: a.deadline.split("T")[0] })));
+      setEditAbschnitte(z.leseabschnitte.map((a) => ({ ...a, deadline: a.deadline ? a.deadline.split("T")[0] : "" })));
       setEditTopics(z.diskussionsTopics);
       setEditFragebogen(z.fragebogen);
     }
@@ -179,7 +179,7 @@ export default function BuchzirkelDashboardPage() {
         bewerbungsFragen: editFragen.filter(Boolean),
         agbPflicht: effectiveAgbPflicht,
         agbText: effectiveAgbPflicht ? editAgbText : undefined,
-        leseabschnitte: editAbschnitte.map((a) => ({ ...a, deadline: new Date(a.deadline).toISOString() })),
+        leseabschnitte: editAbschnitte.map((a) => ({ ...a, deadline: a.deadline ? new Date(a.deadline).toISOString() : undefined })),
         diskussionsTopics: editTopics,
         fragebogen: editFragebogen,
       }),
@@ -195,7 +195,7 @@ export default function BuchzirkelDashboardPage() {
   }
 
   function addAbschnitt() {
-    if (!neuerAbschnittTitel.trim() || !neuerAbschnittDeadline) return;
+    if (!neuerAbschnittTitel.trim()) return;
     setEditAbschnitte((prev) => [
       ...prev,
       { id: crypto.randomUUID(), titel: neuerAbschnittTitel.trim(), deadline: neuerAbschnittDeadline },

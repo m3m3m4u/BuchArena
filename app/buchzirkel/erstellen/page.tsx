@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { GENRE_OPTIONS } from "@/lib/genres";
 import { STANDARD_AGB_TEXT, STANDARD_TOPICS } from "@/lib/buchzirkel";
 
-type Leseabschnitt = { id: string; titel: string; deadline: string; beschreibung: string };
+type Leseabschnitt = { id: string; titel: string; deadline?: string; beschreibung: string };
 type Topic = { id: string; titel: string; typ: string };
 type Frage = { id: string; frage: string };
 type MeinBuch = { id: string; title: string; genre?: string; coverImageUrl?: string; description?: string };
@@ -81,7 +81,7 @@ export default function BuchzirkelErstellenPage() {
           genreFilter: [],
           agbPflicht: effectiveAgbPflicht,
           agbText: effectiveAgbPflicht ? agbText : undefined,
-          leseabschnitte: leseabschnitte.map((a) => ({ ...a, deadline: new Date(a.deadline).toISOString() })),
+          leseabschnitte: leseabschnitte.map((a) => ({ ...a, deadline: a.deadline ? new Date(a.deadline).toISOString() : undefined })),
           diskussionsTopics: topics,
           fragebogen,
         }),
@@ -107,7 +107,7 @@ export default function BuchzirkelErstellenPage() {
   }
 
   function addAbschnitt() {
-    if (!neuerAbschnittTitel.trim() || !neuerAbschnittDeadline) return;
+    if (!neuerAbschnittTitel.trim()) return;
     setLeseabschnitte((prev) => [
       ...prev,
       { id: crypto.randomUUID(), titel: neuerAbschnittTitel.trim(), deadline: neuerAbschnittDeadline, beschreibung: "" },
@@ -272,7 +272,7 @@ export default function BuchzirkelErstellenPage() {
           {leseabschnitte.map((a, i) => (
             <div key={a.id} className="flex items-center gap-2 mb-2 text-sm border border-arena-border rounded-lg p-2">
               <span className="flex-1 font-medium">{a.titel}</span>
-              <span className="text-arena-muted">{new Date(a.deadline).toLocaleDateString("de-AT")}</span>
+              <span className="text-arena-muted">{a.deadline ? new Date(a.deadline).toLocaleDateString("de-AT") : "Kein Datum"}</span>
               <button type="button" onClick={() => setLeseabschnitte((prev) => prev.filter((_, j) => j !== i))} className="text-red-500">✕</button>
             </div>
           ))}
