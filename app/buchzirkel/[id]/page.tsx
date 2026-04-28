@@ -245,6 +245,17 @@ export default function BuchzirkelDetailPage() {
           <h2 className="text-base font-semibold m-0 mb-1">Bewerbung einreichen</h2>
           <p className="text-sm text-arena-muted m-0 mb-3">Beantworte die Fragen des Autors und reiche deine Bewerbung ein. Der Autor prüft alle Bewerbungen und informiert dich per E-Mail über seine Entscheidung.</p>
 
+          {zirkel.buchformateAngebot && zirkel.buchformateAngebot.length > 0 && (
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 mb-3 text-sm text-arena-blue">
+              <span className="font-semibold">Verfügbare Formate: </span>
+              {zirkel.buchformateAngebot.map((f) => (
+                <span key={f} className="inline-block font-medium mr-2">
+                  {f === "gedruckt" ? "📖 Gedrucktes Buch" : f === "epub" ? "📱 EPUB" : f === "pdf" ? "📄 PDF" : f}
+                </span>
+              ))}
+            </div>
+          )}
+
           {!zirkel.viewerHasTestleserProfile && (
             <div className="rounded-lg bg-arena-yellow/15 border border-arena-yellow p-3 mb-3 text-sm text-arena-blue font-medium">
               Für eine Bewerbung ist es notwendig, ein <a href="/profil?tab=testleser" className="underline hover:text-arena-yellow">(Test)Leser-Profil</a> anzulegen!
