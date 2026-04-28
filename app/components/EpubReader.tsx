@@ -177,13 +177,3 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
 
   return createPortal(modal, portalTarget);
 }
-
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  return createPortal(modal, portalTarget);
-}
-
