@@ -73,7 +73,7 @@ export async function sendBuchzirkelDeadlineReminders(): Promise<{ sent: number;
       if (!email) continue;
 
       const abschnittListe = offeneAbschnitte
-        .map((a: { titel: string; deadline: string }) => `<li><strong>${a.titel}</strong> – Deadline: ${new Date(a.deadline).toLocaleDateString("de-AT")}</li>`)
+        .map((a) => `<li><strong>${a.titel}</strong> – Deadline: ${new Date(a.deadline).toLocaleDateString("de-AT")}</li>`)
         .join("");
 
       const html = `
