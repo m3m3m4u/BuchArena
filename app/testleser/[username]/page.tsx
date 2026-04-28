@@ -194,6 +194,25 @@ export default function TestleserProfilePage({ params }: PageProps) {
               </div>
             )}
 
+            {testleserProfile.rezensionsLinks && (
+              <div className="my-2">
+                <h2 className="text-lg">Rezensionen</h2>
+                <ul className="list-none p-0 m-0 flex flex-col gap-1">
+                  {testleserProfile.rezensionsLinks.split("\n").filter(Boolean).map((url, i) => {
+                    let host = url;
+                    try { host = new URL(url).hostname.replace(/^www\./, ""); } catch { /* keep raw */ }
+                    return (
+                      <li key={i}>
+                        <a href={url} target="_blank" rel="noreferrer noopener" className="text-sm text-arena-blue hover:underline break-all">
+                          🔗 {host}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
             {socialLinks.length > 0 && (
               <div className="my-3 flex flex-wrap gap-3">
                 {socialLinks.map((entry) => (

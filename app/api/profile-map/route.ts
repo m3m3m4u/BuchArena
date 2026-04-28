@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUsersCollection } from "@/lib/mongodb";
+import { getUsersCollection, getDatabase } from "@/lib/mongodb";
 
 export type ProfileMapUser = {
   username: string;
@@ -9,6 +9,8 @@ export type ProfileMapUser = {
   city: string;
   country: string;
   profilePath: string;
+  lat: number | null;
+  lon: number | null;
 };
 
 type Category = "autoren" | "blogger" | "testleser" | "sprecher" | "lektoren" | "verlage";
@@ -24,6 +26,10 @@ function getLocationField(profile: Record<string, any> | undefined, field: strin
   if (typeof f === "string") return f;
   if (typeof f === "object" && f.visibility === "public") return f.value ?? "";
   return "";
+}
+
+function geocodeKey(postalCode: string, city: string, country: string): string {
+  return [postalCode, city, country].filter(Boolean).join(", ").toLowerCase();
 }
 
 export async function GET(request: Request) {
@@ -68,14 +74,13 @@ export async function GET(request: Request) {
       })
       .toArray();
 
-    const result: ProfileMapUser[] = [];
+    const partial: (Omit<ProfileMapUser, "lat" | "lon"> & { geoKey: string })[] = [];
 
     for (const doc of docs) {
       const profile = doc[profileField as keyof typeof doc] as Record<string, any> | undefined;
       if (!profile) continue;
 
       const postalCode = getLocationField(profile, "postalCode");
-      // sprecher uses 'ort' as city equivalent
       const city =
         category === "sprecher"
           ? getLocationField(profile, "ort")
@@ -100,7 +105,7 @@ export async function GET(request: Request) {
         : category === "lektoren" ? "/lektoren"
         : "/verlage";
 
-      result.push({
+      partial.push({
         username: doc.username,
         displayName,
         profileSlug: slug,
@@ -108,8 +113,36 @@ export async function GET(request: Request) {
         city,
         country,
         profilePath: `${basePath}/${encodeURIComponent(slug || doc.username)}`,
+        geoKey: geocodeKey(postalCode, city, country),
       });
     }
+
+    // Bulk-Lookup im Geocode-Cache
+    const uniqueKeys = [...new Set(partial.map(u => u.geoKey))];
+    const db = await getDatabase();
+    const cachedDocs = await db
+      .collection("geocode_cache")
+      .find({ query: { $in: uniqueKeys } })
+      .toArray();
+
+    const coordsMap = new Map<string, { lat: number; lon: number } | null>();
+    for (const c of cachedDocs) {
+      coordsMap.set(
+        c.query as string,
+        c.lat !== null && c.lat !== undefined
+          ? { lat: c.lat as number, lon: c.lon as number }
+          : null
+      );
+    }
+
+    const result: ProfileMapUser[] = partial.map(({ geoKey, ...u }) => {
+      const coords = coordsMap.has(geoKey) ? coordsMap.get(geoKey) ?? null : undefined;
+      return {
+        ...u,
+        lat: coords !== undefined ? (coords?.lat ?? null) : null,
+        lon: coords !== undefined ? (coords?.lon ?? null) : null,
+      };
+    });
 
     return NextResponse.json({ users: result });
   } catch {

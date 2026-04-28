@@ -8,6 +8,7 @@ import type { PollDocument, TauschDocument } from "@/lib/discussions";
 import type { MessageDocument } from "@/lib/messages";
 import type { KalenderEvent } from "@/lib/kalender";
 import type { KooperationDocument } from "@/lib/kooperationen";
+import type { BuchzirkelDocument, BuchzirkelBewerbungDocument, BuchzirkelTeilnahmeDocument, BuchzirkelBeitragDocument } from "@/lib/buchzirkel";
 
 export type SocialMediaDesign = {
   _id?: import("mongodb").ObjectId;
@@ -224,6 +225,24 @@ async function initializeDatabase(db: Db) {
   await kooperationen.createIndex({ partnerUsername: 1, status: 1 });
   await kooperationen.createIndex({ requesterUsername: 1, status: 1 });
 
+  const buchzirkel = db.collection("buchzirkel");
+  await buchzirkel.createIndex({ veranstalterUsername: 1, createdAt: -1 });
+  await buchzirkel.createIndex({ status: 1, bewerbungBis: 1 });
+  await buchzirkel.createIndex({ typ: 1, status: 1 });
+
+  const buchzirkelBewerbungen = db.collection("buchzirkel_bewerbungen");
+  await buchzirkelBewerbungen.createIndex({ buchzirkelId: 1, bewerberUsername: 1 }, { unique: true });
+  await buchzirkelBewerbungen.createIndex({ buchzirkelId: 1, status: 1 });
+  await buchzirkelBewerbungen.createIndex({ bewerberUsername: 1 });
+
+  const buchzirkelTeilnahmen = db.collection("buchzirkel_teilnahmen");
+  await buchzirkelTeilnahmen.createIndex({ buchzirkelId: 1, teilnehmerUsername: 1 }, { unique: true });
+  await buchzirkelTeilnahmen.createIndex({ teilnehmerUsername: 1 });
+
+  const buchzirkelBeitraege = db.collection("buchzirkel_beitraege");
+  await buchzirkelBeitraege.createIndex({ buchzirkelId: 1, topicId: 1, lastActivityAt: -1 });
+  await buchzirkelBeitraege.createIndex({ autorUsername: 1 });
+
   // Superadmin beim Serverstart anlegen / Passwort synchronisieren
   const defaultPassword = process.env.SUPERADMIN_PASSWORD ?? "12345";
   const existingSuperAdmin = await users.findOne(
@@ -359,6 +378,26 @@ export async function getSocialMediaPixabayLicenseSafesCollection(): Promise<Col
 export async function getKooperationenCollection(): Promise<Collection<KooperationDocument>> {
   const db = await getDatabase();
   return db.collection<KooperationDocument>("kooperationen");
+}
+
+export async function getBuchzirkelCollection(): Promise<Collection<BuchzirkelDocument>> {
+  const db = await getDatabase();
+  return db.collection<BuchzirkelDocument>("buchzirkel");
+}
+
+export async function getBuchzirkelBewerbungenCollection(): Promise<Collection<BuchzirkelBewerbungDocument>> {
+  const db = await getDatabase();
+  return db.collection<BuchzirkelBewerbungDocument>("buchzirkel_bewerbungen");
+}
+
+export async function getBuchzirkelTeilnahmenCollection(): Promise<Collection<BuchzirkelTeilnahmeDocument>> {
+  const db = await getDatabase();
+  return db.collection<BuchzirkelTeilnahmeDocument>("buchzirkel_teilnahmen");
+}
+
+export async function getBuchzirkelBeitraegeCollection(): Promise<Collection<BuchzirkelBeitragDocument>> {
+  const db = await getDatabase();
+  return db.collection<BuchzirkelBeitragDocument>("buchzirkel_beitraege");
 }
 
 export function isDuplicateKeyError(error: unknown) {

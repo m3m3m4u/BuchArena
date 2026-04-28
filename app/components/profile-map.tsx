@@ -13,6 +13,8 @@ type MapUser = {
   city: string;
   country: string;
   profilePath: string;
+  lat: number | null;
+  lon: number | null;
 };
 
 type Category = "autoren" | "blogger" | "testleser" | "sprecher" | "lektoren" | "verlage";
@@ -73,43 +75,50 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
   const markersRef = useRef<any[]>([]);
   const leafletRef = useRef<LeafletModule | null>(null);
 
-  // Load users from API
+  // Load users from API (incl. cached coords)
   useEffect(() => {
     setIsLoading(true);
     fetch(`/api/profile-map?category=${category}`)
       .then((r) => r.json())
       .then((data: { users?: MapUser[] }) => {
-        setUsers(data.users ?? []);
+        const loaded = data.users ?? [];
+        setUsers(loaded);
+        // Sofort gecachte Koordinaten verwenden
+        const initial: Record<string, [number, number]> = {};
+        for (const u of loaded) {
+          if (u.lat !== null && u.lon !== null) {
+            initial[u.username] = jitter([u.lat!, u.lon!]);
+          }
+        }
+        setUserCoords(initial);
       })
       .catch(() => setUsers([]))
       .finally(() => setIsLoading(false));
   }, [category]);
 
-  // Geocode all users once loaded (parallel batches)
+  // Sequenzielles Nachladen ungecachter Einträge (rate-limit-konform: 1/s)
   useEffect(() => {
     if (users.length === 0) return;
+    const uncached = users.filter(u => u.lat === null || u.lon === null);
+    if (uncached.length === 0) return;
+
     const signal = { cancelled: false };
+    setGeocodeProgress({ done: 0, total: uncached.length });
+    let done = 0;
 
     (async () => {
-      const CONCURRENCY = 8;
-      setGeocodeProgress({ done: 0, total: users.length });
-      const results: Record<string, [number, number]> = {};
-      let done = 0;
-
-      for (let i = 0; i < users.length; i += CONCURRENCY) {
+      for (const user of uncached) {
         if (signal.cancelled) return;
-        const batch = users.slice(i, i + CONCURRENCY);
-        await Promise.all(
-          batch.map(async (user) => {
-            const coords = await geocodeUser(user);
-            if (coords) results[user.username] = jitter(coords);
-            done++;
-            if (!signal.cancelled) setGeocodeProgress({ done, total: users.length });
-          })
-        );
+        const coords = await geocodeUser(user);
+        done++;
+        if (signal.cancelled) return;
+        if (coords) {
+          setUserCoords(prev => ({ ...prev, [user.username]: jitter(coords) }));
+        }
+        setGeocodeProgress({ done, total: uncached.length });
+        // Nominatim erlaubt max. 1 Request/Sekunde
+        if (done < uncached.length) await new Promise(r => setTimeout(r, 1100));
       }
-
-      if (!signal.cancelled) setUserCoords(results);
     })();
 
     return () => { signal.cancelled = true; };
@@ -235,7 +244,7 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
         <h2 className="m-0 text-lg">Suche nach Wohnort – {categoryLabel}</h2>
         {geocodeProgress && geocodeProgress.done < geocodeProgress.total && (
           <p className="text-xs text-arena-muted m-0">
-            Orte werden ermittelt … {geocodeProgress.done}/{geocodeProgress.total}
+            Neue Orte werden ermittelt … {geocodeProgress.done}/{geocodeProgress.total}
           </p>
         )}
         {locatedPercent !== null && (

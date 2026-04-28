@@ -2296,6 +2296,19 @@ function ProfilPageInner() {
         <FieldWithVisibility label="WhatsApp-Kanal" value={testleserProfile.socialWhatsapp.value} visibility={testleserProfile.socialWhatsapp.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))} />
         <FieldWithVisibility label="Mailadresse" value={testleserProfile.socialEmail.value} visibility={testleserProfile.socialEmail.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))} />
 
+        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Meine Rezensionen</h3>
+        <div className="grid gap-1">
+          <label className="text-sm font-semibold">Rezensions-Links <span className="font-normal text-arena-muted">(1 URL pro Zeile)</span></label>
+          <span className="text-xs text-arena-muted">Links zu deinen verfassten Rezensionen auf Amazon, Goodreads, deinem Blog usw.</span>
+          <textarea
+            className="input-base w-full font-mono text-xs"
+            rows={5}
+            placeholder={"https://www.amazon.de/review/...\nhttps://www.goodreads.com/review/..."}
+            value={testleserProfile.rezensionsLinks ?? ""}
+            onChange={(e) => setTestleserProfile((c) => ({ ...c, rezensionsLinks: e.target.value }))}
+          />
+        </div>
+
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>

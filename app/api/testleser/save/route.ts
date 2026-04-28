@@ -71,6 +71,17 @@ function sanitizeTestleserProfile(
     socialNewsletter: sanitizeField(source.socialNewsletter, base.socialNewsletter, 250),
     socialWhatsapp: sanitizeField(source.socialWhatsapp, base.socialWhatsapp, 250),
     socialEmail: sanitizeField(source.socialEmail, base.socialEmail, 250),
+    rezensionsLinks: typeof source.rezensionsLinks === "string"
+      ? source.rezensionsLinks
+          .split("\n")
+          .map((l) => l.trim())
+          .filter((l) => {
+            if (!l) return false;
+            try { new URL(l); return true; } catch { return false; }
+          })
+          .slice(0, 50)
+          .join("\n")
+      : "",
   };
 }
 

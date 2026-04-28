@@ -98,6 +98,9 @@ export default function HomePage() {
           </Link>
         </section>
 
+        {/* Buchzirkel Fading-Banner */}
+        <BuchzirkelBanner />
+
         {/* Newsletter Opt-In */}
         <section className="card mt-3">
           <div className="flex items-center justify-between gap-3">
@@ -404,5 +407,66 @@ export default function HomePage() {
         </div>
       )}
     </main>
+  );
+}
+
+// ── Buchzirkel Fading Banner ──────────────────────────────────────────────
+
+type ZirkelInfo = { _id: string; typ: "testleser" | "betaleser"; titel: string; veranstalterUsername: string };
+
+function BuchzirkelBanner() {
+  const [zirkel, setZirkel] = useState<ZirkelInfo[]>([]);
+  const [index, setIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/buchzirkel/list?status=bewerbung&limit=8")
+      .then((r) => r.json())
+      .then((d: { zirkel?: ZirkelInfo[] }) => {
+        if (d.zirkel && d.zirkel.length > 0) setZirkel(d.zirkel);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (zirkel.length < 2) return;
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIndex((i) => (i + 1) % zirkel.length);
+        setVisible(true);
+      }, 500);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [zirkel]);
+
+  if (zirkel.length === 0) return null;
+
+  const z = zirkel[index];
+  const label = z.typ === "betaleser" ? "Betaleser-Zirkel" : "Testleser-Zirkel";
+
+  return (
+    <section className="mt-3 w-full max-w-[1100px]">
+      <a
+        href="/buchzirkel"
+        className="no-underline block rounded-xl border border-arena-border-light bg-gradient-to-r from-yellow-50 to-white px-5 py-3 hover:border-arena-yellow transition-colors"
+      >
+        <div
+          className="flex items-center gap-3"
+          style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease" }}
+        >
+          <span className="text-2xl flex-shrink-0">📚</span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold m-0 text-arena-text truncate">
+              {z.veranstalterUsername} lädt ein: {z.titel}
+            </p>
+            <p className="text-xs text-arena-muted m-0 mt-0.5">
+              {label} · Bewerbungen offen
+            </p>
+          </div>
+          <span className="ml-auto text-xs text-arena-muted flex-shrink-0">Alle Buchzirkel →</span>
+        </div>
+      </a>
+    </section>
   );
 }

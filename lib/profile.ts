@@ -282,6 +282,7 @@ export type TestleserProfileData = {
   socialNewsletter: ProfileField;
   socialWhatsapp: ProfileField;
   socialEmail: ProfileField;
+  rezensionsLinks: string; // zeilenweise URLs
 };
 
 export function createDefaultTestleserProfile(): TestleserProfileData {
@@ -310,6 +311,7 @@ export function createDefaultTestleserProfile(): TestleserProfileData {
     socialNewsletter: { value: "", visibility: "hidden" },
     socialWhatsapp: { value: "", visibility: "hidden" },
     socialEmail: { value: "", visibility: "hidden" },
+    rezensionsLinks: "",
   };
 }
 
