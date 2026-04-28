@@ -14,8 +14,9 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
   const renditionRef = useRef<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [jumpInput, setJumpInput] = useState("");
 
   const [portalTarget] = useState<HTMLElement>(() =>
     document.getElementById("modal-root") ?? document.body
@@ -30,8 +31,6 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
       try {
         const ePub = (await import("epubjs")).default;
 
-        // EPUB als ArrayBuffer vorab fetchen, damit epub.js keine Sub-Ressourcen
-        // über die API-URL nachlädt (würde 404 für META-INF/container.xml liefern)
         const response = await fetch(url);
         if (!response.ok) throw new Error("Fetch fehlgeschlagen");
         const arrayBuffer = await response.arrayBuffer();
@@ -47,16 +46,6 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
 
         await rendition.display();
 
-        // epub.js rendert ein absolut positioniertes iframe das Pointer-Events
-        // außerhalb seines visuell geclippten Bereichs abfangen kann.
-        // Explizit auf max 100% begrenzen, damit die Navigationsleiste klickbar bleibt.
-        const iframe = viewerRef.current?.querySelector("iframe") as HTMLIFrameElement | null;
-        if (iframe) {
-          iframe.style.maxHeight = "100%";
-          iframe.style.position = "absolute";
-          iframe.style.inset = "0";
-        }
-
         if (!destroyed) setLoading(false);
 
         book.locations.generate(1024).then(() => {
@@ -64,8 +53,12 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         });
 
         rendition.on("locationChanged", (location: { start: { percentage: number } }) => {
-          if (!destroyed && totalPages > 0) {
-            setCurrentPage(Math.round(location.start.percentage * totalPages));
+          if (!destroyed) {
+            const total = book.locations.length();
+            if (total > 0) {
+              setCurrentPage(Math.max(1, Math.round(location.start.percentage * total)));
+              setTotalPages(total);
+            }
           }
         });
       } catch {
@@ -82,19 +75,44 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
 
-  function prevPage() {
+  // Tastatur: Pfeiltasten + Escape
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") { onClose(); return; }
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") { prevPage(); }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") { prevPageFn(); }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function prevPageFn() {
     if (!renditionRef.current || typeof renditionRef.current.prev !== "function") return;
     renditionRef.current.prev();
   }
-  function nextPage() {
+  function nextPageFn() {
     if (!renditionRef.current || typeof renditionRef.current.next !== "function") return;
     renditionRef.current.next();
+  }
+
+  function handleJump(e: React.FormEvent) {
+    e.preventDefault();
+    const page = parseInt(jumpInput, 10);
+    if (!renditionRef.current || isNaN(page) || page < 1) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const book = (renditionRef.current as any).book;
+    if (!book?.locations) return;
+    const total = book.locations.length();
+    if (total === 0) return;
+    const cfi = book.locations.cfiFromPercentage((page - 1) / total);
+    renditionRef.current.display(cfi);
+    setJumpInput("");
   }
 
   const modal = (
     <div
       className="fixed inset-0 z-[9999] bg-black/75 flex items-end sm:items-center justify-center"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
         className="bg-white w-full sm:max-w-3xl sm:rounded-xl flex flex-col shadow-2xl overflow-hidden"
@@ -103,14 +121,14 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         {/* Header mit Navigation */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-arena-border bg-[#1a1a2e] shrink-0">
           <button
-            onClick={prevPage}
+            onClick={prevPageFn}
             disabled={loading || !!error}
             className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-3 py-1 rounded hover:bg-white/10 min-w-[70px]"
           >← Zurück</button>
           <span className="text-white font-semibold text-sm">EPUB-Reader</span>
           <div className="flex items-center gap-2">
             <button
-              onClick={nextPage}
+              onClick={nextPageFn}
               disabled={loading || !!error}
               className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-3 py-1 rounded hover:bg-white/10 min-w-[70px]"
             >Weiter →</button>
@@ -122,7 +140,7 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
           </div>
         </div>
 
-        {/* Viewer — overflow:clip (nicht hidden!) clippt auch iframe pointer-events */}
+        {/* Viewer */}
         <div className="flex-1 relative bg-white min-h-0" style={{ overflow: "clip" }}>
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center text-arena-muted text-sm">
@@ -138,11 +156,25 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
           )}
         </div>
 
-        {/* Seiteninfo */}
-        <div className="flex items-center justify-center px-4 py-2 border-t border-arena-border bg-gray-50 shrink-0 relative z-10">
-          <span className="text-xs text-arena-muted tabular-nums">
-            {totalPages > 0 ? `${currentPage} / ${totalPages}` : ""}
-          </span>
+        {/* Seiteninfo + Sprung */}
+        <div className="flex items-center justify-center gap-3 px-4 py-2 border-t border-arena-border bg-gray-50 shrink-0">
+          {totalPages > 0 && (
+            <>
+              <span className="text-xs text-arena-muted tabular-nums">{currentPage} / {totalPages}</span>
+              <form onSubmit={handleJump} className="flex items-center gap-1">
+                <input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={jumpInput}
+                  onChange={(e) => setJumpInput(e.target.value)}
+                  placeholder="Seite…"
+                  className="w-20 text-xs border border-arena-border rounded px-2 py-0.5 text-center"
+                />
+                <button type="submit" className="text-xs text-arena-blue font-semibold px-2 py-0.5 rounded hover:bg-gray-200">↵</button>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -150,3 +182,4 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
 
   return createPortal(modal, portalTarget);
 }
+
