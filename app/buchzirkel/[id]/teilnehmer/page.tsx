@@ -5,6 +5,9 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import { ALLOWED_BEITRAG_EMOJIS } from "@/lib/buchzirkel";
+import dynamic from "next/dynamic";
+
+const EpubReader = dynamic(() => import("@/app/components/EpubReader"), { ssr: false });
 
 type Topic = { id: string; titel: string; typ: string };
 type Leseabschnitt = { id: string; titel: string; deadline: string };
@@ -55,6 +58,7 @@ export default function TeilnehmerBereichPage() {
   const [neuerBeitragTitel, setNeuerBeitragTitel] = useState("");
   const [posting, setPosting] = useState(false);
   const [tab, setTab] = useState<"diskussion" | "dateien" | "fortschritt" | "fragebogen" | "rezensionen">("diskussion");
+  const [epubReaderUrl, setEpubReaderUrl] = useState<string | null>(null);
 
   // Rezensions-Links
   const [rlPlattform, setRlPlattform] = useState("");
@@ -268,6 +272,11 @@ export default function TeilnehmerBereichPage() {
         </div>
       )}
 
+      {/* EPUB Reader Modal */}
+      {epubReaderUrl && (
+        <EpubReader url={epubReaderUrl} onClose={() => setEpubReaderUrl(null)} />
+      )}
+
       {/* Dateien / PDF-Viewer */}
       {tab === "dateien" && (
         <section className="card mt-3">
@@ -276,32 +285,47 @@ export default function TeilnehmerBereichPage() {
             <p className="text-arena-muted text-sm">Noch keine Dateien hochgeladen.</p>
           ) : (
             <div className="flex flex-col gap-3">
-              {zirkel.dateien.map((d) => (
-                <div key={d.id} className="border border-arena-border rounded-xl overflow-hidden">
-                  <div className="flex items-center justify-between p-3 bg-gray-50">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">📄</span>
-                      <span className="font-medium text-sm">{d.originalName}</span>
+              {zirkel.dateien.map((d) => {
+                const isEpub = d.originalName.toLowerCase().endsWith(".epub");
+                const isPdf = d.originalName.toLowerCase().endsWith(".pdf");
+                const dateiUrl = `/api/buchzirkel/${zirkel._id}/datei/${d.id}`;
+                return (
+                  <div key={d.id} className="border border-arena-border rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between p-3 bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{isEpub ? "📖" : "📄"}</span>
+                        <span className="font-medium text-sm">{d.originalName}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isEpub && (
+                          <button
+                            onClick={() => setEpubReaderUrl(dateiUrl)}
+                            className="btn btn-primary btn-sm"
+                          >
+                            Im Browser lesen
+                          </button>
+                        )}
+                        <a
+                          href={dateiUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-secondary btn-sm"
+                        >
+                          {isEpub ? "Extern öffnen / Download" : "Im Viewer öffnen ↗"}
+                        </a>
+                      </div>
                     </div>
-                    <a
-                      href={`/api/buchzirkel/${zirkel._id}/datei/${d.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-secondary btn-sm"
-                    >
-                      Im Viewer öffnen ↗
-                    </a>
+                    {isPdf && (
+                      <iframe
+                        src={dateiUrl}
+                        className="w-full"
+                        style={{ height: "70vh" }}
+                        title={d.originalName}
+                      />
+                    )}
                   </div>
-                  {d.originalName.endsWith(".pdf") && (
-                    <iframe
-                      src={`/api/buchzirkel/${zirkel._id}/datei/${d.id}`}
-                      className="w-full"
-                      style={{ height: "70vh" }}
-                      title={d.originalName}
-                    />
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
