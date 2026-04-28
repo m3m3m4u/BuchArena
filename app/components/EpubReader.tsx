@@ -35,20 +35,26 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         const arrayBuffer = await response.arrayBuffer();
 
         const container = viewerRef.current!;
-        // Pixelwerte statt "100%" – epub.js benötigt konkrete Dimensionen
-        const w = container.offsetWidth || 600;
-        const h = container.offsetHeight || 500;
 
         const book = ePub(arrayBuffer);
+        // Erst display() aufrufen damit der Container im DOM ist,
+        // dann mit korrekten Pixelmaßen neu rendern
         const rendition = book.renderTo(container, {
-          width: w,
-          height: h,
+          width: "100%",
+          height: "100%",
           flow: "paginated",
           spread: "none",
         });
         renditionRef.current = rendition;
 
         await rendition.display();
+
+        // Jetzt sind die echten Maße bekannt – iframe neu setzen
+        const w = container.offsetWidth;
+        const h = container.offsetHeight;
+        if (w > 0 && h > 0) {
+          rendition.resize(w, h);
+        }
         if (!destroyed) setLoading(false);
 
         // Locations für Seitenzahlen generieren (async, blockiert nicht das Lesen)
