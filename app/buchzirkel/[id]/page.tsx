@@ -197,7 +197,7 @@ export default function BuchzirkelDetailPage() {
           <p className="text-sm text-arena-muted m-0 mb-3">Beantworte die Fragen des Autors und reiche deine Bewerbung ein. Der Autor prüft alle Bewerbungen und informiert dich per E-Mail über seine Entscheidung.</p>
 
           <div className="rounded-lg bg-[#e2b714]/15 border border-[#e2b714] p-3 mb-3 text-sm text-arena-blue font-medium">
-            📋 Für eine Bewerbung ist es notwendig, ein <a href="/profil?tab=testleser" className="underline hover:text-arena-yellow">Testleserprofil</a> anzulegen!
+            Für eine Bewerbung ist es notwendig, ein <a href="/profil?tab=testleser" className="underline hover:text-arena-yellow">Testleserprofil</a> anzulegen!
           </div>
 
           {isBeta && (
