@@ -110,18 +110,26 @@ export default function BuchzirkelPage() {
       </section>
 
       {/* Erklär-Karten */}
-      <section className="w-full grid grid-cols-2 gap-3 mt-3 max-sm:grid-cols-1">
-        <div className="rounded-xl border-2 border-arena-blue-light bg-[#1a1a2e]/5 p-4">
-          <p className="font-semibold m-0 text-arena-blue">Testleser-Zirkel</p>
-          <p className="text-sm text-arena-muted m-0 mt-1">
-            Rezensionsexemplare für bereits veröffentlichte Bücher – Feedback und Bewertungen auf Amazon, Goodreads & Co.
-          </p>
+      <section className="card mt-3 flex flex-col gap-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-arena-muted m-0">Zirkel-Typen</p>
+        <div className="flex gap-3 items-start">
+          <span className="flex-shrink-0 mt-0.5 text-arena-blue text-base">📖</span>
+          <div>
+            <p className="font-semibold m-0 text-arena-blue text-sm">Testleser-Zirkel</p>
+            <p className="text-sm text-arena-muted m-0">
+              Rezensionsexemplare für bereits veröffentlichte Bücher – Feedback und Bewertungen auf Amazon, Goodreads & Co.
+            </p>
+          </div>
         </div>
-        <div className="rounded-xl border-2 border-red-300 bg-red-50 p-4">
-          <p className="font-semibold m-0 text-red-800">🔒 Betaleser-Zirkel</p>
-          <p className="text-sm text-red-700 m-0 mt-1">
-            Unveröffentlichte Manuskripte – streng vertraulich. Alle Teilnehmer bestätigen eine Verschwiegenheitserklärung.
-          </p>
+        <hr className="border-arena-border-light m-0" />
+        <div className="flex gap-3 items-start">
+          <span className="flex-shrink-0 mt-0.5 text-base">🔒</span>
+          <div>
+            <p className="font-semibold m-0 text-red-800 text-sm">Betaleser-Zirkel</p>
+            <p className="text-sm text-arena-muted m-0">
+              Unveröffentlichte Manuskripte – streng vertraulich. Alle Teilnehmer bestätigen eine Verschwiegenheitserklärung.
+            </p>
+          </div>
         </div>
       </section>
 
