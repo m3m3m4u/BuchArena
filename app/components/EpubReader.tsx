@@ -17,6 +17,12 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalTarget(document.getElementById("modal-root") ?? document.body);
+  }, []);
+
   useEffect(() => {
     if (!viewerRef.current) return;
 
@@ -132,5 +138,5 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
     </div>
   );
 
-  return createPortal(modal, document.body);
+  return portalTarget ? createPortal(modal, portalTarget) : null;
 }

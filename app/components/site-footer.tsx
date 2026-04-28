@@ -63,7 +63,7 @@ export default function SiteFooter() {
   }
 
   return (
-    <footer className="flex-shrink-0 border-t border-arena-border bg-white">
+    <footer className="flex-shrink-0 border-t border-arena-border bg-white relative z-0">
       <div className="site-shell flex flex-wrap items-center justify-between gap-2 sm:gap-4">
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 text-[0.82rem] sm:text-[0.95rem]">
           {/* Social media icons */}

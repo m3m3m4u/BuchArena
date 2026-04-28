@@ -119,6 +119,11 @@ h1 { margin: 0; }
   overflow-y: auto;
 }
 
+#modal-root {
+  position: relative;
+  z-index: 9999;
+}
+
 @utility centered-main {
   flex: 1;
   display: grid;

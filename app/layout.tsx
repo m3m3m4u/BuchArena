@@ -64,6 +64,7 @@ export default function RootLayout({
         <LayoutChrome>{children}</LayoutChrome>
         <SiteFooter />
         <CookieBanner />
+        <div id="modal-root" />
       </body>
     </html>
   );
