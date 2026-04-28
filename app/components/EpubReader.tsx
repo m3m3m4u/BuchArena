@@ -67,7 +67,9 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
           const total = book.locations.length();
           if (total > 0) {
             // location.start.location ist der 0-basierte Index
-            const idx = location?.start?.location ?? book.locations.locationFromCfi(location?.start?.cfi);
+            const idx = location?.start?.location != null
+              ? location.start.location
+              : (location?.start?.cfi ? book.locations.locationFromCfi(location.start.cfi) : -1);
             if (idx >= 0) setCurrentPage(idx + 1);
             setTotalPages(total);
           }
