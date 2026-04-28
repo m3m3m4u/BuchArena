@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface EpubReaderProps {
   url: string;
@@ -76,7 +77,7 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
     renditionRef.current.next();
   }
 
-  return (
+  const modal = (
     <div
       className="fixed inset-0 z-[9999] bg-black/75 flex items-end sm:items-center justify-center"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
@@ -130,4 +131,6 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
