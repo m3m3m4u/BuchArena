@@ -107,6 +107,11 @@ export default function BuchzirkelErstellenPage() {
         <p className="text-arena-muted text-sm m-0 mt-1">
           Starte eine Testleser- oder Betaleser-Runde für dein Buch.
         </p>
+        <div className="mt-3 grid grid-cols-3 gap-2 max-sm:grid-cols-1 text-sm text-arena-muted">
+          <div className="flex gap-2 items-start"><span>✏️</span><span>Erstelle den Zirkel und lege Bewerbungsfragen sowie einen Zeitplan fest.</span></div>
+          <div className="flex gap-2 items-start"><span>👥</span><span>Leser bewerben sich – du entscheidest, wer teilnimmt.</span></div>
+          <div className="flex gap-2 items-start"><span>📖</span><span>Teilnehmer lesen, diskutieren und geben Feedback im geschlossenen Bereich.</span></div>
+        </div>
       </section>
 
       <form className="w-full flex flex-col gap-4 mt-3" onSubmit={(e) => e.preventDefault()}>
@@ -169,7 +174,8 @@ export default function BuchzirkelErstellenPage() {
 
         {/* Bewerbungsphase */}
         <section className="card">
-          <h2 className="text-base font-semibold m-0 mb-3">Bewerbungsphase</h2>
+          <h2 className="text-base font-semibold m-0 mb-1">Bewerbungsphase</h2>
+          <p className="text-sm text-arena-muted m-0 mb-3">Setze eine Frist, bis wann sich Leser bewerben können. Danach wählst du im Dashboard aus, wer teilnimmt. Mit Bewerbungsfragen kannst du gezielt nach Vorwissen, Verfügbarkeit oder Rezensionsbereitschaft fragen.</p>
           <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
             <div className="grid gap-1">
               <label className="text-sm font-semibold" htmlFor="bewerbungBis">Bewerbungsfrist</label>
@@ -213,7 +219,7 @@ export default function BuchzirkelErstellenPage() {
           )}
           {effectiveAgbPflicht && (
             <textarea
-              className="input-base w-full text-xs"
+              className="input-base w-full text-sm"
               rows={8}
               value={agbText}
               onChange={(e) => setAgbText(e.target.value)}
@@ -223,7 +229,8 @@ export default function BuchzirkelErstellenPage() {
 
         {/* Leseabschnitte */}
         <section className="card">
-          <h2 className="text-base font-semibold m-0 mb-3">Leseabschnitte & Deadlines</h2>
+          <h2 className="text-base font-semibold m-0 mb-1">Leseabschnitte & Deadlines</h2>
+          <p className="text-sm text-arena-muted m-0 mb-3">Teile das Buch in Abschnitte auf und lege Lesedeadlines fest. Teilnehmer markieren jeden Abschnitt als gelesen und erhalten bei nahender Deadline eine Erinnerungs-E-Mail. Abschnitte sind optional – du kannst den Zirkel auch ohne Zeitplan betreiben.</p>
           {leseabschnitte.map((a, i) => (
             <div key={a.id} className="flex items-center gap-2 mb-2 text-sm border border-arena-border rounded-lg p-2">
               <span className="flex-1 font-medium">{a.titel}</span>
@@ -240,8 +247,8 @@ export default function BuchzirkelErstellenPage() {
 
         {/* Diskussions-Topics */}
         <section className="card">
-          <h2 className="text-base font-semibold m-0 mb-3">Diskussions-Bereiche</h2>
-          <p className="text-sm text-arena-muted m-0 mb-2">Standard-Topics werden automatisch angelegt. Du kannst sie anpassen.</p>
+          <h2 className="text-base font-semibold m-0 mb-1">Diskussions-Bereiche</h2>
+          <p className="text-sm text-arena-muted m-0 mb-2">Gliedere die Diskussion in Themenbereiche (z.B. „Handlung", „Figuren", „Stil"). Teilnehmer können gezielt in einem Bereich posten. Standard-Topics werden automatisch angelegt – benenne sie nach deinen Wünschen.</p>
           {topics.map((t, i) => (
             <div key={t.id} className="flex items-center gap-2 mb-2">
               <input
@@ -263,8 +270,8 @@ export default function BuchzirkelErstellenPage() {
 
         {/* Fragebogen */}
         <section className="card">
-          <h2 className="text-base font-semibold m-0 mb-3">Abschluss-Fragebogen</h2>
-          <p className="text-sm text-arena-muted m-0 mb-2">Fragen, die Teilnehmer am Ende beantworten sollen.</p>
+          <h2 className="text-base font-semibold m-0 mb-1">Abschluss-Fragebogen</h2>
+          <p className="text-sm text-arena-muted m-0 mb-2">Optionale Fragen, die Teilnehmer am Ende des Zirkels beantworten sollen – z.B. zu Charakteren, Handlungsbogen oder Schreibstil. Die Antworten siehst du im Dashboard.</p>
           {fragebogen.map((f, i) => (
             <div key={f.id} className="flex items-center gap-2 mb-2">
               <span className="flex-1 text-sm">{f.frage}</span>

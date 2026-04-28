@@ -301,6 +301,7 @@ export default function BuchzirkelDashboardPage() {
       {/* Bewerber */}
       {tab === "bewerber" && (
         <section className="card mt-3">
+          <p className="text-sm text-arena-muted m-0 mb-3">Hier siehst du alle eingegangenen Bewerbungen mit den Antworten auf deine Fragen. Nimm Bewerber an oder lehne sie ab – sie erhalten automatisch eine E-Mail.</p>
           {ausstehend.length === 0 ? (
             <p className="text-arena-muted text-sm">Noch keine ausstehenden Bewerbungen.</p>
           ) : (
@@ -334,6 +335,7 @@ export default function BuchzirkelDashboardPage() {
       {/* Teilnehmer */}
       {tab === "teilnehmer" && (
         <section className="card mt-3">
+          <p className="text-sm text-arena-muted m-0 mb-3">Verfolge den Lesefortschritt deiner Teilnehmer und sieh dir ihre Rezensionslinks an. Nach dem Lesen kannst du jeden Teilnehmer mit 1–5 Sternen bewerten.</p>
           {angenommen.length === 0 ? (
             <p className="text-arena-muted text-sm">Noch keine Teilnehmer.</p>
           ) : (
@@ -425,9 +427,9 @@ export default function BuchzirkelDashboardPage() {
       {/* Dateien */}
       {tab === "dateien" && (
         <section className="card mt-3">
-          <h2 className="text-base font-semibold m-0 mb-3">Dateien hochladen</h2>
+          <h2 className="text-base font-semibold m-0 mb-1">Dateien hochladen</h2>
           <p className="text-sm text-arena-muted m-0 mb-3">
-            PDF oder EPUB – max. 50 MB. Jeder Teilnehmer erhält eine Version mit persönlichem Wasserzeichen.
+            Lade hier dein Manuskript oder Buch hoch (PDF oder EPUB, max. 50 MB). Jeder Teilnehmer erhält automatisch eine Version mit seinem persönlichen Wasserzeichen – für maximalen Schutz deiner unveröffentlichten Inhalte.
           </p>
 
           {uploadError && <p className="text-red-600 text-sm mb-2">{uploadError}</p>}
@@ -535,7 +537,7 @@ export default function BuchzirkelDashboardPage() {
             )}
             {(zirkel.typ === "betaleser" || editAgbPflicht) && (
               <textarea
-                className="input-base w-full text-xs"
+                className="input-base w-full text-sm"
                 rows={6}
                 value={editAgbText}
                 onChange={(e) => setEditAgbText(e.target.value)}
