@@ -28,7 +28,7 @@ export default function BuchzirkelErstellenPage() {
     return d.toISOString().split("T")[0];
   });
   const [maxTeilnehmer, setMaxTeilnehmer] = useState(10);
-  const [bewerbungsFragen, setBewerbungsFragen] = useState<string[]>([""]);
+  const [bewerbungsFragen, setBewerbungsFragen] = useState<string[]>(["Erzähle etwas über dich und deine Leseliebe."]);
   const [agbPflicht, setAgbPflicht] = useState(false);
   const [agbText, setAgbText] = useState(STANDARD_AGB_TEXT);
   const [leseabschnitte, setLeseabschnitte] = useState<Leseabschnitt[]>([]);
