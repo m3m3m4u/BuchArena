@@ -79,8 +79,12 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") { onClose(); return; }
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") { nextPageFn(); }
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") { prevPageFn(); }
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        if (renditionRef.current && typeof renditionRef.current.next === "function") renditionRef.current.next();
+      }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        if (renditionRef.current && typeof renditionRef.current.prev === "function") renditionRef.current.prev();
+      }
     }
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
