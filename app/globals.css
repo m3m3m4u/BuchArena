@@ -278,10 +278,32 @@ h1 { margin: 0; }
 @utility input-base {
   border: 1px solid var(--color-arena-border);
   border-radius: 8px;
-  padding: 0.55rem 0.65rem;
+  padding: 0.55rem 0.75rem;
+  min-height: 2.5rem;
   box-sizing: border-box;
   font-family: inherit;
-  font-size: inherit;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  background-color: #fff;
+  color: var(--color-arena-text);
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+
+  &:focus {
+    border-color: var(--color-arena-blue-light);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-arena-blue-light) 15%, transparent);
+  }
+}
+
+/* select: restore dropdown arrow after appearance:none */
+select.input-base {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 1.25rem;
+  padding-right: 2.25rem;
+  cursor: pointer;
 }
 
 /* ── Badge ── */
