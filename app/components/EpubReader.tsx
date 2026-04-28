@@ -24,7 +24,6 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
 
   useEffect(() => {
     if (!viewerRef.current) return;
-
     let destroyed = false;
 
     async function init() {
@@ -35,33 +34,41 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         if (!response.ok) throw new Error("Fetch fehlgeschlagen");
         const arrayBuffer = await response.arrayBuffer();
 
+        const container = viewerRef.current!;
+        // Pixelwerte statt "100%" – epub.js benötigt konkrete Dimensionen
+        const w = container.offsetWidth || 600;
+        const h = container.offsetHeight || 500;
+
         const book = ePub(arrayBuffer);
-        const rendition = book.renderTo(viewerRef.current!, {
-          width: "100%",
-          height: "100%",
+        const rendition = book.renderTo(container, {
+          width: w,
+          height: h,
           flow: "paginated",
           spread: "none",
         });
         renditionRef.current = rendition;
 
         await rendition.display();
-
         if (!destroyed) setLoading(false);
 
+        // Locations für Seitenzahlen generieren (async, blockiert nicht das Lesen)
         book.locations.generate(1024).then(() => {
-          if (!destroyed) setTotalPages(book.locations.length());
+          if (destroyed) return;
+          const total = book.locations.length();
+          setTotalPages(total);
         });
 
-        rendition.on("locationChanged", (location: { start: { percentage: number } }) => {
-          if (!destroyed) {
-            const total = book.locations.length();
-            if (total > 0) {
-              setCurrentPage(Math.max(1, Math.round(location.start.percentage * total)));
-              setTotalPages(total);
-            }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        rendition.on("locationChanged", (location: any) => {
+          if (destroyed) return;
+          const total = book.locations.length();
+          if (total > 0 && location?.start?.percentage != null) {
+            setCurrentPage(Math.min(total, Math.max(1, Math.round(location.start.percentage * total) + 1)));
+            setTotalPages(total);
           }
         });
-      } catch {
+      } catch (err) {
+        console.error("EpubReader:", err);
         if (!destroyed) setError("Das EPUB konnte nicht geladen werden.");
       }
     }
@@ -70,69 +77,51 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
 
     return () => {
       destroyed = true;
-      renditionRef.current?.destroy();
+      try { renditionRef.current?.destroy(); } catch { /* ignore */ }
+      renditionRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
 
-  // Tastatur: Pfeiltasten + Escape
+  // Tastatur-Navigation
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") { onClose(); return; }
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-        if (renditionRef.current && typeof renditionRef.current.next === "function") renditionRef.current.next();
-      }
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        if (renditionRef.current && typeof renditionRef.current.prev === "function") renditionRef.current.prev();
-      }
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") renditionRef.current?.next?.();
+      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   renditionRef.current?.prev?.();
     }
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function prevPageFn() {
-    if (!renditionRef.current || typeof renditionRef.current.prev !== "function") return;
-    renditionRef.current.prev();
-  }
-  function nextPageFn() {
-    if (!renditionRef.current || typeof renditionRef.current.next !== "function") return;
-    renditionRef.current.next();
-  }
+  }, [onClose]);
 
   function handleJump(e: React.FormEvent) {
     e.preventDefault();
     const page = parseInt(jumpInput, 10);
-    if (!renditionRef.current || isNaN(page) || page < 1) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const book = (renditionRef.current as any).book;
+    if (!renditionRef.current || isNaN(page) || totalPages === 0) return;
+    const book = renditionRef.current.book;
     if (!book?.locations) return;
-    const total = book.locations.length();
-    if (total === 0) return;
-    const cfi = book.locations.cfiFromPercentage((page - 1) / total);
+    const cfi = book.locations.cfiFromPercentage((Math.max(1, Math.min(page, totalPages)) - 1) / totalPages);
     renditionRef.current.display(cfi);
     setJumpInput("");
   }
 
   const modal = (
-    <div
-      className="fixed inset-0 z-[9999] bg-black/75 flex items-end sm:items-center justify-center"
-    >
+    <div className="fixed inset-0 z-[9999] bg-black/75 flex items-end sm:items-center justify-center">
       <div
-        className="bg-white w-full sm:max-w-3xl sm:rounded-xl flex flex-col shadow-2xl overflow-hidden"
-        style={{ height: "calc(100dvh - env(safe-area-inset-top, 0px) - 2rem)", maxHeight: "95dvh" }}
+        className="bg-white w-full sm:max-w-3xl sm:rounded-xl flex flex-col shadow-2xl"
+        style={{ height: "calc(100dvh - 2rem)", maxHeight: "95dvh" }}
       >
         {/* Header mit Navigation */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-arena-border bg-[#1a1a2e] shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-arena-border bg-[#1a1a2e] shrink-0 rounded-t-xl">
           <button
-            onClick={prevPageFn}
+            onClick={() => renditionRef.current?.prev?.()}
             disabled={loading || !!error}
             className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-3 py-1 rounded hover:bg-white/10 min-w-[70px]"
           >← Zurück</button>
           <span className="text-white font-semibold text-sm">EPUB-Reader</span>
           <div className="flex items-center gap-2">
             <button
-              onClick={nextPageFn}
+              onClick={() => renditionRef.current?.next?.()}
               disabled={loading || !!error}
               className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-3 py-1 rounded hover:bg-white/10 min-w-[70px]"
             >Weiter →</button>
@@ -145,9 +134,9 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         </div>
 
         {/* Viewer */}
-        <div className="flex-1 relative bg-white min-h-0 overflow-hidden">
+        <div className="flex-1 relative bg-white min-h-0">
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center text-arena-muted text-sm">
+            <div className="absolute inset-0 flex items-center justify-center text-arena-muted text-sm z-10 pointer-events-none">
               Lade EPUB…
             </div>
           )}
@@ -160,9 +149,9 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
           )}
         </div>
 
-        {/* Seiteninfo + Sprung */}
+        {/* Footer: Seitenzahl + Sprung */}
         <div className="flex items-center justify-center gap-3 px-4 py-2 border-t border-arena-border bg-gray-50 shrink-0">
-          {totalPages > 0 && (
+          {totalPages > 0 ? (
             <>
               <span className="text-xs text-arena-muted tabular-nums">{currentPage} / {totalPages}</span>
               <form onSubmit={handleJump} className="flex items-center gap-1">
@@ -178,6 +167,17 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
                 <button type="submit" className="text-xs text-arena-blue font-semibold px-2 py-0.5 rounded hover:bg-gray-200">↵</button>
               </form>
             </>
+          ) : (
+            <span className="text-xs text-arena-muted">{loading ? "" : "Seiten werden berechnet…"}</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  return createPortal(modal, portalTarget);
+}
+
           )}
         </div>
       </div>
