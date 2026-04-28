@@ -100,14 +100,26 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         className="bg-white w-full sm:max-w-3xl sm:rounded-xl flex flex-col shadow-2xl overflow-hidden"
         style={{ height: "calc(100dvh - env(safe-area-inset-top, 0px) - 2rem)", maxHeight: "95dvh" }}
       >
-        {/* Header */}
+        {/* Header mit Navigation */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-arena-border bg-[#1a1a2e] shrink-0">
-          <span className="text-white font-semibold text-sm">EPUB-Reader</span>
           <button
-            onClick={onClose}
-            className="text-white/70 hover:text-white text-xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-white/10"
-            aria-label="Schließen"
-          >✕</button>
+            onClick={prevPage}
+            disabled={loading || !!error}
+            className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-3 py-1 rounded hover:bg-white/10 min-w-[70px]"
+          >← Zurück</button>
+          <span className="text-white font-semibold text-sm">EPUB-Reader</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={nextPage}
+              disabled={loading || !!error}
+              className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-3 py-1 rounded hover:bg-white/10 min-w-[70px]"
+            >Weiter →</button>
+            <button
+              onClick={onClose}
+              className="text-white/70 hover:text-white text-xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-white/10"
+              aria-label="Schließen"
+            >✕</button>
+          </div>
         </div>
 
         {/* Viewer — overflow:clip (nicht hidden!) clippt auch iframe pointer-events */}
@@ -126,21 +138,11 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
           )}
         </div>
 
-        {/* Navigation */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-arena-border bg-gray-50 shrink-0 gap-4 relative z-10">
-          <button
-            onClick={prevPage}
-            disabled={loading || !!error}
-            className="btn btn-secondary btn-sm disabled:opacity-40 min-w-[90px]"
-          >← Zurück</button>
+        {/* Seiteninfo */}
+        <div className="flex items-center justify-center px-4 py-2 border-t border-arena-border bg-gray-50 shrink-0 relative z-10">
           <span className="text-xs text-arena-muted tabular-nums">
             {totalPages > 0 ? `${currentPage} / ${totalPages}` : ""}
           </span>
-          <button
-            onClick={nextPage}
-            disabled={loading || !!error}
-            className="btn btn-secondary btn-sm disabled:opacity-40 min-w-[90px]"
-          >Weiter →</button>
         </div>
       </div>
     </div>
