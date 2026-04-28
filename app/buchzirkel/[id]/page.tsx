@@ -210,10 +210,10 @@ export default function BuchzirkelDetailPage() {
           ) : (
             <form onSubmit={handleBewerben} className="flex flex-col gap-3">
               {zirkel.bewerbungsFragen.map((frage, i) => (
-                <div key={i}>
-                  <label className="label">{frage}</label>
+                <div key={i} className="flex flex-col gap-1">
+                  <label className="text-sm font-medium">{frage}</label>
                   <textarea
-                    className="input"
+                    className="input-base w-full"
                     rows={3}
                     value={antworten[i] ?? ""}
                     onChange={(e) => setAntworten((prev) => prev.map((a, j) => j === i ? e.target.value : a))}
