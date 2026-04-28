@@ -145,7 +145,7 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         </div>
 
         {/* Viewer */}
-        <div className="flex-1 relative bg-white min-h-0" style={{ overflow: "clip" }}>
+        <div className="flex-1 relative bg-white min-h-0 overflow-hidden">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center text-arena-muted text-sm">
               Lade EPUB…
@@ -156,7 +156,7 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
               {error}
             </div>
           ) : (
-            <div ref={viewerRef} className="w-full h-full relative" style={{ overflow: "clip" }} />
+            <div ref={viewerRef} className="w-full h-full" />
           )}
         </div>
 
