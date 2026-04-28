@@ -24,7 +24,14 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
     async function init() {
       try {
         const ePub = (await import("epubjs")).default;
-        const book = ePub(url);
+
+        // EPUB als ArrayBuffer vorab fetchen, damit epub.js keine Sub-Ressourcen
+        // über die API-URL nachlädt (würde 404 für META-INF/container.xml liefern)
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Fetch fehlgeschlagen");
+        const arrayBuffer = await response.arrayBuffer();
+
+        const book = ePub(arrayBuffer);
         const rendition = book.renderTo(viewerRef.current!, {
           width: "100%",
           height: "100%",
