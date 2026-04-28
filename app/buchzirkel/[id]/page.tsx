@@ -106,7 +106,7 @@ export default function BuchzirkelDetailPage() {
               {zirkel.genre && <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">{zirkel.genre}</span>}
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                 zirkel.status === "bewerbung" ? "bg-green-100 text-green-700" :
-                zirkel.status === "aktiv" ? "bg-[#e2b714]/20 text-arena-blue" :
+                zirkel.status === "aktiv" ? "bg-arena-yellow text-arena-blue" :
                 zirkel.status === "abgeschlossen" ? "bg-gray-100 text-gray-600" : "bg-gray-100"
               }`}>
                 {zirkel.status === "entwurf" ? "Entwurf" :
@@ -183,7 +183,7 @@ export default function BuchzirkelDetailPage() {
       {/* Bereits beworben */}
       {zirkel.isBeworben && !zirkel.isTeilnehmer && (
         <section className="card mt-3">
-          <div className="rounded-xl bg-[#e2b714]/10 border-2 border-[#e2b714] p-5 text-center">
+          <div className="rounded-xl bg-arena-yellow/10 border-2 border-arena-yellow p-5 text-center">
             <p className="font-semibold text-arena-blue m-0">Bewerbung eingereicht</p>
             <p className="text-sm text-arena-blue/80 m-0 mt-1">Du hast dich bereits beworben. Du erhältst eine E-Mail, sobald der Autor eine Entscheidung trifft.</p>
           </div>
@@ -196,7 +196,7 @@ export default function BuchzirkelDetailPage() {
           <h2 className="text-base font-semibold m-0 mb-1">Bewerbung einreichen</h2>
           <p className="text-sm text-arena-muted m-0 mb-3">Beantworte die Fragen des Autors und reiche deine Bewerbung ein. Der Autor prüft alle Bewerbungen und informiert dich per E-Mail über seine Entscheidung.</p>
 
-          <div className="rounded-lg bg-[#e2b714]/15 border border-[#e2b714] p-3 mb-3 text-sm text-arena-blue font-medium">
+          <div className="rounded-lg bg-arena-yellow/15 border border-arena-yellow p-3 mb-3 text-sm text-arena-blue font-medium">
             Für eine Bewerbung ist es notwendig, ein <a href="/profil?tab=testleser" className="underline hover:text-arena-yellow">Testleserprofil</a> anzulegen!
           </div>
 

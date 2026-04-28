@@ -452,7 +452,7 @@ function BeitragKarte({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-sm">{beitrag.autorUsername}</span>
             <span className="text-xs text-arena-muted">{new Date(beitrag.createdAt).toLocaleDateString("de-AT")}</span>
-            {beitrag.imTreffpunktGeteilt && <span className="text-xs bg-[#e2b714]/20 text-arena-blue px-1.5 py-0.5 rounded">Im Treffpunkt</span>}
+            {beitrag.imTreffpunktGeteilt && <span className="text-xs bg-arena-yellow/20 text-arena-blue px-1.5 py-0.5 rounded">Im Treffpunkt</span>}
           </div>
           {beitrag.titel && <p className="font-semibold m-0 mt-1">{beitrag.titel}</p>}
           <p className="text-sm m-0 mt-1 whitespace-pre-wrap">{beitrag.body}</p>

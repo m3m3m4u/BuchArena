@@ -43,7 +43,7 @@ export default function BuchzirkelPage() {
   return (
     <main className="top-centered-main">
       {/* Beta-Hinweis */}
-      <div className="rounded-lg bg-[#e2b714]/15 border border-[#e2b714] px-4 py-3 text-sm text-arena-blue font-medium mb-3">
+      <div className="rounded-lg bg-arena-yellow/15 border border-arena-yellow px-4 py-3 text-sm text-arena-blue font-medium mb-3">
         Dieses Tool wird aktuell noch getestet! Du kannst es gerne schon verwenden und uns rückmelden, was wir noch verbessern sollten!
       </div>
 
@@ -184,7 +184,7 @@ function ZirkelKarte({ zirkel }: { zirkel: Zirkel }) {
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✅ Teilnehmer</span>
           )}
           {!zirkel.isTeilnehmer && zirkel.isBeworben && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#e2b714]/20 text-arena-blue">⏳ Beworben</span>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-yellow text-arena-blue">⏳ Beworben</span>
           )}
         </div>
 
