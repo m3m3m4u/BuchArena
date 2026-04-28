@@ -56,7 +56,7 @@ export default function BuchzirkelDashboardPage() {
   const params = useParams<{ id: string }>();
   const account = getStoredAccount();
 
-  const [tab, setTab] = useState<"bewerber" | "teilnehmer" | "dateien" | "einstellungen">("bewerber");
+  const [tab, setTab] = useState<"bewerber" | "teilnehmer" | "dateien" | "werbung" | "einstellungen">("bewerber");
   const [zirkel, setZirkel] = useState<Zirkel | null>(null);
   const [bewerber, setBewerber] = useState<Bewerber[]>([]);
   const [teilnahmen, setTeilnahmen] = useState<Teilnahme[]>([]);
@@ -290,6 +290,7 @@ export default function BuchzirkelDashboardPage() {
           { key: "bewerber" as const, label: `Bewerber (${ausstehend.length})` },
           { key: "teilnehmer" as const, label: `Teilnehmer (${angenommen.length})` },
           { key: "dateien" as const, label: `Dateien (${zirkel.dateien.length})` },
+          { key: "werbung" as const, label: "Werbung" },
           { key: "einstellungen" as const, label: "Einstellungen" },
         ].map((t) => (
           <button
@@ -428,6 +429,55 @@ export default function BuchzirkelDashboardPage() {
               })}
             </div>
           )}
+        </section>
+      )}
+
+      {/* Werbung */}
+      {tab === "werbung" && (
+        <section className="card mt-3">
+          <h2 className="text-base font-semibold m-0 mb-1">Social-Media-Werbung</h2>
+          <p className="text-sm text-arena-muted m-0 mb-4">
+            Hier findest du fertige Grafiken für Instagram, Facebook & Co. Lade sie herunter und nutze sie, um für deinen Buchzirkel zu werben.
+            Du kannst die Bilder auch nach Belieben verändern (z. B. mit Canva oder Photoshop).
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-5">
+            {[
+              { file: "nimmplatz.png", label: "Variante 1" },
+              { file: "nimmplatz2.png", label: "Variante 2" },
+              { file: "nimmplatz3.png", label: "Variante 3" },
+              { file: "nimmplatz4.png", label: "Variante 4" },
+            ].map(({ file, label }) => (
+              <div key={file} className="flex flex-col gap-2">
+                <a
+                  href={`/Buchzirkel/${file}`}
+                  download={file}
+                  className="block rounded-lg overflow-hidden border border-arena-border hover:opacity-90 transition-opacity"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/Buchzirkel/${file}`} alt={label} className="w-full aspect-[4/5] object-cover" />
+                </a>
+                <a
+                  href={`/Buchzirkel/${file}`}
+                  download={file}
+                  className="btn btn-secondary btn-sm text-center text-xs"
+                >
+                  ↓ {label} herunterladen
+                </a>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-lg bg-arena-bg border border-arena-border-light p-4 flex flex-col gap-2">
+            <p className="text-sm font-semibold m-0">BuchArena365 als Collab-Partner auf Instagram</p>
+            <p className="text-sm text-arena-muted m-0">
+              Möchtest du mehr Reichweite für deinen Buchzirkel? Lade <strong>@bucharena365</strong> als Collab-Partner bei deinem Instagram-Post ein!
+              So erscheint der Beitrag auf beiden Profilen und erreicht deutlich mehr Leserinnen und Leser.
+            </p>
+            <p className="text-sm text-arena-muted m-0">
+              Gehe in Instagram bei deinem Post auf <em>Personen taggen → Kollaborateur einladen</em> und gib <strong>@bucharena365</strong> ein.
+            </p>
+          </div>
         </section>
       )}
 
