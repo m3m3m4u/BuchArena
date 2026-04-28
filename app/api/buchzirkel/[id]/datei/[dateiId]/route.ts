@@ -86,6 +86,11 @@ export async function GET(
         if (file.dir) continue;
         let content = await file.async("string");
 
+        // Fehlerhaftes XHTML reparieren: unbalancierte <div>-Tags entfernen/ergänzen.
+        // Viele EPUB-Exporter erzeugen XHTML mit überschüssigen </div> – die der strenge
+        // XML-Parser von epub.js als Fehler ablehnt.
+        content = fixXhtmlDivBalance(content);
+
         // <style> vor </head> injizieren – kein Body-Eingriff
         if (/<\/head>/i.test(content)) {
           content = content.replace(/<\/head>/i, `${watermarkStyle}</head>`);
@@ -157,4 +162,41 @@ export async function GET(
     console.error("buchzirkel datei GET:", err);
     return NextResponse.json({ message: "Serverfehler." }, { status: 500 });
   }
+}
+
+/**
+ * Repariert unbalancierte <div>-Tags in XHTML-Dateien.
+ * Viele EPUB-Exporter (Word, Calibre, …) erzeugen XHTML mit überschüssigen </div>
+ * oder vergessen schließende Tags – was den strikten XML-Parser von epub.js abbricht.
+ *
+ * Algorithmus:
+ *  - Verfolgt die Tiefe der offenen <div>-Elemente.
+ *  - Verwaiste </div> (kein öffnendes Gegenstück) werden entfernt.
+ *  - Am Ende noch offene <div> werden vor </body> geschlossen.
+ */
+function fixXhtmlDivBalance(content: string): string {
+  let depth = 0;
+
+  const result = content.replace(/<\/div>|<div(?:\s[^>]*)?\/?>/gi, (match) => {
+    if (match.startsWith("</")) {
+      // Schließendes Tag
+      if (depth > 0) {
+        depth--;
+        return match;
+      }
+      // Verwaist – entfernen
+      return "";
+    }
+    // Öffnendes Tag – self-closing (<div/>) nicht zählen
+    if (!match.endsWith("/>")) {
+      depth++;
+    }
+    return match;
+  });
+
+  // Noch offene <div> vor </body> schließen
+  if (depth > 0) {
+    return result.replace(/<\/body\s*>/i, () => "</div>".repeat(depth) + "</body>");
+  }
+  return result;
 }
