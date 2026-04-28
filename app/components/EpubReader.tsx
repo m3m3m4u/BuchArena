@@ -25,8 +25,11 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
   useEffect(() => {
     if (!viewerRef.current) return;
     let destroyed = false;
+    let roDisconnected = false;
 
-    async function init() {
+    const container = viewerRef.current;
+
+    async function init(w: number, h: number) {
       try {
         const ePub = (await import("epubjs")).default;
 
@@ -34,30 +37,20 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         if (!response.ok) throw new Error("Fetch fehlgeschlagen");
         const arrayBuffer = await response.arrayBuffer();
 
-        const container = viewerRef.current!;
+        if (destroyed) return;
 
         const book = ePub(arrayBuffer);
-        // Erst display() aufrufen damit der Container im DOM ist,
-        // dann mit korrekten Pixelmaßen neu rendern
         const rendition = book.renderTo(container, {
-          width: "100%",
-          height: "100%",
+          width: w,
+          height: h,
           flow: "paginated",
           spread: "none",
         });
         renditionRef.current = rendition;
 
         await rendition.display();
-
-        // Jetzt sind die echten Maße bekannt – iframe neu setzen
-        const w = container.offsetWidth;
-        const h = container.offsetHeight;
-        if (w > 0 && h > 0) {
-          rendition.resize(w, h);
-        }
         if (!destroyed) setLoading(false);
 
-        // Locations für Seitenzahlen generieren (async, blockiert nicht das Lesen)
         book.locations.generate(1024).then(() => {
           if (destroyed) return;
           const total = book.locations.length();
@@ -79,10 +72,24 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
       }
     }
 
-    init();
+    // Warten bis Container echte Pixelmaße hat
+    const ro = new ResizeObserver((entries) => {
+      if (roDisconnected) return;
+      const entry = entries[0];
+      const w = entry.contentRect.width;
+      const h = entry.contentRect.height;
+      if (w > 0 && h > 0) {
+        roDisconnected = true;
+        ro.disconnect();
+        init(Math.floor(w), Math.floor(h));
+      }
+    });
+    ro.observe(container);
 
     return () => {
       destroyed = true;
+      roDisconnected = true;
+      ro.disconnect();
       try { renditionRef.current?.destroy(); } catch { /* ignore */ }
       renditionRef.current = null;
     };
