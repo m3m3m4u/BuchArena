@@ -96,7 +96,7 @@ export async function PATCH(
 
     // Erlaubte Felder
     const allowed = [
-      "titel", "beschreibung", "coverImageUrl", "genre", "status",
+      "titel", "beschreibung", "coverImageUrl", "genre", "buchformateAngebot", "status",
       "bewerbungBis", "maxTeilnehmer", "bewerbungsFragen", "genreFilter",
       "agbPflicht", "agbText", "leseabschnitte", "diskussionsTopics", "fragebogen",
     ];

@@ -58,6 +58,7 @@ export type BuchzirkelDocument = {
   beschreibung: string;
   coverImageUrl?: string;
   genre: string;
+  buchformateAngebot?: string[]; // z.B. ["gedruckt", "epub", "pdf"]
 
   // Status
   status: BuchzirkelStatus;

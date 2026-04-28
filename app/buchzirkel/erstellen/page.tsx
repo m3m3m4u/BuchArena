@@ -34,6 +34,7 @@ export default function BuchzirkelErstellenPage() {
   const [leseabschnitte, setLeseabschnitte] = useState<Leseabschnitt[]>([]);
   const [topics, setTopics] = useState<Topic[]>([...STANDARD_TOPICS]);
   const [fragebogen, setFragebogen] = useState<Frage[]>([]);
+  const [buchformateAngebot, setBuchformateAngebot] = useState<string[]>([]);
   const [neuerAbschnittTitel, setNeuerAbschnittTitel] = useState("");
   const [neuerAbschnittDeadline, setNeuerAbschnittDeadline] = useState("");
   const [neueFrage, setNeueFrage] = useState("");
@@ -74,6 +75,7 @@ export default function BuchzirkelErstellenPage() {
           titel,
           beschreibung,
           genre,
+          buchformateAngebot,
           coverImageUrl: coverImageUrl.trim() || undefined,
           bewerbungBis: new Date(bewerbungBis).toISOString(),
           maxTeilnehmer,
@@ -198,6 +200,27 @@ export default function BuchzirkelErstellenPage() {
             </div>
             <div className="grid gap-1">
               <GenrePicker label="Genre" value={genre} onChange={setGenre} />
+            </div>
+            <div className="grid gap-1">
+              <span className="text-sm font-semibold">Bereitgestellte Formate</span>
+              <div className="flex flex-wrap gap-3 mt-1">
+                {(["gedruckt", "epub", "pdf"] as const).map((fmt) => {
+                  const label = fmt === "gedruckt" ? "Gedrucktes Buch" : fmt.toUpperCase();
+                  return (
+                    <label key={fmt} className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={buchformateAngebot.includes(fmt)}
+                        onChange={(e) => setBuchformateAngebot((prev) =>
+                          e.target.checked ? [...prev, fmt] : prev.filter((f) => f !== fmt)
+                        )}
+                      />
+                      {label}
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-arena-muted">Was erhalten die Teilnehmer? Mehrfachwahl möglich.</p>
             </div>
             <div className="grid gap-1">
               <label className="text-sm font-semibold" htmlFor="coverImageUrl">Cover-URL (optional)</label>

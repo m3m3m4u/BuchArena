@@ -29,6 +29,7 @@ type Zirkel = {
   isVeranstalter: boolean;
   isTeilnehmer: boolean;
   isBeworben: boolean;
+  buchformateAngebot?: string[];
 };
 
 export default function BuchzirkelDetailPage() {
@@ -104,6 +105,11 @@ export default function BuchzirkelDetailPage() {
                 {isBeta ? "🔒 Betaleser-Zirkel" : "Testleser-Zirkel"}
               </span>
               {zirkel.genre && <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">{zirkel.genre}</span>}
+              {zirkel.buchformateAngebot?.map((f) => (
+                <span key={f} className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-arena-blue">
+                  {f === "gedruckt" ? "Gedrucktes Buch" : f.toUpperCase()}
+                </span>
+              ))}
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                 zirkel.status === "bewerbung" ? "bg-green-100 text-green-700" :
                 zirkel.status === "aktiv" ? "bg-arena-yellow text-arena-blue" :

@@ -48,6 +48,7 @@ type Zirkel = {
   diskussionsTopics: { id: string; titel: string; typ: string }[];
   fragebogen: { id: string; frage: string }[];
   dateien: { id: string; originalName: string; abschnittId?: string; uploadedAt: string }[];
+  buchformateAngebot?: string[];
 };
 
 type Datei = { id: string; originalName: string; abschnittId?: string };
@@ -91,6 +92,7 @@ export default function BuchzirkelDashboardPage() {
   const [neueFrage, setNeueFrage] = useState("");
   const [editSaving, setEditSaving] = useState(false);
   const [editMsg, setEditMsg] = useState("");
+  const [editBuchformate, setEditBuchformate] = useState<string[]>([]);
 
   const load = useCallback(async () => {
     const [zRes, bRes, tRes] = await Promise.all([
@@ -118,6 +120,7 @@ export default function BuchzirkelDashboardPage() {
       setEditAbschnitte(z.leseabschnitte.map((a) => ({ ...a, deadline: a.deadline ? a.deadline.split("T")[0] : "" })));
       setEditTopics(z.diskussionsTopics);
       setEditFragebogen(z.fragebogen);
+      setEditBuchformate(z.buchformateAngebot ?? []);
     }
     setLoading(false);
   }, [params.id]);
@@ -173,6 +176,7 @@ export default function BuchzirkelDashboardPage() {
         titel: editTitel,
         beschreibung: editBeschreibung,
         genre: editGenre,
+        buchformateAngebot: editBuchformate,
         coverImageUrl: editCoverImageUrl.trim() || undefined,
         bewerbungBis: editBewerbungBis ? new Date(editBewerbungBis).toISOString() : undefined,
         maxTeilnehmer: editMaxTeilnehmer,
@@ -541,6 +545,26 @@ export default function BuchzirkelDashboardPage() {
                 <div className="grid gap-1">
                   <label className="text-sm font-semibold">Cover-URL</label>
                   <input className="input-base w-full" value={editCoverImageUrl} onChange={(e) => setEditCoverImageUrl(e.target.value)} placeholder="https://…" />
+                </div>
+              </div>
+              <div className="grid gap-1">
+                <span className="text-sm font-semibold">Bereitgestellte Formate</span>
+                <div className="flex flex-wrap gap-3 mt-1">
+                  {(["gedruckt", "epub", "pdf"] as const).map((fmt) => {
+                    const label = fmt === "gedruckt" ? "Gedrucktes Buch" : fmt.toUpperCase();
+                    return (
+                      <label key={fmt} className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={editBuchformate.includes(fmt)}
+                          onChange={(e) => setEditBuchformate((prev) =>
+                            e.target.checked ? [...prev, fmt] : prev.filter((f) => f !== fmt)
+                          )}
+                        />
+                        {label}
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
             </div>
