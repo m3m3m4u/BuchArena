@@ -204,6 +204,13 @@ export default function BuchzirkelDashboardPage() {
     setNeuerAbschnittDeadline("");
   }
 
+  function moveItem<T>(arr: T[], from: number, to: number): T[] {
+    const next = [...arr];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    return next;
+  }
+
   function addFragebogenFrage() {
     if (!neueFrage.trim()) return;
     setEditFragebogen((prev) => [...prev, { id: crypto.randomUUID(), frage: neueFrage.trim() }]);
@@ -505,7 +512,11 @@ export default function BuchzirkelDashboardPage() {
             <div className="mt-3 grid gap-1">
               <label className="text-sm font-semibold">Bewerbungsfragen</label>
               {editFragen.map((f, i) => (
-                <div key={i} className="flex gap-2">
+                <div key={i} className="flex gap-2 items-center">
+                  <div className="flex flex-col gap-0.5">
+                    <button type="button" disabled={i === 0} onClick={() => setEditFragen((prev) => moveItem(prev, i, i - 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▲</button>
+                    <button type="button" disabled={i === editFragen.length - 1} onClick={() => setEditFragen((prev) => moveItem(prev, i, i + 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▼</button>
+                  </div>
                   <input
                     className="input-base flex-1"
                     value={f}
@@ -545,6 +556,10 @@ export default function BuchzirkelDashboardPage() {
             <h2 className="text-base font-semibold m-0 mb-3">Leseabschnitte & Deadlines</h2>
             {editAbschnitte.map((a, i) => (
               <div key={a.id} className="flex items-center gap-2 mb-2 text-sm border border-arena-border rounded-lg p-2">
+                <div className="flex flex-col gap-0.5">
+                  <button type="button" disabled={i === 0} onClick={() => setEditAbschnitte((prev) => moveItem(prev, i, i - 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none">▲</button>
+                  <button type="button" disabled={i === editAbschnitte.length - 1} onClick={() => setEditAbschnitte((prev) => moveItem(prev, i, i + 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none">▼</button>
+                </div>
                 <input
                   className="input-base flex-1"
                   value={a.titel}
@@ -553,7 +568,7 @@ export default function BuchzirkelDashboardPage() {
                 <input
                   type="date"
                   className="input-base w-36"
-                  value={a.deadline}
+                  value={a.deadline ?? ""}
                   onChange={(e) => setEditAbschnitte((prev) => prev.map((x, j) => j === i ? { ...x, deadline: e.target.value } : x))}
                 />
                 <button type="button" onClick={() => setEditAbschnitte((prev) => prev.filter((_, j) => j !== i))} className="text-red-500">✕</button>
@@ -570,6 +585,10 @@ export default function BuchzirkelDashboardPage() {
             <h2 className="text-base font-semibold m-0 mb-3">Diskussions-Bereiche</h2>
             {editTopics.map((t, i) => (
               <div key={t.id} className="flex items-center gap-2 mb-2">
+                <div className="flex flex-col gap-0.5">
+                  <button type="button" disabled={i === 0} onClick={() => setEditTopics((prev) => moveItem(prev, i, i - 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▲</button>
+                  <button type="button" disabled={i === editTopics.length - 1} onClick={() => setEditTopics((prev) => moveItem(prev, i, i + 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▼</button>
+                </div>
                 <input
                   className="input-base flex-1"
                   value={t.titel}
@@ -591,7 +610,15 @@ export default function BuchzirkelDashboardPage() {
             <h2 className="text-base font-semibold m-0 mb-3">Abschluss-Fragebogen</h2>
             {editFragebogen.map((f, i) => (
               <div key={f.id} className="flex items-center gap-2 mb-2">
-                <span className="flex-1 text-sm">{f.frage}</span>
+                <div className="flex flex-col gap-0.5">
+                  <button type="button" disabled={i === 0} onClick={() => setEditFragebogen((prev) => moveItem(prev, i, i - 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▲</button>
+                  <button type="button" disabled={i === editFragebogen.length - 1} onClick={() => setEditFragebogen((prev) => moveItem(prev, i, i + 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▼</button>
+                </div>
+                <input
+                  className="input-base flex-1 text-sm"
+                  value={f.frage}
+                  onChange={(e) => setEditFragebogen((prev) => prev.map((x, j) => j === i ? { ...x, frage: e.target.value } : x))}
+                />
                 <button type="button" onClick={() => setEditFragebogen((prev) => prev.filter((_, j) => j !== i))} className="text-red-500 text-sm">✕</button>
               </div>
             ))}
