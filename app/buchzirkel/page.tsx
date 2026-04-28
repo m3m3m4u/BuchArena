@@ -104,7 +104,7 @@ export default function BuchzirkelPage() {
               typFilter === "betaleser" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
             }`}
           >
-            🔒 Buchzirkel (Beta)
+            Buchzirkel (Beta)
           </button>
         </div>
       </section>
@@ -113,7 +113,6 @@ export default function BuchzirkelPage() {
       <section className="card mt-3 flex flex-col gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-arena-muted m-0">Zirkel-Typen</p>
         <div className="flex gap-3 items-start">
-          <span className="flex-shrink-0 mt-0.5 text-arena-blue text-base">📖</span>
           <div>
             <p className="font-semibold m-0 text-arena-blue text-sm">Buchzirkel</p>
             <p className="text-sm text-arena-muted m-0">
@@ -123,7 +122,6 @@ export default function BuchzirkelPage() {
         </div>
         <hr className="border-arena-border-light m-0" />
         <div className="flex gap-3 items-start">
-          <span className="flex-shrink-0 mt-0.5 text-base">🔒</span>
           <div>
             <p className="font-semibold m-0 text-red-800 text-sm">Buchzirkel (Beta)</p>
             <p className="text-sm text-arena-muted m-0">
