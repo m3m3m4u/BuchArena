@@ -57,20 +57,17 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
           setTotalPages(total);
           // Aktuelle Position nachlesen, nachdem Locations fertig sind
           const loc = rendition.currentLocation();
-          const idx = loc?.start?.location ?? (loc?.start?.cfi ? book.locations.locationFromCfi(loc.start.cfi) : -1);
-          if (idx >= 0) setCurrentPage(idx + 1);
+          if (loc?.start?.percentage != null) {
+            setCurrentPage(Math.min(total, Math.max(1, Math.round(loc.start.percentage * total) + 1)));
+          }
         });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rendition.on("locationChanged", (location: any) => {
           if (destroyed) return;
           const total = book.locations.length();
-          if (total > 0) {
-            // location.start.location ist der 0-basierte Index
-            const idx = location?.start?.location != null
-              ? location.start.location
-              : (location?.start?.cfi ? book.locations.locationFromCfi(location.start.cfi) : -1);
-            if (idx >= 0) setCurrentPage(idx + 1);
+          if (total > 0 && location?.start?.percentage != null) {
+            setCurrentPage(Math.min(total, Math.max(1, Math.round(location.start.percentage * total) + 1)));
             setTotalPages(total);
           }
         });
