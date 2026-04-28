@@ -117,7 +117,7 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-arena-border bg-gray-50 shrink-0 gap-4">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-arena-border bg-gray-50 shrink-0 gap-4 relative z-10">
           <button
             onClick={prevPage}
             disabled={loading || !!error}
