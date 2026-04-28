@@ -210,6 +210,7 @@ export default function TeilnehmerBereichPage() {
         <div className="w-full flex gap-4 mt-3 max-sm:flex-col">
           {/* Topic-Sidebar */}
           <aside className="w-48 max-sm:w-full flex-shrink-0">
+            <p className="text-xs text-arena-muted mb-2 max-sm:hidden">Wähle einen Themenbereich:</p>
             <div className="flex flex-col gap-1 max-sm:flex-row max-sm:flex-wrap">
               {zirkel.diskussionsTopics.map((t) => (
                 <button
@@ -270,6 +271,7 @@ export default function TeilnehmerBereichPage() {
       {/* Dateien / PDF-Viewer */}
       {tab === "dateien" && (
         <section className="card mt-3">
+          <p className="text-sm text-arena-muted m-0 mb-3">Hier findest du das Manuskript oder Buch. Jede Datei ist mit deinem persönlichen Wasserzeichen versehen – bitte nicht weitergeben.</p>
           {zirkel.dateien.length === 0 ? (
             <p className="text-arena-muted text-sm">Noch keine Dateien hochgeladen.</p>
           ) : (
@@ -308,7 +310,8 @@ export default function TeilnehmerBereichPage() {
       {/* Fortschritt */}
       {tab === "fortschritt" && (
         <section className="card mt-3">
-          <h2 className="text-base font-semibold m-0 mb-3">Leseabschnitte</h2>
+          <h2 className="text-base font-semibold m-0 mb-1">Leseabschnitte</h2>
+          <p className="text-sm text-arena-muted m-0 mb-3">Markiere jeden Abschnitt als gelesen, sobald du ihn abgeschlossen hast. Der Autor kann deinen Fortschritt im Dashboard einsehen.</p>
           {zirkel.leseabschnitte.length === 0 ? (
             <p className="text-arena-muted text-sm">Keine Leseabschnitte definiert.</p>
           ) : (
@@ -350,7 +353,8 @@ export default function TeilnehmerBereichPage() {
       {/* Rezensions-Links */}
       {tab === "rezensionen" && (
         <section className="card mt-3">
-          <h2 className="text-base font-semibold m-0 mb-3">Rezensions-Links</h2>
+          <h2 className="text-base font-semibold m-0 mb-1">Rezensions-Links</h2>
+          <p className="text-sm text-arena-muted m-0 mb-3">Hast du eine Rezension auf Amazon, Goodreads oder einer anderen Plattform veröffentlicht? Trage den Link hier ein – der Autor kann die Links im Dashboard einsehen.</p>
           {teilnahme?.rezensionsLinks.map((r, i) => (
             <div key={i} className="flex items-center gap-2 mb-2 text-sm">
               <span className="font-medium">{r.plattform}:</span>
@@ -424,7 +428,7 @@ function BeitragKarte({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-sm">{beitrag.autorUsername}</span>
             <span className="text-xs text-arena-muted">{new Date(beitrag.createdAt).toLocaleDateString("de-AT")}</span>
-            {beitrag.imTreffpunktGeteilt && <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">Im Treffpunkt</span>}
+            {beitrag.imTreffpunktGeteilt && <span className="text-xs bg-[#e2b714]/20 text-arena-blue px-1.5 py-0.5 rounded">Im Treffpunkt</span>}
           </div>
           {beitrag.titel && <p className="font-semibold m-0 mt-1">{beitrag.titel}</p>}
           <p className="text-sm m-0 mt-1 whitespace-pre-wrap">{beitrag.body}</p>
@@ -503,7 +507,8 @@ function FragebogenTab({
 
   return (
     <section className="card mt-3">
-      <h2 className="text-base font-semibold m-0 mb-3">📝 Abschluss-Fragebogen</h2>
+      <h2 className="text-base font-semibold m-0 mb-1">📝 Abschluss-Fragebogen</h2>
+      <p className="text-sm text-arena-muted m-0 mb-3">Der Autor möchte am Ende dein Feedback zu diesen Fragen. Du kannst deine Antworten jederzeit ändern und erneut absenden.</p>
       <form onSubmit={submit} className="flex flex-col gap-4">
         {fragen.map((f) => (
           <div key={f.id}>

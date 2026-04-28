@@ -59,6 +59,18 @@ export default function BuchzirkelPage() {
         </div>
       </section>
 
+      {/* So funktioniert's */}
+      <section className="card mt-3">
+        <h2 className="text-base font-semibold m-0 mb-3">📋 So funktioniert ein Buchzirkel</h2>
+        <ol className="flex flex-col gap-2 text-sm text-arena-text pl-0 list-none m-0">
+          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">1</span><span><strong>Autor erstellt einen Zirkel</strong> – mit Beschreibung, Bewerbungsfrist und optionalen Fragen an Interessenten.</span></li>
+          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">2</span><span><strong>Leser bewerben sich</strong> – innerhalb der Bewerbungsfrist können registrierte Mitglieder eine Bewerbung einreichen.</span></li>
+          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">3</span><span><strong>Autor wählt Teilnehmer aus</strong> – angenommene Teilnehmer erhalten Zugang zum Lesebereich mit Manuskript/Buch und Diskussion.</span></li>
+          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">4</span><span><strong>Gemeinsames Lesen</strong> – Teilnehmer lesen nach Zeitplan, diskutieren in Themen-Bereichen und geben Feedback.</span></li>
+          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">5</span><span><strong>Rezensionen</strong> – nach dem Lesen tragen Testleser ihre Rezenssionslinks ein (Amazon, Goodreads, …).</span></li>
+        </ol>
+      </section>
+
       {/* Filter */}
       <section className="card mt-3">
         <div className="flex gap-2 flex-wrap">
@@ -94,7 +106,7 @@ export default function BuchzirkelPage() {
 
       {/* Erklär-Karten */}
       <section className="w-full grid grid-cols-2 gap-3 mt-3 max-sm:grid-cols-1">
-        <div className="rounded-xl border-2 border-arena-blue-light bg-blue-50 p-4">
+        <div className="rounded-xl border-2 border-arena-blue-light bg-[#1a1a2e]/5 p-4">
           <p className="font-semibold m-0 text-arena-blue">📖 Testleser-Zirkel</p>
           <p className="text-sm text-arena-muted m-0 mt-1">
             Rezensionsexemplare für bereits veröffentlichte Bücher – Feedback und Bewertungen auf Amazon, Goodreads & Co.
@@ -155,7 +167,7 @@ function ZirkelKarte({ zirkel }: { zirkel: Zirkel }) {
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start gap-2 flex-wrap">
-          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-blue-100 text-arena-blue"}`}>
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
             {isBeta ? "🔒 Betaleser" : "📖 Testleser"}
           </span>
           {zirkel.genre && (
@@ -167,7 +179,7 @@ function ZirkelKarte({ zirkel }: { zirkel: Zirkel }) {
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✅ Teilnehmer</span>
           )}
           {!zirkel.isTeilnehmer && zirkel.isBeworben && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">⏳ Beworben</span>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#e2b714]/20 text-arena-blue">⏳ Beworben</span>
           )}
         </div>
 

@@ -100,13 +100,13 @@ export default function BuchzirkelDetailPage() {
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-blue-100 text-arena-blue"}`}>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
                 {isBeta ? "🔒 Betaleser-Zirkel" : "📖 Testleser-Zirkel"}
               </span>
               {zirkel.genre && <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">{zirkel.genre}</span>}
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                 zirkel.status === "bewerbung" ? "bg-green-100 text-green-700" :
-                zirkel.status === "aktiv" ? "bg-yellow-100 text-yellow-700" :
+                zirkel.status === "aktiv" ? "bg-[#e2b714]/20 text-arena-blue" :
                 zirkel.status === "abgeschlossen" ? "bg-gray-100 text-gray-600" : "bg-gray-100"
               }`}>
                 {zirkel.status === "entwurf" ? "Entwurf" :
@@ -151,7 +151,8 @@ export default function BuchzirkelDetailPage() {
       {/* Leseabschnitte */}
       {zirkel.leseabschnitte.length > 0 && (
         <section className="card mt-3">
-          <h2 className="text-base font-semibold m-0 mb-3">📖 Zeitplan</h2>
+          <h2 className="text-base font-semibold m-0 mb-1">📖 Zeitplan</h2>
+          <p className="text-sm text-arena-muted m-0 mb-3">Als Teilnehmer liest du das Buch nach diesem Zeitplan und markierst jeden Abschnitt als gelesen. Du erhältst eine Erinnerungs-E-Mail, wenn eine Deadline näher rückt.</p>
           <div className="flex flex-col gap-2">
             {zirkel.leseabschnitte.map((a, i) => (
               <div key={a.id} className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-gray-50 border border-arena-border-light">
@@ -166,7 +167,8 @@ export default function BuchzirkelDetailPage() {
       {/* Diskussions-Topics (nur Vorschau) */}
       {zirkel.diskussionsTopics.length > 0 && (
         <section className="card mt-3">
-          <h2 className="text-base font-semibold m-0 mb-3">💬 Diskussionsbereiche</h2>
+          <h2 className="text-base font-semibold m-0 mb-1">💬 Diskussionsbereiche</h2>
+          <p className="text-sm text-arena-muted m-0 mb-3">Teilnehmer können in diesen Themenbereichen miteinander und mit dem Autor diskutieren. Beiträge sind nur für Teilnehmer sichtbar.</p>
           <div className="flex flex-wrap gap-2">
             {zirkel.diskussionsTopics.map((t) => (
               <span key={t.id} className="text-sm px-3 py-1 rounded-full bg-gray-100 text-arena-muted">{t.titel}</span>
@@ -181,10 +183,10 @@ export default function BuchzirkelDetailPage() {
       {/* Bereits beworben */}
       {zirkel.isBeworben && !zirkel.isTeilnehmer && (
         <section className="card mt-3">
-          <div className="rounded-xl bg-yellow-50 border-2 border-yellow-300 p-5 text-center">
+          <div className="rounded-xl bg-[#e2b714]/10 border-2 border-[#e2b714] p-5 text-center">
             <p className="text-2xl m-0">⏳</p>
-            <p className="font-semibold text-yellow-800 m-0 mt-1">Bewerbung eingereicht</p>
-            <p className="text-sm text-yellow-700 m-0 mt-1">Du hast dich bereits beworben. Du erhältst eine E-Mail, sobald der Autor eine Entscheidung trifft.</p>
+            <p className="font-semibold text-arena-blue m-0 mt-1">Bewerbung eingereicht</p>
+            <p className="text-sm text-arena-blue/80 m-0 mt-1">Du hast dich bereits beworben. Du erhältst eine E-Mail, sobald der Autor eine Entscheidung trifft.</p>
           </div>
         </section>
       )}
@@ -192,7 +194,8 @@ export default function BuchzirkelDetailPage() {
       {/* Bewerbungsbereich */}
       {kannBewerben && (
         <section className="card mt-3">
-          <h2 className="text-base font-semibold m-0 mb-3">✍️ Bewerbung einreichen</h2>
+          <h2 className="text-base font-semibold m-0 mb-1">✍️ Bewerbung einreichen</h2>
+          <p className="text-sm text-arena-muted m-0 mb-3">Beantworte die Fragen des Autors und reiche deine Bewerbung ein. Der Autor prüft alle Bewerbungen und informiert dich per E-Mail über seine Entscheidung.</p>
 
           {isBeta && (
             <div className="rounded-lg bg-red-50 border border-red-200 p-3 mb-3 text-sm text-red-800">
