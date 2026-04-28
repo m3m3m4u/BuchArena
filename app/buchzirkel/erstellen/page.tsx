@@ -150,7 +150,7 @@ export default function BuchzirkelErstellenPage() {
                 typ === "testleser" ? "border-arena-blue bg-blue-50" : "border-arena-border hover:border-arena-blue"
               }`}
             >
-              <p className="font-bold m-0">Testleser-Zirkel</p>
+              <p className="font-bold m-0">(Test)Leser-Zirkel</p>
               <p className="text-sm text-arena-muted m-0 mt-1">
                 Für bereits veröffentlichte Bücher – Rezensionen auf Amazon, Goodreads & Co.
               </p>

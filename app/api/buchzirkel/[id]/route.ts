@@ -4,6 +4,7 @@ import {
   getBuchzirkelCollection,
   getBuchzirkelTeilnahmenCollection,
   getBuchzirkelBewerbungenCollection,
+  getUsersCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 
@@ -48,6 +49,18 @@ export async function GET(
       }
     }
 
+    // Testleserprofil des aktuellen Nutzers prüfen
+    let viewerHasTestleserProfile = false;
+    if (account) {
+      const users = await getUsersCollection();
+      const userDoc = await users.findOne(
+        { username: account.username },
+        { projection: { "testleserProfile.name": 1 } }
+      );
+      const name = (userDoc?.testleserProfile as Record<string, unknown> | undefined)?.name as { value?: string } | undefined;
+      viewerHasTestleserProfile = !!(name?.value?.trim());
+    }
+
     const result = {
       ...doc,
       // Dateien nur sichtbar für Veranstalter und Teilnehmer
@@ -55,6 +68,7 @@ export async function GET(
       isVeranstalter,
       isTeilnehmer,
       isBeworben,
+      viewerHasTestleserProfile,
     };
 
     return NextResponse.json({ zirkel: result });

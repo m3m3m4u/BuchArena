@@ -72,6 +72,7 @@ type Zirkel = {
   isTeilnehmer: boolean;
   isBeworben: boolean;
   buchformateAngebot?: string[];
+  viewerHasTestleserProfile?: boolean;
 };
 
 export default function BuchzirkelDetailPage() {
@@ -144,7 +145,7 @@ export default function BuchzirkelDetailPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
-                {isBeta ? "🔒 Betaleser-Zirkel" : "Testleser-Zirkel"}
+                {isBeta ? "🔒 Betaleser-Zirkel" : "(Test)Leser-Zirkel"}
               </span>
               {zirkel.genre && <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">{zirkel.genre}</span>}
               {zirkel.buchformateAngebot?.map((f) => (
@@ -244,9 +245,11 @@ export default function BuchzirkelDetailPage() {
           <h2 className="text-base font-semibold m-0 mb-1">Bewerbung einreichen</h2>
           <p className="text-sm text-arena-muted m-0 mb-3">Beantworte die Fragen des Autors und reiche deine Bewerbung ein. Der Autor prüft alle Bewerbungen und informiert dich per E-Mail über seine Entscheidung.</p>
 
-          <div className="rounded-lg bg-arena-yellow/15 border border-arena-yellow p-3 mb-3 text-sm text-arena-blue font-medium">
-            Für eine Bewerbung ist es notwendig, ein <a href="/profil?tab=testleser" className="underline hover:text-arena-yellow">Testleserprofil</a> anzulegen!
-          </div>
+          {!zirkel.viewerHasTestleserProfile && (
+            <div className="rounded-lg bg-arena-yellow/15 border border-arena-yellow p-3 mb-3 text-sm text-arena-blue font-medium">
+              Für eine Bewerbung ist es notwendig, ein <a href="/profil?tab=testleser" className="underline hover:text-arena-yellow">(Test)Leser-Profil</a> anzulegen!
+            </div>
+          )}
 
           {isBeta && (
             <div className="rounded-lg bg-red-50 border border-red-200 p-3 mb-3 text-sm text-red-800">

@@ -80,7 +80,7 @@ export default function SiteHeader() {
       <Link href="/autoren" className="header-link-public w-full sm:w-auto">Autoren</Link>
       <Link href="/sprecher" className="header-link-public w-full sm:w-auto">Sprecher</Link>
       <Link href="/blogger" className="header-link-public w-full sm:w-auto">Blogger</Link>
-      <Link href="/testleser" className="header-link-public w-full sm:w-auto">Testleser</Link>
+      <Link href="/testleser" className="header-link-public w-full sm:w-auto">(Test)Leser</Link>
       <Link href="/lektoren" className="header-link-public w-full sm:w-auto">Lektoren</Link>
       {verlageCount > 0 && <Link href="/verlage" className="header-link-public w-full sm:w-auto">Verlage</Link>}
         <Link href="/news" className="header-link-public w-full sm:w-auto">News</Link>

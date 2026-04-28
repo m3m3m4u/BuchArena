@@ -143,12 +143,12 @@ const bucharenaFaq: FaqItem[] = [
     ),
   },
   {
-    question: "Was sind Testleser und wie funktioniert das?",
+    question: "Was sind (Test)Leser und wie funktioniert das?",
     answer: (
       <p>
-        Autorinnen und Autoren können auf der BuchArena nach <strong>Testleserinnen und Testlesern</strong> suchen.
-        Dafür können sich interessierte Leserinnen und Leser als Testleser registrieren und ihr Profil
-        mit Vorlieben und Interessen ausfüllen. Autorinnen und Autoren können passende Testleser finden
+        Autorinnen und Autoren können auf der BuchArena nach <strong>(Test)Leserinnen und (Test)Lesern</strong> suchen.
+        Dafür können sich interessierte Leserinnen und Leser als (Test)Leser registrieren und ihr Profil
+        mit Vorlieben und Interessen ausfüllen. Autorinnen und Autoren können passende (Test)Leser finden
         und über die Nachrichtenfunktion Kontakt aufnehmen.
       </p>
     ),

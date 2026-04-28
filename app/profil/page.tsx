@@ -395,14 +395,14 @@ function ProfilPageInner() {
 
       const data = (await response.json()) as { message?: string };
       if (!response.ok) {
-        throw new Error(data.message ?? "Testleserprofil konnte nicht gespeichert werden.");
+        throw new Error(data.message ?? "(Test)Leser-Profil konnte nicht gespeichert werden.");
       }
 
-      setMessage(data.message ?? "Testleserprofil gespeichert.");
+      setMessage(data.message ?? "(Test)Leser-Profil gespeichert.");
       savedTestleserSnap.current = JSON.stringify(testleserProfile);
     } catch {
       setIsError(true);
-      setMessage("Testleserprofil konnte nicht gespeichert werden.");
+      setMessage("(Test)Leser-Profil konnte nicht gespeichert werden.");
     } finally {
       setIsSavingTestleser(false);
     }
@@ -824,8 +824,8 @@ function ProfilPageInner() {
       const data = (await response.json()) as { message?: string; imageUrl?: string };
       if (!response.ok || !data.imageUrl) throw new Error(data.message ?? "Upload fehlgeschlagen.");
       setTestleserProfile((current) => ({ ...current, profileImage: { ...current.profileImage, value: data.imageUrl as string, visibility: current.profileImage.visibility === "hidden" ? "public" : current.profileImage.visibility } }));
-      setMessage("Testleser-Bild erfolgreich hochgeladen.");
-    } catch { setIsError(true); setMessage("Testleser-Bild-Upload fehlgeschlagen."); }
+      setMessage("(Test)Leser-Bild erfolgreich hochgeladen.");
+    } catch { setIsError(true); setMessage("(Test)Leser-Bild-Upload fehlgeschlagen."); }
     finally { setIsUploadingTestleserImage(false); }
   }
 
@@ -1079,7 +1079,7 @@ function ProfilPageInner() {
             className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "testleser" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
             onClick={() => handleTabSwitch("testleser")}
           >
-            Testleser
+            (Test)Leser
           </button>
           <button
             type="button"
@@ -2171,7 +2171,7 @@ function ProfilPageInner() {
 
         {activeTab === "testleser" && (
         <>
-        <h2 className="text-lg mt-0">Testleserprofil</h2>
+        <h2 className="text-lg mt-0">(Test)Leser-Profil</h2>
         <p className="text-arena-muted text-[0.95rem]">
           Fülle dein Profil als Testleser aus. Öffentlich sichtbare Felder werden auf deiner Testleserseite angezeigt.
         </p>
@@ -2179,9 +2179,9 @@ function ProfilPageInner() {
         {/* Profil deaktivieren */}
         <div style={{ background: testleserProfile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
           <div>
-            <span className="text-sm font-semibold">{testleserProfile.deaktiviert ? "🚫 Testleserprofil ist deaktiviert" : "✅ Testleserprofil wird angezeigt"}</span>
+            <span className="text-sm font-semibold">{testleserProfile.deaktiviert ? "🚫 (Test)Leser-Profil ist deaktiviert" : "✅ (Test)Leser-Profil wird angezeigt"}</span>
             <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: testleserProfile.deaktiviert ? "#dc2626" : "#16a34a" }}>
-              {testleserProfile.deaktiviert ? "Dein Testleserprofil ist momentan nicht sichtbar." : "Dein Testleserprofil ist in der Übersicht sichtbar."}
+              {testleserProfile.deaktiviert ? "Dein (Test)Leser-Profil ist momentan nicht sichtbar." : "Dein (Test)Leser-Profil ist in der Übersicht sichtbar."}
             </p>
           </div>
           <button
@@ -3275,7 +3275,7 @@ function ProfilPageInner() {
       {isTestleserImageOverlayOpen && (
         <div className="overlay-backdrop" onClick={() => setIsTestleserImageOverlayOpen(false)}>
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
-            <h2>Testleser-Bildeinstellungen</h2>
+            <h2>(Test)Leser-Bildeinstellungen</h2>
             <input ref={testleserImageFileInputRef} type="file" accept="image/*" className="sr-only" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadTestleserImage(selectedFile); event.currentTarget.value = ""; }} />
             {isUploadingTestleserImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
             <div>

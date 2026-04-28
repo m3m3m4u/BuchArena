@@ -53,7 +53,7 @@ export default function BuchzirkelPage() {
           <div>
             <h1 className="text-2xl font-bold m-0 flex items-center gap-2">Buchzirkel</h1>
             <p className="text-arena-muted text-sm m-0 mt-1">
-              Testleser- und Betaleser-Runden – direkt von Autoren und Verlagen
+              (Test)Leser- und Betaleser-Runden – direkt von Autoren und Verlagen
             </p>
           </div>
           {account && (
@@ -72,7 +72,7 @@ export default function BuchzirkelPage() {
           <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">2</span><span><strong>Leser bewerben sich</strong> – innerhalb der Bewerbungsfrist können registrierte Mitglieder eine Bewerbung einreichen.</span></li>
           <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">3</span><span><strong>Autor wählt Teilnehmer aus</strong> – angenommene Teilnehmer erhalten Zugang zum Lesebereich mit Manuskript/Buch und Diskussion.</span></li>
           <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">4</span><span><strong>Gemeinsames Lesen</strong> – Teilnehmer lesen nach Zeitplan, diskutieren in Themen-Bereichen und geben Feedback.</span></li>
-          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">5</span><span><strong>Rezensionen</strong> – nach dem Lesen tragen Testleser ihre Rezenssionslinks ein (Amazon, Goodreads, …).</span></li>
+          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">5</span><span><strong>Rezensionen</strong> – nach dem Lesen tragen (Test)Leser ihre Rezensionslinks ein (Amazon, Goodreads, …).</span></li>
         </ol>
       </section>
 
@@ -95,7 +95,7 @@ export default function BuchzirkelPage() {
               typFilter === "testleser" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
             }`}
           >
-            Testleser-Zirkel
+            (Test)Leser-Zirkel
           </button>
           <button
             type="button"
@@ -115,7 +115,7 @@ export default function BuchzirkelPage() {
         <div className="flex gap-3 items-start">
           <span className="flex-shrink-0 mt-0.5 text-arena-blue text-base">📖</span>
           <div>
-            <p className="font-semibold m-0 text-arena-blue text-sm">Testleser-Zirkel</p>
+            <p className="font-semibold m-0 text-arena-blue text-sm">(Test)Leser-Zirkel</p>
             <p className="text-sm text-arena-muted m-0">
               Rezensionsexemplare für bereits veröffentlichte Bücher – Feedback und Bewertungen auf Amazon, Goodreads & Co.
             </p>
@@ -181,7 +181,7 @@ function ZirkelKarte({ zirkel }: { zirkel: Zirkel }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-start gap-2 flex-wrap">
           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
-            {isBeta ? "🔒 Betaleser" : "Testleser"}
+            {isBeta ? "🔒 Betaleser" : "(Test)Leser"}
           </span>
           {zirkel.genre && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">

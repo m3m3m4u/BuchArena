@@ -89,11 +89,11 @@ export default function TestleserPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="m-0">Testleser entdecken</h1>
+          <h1 className="m-0">(Test)Leser entdecken</h1>
           <Link href="/wohnort-karte/testleser" className="btn">Suche nach Wohnort</Link>
         </div>
         <p className="text-arena-muted text-[0.95rem]">
-          Hier findest du Testleser und ihre bevorzugten Genres.
+          Hier findest du (Test)Leser und ihre bevorzugten Genres.
         </p>
 
         {allGenres.length > 0 && (
