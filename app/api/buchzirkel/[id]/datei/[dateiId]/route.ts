@@ -70,8 +70,10 @@ export async function GET(
         return NextResponse.json({ message: "Datei nicht verfügbar." }, { status: 404 });
       }
 
-      const watermarkText = `${account.username} · ${new Date().toLocaleDateString("de-AT")} · BuchArena – Vertraulich`;
-      const watermarkHtml = `<div style="position:fixed;bottom:8px;left:0;right:0;text-align:center;font-size:10px;color:rgba(0,0,0,0.35);font-family:sans-serif;pointer-events:none;z-index:9999;">${watermarkText}</div>`;
+      const watermarkText = `${account.username} - ${new Date().toLocaleDateString("de-AT")} - BuchArena Vertraulich`;
+      // CSS ::after in <head> injizieren – keine Strukturaenderung am Body,
+      // kompatibel mit striktem XHTML/XML in EPUBs
+      const watermarkStyle = `<style>body::after{content:"${watermarkText}";position:fixed;bottom:6px;left:0;right:0;text-align:center;font-size:10px;color:rgba(0,0,0,0.3);font-family:sans-serif;pointer-events:none;display:block;z-index:9999;}</style>`;
 
       const zip = await JSZip.loadAsync(bytes);
 
@@ -84,11 +86,9 @@ export async function GET(
         if (file.dir) continue;
         let content = await file.async("string");
 
-        // Vor </body> injizieren, sonst ans Ende hängen
-        if (/<\/body>/i.test(content)) {
-          content = content.replace(/<\/body>/i, `${watermarkHtml}</body>`);
-        } else {
-          content += watermarkHtml;
+        // <style> vor </head> injizieren – kein Body-Eingriff, XML-sicher
+        if (/<\/head>/i.test(content)) {
+          content = content.replace(/<\/head>/i, `${watermarkStyle}</head>`);
         }
 
         zip.file(filename, content);
