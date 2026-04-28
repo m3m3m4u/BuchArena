@@ -79,7 +79,7 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") { onClose(); return; }
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") { prevPage(); }
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") { nextPageFn(); }
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") { prevPageFn(); }
     }
     window.addEventListener("keydown", handleKey);
