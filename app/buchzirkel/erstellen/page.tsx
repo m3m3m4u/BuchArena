@@ -150,7 +150,7 @@ export default function BuchzirkelErstellenPage() {
                 typ === "testleser" ? "border-arena-blue bg-blue-50" : "border-arena-border hover:border-arena-blue"
               }`}
             >
-              <p className="font-bold m-0">(Test)Leser-Zirkel</p>
+              <p className="font-bold m-0">Buchzirkel</p>
               <p className="text-sm text-arena-muted m-0 mt-1">
                 Für bereits veröffentlichte Bücher – Rezensionen auf Amazon, Goodreads & Co.
               </p>
@@ -162,7 +162,7 @@ export default function BuchzirkelErstellenPage() {
                 typ === "betaleser" ? "border-red-400 bg-red-50" : "border-arena-border hover:border-red-400"
               }`}
             >
-              <p className="font-bold m-0 text-red-800">🔒 Betaleser-Zirkel</p>
+              <p className="font-bold m-0 text-red-800">🔒 Buchzirkel (Beta)</p>
               <p className="text-sm text-red-700 m-0 mt-1">
                 Für unveröffentlichte Manuskripte – Verschwiegenheitspflicht automatisch aktiv.
               </p>
@@ -267,7 +267,7 @@ export default function BuchzirkelErstellenPage() {
         <section className="card">
           <h2 className="text-base font-semibold m-0 mb-1">Verschwiegenheitserklärung</h2>
           {typ === "betaleser" ? (
-            <p className="text-sm text-red-700 m-0 mb-3">Bei Betaleser-Zirkeln ist die Verschwiegenheitserklärung Pflicht.</p>
+            <p className="text-sm text-red-700 m-0 mb-3">Bei Buchzirkeln (Beta) ist die Verschwiegenheitserklärung Pflicht.</p>
           ) : (
             <label className="flex items-center gap-2 text-sm cursor-pointer mb-3">
               <input type="checkbox" checked={agbPflicht} onChange={(e) => setAgbPflicht(e.target.checked)} />

@@ -145,7 +145,7 @@ export default function BuchzirkelDetailPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
-                {isBeta ? "🔒 Betaleser-Zirkel" : "(Test)Leser-Zirkel"}
+                {isBeta ? "🔒 Buchzirkel (Beta)" : "Buchzirkel"}
               </span>
               {zirkel.genre && <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">{zirkel.genre}</span>}
               {zirkel.buchformateAngebot?.map((f) => (
@@ -264,7 +264,7 @@ export default function BuchzirkelDetailPage() {
 
           {isBeta && (
             <div className="rounded-lg bg-red-50 border border-red-200 p-3 mb-3 text-sm text-red-800">
-              <strong>Vertraulich:</strong> Dieser Betaleser-Zirkel erfordert eine Verschwiegenheitserklärung.
+              <strong>Vertraulich:</strong> Dieser Buchzirkel (Beta) erfordert eine Verschwiegenheitserklärung.
               Alle Dateien werden mit einem persönlichen Wasserzeichen versehen.
             </div>
           )}

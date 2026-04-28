@@ -609,7 +609,7 @@ export default function BuchzirkelDashboardPage() {
           <section className="card">
             <h2 className="text-base font-semibold m-0 mb-1">Verschwiegenheitserklärung</h2>
             {zirkel.typ === "betaleser" ? (
-              <p className="text-sm text-red-700 m-0 mb-3">Bei Betaleser-Zirkeln ist die Verschwiegenheitserklärung Pflicht.</p>
+              <p className="text-sm text-red-700 m-0 mb-3">Bei Buchzirkeln (Beta) ist die Verschwiegenheitserklärung Pflicht.</p>
             ) : (
               <label className="flex items-center gap-2 text-sm cursor-pointer mb-3">
                 <input type="checkbox" checked={editAgbPflicht} onChange={(e) => setEditAgbPflicht(e.target.checked)} />

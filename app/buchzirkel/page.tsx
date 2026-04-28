@@ -95,7 +95,7 @@ export default function BuchzirkelPage() {
               typFilter === "testleser" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
             }`}
           >
-            (Test)Leser-Zirkel
+            Buchzirkel
           </button>
           <button
             type="button"
@@ -104,7 +104,7 @@ export default function BuchzirkelPage() {
               typFilter === "betaleser" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
             }`}
           >
-            🔒 Betaleser-Zirkel
+            🔒 Buchzirkel (Beta)
           </button>
         </div>
       </section>
@@ -115,7 +115,7 @@ export default function BuchzirkelPage() {
         <div className="flex gap-3 items-start">
           <span className="flex-shrink-0 mt-0.5 text-arena-blue text-base">📖</span>
           <div>
-            <p className="font-semibold m-0 text-arena-blue text-sm">(Test)Leser-Zirkel</p>
+            <p className="font-semibold m-0 text-arena-blue text-sm">Buchzirkel</p>
             <p className="text-sm text-arena-muted m-0">
               Rezensionsexemplare für bereits veröffentlichte Bücher – Feedback und Bewertungen auf Amazon, Goodreads & Co.
             </p>
@@ -125,7 +125,7 @@ export default function BuchzirkelPage() {
         <div className="flex gap-3 items-start">
           <span className="flex-shrink-0 mt-0.5 text-base">🔒</span>
           <div>
-            <p className="font-semibold m-0 text-red-800 text-sm">Betaleser-Zirkel</p>
+            <p className="font-semibold m-0 text-red-800 text-sm">Buchzirkel (Beta)</p>
             <p className="text-sm text-arena-muted m-0">
               Unveröffentlichte Manuskripte – streng vertraulich. Alle Teilnehmer bestätigen eine Verschwiegenheitserklärung.
             </p>
