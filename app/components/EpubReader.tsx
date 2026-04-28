@@ -47,6 +47,16 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
 
         await rendition.display();
 
+        // epub.js rendert ein absolut positioniertes iframe das Pointer-Events
+        // außerhalb seines visuell geclippten Bereichs abfangen kann.
+        // Explizit auf max 100% begrenzen, damit die Navigationsleiste klickbar bleibt.
+        const iframe = viewerRef.current?.querySelector("iframe") as HTMLIFrameElement | null;
+        if (iframe) {
+          iframe.style.maxHeight = "100%";
+          iframe.style.position = "absolute";
+          iframe.style.inset = "0";
+        }
+
         if (!destroyed) setLoading(false);
 
         book.locations.generate(1024).then(() => {
