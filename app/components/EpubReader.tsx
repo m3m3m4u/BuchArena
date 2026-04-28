@@ -77,16 +77,26 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col items-center justify-center p-2 sm:p-4">
-      <div className="bg-white rounded-xl w-full max-w-3xl flex flex-col shadow-2xl overflow-hidden" style={{ height: "90vh" }}>
+    <div
+      className="fixed inset-0 z-[9999] bg-black/75 flex items-end sm:items-center justify-center"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="bg-white w-full sm:max-w-3xl sm:rounded-xl flex flex-col shadow-2xl overflow-hidden"
+        style={{ height: "calc(100dvh - env(safe-area-inset-top, 0px) - 2rem)", maxHeight: "95dvh" }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-arena-border bg-[#1a1a2e]">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-arena-border bg-[#1a1a2e] shrink-0">
           <span className="text-white font-semibold text-sm">EPUB-Reader</span>
-          <button onClick={onClose} className="text-white/70 hover:text-white text-xl leading-none" aria-label="Schließen">✕</button>
+          <button
+            onClick={onClose}
+            className="text-white/70 hover:text-white text-xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-white/10"
+            aria-label="Schließen"
+          >✕</button>
         </div>
 
         {/* Viewer */}
-        <div className="flex-1 relative overflow-hidden bg-white">
+        <div className="flex-1 relative overflow-hidden bg-white min-h-0">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center text-arena-muted text-sm">
               Lade EPUB…
@@ -102,12 +112,20 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between px-4 py-2 border-t border-arena-border bg-gray-50">
-          <button onClick={prevPage} disabled={loading || !!error} className="btn btn-secondary btn-sm disabled:opacity-40">← Zurück</button>
-          {totalPages > 0 && (
-            <span className="text-xs text-arena-muted">{currentPage} / {totalPages}</span>
-          )}
-          <button onClick={nextPage} disabled={loading || !!error} className="btn btn-secondary btn-sm disabled:opacity-40">Weiter →</button>
+        <div className="flex items-center justify-between px-4 py-3 border-t border-arena-border bg-gray-50 shrink-0 gap-4">
+          <button
+            onClick={prevPage}
+            disabled={loading || !!error}
+            className="btn btn-secondary btn-sm disabled:opacity-40 min-w-[90px]"
+          >← Zurück</button>
+          <span className="text-xs text-arena-muted tabular-nums">
+            {totalPages > 0 ? `${currentPage} / ${totalPages}` : ""}
+          </span>
+          <button
+            onClick={nextPage}
+            disabled={loading || !!error}
+            className="btn btn-secondary btn-sm disabled:opacity-40 min-w-[90px]"
+          >Weiter →</button>
         </div>
       </div>
     </div>
