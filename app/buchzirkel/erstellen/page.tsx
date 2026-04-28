@@ -324,6 +324,11 @@ export default function BuchzirkelErstellenPage() {
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
+        {/* Haftungshinweis */}
+        <div className="rounded-lg bg-gray-50 border border-arena-border p-3 text-xs text-arena-muted">
+          <strong className="text-arena-text">Hinweis:</strong> BuchArena übernimmt keine Haftung für Inhalte, die im Rahmen eines Buchzirkels an Dritte weitergegeben werden oder nach außen dringen. Die Weitergabe von Manuskripten und unveröffentlichten Texten erfolgt auf eigene Gefahr des Autors. Wir empfehlen, ausschließlich Personen zuzulassen, denen du vertraust, und die Verschwiegenheitserklärung zu aktivieren.
+        </div>
+
         {/* Aktionen */}
         <div className="flex gap-3 justify-end flex-wrap">
           <button type="button" disabled={saving} onClick={(e) => handleSubmit(e, "entwurf")} className="btn btn-secondary">
