@@ -69,7 +69,7 @@ export async function GET(
       if (!bytes) {
         return NextResponse.json({ message: "Datei nicht verfügbar." }, { status: 404 });
       }
-      return new Response(bytes, {
+      return new Response(bytes.buffer as ArrayBuffer, {
         headers: {
           "Content-Type": "application/epub+zip",
           "Content-Disposition": `inline; filename="${datei.originalName}"`,
