@@ -121,7 +121,7 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
     if (!renditionRef.current || isNaN(page) || totalPages === 0) return;
     const book = renditionRef.current.book;
     if (!book?.locations) return;
-    const cfi = book.locations.cfiFromPercentage((Math.max(1, Math.min(page, totalPages)) - 1) / totalPages);
+    const cfi = book.locations.cfiFromLocation(Math.max(0, Math.min(page - 1, totalPages - 1)));
     renditionRef.current.display(cfi);
     setJumpInput("");
   }
