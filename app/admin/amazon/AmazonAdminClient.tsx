@@ -138,35 +138,28 @@ export default function AmazonAdminClient() {
 
                   <div className="grid gap-2 text-sm">
                     <div>
-                      <strong>Autoren-Link{book.amazonUrls.length !== 1 ? `e (${book.amazonUrls.length})` : ""}:</strong>
+                      <strong>Autoren-Link:</strong>
                       {book.amazonUrls.length === 0 ? (
                         <span className="text-arena-muted"> Kein Amazon-Link hinterlegt.</span>
                       ) : (
-                        <ul className="m-0 mt-1 pl-4 grid gap-0.5">
-                          {book.amazonUrls.map((url) => (
-                            <li key={url}>
-                              <a href={normalizeHref(url)} target="_blank" rel="noopener noreferrer" className="text-arena-link break-all">
-                                {url}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
+                        <span className="ml-1">
+                          <a href={normalizeHref(book.amazonUrls[0])} target="_blank" rel="noopener noreferrer" className="text-arena-link">
+                            {book.amazonUrls[0].length > 20 ? book.amazonUrls[0].slice(0, 10) + "…" : book.amazonUrls[0]}
+                          </a>
+                          {book.amazonUrls.length > 1 && <span className="text-arena-muted ml-1">+{book.amazonUrls.length - 1} weitere</span>}
+                        </span>
                       )}
                     </div>
                     <div>
-                      <strong>Aktive Links:</strong>
+                      <strong>Aktiver Link:</strong>
                       {book.effectiveAmazonUrls.length === 0 ? (
                         <span className="text-arena-muted"> Kein aktiver Link.</span>
                       ) : (
-                        <ul className="m-0 mt-1 pl-4 grid gap-0.5">
-                          {book.effectiveAmazonUrls.map((url) => (
-                            <li key={url}>
-                              <a href={normalizeHref(url)} target="_blank" rel="noopener noreferrer" className="text-arena-link break-all">
-                                {url}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
+                        <span className="ml-1">
+                          <a href={normalizeHref(book.effectiveAmazonUrls[0])} target="_blank" rel="noopener noreferrer" className="text-arena-link">
+                            {book.effectiveAmazonUrls[0].length > 20 ? book.effectiveAmazonUrls[0].slice(0, 10) + "…" : book.effectiveAmazonUrls[0]}
+                          </a>
+                        </span>
                       )}
                     </div>
                   </div>
