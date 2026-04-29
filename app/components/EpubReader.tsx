@@ -16,7 +16,6 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [jumpInput, setJumpInput] = useState("");
 
   const [portalTarget] = useState<HTMLElement>(() =>
     document.getElementById("modal-root") ?? document.body
@@ -55,19 +54,25 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
           if (destroyed) return;
           const total = book.locations.length();
           setTotalPages(total);
-          // Aktuelle Position nachlesen, nachdem Locations fertig sind
-          const loc = rendition.currentLocation();
-          if (loc?.start?.percentage != null) {
-            setCurrentPage(Math.min(total, Math.max(1, Math.round(loc.start.percentage * total) + 1)));
+          // Aktuelle Position nachlesen – currentLocation() gibt located()-Objekt zurück
+          // mit start.location (0-basierter Index) und start.percentage
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const loc = rendition.currentLocation() as any;
+          const pct = loc?.start?.percentage;
+          if (typeof pct === "number") {
+            setCurrentPage(Math.max(1, Math.min(total, Math.round(pct * total) + 1)));
           }
         });
 
+        // locationChanged-Event: { start: cfiString, end: cfiString, percentage: number }
+        // location.start ist ein STRING, nicht ein Objekt!
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rendition.on("locationChanged", (location: any) => {
           if (destroyed) return;
           const total = book.locations.length();
-          if (total > 0 && location?.start?.percentage != null) {
-            setCurrentPage(Math.min(total, Math.max(1, Math.round(location.start.percentage * total) + 1)));
+          const pct = location?.percentage;
+          if (total > 0 && typeof pct === "number") {
+            setCurrentPage(Math.max(1, Math.min(total, Math.round(pct * total) + 1)));
             setTotalPages(total);
           }
         });
@@ -111,17 +116,6 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
-
-  function handleJump(e: React.FormEvent) {
-    e.preventDefault();
-    const page = parseInt(jumpInput, 10);
-    if (!renditionRef.current || isNaN(page) || totalPages === 0) return;
-    const book = renditionRef.current.book;
-    if (!book?.locations) return;
-    const cfi = book.locations.cfiFromLocation(Math.max(0, Math.min(page - 1, totalPages - 1)));
-    renditionRef.current.display(cfi);
-    setJumpInput("");
-  }
 
   const modal = (
     <div className="fixed inset-0 z-[9999] bg-black/75 flex items-end sm:items-center justify-center">
@@ -167,26 +161,18 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
           )}
         </div>
 
-        {/* Footer: Seitenzahl + Sprung */}
-        <div className="flex items-center justify-center gap-3 px-4 py-2 border-t border-arena-border bg-gray-50 shrink-0">
-          {totalPages > 0 ? (
-            <>
-              <span className="text-xs text-arena-muted tabular-nums">{currentPage} / {totalPages}</span>
-              <form onSubmit={handleJump} className="flex items-center gap-1">
-                <input
-                  type="number"
-                  min={1}
-                  max={totalPages}
-                  value={jumpInput}
-                  onChange={(e) => setJumpInput(e.target.value)}
-                  placeholder="Seite…"
-                  className="w-20 text-xs border border-arena-border rounded px-2 py-0.5 text-center"
-                />
-                <button type="submit" className="text-xs text-arena-blue font-semibold px-2 py-0.5 rounded hover:bg-gray-200">↵</button>
-              </form>
-            </>
-          ) : (
-            <span className="text-xs text-arena-muted">{loading ? "" : "Seiten werden berechnet…"}</span>
+        {/* Footer: Fortschritt */}
+        <div className="flex items-center gap-3 px-4 py-2 border-t border-arena-border bg-gray-50 shrink-0">
+          <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+            <div
+              className="bg-[#1a1a2e] h-1.5 rounded-full transition-all duration-300"
+              style={{ width: totalPages > 0 ? `${Math.round((currentPage / totalPages) * 100)}%` : "0%" }}
+            />
+          </div>
+          {totalPages > 0 && (
+            <span className="text-xs text-arena-muted tabular-nums shrink-0">
+              Abschnitt {currentPage} / {totalPages}
+            </span>
           )}
         </div>
       </div>
