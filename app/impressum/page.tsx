@@ -172,6 +172,9 @@ export default function ImpressumPage() {
               Datenschutzerklärung von Amazon
             </a>.
           </p>
+          <p className="my-2 leading-relaxed text-[#444]">
+            Die BuchArena ist berechtigt, bei vorgestellten Büchern einen Amazon-Affiliate-Link einzurichten.
+          </p>
         </div>
 
         <div className="mb-8">

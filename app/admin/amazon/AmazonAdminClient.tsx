@@ -17,12 +17,15 @@ function normalizeHref(url: string): string {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
 }
 
+type FilterMode = "alle" | "ohne" | "mit";
+
 export default function AmazonAdminClient() {
   const [books, setBooks] = useState<AmazonBookRow[]>([]);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<FilterMode>("alle");
 
   const loadBooks = useCallback(async () => {
     setLoading(true);
@@ -56,6 +59,12 @@ export default function AmazonAdminClient() {
         .map((book) => book.id)
     );
   }, [books, drafts]);
+
+  const filteredBooks = useMemo(() => {
+    if (filter === "mit") return books.filter((b) => b.amazonUrlOverride);
+    if (filter === "ohne") return books.filter((b) => !b.amazonUrlOverride);
+    return books;
+  }, [books, filter]);
 
   async function saveBook(id: string) {
     setSavingId(id);
@@ -94,6 +103,19 @@ export default function AmazonAdminClient() {
           <Link href="/admin" className="text-arena-link no-underline">← Zurück zum Admin</Link>
         </div>
 
+        <div className="flex gap-2 flex-wrap">
+          {(["alle", "ohne", "mit"] as FilterMode[]).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setFilter(mode)}
+              className={`btn btn-sm${filter === mode ? " btn-primary" : ""}`}
+            >
+              {mode === "alle" ? "Alle" : mode === "mit" ? "Nur mit alternativem Link" : "Nur ohne alternativen Link"}
+            </button>
+          ))}
+        </div>
+
         {message ? <p className="text-sm text-arena-muted m-0">{message}</p> : null}
 
         {loading ? (
@@ -102,7 +124,7 @@ export default function AmazonAdminClient() {
           <p className="text-arena-muted">Keine Bücher mit Amazon-Link gefunden.</p>
         ) : (
           <div className="grid gap-3">
-            {books.map((book) => {
+            {filteredBooks.map((book) => {
               const draftValue = drafts[book.id] ?? "";
               const hasChanges = changedIds.has(book.id);
               const isSaving = savingId === book.id;
