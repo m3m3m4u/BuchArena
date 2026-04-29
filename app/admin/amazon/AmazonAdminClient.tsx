@@ -144,7 +144,7 @@ export default function AmazonAdminClient() {
                       ) : (
                         <span className="ml-1">
                           <a href={normalizeHref(book.amazonUrls[0])} target="_blank" rel="noopener noreferrer" className="text-arena-link">
-                            {book.amazonUrls[0].length > 20 ? book.amazonUrls[0].slice(0, 10) + "…" : book.amazonUrls[0]}
+                            {book.amazonUrls[0].length > 40 ? book.amazonUrls[0].slice(0, 40) + "…" : book.amazonUrls[0]}
                           </a>
                           {book.amazonUrls.length > 1 && <span className="text-arena-muted ml-1">+{book.amazonUrls.length - 1} weitere</span>}
                         </span>
@@ -157,7 +157,7 @@ export default function AmazonAdminClient() {
                       ) : (
                         <span className="ml-1">
                           <a href={normalizeHref(book.effectiveAmazonUrls[0])} target="_blank" rel="noopener noreferrer" className="text-arena-link">
-                            {book.effectiveAmazonUrls[0].length > 20 ? book.effectiveAmazonUrls[0].slice(0, 10) + "…" : book.effectiveAmazonUrls[0]}
+                            {book.effectiveAmazonUrls[0].length > 40 ? book.effectiveAmazonUrls[0].slice(0, 40) + "…" : book.effectiveAmazonUrls[0]}
                           </a>
                         </span>
                       )}
