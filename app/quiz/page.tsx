@@ -59,6 +59,9 @@ export default function QuizPage() {
   const [currentWPN, setCurrentWPN] = useState<WasPasstNicht | null>(null);
   const [currentBS, setCurrentBS] = useState<Buchstabensalat | null>(null);
   const [hintsShown, setHintsShown] = useState(1);
+  const [wbGuess, setWbGuess] = useState("");
+  const [wpnSelected, setWpnSelected] = useState<string | null>(null);
+  const [bsGuess, setBsGuess] = useState("");
 
   // MC-Quiz State
   const [mcPool, setMcPool] = useState<MCQuestion[]>([]);
@@ -104,9 +107,9 @@ export default function QuizPage() {
       setScoreSaved(false);
       setShowHighscores(false);
 
-      if (type === "welchesBuch" && data) setCurrentWB(pick(data.welchesBuch));
-      if (type === "wasPasstNicht" && data) setCurrentWPN(pick(data.wasPasstNicht));
-      if (type === "buchstabensalat" && data) setCurrentBS(pick(data.buchstabensalat));
+      if (type === "welchesBuch" && data) { setCurrentWB(pick(data.welchesBuch)); setWbGuess(""); }
+      if (type === "wasPasstNicht" && data) { setCurrentWPN(pick(data.wasPasstNicht)); setWpnSelected(null); }
+      if (type === "buchstabensalat" && data) { setCurrentBS(pick(data.buchstabensalat)); setBsGuess(""); }
 
       if (type === "multipleChoice" && mcData) {
         const pool = shuffle(mcData);
@@ -398,8 +401,19 @@ export default function QuizPage() {
               ))}
             </div>
 
+            {!showSolution && (
+              <input
+                type="text"
+                className="input w-full"
+                placeholder="Dein Tipp: Buchtitel …"
+                value={wbGuess}
+                onChange={(e) => setWbGuess(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && setShowSolution(true)}
+              />
+            )}
+
             <div className="flex flex-wrap gap-2">
-              {hintsShown < 4 && (
+              {hintsShown < 4 && !showSolution && (
                 <button
                   className="btn btn-sm"
                   onClick={() => setHintsShown((h) => Math.min(h + 1, 4))}
@@ -407,20 +421,36 @@ export default function QuizPage() {
                   Nächster Hinweis ({hintsShown}/4)
                 </button>
               )}
-              <button
-                className="btn btn-sm btn-primary"
-                onClick={() => setShowSolution(true)}
-              >
-                Lösung anzeigen
-              </button>
+              {!showSolution && (
+                <button
+                  className="btn btn-sm btn-primary"
+                  onClick={() => setShowSolution(true)}
+                >
+                  Auflösen
+                </button>
+              )}
             </div>
 
             {showSolution && (
-              <div className="rounded-lg bg-green-50 border border-green-300 p-4 mt-1">
-                <p className="font-bold text-green-800 text-lg m-0">
-                  📖 {currentWB.book}
-                </p>
-                <p className="text-green-700 text-sm m-0">von {currentWB.author}</p>
+              <div className="flex flex-col gap-2">
+                {wbGuess && (
+                  <div className={`rounded-lg border p-3 text-sm font-medium ${
+                    currentWB.book.toLowerCase().trim() === wbGuess.toLowerCase().trim()
+                      ? "border-green-400 bg-green-50 text-green-800"
+                      : "border-orange-300 bg-orange-50 text-orange-800"
+                  }`}>
+                    Dein Tipp: „{wbGuess}" –{" "}
+                    {currentWB.book.toLowerCase().trim() === wbGuess.toLowerCase().trim()
+                      ? "✓ Richtig!"
+                      : "Leider falsch."}
+                  </div>
+                )}
+                <div className="rounded-lg bg-green-50 border border-green-300 p-4">
+                  <p className="font-bold text-green-800 text-lg m-0">
+                    📖 {currentWB.book}
+                  </p>
+                  <p className="text-green-700 text-sm m-0">von {currentWB.author}</p>
+                </div>
               </div>
             )}
           </div>
@@ -430,35 +460,63 @@ export default function QuizPage() {
         {mode === "wasPasstNicht" && currentWPN && (
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-2">
-              {currentWPN.books.map((b, i) => (
-                <div
-                  key={i}
-                  className={`rounded-lg border p-3 text-center font-medium ${
-                    showSolution && currentWPN.oddOneOut.toLowerCase().includes(b.toLowerCase())
-                      ? "border-red-400 bg-red-50 text-red-800"
-                      : "border-arena-border-light bg-arena-bg"
-                  }`}
-                >
-                  {b}
-                </div>
-              ))}
+              {currentWPN.books.map((b, i) => {
+                const isOdd = currentWPN.oddOneOut.toLowerCase().includes(b.toLowerCase());
+                const isSelected = wpnSelected === b;
+                let cls = "rounded-lg border p-3 text-center font-medium transition-colors";
+                if (showSolution) {
+                  if (isOdd) cls += " border-red-400 bg-red-50 text-red-800";
+                  else if (isSelected) cls += " border-orange-300 bg-orange-50 text-orange-700 line-through opacity-70";
+                  else cls += " border-arena-border-light bg-arena-bg opacity-60";
+                } else if (isSelected) {
+                  cls += " border-arena-blue bg-blue-50 ring-2 ring-arena-blue cursor-pointer";
+                } else {
+                  cls += " border-arena-border-light bg-arena-bg hover:bg-[#f5f5f5] cursor-pointer";
+                }
+                return (
+                  <button
+                    key={i}
+                    className={cls}
+                    onClick={() => !showSolution && setWpnSelected(b)}
+                    disabled={showSolution}
+                  >
+                    {b}
+                  </button>
+                );
+              })}
             </div>
 
-            <button
-              className="btn btn-sm btn-primary w-fit"
-              onClick={() => setShowSolution(true)}
-            >
-              Lösung anzeigen
-            </button>
+            {!showSolution && (
+              <button
+                className="btn btn-sm btn-primary w-fit"
+                onClick={() => setShowSolution(true)}
+              >
+                Auflösen
+              </button>
+            )}
 
             {showSolution && (
-              <div className="rounded-lg bg-green-50 border border-green-300 p-4 mt-1">
-                <p className="font-bold text-green-800 m-0">
-                  🔍 Gemeinsamkeit: {currentWPN.commonality}
-                </p>
-                <p className="text-green-700 text-sm m-0 mt-1">
-                  Passt nicht: {currentWPN.oddOneOut}
-                </p>
+              <div className="flex flex-col gap-2">
+                {wpnSelected && (
+                  <div className={`rounded-lg border p-3 text-sm font-medium ${
+                    currentWPN.oddOneOut.toLowerCase().includes(wpnSelected.toLowerCase())
+                      ? "border-green-400 bg-green-50 text-green-800"
+                      : "border-orange-300 bg-orange-50 text-orange-800"
+                  }`}>
+                    Dein Tipp: „{wpnSelected}" –{" "}
+                    {currentWPN.oddOneOut.toLowerCase().includes(wpnSelected.toLowerCase())
+                      ? "✓ Richtig!"
+                      : "Leider falsch."}
+                  </div>
+                )}
+                <div className="rounded-lg bg-green-50 border border-green-300 p-4">
+                  <p className="font-bold text-green-800 m-0">
+                    🔍 Gemeinsamkeit: {currentWPN.commonality}
+                  </p>
+                  <p className="text-green-700 text-sm m-0 mt-1">
+                    Passt nicht: {currentWPN.oddOneOut}
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -473,18 +531,45 @@ export default function QuizPage() {
               </p>
             </div>
 
-            <button
-              className="btn btn-sm btn-primary w-fit"
-              onClick={() => setShowSolution(true)}
-            >
-              Lösung anzeigen
-            </button>
+            {!showSolution && (
+              <input
+                type="text"
+                className="input w-full"
+                placeholder="Dein Tipp: Buchtitel …"
+                value={bsGuess}
+                onChange={(e) => setBsGuess(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && setShowSolution(true)}
+              />
+            )}
+
+            {!showSolution && (
+              <button
+                className="btn btn-sm btn-primary w-fit"
+                onClick={() => setShowSolution(true)}
+              >
+                Auflösen
+              </button>
+            )}
 
             {showSolution && (
-              <div className="rounded-lg bg-green-50 border border-green-300 p-4 mt-1">
-                <p className="font-bold text-green-800 text-lg m-0">
-                  📖 {currentBS.title}
-                </p>
+              <div className="flex flex-col gap-2">
+                {bsGuess && (
+                  <div className={`rounded-lg border p-3 text-sm font-medium ${
+                    currentBS.title.toLowerCase().trim() === bsGuess.toLowerCase().trim()
+                      ? "border-green-400 bg-green-50 text-green-800"
+                      : "border-orange-300 bg-orange-50 text-orange-800"
+                  }`}>
+                    Dein Tipp: „{bsGuess}" –{" "}
+                    {currentBS.title.toLowerCase().trim() === bsGuess.toLowerCase().trim()
+                      ? "✓ Richtig!"
+                      : "Leider falsch."}
+                  </div>
+                )}
+                <div className="rounded-lg bg-green-50 border border-green-300 p-4">
+                  <p className="font-bold text-green-800 text-lg m-0">
+                    📖 {currentBS.title}
+                  </p>
+                </div>
               </div>
             )}
           </div>

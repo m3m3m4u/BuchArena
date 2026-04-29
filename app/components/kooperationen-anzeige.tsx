@@ -35,7 +35,7 @@ export default function KooperationenAnzeige({ username, isAutor }: { username: 
       <h2 className="text-base mb-2">
         {isAutor
           ? "Ich habe mit folgenden Partnern erfolgreich zusammengearbeitet:"
-          : "Ich habe mit folgenden Autoren erfolgreich zusammengearbeitet:"}
+          : "Ich habe mit folgenden Partnern erfolgreich zusammengearbeitet:"}
       </h2>
       <ul className="list-none p-0 m-0 space-y-1.5">
         {partners.map((p) => (

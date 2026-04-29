@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId, type UpdateFilter } from "mongodb";
 import { getBooksCollection } from "@/lib/mongodb";
-import { applyAmazonOverride, getFirstAmazonLink, type BookDocument } from "@/lib/books";
+import { applyAmazonOverride, getAllAmazonLinks, getFirstAmazonLink, type BookDocument } from "@/lib/books";
 import { requireSuperAdmin } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
@@ -37,9 +37,9 @@ export async function GET() {
         id: book._id?.toString() ?? "",
         title: book.title,
         author: book.ownerUsername,
-        amazonUrl: getFirstAmazonLink(book.buyLinks),
+        amazonUrls: getAllAmazonLinks(book.buyLinks),
         amazonUrlOverride: book.amazonOverrideUrl ?? "",
-        effectiveAmazonUrl: getFirstAmazonLink(applyAmazonOverride(book.buyLinks, book.amazonOverrideUrl)),
+        effectiveAmazonUrls: getAllAmazonLinks(applyAmazonOverride(book.buyLinks, book.amazonOverrideUrl)),
       })),
     });
   } catch (error) {
@@ -89,9 +89,9 @@ export async function PUT(request: Request) {
         id: result._id?.toString() ?? id,
         title: result.title,
         author: result.ownerUsername,
-        amazonUrl: getFirstAmazonLink(result.buyLinks),
+        amazonUrls: getAllAmazonLinks(result.buyLinks),
         amazonUrlOverride: result.amazonOverrideUrl ?? "",
-        effectiveAmazonUrl: getFirstAmazonLink(applyAmazonOverride(result.buyLinks, result.amazonOverrideUrl)),
+        effectiveAmazonUrls: getAllAmazonLinks(applyAmazonOverride(result.buyLinks, result.amazonOverrideUrl)),
       },
     });
   } catch (error) {

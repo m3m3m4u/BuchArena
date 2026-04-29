@@ -73,6 +73,10 @@ export function getFirstAmazonLink(buyLinks: string[] | undefined): string {
   return (buyLinks ?? []).find((link) => isAmazonLink(link)) ?? "";
 }
 
+export function getAllAmazonLinks(buyLinks: string[] | undefined): string[] {
+  return (buyLinks ?? []).filter((link) => isAmazonLink(link));
+}
+
 export function applyAmazonOverride(buyLinks: string[] | undefined, amazonOverrideUrl?: string): string[] {
   const links = [...(buyLinks ?? [])];
   const override = amazonOverrideUrl?.trim();

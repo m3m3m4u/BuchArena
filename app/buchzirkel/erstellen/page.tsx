@@ -246,6 +246,7 @@ export default function BuchzirkelErstellenPage() {
 
           <div className="mt-3 grid gap-1">
             <label className="text-sm font-semibold">Bewerbungsfragen</label>
+            <p className="text-sm text-arena-muted m-0 mb-1">Bitte überlege gut, welchen Umfang du von Testlesern verlangst – manchmal ist weniger mehr.</p>
             {bewerbungsFragen.map((f, i) => (
               <div key={i} className="flex gap-2">
                 <input

@@ -7,9 +7,9 @@ type AmazonBookRow = {
   id: string;
   title: string;
   author: string;
-  amazonUrl: string;
+  amazonUrls: string[];
   amazonUrlOverride: string;
-  effectiveAmazonUrl: string;
+  effectiveAmazonUrls: string[];
 };
 
 function normalizeHref(url: string): string {
@@ -37,6 +37,7 @@ export default function AmazonAdminClient() {
       const nextBooks = data.books ?? [];
       setBooks(nextBooks);
       setDrafts(Object.fromEntries(nextBooks.map((book) => [book.id, book.amazonUrlOverride ?? ""])));
+
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Amazon-Links konnten nicht geladen werden.");
     } finally {
@@ -103,7 +104,6 @@ export default function AmazonAdminClient() {
           <div className="grid gap-3">
             {books.map((book) => {
               const draftValue = drafts[book.id] ?? "";
-              const effectiveUrl = draftValue.trim() || book.amazonUrl || "";
               const hasChanges = changedIds.has(book.id);
               const isSaving = savingId === book.id;
 
@@ -116,23 +116,35 @@ export default function AmazonAdminClient() {
 
                   <div className="grid gap-2 text-sm">
                     <div>
-                      <strong>Autoren-Link:</strong>{" "}
-                      {book.amazonUrl ? (
-                        <a href={normalizeHref(book.amazonUrl)} target="_blank" rel="noopener noreferrer" className="text-arena-link break-all">
-                          {book.amazonUrl}
-                        </a>
+                      <strong>Autoren-Link{book.amazonUrls.length !== 1 ? `e (${book.amazonUrls.length})` : ""}:</strong>
+                      {book.amazonUrls.length === 0 ? (
+                        <span className="text-arena-muted"> Kein Amazon-Link hinterlegt.</span>
                       ) : (
-                        <span className="text-arena-muted">Kein Amazon-Link hinterlegt.</span>
+                        <ul className="m-0 mt-1 pl-4 grid gap-0.5">
+                          {book.amazonUrls.map((url) => (
+                            <li key={url}>
+                              <a href={normalizeHref(url)} target="_blank" rel="noopener noreferrer" className="text-arena-link break-all">
+                                {url}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
                       )}
                     </div>
                     <div>
-                      <strong>Aktiver Link:</strong>{" "}
-                      {effectiveUrl ? (
-                        <a href={normalizeHref(effectiveUrl)} target="_blank" rel="noopener noreferrer" className="text-arena-link break-all">
-                          {effectiveUrl}
-                        </a>
+                      <strong>Aktive Links:</strong>
+                      {book.effectiveAmazonUrls.length === 0 ? (
+                        <span className="text-arena-muted"> Kein aktiver Link.</span>
                       ) : (
-                        <span className="text-arena-muted">Kein aktiver Link.</span>
+                        <ul className="m-0 mt-1 pl-4 grid gap-0.5">
+                          {book.effectiveAmazonUrls.map((url) => (
+                            <li key={url}>
+                              <a href={normalizeHref(url)} target="_blank" rel="noopener noreferrer" className="text-arena-link break-all">
+                                {url}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
                       )}
                     </div>
                   </div>
