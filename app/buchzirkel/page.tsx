@@ -22,6 +22,7 @@ type Zirkel = {
 
 export default function BuchzirkelPage() {
   const [zirkel, setZirkel] = useState<Zirkel[]>([]);
+  const [meine, setMeine] = useState<Zirkel[]>([]);
   const [loading, setLoading] = useState(true);
   const [typFilter, setTypFilter] = useState<"" | "testleser" | "betaleser">("");
   const [account, setAccount] = useState<ReturnType<typeof getStoredAccount>>(null);
@@ -39,6 +40,22 @@ export default function BuchzirkelPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [typFilter]);
+
+  useEffect(() => {
+    const stored = getStoredAccount();
+    if (!stored) return;
+    // Abgeschlossene Zirkel laden, an denen der User als Veranstalter oder Teilnehmer beteiligt war
+    const params = new URLSearchParams({ status: "abgeschlossen", limit: "50" });
+    fetch(`/api/buchzirkel/list?${params}`)
+      .then((r) => r.json())
+      .then((d: { zirkel?: Zirkel[] }) => {
+        const list = (d.zirkel ?? []).filter(
+          (z) => z.veranstalterUsername === stored.username || z.isTeilnehmer
+        );
+        setMeine(list);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <main className="top-centered-main">
@@ -150,6 +167,18 @@ export default function BuchzirkelPage() {
           {zirkel.map((z) => (
             <ZirkelKarte key={z._id} zirkel={z} />
           ))}
+        </section>
+      )}
+
+      {/* Meine abgeschlossenen Zirkel */}
+      {account && meine.length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-base font-semibold mb-3">Meine abgeschlossenen Zirkel</h2>
+          <div className="w-full grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+            {meine.map((z) => (
+              <ZirkelKarte key={z._id} zirkel={z} />
+            ))}
+          </div>
         </section>
       )}
     </main>

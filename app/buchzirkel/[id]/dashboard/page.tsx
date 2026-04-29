@@ -38,6 +38,8 @@ type Zirkel = {
   beschreibung: string;
   genre: string;
   coverImageUrl?: string;
+  youtubeUrl?: string;
+  mediaImageUrl?: string;
   status: string;
   bewerbungBis: string;
   maxTeilnehmer: number;
@@ -93,6 +95,11 @@ export default function BuchzirkelDashboardPage() {
   const [editSaving, setEditSaving] = useState(false);
   const [editMsg, setEditMsg] = useState("");
   const [editBuchformate, setEditBuchformate] = useState<string[]>([]);
+  const [editMediaTyp, setEditMediaTyp] = useState<"kein" | "youtube" | "bild">("kein");
+  const [editYoutubeUrl, setEditYoutubeUrl] = useState("");
+  const [editMediaImageUrl, setEditMediaImageUrl] = useState("");
+  const [editMediaImageUploading, setEditMediaImageUploading] = useState(false);
+  const [editMediaImageError, setEditMediaImageError] = useState("");
 
   const load = useCallback(async () => {
     const [zRes, bRes, tRes] = await Promise.all([
@@ -121,6 +128,9 @@ export default function BuchzirkelDashboardPage() {
       setEditTopics(z.diskussionsTopics);
       setEditFragebogen(z.fragebogen);
       setEditBuchformate(z.buchformateAngebot ?? []);
+      if (z.youtubeUrl) { setEditMediaTyp("youtube"); setEditYoutubeUrl(z.youtubeUrl); }
+      else if (z.mediaImageUrl) { setEditMediaTyp("bild"); setEditMediaImageUrl(z.mediaImageUrl); }
+      else { setEditMediaTyp("kein"); }
     }
     setLoading(false);
   }, [params.id]);
@@ -178,6 +188,8 @@ export default function BuchzirkelDashboardPage() {
         genre: editGenre,
         buchformateAngebot: editBuchformate,
         coverImageUrl: editCoverImageUrl.trim() || undefined,
+        youtubeUrl: editMediaTyp === "youtube" ? editYoutubeUrl.trim() || undefined : undefined,
+        mediaImageUrl: editMediaTyp === "bild" ? editMediaImageUrl || undefined : undefined,
         bewerbungBis: editBewerbungBis ? new Date(editBewerbungBis).toISOString() : undefined,
         maxTeilnehmer: editMaxTeilnehmer,
         bewerbungsFragen: editFragen.filter(Boolean),
@@ -570,8 +582,50 @@ export default function BuchzirkelDashboardPage() {
             </div>
           </section>
 
-          <section className="card">
-            <h2 className="text-base font-semibold m-0 mb-3">Bewerbungsphase</h2>
+          <section className="card">            <h2 className="text-base font-semibold m-0 mb-1">Video oder Bild (optional)</h2>
+            <p className="text-sm text-arena-muted m-0 mb-3">Füge ein YouTube-Video oder ein Bild hinzu, das Lesern mehr über dein Buch zeigt.</p>
+            <div className="flex gap-2 mb-3">
+              {(["kein", "youtube", "bild"] as const).map((m) => (
+                <button key={m} type="button" onClick={() => setEditMediaTyp(m)}
+                  className={`btn btn-sm${editMediaTyp === m ? " btn-primary" : ""}`}>
+                  {m === "kein" ? "Kein Medium" : m === "youtube" ? "YouTube-Video" : "Bild hochladen"}
+                </button>
+              ))}
+            </div>
+            {editMediaTyp === "youtube" && (
+              <div className="grid gap-1">
+                <label className="text-sm font-semibold">YouTube-URL</label>
+                <input className="input-base w-full" value={editYoutubeUrl} onChange={(e) => setEditYoutubeUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=…" />
+              </div>
+            )}
+            {editMediaTyp === "bild" && (
+              <div className="grid gap-1">
+                <label className="text-sm font-semibold">Bild hochladen</label>
+                {editMediaImageUrl && <img src={editMediaImageUrl} alt="Vorschau" className="max-w-xs max-h-48 w-auto h-auto rounded-lg border border-arena-border mb-1" />}
+                <input type="file" accept="image/*" disabled={editMediaImageUploading}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setEditMediaImageUploading(true);
+                    setEditMediaImageError("");
+                    const fd = new FormData();
+                    fd.append("file", file);
+                    try {
+                      const res = await fetch("/api/buchzirkel/upload-media-image", { method: "POST", body: fd });
+                      const data = await res.json() as { imageUrl?: string; message?: string };
+                      if (!res.ok) { setEditMediaImageError(data.message ?? "Upload fehlgeschlagen."); return; }
+                      setEditMediaImageUrl(data.imageUrl ?? "");
+                    } catch { setEditMediaImageError("Upload fehlgeschlagen."); }
+                    finally { setEditMediaImageUploading(false); }
+                  }}
+                />
+                {editMediaImageUploading && <p className="text-sm text-arena-muted">Wird hochgeladen…</p>}
+                {editMediaImageError && <p className="text-sm text-red-600">{editMediaImageError}</p>}
+              </div>
+            )}
+          </section>
+
+          <section className="card">            <h2 className="text-base font-semibold m-0 mb-3">Bewerbungsphase</h2>
             <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
               <div className="grid gap-1">
                 <label className="text-sm font-semibold">Bewerbungsfrist</label>

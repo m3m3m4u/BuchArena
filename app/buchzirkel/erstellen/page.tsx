@@ -257,7 +257,7 @@ export default function BuchzirkelErstellenPage() {
           {mediaTyp === "bild" && (
             <div className="grid gap-1">
               <label className="text-sm font-semibold">Bild hochladen</label>
-              {mediaImageUrl && <img src={mediaImageUrl} alt="Vorschau" className="w-40 h-28 object-cover rounded-lg border border-arena-border mb-1" />}
+              {mediaImageUrl && <img src={mediaImageUrl} alt="Vorschau" className="max-w-xs max-h-48 w-auto h-auto rounded-lg border border-arena-border mb-1" />}
               <input type="file" accept="image/*" disabled={mediaImageUploading}
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
