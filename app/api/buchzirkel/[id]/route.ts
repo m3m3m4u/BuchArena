@@ -110,7 +110,7 @@ export async function PATCH(
 
     // Erlaubte Felder
     const allowed = [
-      "titel", "beschreibung", "coverImageUrl", "genre", "buchformateAngebot", "status",
+      "titel", "beschreibung", "coverImageUrl", "youtubeUrl", "mediaImageUrl", "genre", "buchformateAngebot", "status",
       "bewerbungBis", "maxTeilnehmer", "bewerbungsFragen", "genreFilter",
       "agbPflicht", "agbText", "leseabschnitte", "diskussionsTopics", "fragebogen",
     ];

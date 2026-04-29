@@ -29,6 +29,11 @@ export default function BuchzirkelErstellenPage() {
   });
   const [maxTeilnehmer, setMaxTeilnehmer] = useState(10);
   const [bewerbungsFragen, setBewerbungsFragen] = useState<string[]>(["Erzähle etwas über dich und deine Leseliebe."]);
+  const [mediaTyp, setMediaTyp] = useState<"kein" | "youtube" | "bild">("kein");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [mediaImageUrl, setMediaImageUrl] = useState("");
+  const [mediaImageUploading, setMediaImageUploading] = useState(false);
+  const [mediaImageError, setMediaImageError] = useState("");
   const [agbPflicht, setAgbPflicht] = useState(false);
   const [agbText, setAgbText] = useState(STANDARD_AGB_TEXT);
   const [leseabschnitte, setLeseabschnitte] = useState<Leseabschnitt[]>([]);
@@ -80,6 +85,8 @@ export default function BuchzirkelErstellenPage() {
           bewerbungBis: new Date(bewerbungBis).toISOString(),
           maxTeilnehmer,
           bewerbungsFragen: bewerbungsFragen.filter(Boolean),
+          youtubeUrl: mediaTyp === "youtube" ? youtubeUrl.trim() || undefined : undefined,
+          mediaImageUrl: mediaTyp === "bild" ? mediaImageUrl || undefined : undefined,
           genreFilter: [],
           agbPflicht: effectiveAgbPflicht,
           agbText: effectiveAgbPflicht ? agbText : undefined,
@@ -227,6 +234,51 @@ export default function BuchzirkelErstellenPage() {
               <input id="coverImageUrl" className="input-base w-full" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} placeholder="https://…" />
             </div>
           </div>
+        </section>
+
+        {/* Medien */}
+        <section className="card">
+          <h2 className="text-base font-semibold m-0 mb-1">Video oder Bild (optional)</h2>
+          <p className="text-sm text-arena-muted m-0 mb-3">Füge ein YouTube-Video oder ein Bild hinzu, das Lesern mehr über dein Buch zeigt (z.B. Trailer, Stimmungsbild).</p>
+          <div className="flex gap-2 mb-3">
+            {(["kein", "youtube", "bild"] as const).map((m) => (
+              <button key={m} type="button" onClick={() => setMediaTyp(m)}
+                className={`btn btn-sm${mediaTyp === m ? " btn-primary" : ""}`}>
+                {m === "kein" ? "Kein Medium" : m === "youtube" ? "YouTube-Video" : "Bild hochladen"}
+              </button>
+            ))}
+          </div>
+          {mediaTyp === "youtube" && (
+            <div className="grid gap-1">
+              <label className="text-sm font-semibold">YouTube-URL</label>
+              <input className="input-base w-full" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=…" />
+            </div>
+          )}
+          {mediaTyp === "bild" && (
+            <div className="grid gap-1">
+              <label className="text-sm font-semibold">Bild hochladen</label>
+              {mediaImageUrl && <img src={mediaImageUrl} alt="Vorschau" className="w-40 h-28 object-cover rounded-lg border border-arena-border mb-1" />}
+              <input type="file" accept="image/*" disabled={mediaImageUploading}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setMediaImageUploading(true);
+                  setMediaImageError("");
+                  const fd = new FormData();
+                  fd.append("file", file);
+                  try {
+                    const res = await fetch("/api/buchzirkel/upload-media-image", { method: "POST", body: fd });
+                    const data = await res.json() as { imageUrl?: string; message?: string };
+                    if (!res.ok) { setMediaImageError(data.message ?? "Upload fehlgeschlagen."); return; }
+                    setMediaImageUrl(data.imageUrl ?? "");
+                  } catch { setMediaImageError("Upload fehlgeschlagen."); }
+                  finally { setMediaImageUploading(false); }
+                }}
+              />
+              {mediaImageUploading && <p className="text-sm text-arena-muted">Wird hochgeladen…</p>}
+              {mediaImageError && <p className="text-sm text-red-600">{mediaImageError}</p>}
+            </div>
+          )}
         </section>
 
         {/* Bewerbungsphase */}

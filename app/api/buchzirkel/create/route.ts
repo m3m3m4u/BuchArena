@@ -35,6 +35,8 @@ export async function POST(request: Request) {
       titel?: string;
       beschreibung?: string;
       coverImageUrl?: string;
+      youtubeUrl?: string;
+      mediaImageUrl?: string;
       genre?: string;
       buchId?: string;
       bewerbungBis?: string;
@@ -69,6 +71,8 @@ export async function POST(request: Request) {
       titel,
       beschreibung,
       coverImageUrl: body.coverImageUrl?.trim() || undefined,
+      youtubeUrl: body.youtubeUrl?.trim() || undefined,
+      mediaImageUrl: body.mediaImageUrl?.trim() || undefined,
       genre,
       status: "entwurf",
       bewerbungBis,

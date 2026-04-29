@@ -57,6 +57,8 @@ export type BuchzirkelDocument = {
   titel: string;
   beschreibung: string;
   coverImageUrl?: string;
+  youtubeUrl?: string;       // optionales YouTube-Video
+  mediaImageUrl?: string;    // optionales hochgeladenes Bild
   genre: string;
   buchformateAngebot?: string[]; // z.B. ["gedruckt", "epub", "pdf"]
 
