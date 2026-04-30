@@ -730,6 +730,7 @@ export default function BeitragToolPage() {
   const [saveNameInput, setSaveNameInput]  = useState("");
   const [savingState,   setSavingState]    = useState<"idle" | "saving" | "saved">("idle");
   const [currentDesignName, setCurrentDesignName] = useState<string | null>(null);
+  const [showLoginHint, setShowLoginHint] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAllDesigns, setShowAllDesigns] = useState(false);
 
@@ -1479,6 +1480,11 @@ export default function BeitragToolPage() {
       .catch(() => {});
   }, []);
 
+  function requireLogin(action: () => void) {
+    if (!getStoredAccount()) { setShowLoginHint(true); return; }
+    action();
+  }
+
   async function saveDesign(name: string) {
     const snapshot = JSON.stringify({
       format, bgColor, bgImage, bgEvidenceId, bgOffsetX, bgOffsetY, bgOpacity, elements,
@@ -1877,13 +1883,15 @@ export default function BeitragToolPage() {
                 <button type="button" className="btn btn-primary text-xs w-full"
                   disabled={savingState === "saving"}
                   onClick={() => {
-                    if (currentDesignName) saveDesign(currentDesignName);
-                    else { setSaveNameInput(""); setShowSaveAs(true); }
+                    requireLogin(() => {
+                      if (currentDesignName) saveDesign(currentDesignName);
+                      else { setSaveNameInput(""); setShowSaveAs(true); }
+                    });
                   }}>
                   {savingState === "saving" ? "Speichere…" : savingState === "saved" ? "✓ Gespeichert" : "Speichern"}
                 </button>
                 <button type="button" className="btn text-xs w-full"
-                  onClick={() => { setSaveNameInput(currentDesignName ?? ""); setShowSaveAs(true); }}>
+                  onClick={() => requireLogin(() => { setSaveNameInput(currentDesignName ?? ""); setShowSaveAs(true); })}>
                   Speichern als
                 </button>
                 <button type="button" className="btn text-xs w-full" onClick={() => setShowOpen(true)}>
@@ -2685,6 +2693,27 @@ export default function BeitragToolPage() {
                   </p>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Login-Hinweis Overlay */}
+      {showLoginHint && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 flex flex-col">
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-arena-border">
+              <h2 className="text-lg font-bold">Anmeldung erforderlich</h2>
+              <button type="button" className="text-2xl leading-none text-arena-muted hover:text-black"
+                onClick={() => setShowLoginHint(false)}>&times;</button>
+            </div>
+            <div className="px-5 py-4 grid gap-3 text-sm">
+              <p>Um Entwürfe zu speichern, benötigst du ein <strong>BuchArena-Profil</strong>.</p>
+              <p className="text-arena-muted">Das Erstellen von Beiträgen und das Herunterladen funktioniert auch ohne Anmeldung.</p>
+              <div className="flex gap-2 pt-1">
+                <a href="/auth" className="btn btn-primary flex-1 text-center no-underline">Anmelden / Registrieren</a>
+                <button type="button" className="btn flex-1" onClick={() => setShowLoginHint(false)}>Abbrechen</button>
+              </div>
             </div>
           </div>
         </div>

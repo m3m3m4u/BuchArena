@@ -70,6 +70,7 @@ function sanitizeProfile(input: ProfileData | undefined): ProfileData {
     socialNewsletter: sanitizeField(source.socialNewsletter, base.socialNewsletter, 250),
     socialWhatsapp: sanitizeField(source.socialWhatsapp, base.socialWhatsapp, 250),
     socialEmail: sanitizeField(source.socialEmail, base.socialEmail, 250),
+    socialVerlag: sanitizeField(source.socialVerlag, base.socialVerlag, 250),
   };
 }
 

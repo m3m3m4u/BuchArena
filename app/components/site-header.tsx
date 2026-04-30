@@ -86,6 +86,7 @@ export default function SiteHeader() {
         <Link href="/news" className="header-link-public w-full sm:w-auto">News</Link>
         <Link href="/blog" className="header-link-public w-full sm:w-auto">Blog</Link>
       <Link href="/kalender" className="header-link-public w-full sm:w-auto">Kalender</Link>
+      <Link href="/social-media/beitrag-tool" className="header-link-public w-full sm:w-auto">Beitrag-Tool</Link>
       {!loggedIn && <Link href="/auth" className="header-link-public w-full sm:w-auto font-bold">Anmelden</Link>}
     </>
   );
