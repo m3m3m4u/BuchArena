@@ -190,18 +190,19 @@ function ZirkelKarte({ zirkel, deletable, onDelete }: { zirkel: Zirkel; deletabl
   const frist = new Date(zirkel.bewerbungBis);
   const expired = frist < new Date();
   const [deleting, setDeleting] = useState(false);
-  const router = typeof window !== "undefined" ? require("next/navigation").useRouter() : null;
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
-  async function handleDelete(e: React.MouseEvent) {
-    e.preventDefault();
-    if (!window.confirm("Diesen Zirkel wirklich löschen?")) return;
+  async function confirmDelete() {
     setDeleting(true);
+    setDeleteError("");
     try {
       const res = await fetch(`/api/buchzirkel/${zirkel._id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Fehler beim Löschen.");
       if (onDelete) onDelete();
+      setShowDelete(false);
     } catch {
-      alert("Fehler beim Löschen.");
+      setDeleteError("Fehler beim Löschen.");
     } finally {
       setDeleting(false);
     }
@@ -258,7 +259,7 @@ function ZirkelKarte({ zirkel, deletable, onDelete }: { zirkel: Zirkel; deletabl
           <button
             type="button"
             className="absolute top-2 right-2 z-10 btn btn-danger btn-xs opacity-80 group-hover:opacity-100"
-            onClick={handleDelete}
+            onClick={e => { e.preventDefault(); setShowDelete(true); }}
             disabled={deleting}
             title="Zirkel löschen"
           >
@@ -266,6 +267,33 @@ function ZirkelKarte({ zirkel, deletable, onDelete }: { zirkel: Zirkel; deletabl
           </button>
         )}
       </Link>
+      {showDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowDelete(false)}>
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-xl" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-2">Zirkel wirklich löschen?</h3>
+            <p className="text-sm text-arena-muted mb-4">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+            {deleteError && <p className="text-red-600 text-sm mb-2">{deleteError}</p>}
+            <div className="flex gap-2 mt-2">
+              <button
+                type="button"
+                className="btn btn-danger flex-1"
+                onClick={confirmDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Lösche …" : "Ja, löschen"}
+              </button>
+              <button
+                type="button"
+                className="btn flex-1"
+                onClick={() => setShowDelete(false)}
+                disabled={deleting}
+              >
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
