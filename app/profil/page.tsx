@@ -1416,6 +1416,19 @@ function ProfilPageInner() {
           onVisibilityChange={(visibility) => updateVisibility("socialEmail", visibility)}
         />
 
+        <FieldWithVisibility
+          label="Verlag (Website/URL)"
+          value={profile.socialVerlag?.value ?? ""}
+          visibility={profile.socialVerlag?.visibility ?? "hidden"}
+          onValueChange={(value) =>
+            setProfile((current) => ({
+              ...current,
+              socialVerlag: { ...(current.socialVerlag ?? { value: "", visibility: "hidden" }), value },
+            }))
+          }
+          onVisibilityChange={(visibility) => updateVisibility("socialVerlag", visibility)}
+        />
+
         <div className="flex gap-2 flex-wrap">
           {profile.socialInstagram.value && (
             <a className="btn" href={profile.socialInstagram.value} target="_blank" rel="noreferrer">
@@ -1470,6 +1483,11 @@ function ProfilPageInner() {
           {profile.socialWhatsapp.value && (
             <a className="btn" href={profile.socialWhatsapp.value} target="_blank" rel="noreferrer">
               WhatsApp-Kanal
+            </a>
+          )}
+          {profile.socialVerlag?.value && (
+            <a className="btn" href={profile.socialVerlag.value} target="_blank" rel="noreferrer">
+              Verlag
             </a>
           )}
         </div>

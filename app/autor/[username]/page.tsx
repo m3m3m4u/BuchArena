@@ -130,6 +130,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
       { label: "Newsletter", field: profile.socialNewsletter },
       { label: "WhatsApp-Kanal", field: profile.socialWhatsapp },
       { label: "Mailadresse", field: profile.socialEmail },
+      { label: "Verlag", field: profile.socialVerlag },
     ].filter((e) => e.field?.visibility === "public" && e.field?.value);
   }, [profile]);
 

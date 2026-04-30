@@ -37,6 +37,7 @@ export type ProfileData = {
   socialNewsletter: ProfileField;
   socialWhatsapp: ProfileField;
   socialEmail: ProfileField;
+  socialVerlag: ProfileField;
 };
 
 export type Sprechprobe = {
@@ -160,6 +161,10 @@ export function createDefaultProfile(): ProfileData {
       visibility: "hidden",
     },
     socialEmail: {
+      value: "",
+      visibility: "hidden",
+    },
+    socialVerlag: {
       value: "",
       visibility: "hidden",
     },
