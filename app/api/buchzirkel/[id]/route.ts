@@ -1,3 +1,34 @@
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ message: "Ungültige ID." }, { status: 400 });
+    }
+
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
+    const collection = await getBuchzirkelCollection();
+    const doc = await collection.findOne({ _id: new ObjectId(id) });
+    if (!doc) {
+      return NextResponse.json({ message: "Nicht gefunden." }, { status: 404 });
+    }
+    if (doc.veranstalterUsername !== account.username && account.role !== "SUPERADMIN") {
+      return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
+    }
+
+    await collection.deleteOne({ _id: new ObjectId(id) });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("buchzirkel/[id] DELETE:", err);
+    return NextResponse.json({ message: "Serverfehler." }, { status: 500 });
+  }
+}
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import {

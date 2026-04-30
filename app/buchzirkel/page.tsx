@@ -172,11 +172,11 @@ export default function BuchzirkelPage() {
 
       {/* Meine abgeschlossenen Zirkel */}
       {account && meine.length > 0 && (
-        <section className="mt-6">
+        <section className="card mt-6">
           <h2 className="text-base font-semibold mb-3">Meine abgeschlossenen Zirkel</h2>
           <div className="w-full grid grid-cols-2 gap-4 max-sm:grid-cols-1">
             {meine.map((z) => (
-              <ZirkelKarte key={z._id} zirkel={z} />
+              <ZirkelKarte key={z._id} zirkel={z} deletable={z.veranstalterUsername === account.username} onDelete={() => setMeine((prev) => prev.filter((m) => m._id !== z._id))} />
             ))}
           </div>
         </section>
@@ -185,57 +185,87 @@ export default function BuchzirkelPage() {
   );
 }
 
-function ZirkelKarte({ zirkel }: { zirkel: Zirkel }) {
+function ZirkelKarte({ zirkel, deletable, onDelete }: { zirkel: Zirkel; deletable?: boolean; onDelete?: () => void }) {
   const isBeta = zirkel.typ === "betaleser";
   const frist = new Date(zirkel.bewerbungBis);
   const expired = frist < new Date();
+  const [deleting, setDeleting] = useState(false);
+  const router = typeof window !== "undefined" ? require("next/navigation").useRouter() : null;
+
+  async function handleDelete(e: React.MouseEvent) {
+    e.preventDefault();
+    if (!window.confirm("Diesen Zirkel wirklich löschen?")) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/buchzirkel/${zirkel._id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Fehler beim Löschen.");
+      if (onDelete) onDelete();
+    } catch {
+      alert("Fehler beim Löschen.");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
-    <Link
-      href={`/buchzirkel/${zirkel._id}`}
-      className="no-underline text-inherit flex gap-4 rounded-xl border border-arena-border bg-white p-4 hover:border-arena-blue transition-colors"
-    >
-      {/* Cover */}
-      <div className="flex-shrink-0 w-16 h-24 rounded-lg overflow-hidden bg-arena-border-light flex items-center justify-center">
-        {zirkel.coverImageUrl ? (
-          <img src={zirkel.coverImageUrl} alt={zirkel.titel} className="w-full h-full object-cover" />
-        ) : (
-          <span className="text-2xl">📚</span>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start gap-2 flex-wrap">
-          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
-            {isBeta ? "Buchzirkel (Beta)" : "Buchzirkel"}
-          </span>
-          {zirkel.genre && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">
-              {zirkel.genre}
-            </span>
-          )}
-          {zirkel.isTeilnehmer && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✅ Teilnehmer</span>
-          )}
-          {!zirkel.isTeilnehmer && zirkel.isBeworben && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-yellow text-arena-blue">⏳ Beworben</span>
-          )}
-        </div>
-
-        <h2 className="text-base font-bold m-0 mt-1 truncate">{zirkel.titel}</h2>
-        <p className="text-xs text-arena-muted m-0">von {zirkel.veranstalterUsername}</p>
-        <p className="text-sm text-arena-muted m-0 mt-1 line-clamp-2">{zirkel.beschreibung}</p>
-
-        <div className="flex items-center gap-3 mt-2 text-xs text-arena-muted">
-          <span>max. {zirkel.maxTeilnehmer} Teilnehmer</span>
-          {expired ? (
-            <span className="text-red-600 font-medium">Bewerbung beendet</span>
+    <div className="relative group">
+      <Link
+        href={`/buchzirkel/${zirkel._id}`}
+        className="no-underline text-inherit flex gap-4 rounded-xl border border-arena-border bg-white p-4 hover:border-arena-blue transition-colors"
+      >
+        {/* Cover */}
+        <div className="flex-shrink-0 w-16 h-24 rounded-lg overflow-hidden bg-arena-border-light flex items-center justify-center">
+          {zirkel.coverImageUrl ? (
+            <img src={zirkel.coverImageUrl} alt={zirkel.titel} className="w-full h-full object-cover" />
           ) : (
-            <span>Frist: {frist.toLocaleDateString("de-AT")}</span>
+            <span className="text-2xl">📚</span>
           )}
         </div>
-      </div>
-    </Link>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start gap-2 flex-wrap">
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
+              {isBeta ? "Buchzirkel (Beta)" : "Buchzirkel"}
+            </span>
+            {zirkel.genre && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">
+                {zirkel.genre}
+              </span>
+            )}
+            {zirkel.isTeilnehmer && (
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✅ Teilnehmer</span>
+            )}
+            {!zirkel.isTeilnehmer && zirkel.isBeworben && (
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-yellow text-arena-blue">⏳ Beworben</span>
+            )}
+          </div>
+
+          <h2 className="text-base font-bold m-0 mt-1 truncate">{zirkel.titel}</h2>
+          <p className="text-xs text-arena-muted m-0">von {zirkel.veranstalterUsername}</p>
+          <p className="text-sm text-arena-muted m-0 mt-1 line-clamp-2">{zirkel.beschreibung}</p>
+
+          <div className="flex items-center gap-3 mt-2 text-xs text-arena-muted">
+            <span>max. {zirkel.maxTeilnehmer} Teilnehmer</span>
+            {expired ? (
+              <span className="text-red-600 font-medium">Bewerbung beendet</span>
+            ) : (
+              <span>Frist: {frist.toLocaleDateString("de-AT")}</span>
+            )}
+          </div>
+        </div>
+        {deletable && (
+          <button
+            type="button"
+            className="absolute top-2 right-2 z-10 btn btn-danger btn-xs opacity-80 group-hover:opacity-100"
+            onClick={handleDelete}
+            disabled={deleting}
+            title="Zirkel löschen"
+          >
+            {deleting ? "…" : "Löschen"}
+          </button>
+        )}
+      </Link>
+    </div>
   );
 }
