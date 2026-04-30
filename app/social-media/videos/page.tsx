@@ -65,7 +65,20 @@ export default function ReviewVideosPage() {
   const [feedbackTarget, setFeedbackTarget] = useState<ReviewVideo | null>(null);
   const [feedbackNote, setFeedbackNote] = useState("");
   const [reviewBusy, setReviewBusy] = useState<string | null>(null);
+  const [quickNotes, setQuickNotes] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Vordefinierte Fehlertexte laden
+    setQuickNotes([
+      "Audio fehlt",
+      "Audio asynchron",
+      "Bildqualität zu niedrig",
+      "Falscher Inhalt",
+      "Schnittfehler",
+      "Dateiformat problematisch",
+    ]);
+  }, []);
 
   useEffect(() => {
     function sync() {
@@ -406,9 +419,9 @@ export default function ReviewVideosPage() {
                   <div className="flex items-center gap-3 p-3">
                     <PlayIcon className="w-6 h-6 text-arena-blue shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-medium truncate">{v.originalName ?? v.fileName}</p>
-                        <span className={`inline-block text-[0.7rem] font-semibold px-1.5 py-0.5 rounded-full ${badge.cls}`}>
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                        <p className="text-sm font-medium truncate shrink">{v.originalName ?? v.fileName}</p>
+                        <span className={`inline-block text-[0.7rem] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap ${badge.cls}`}>
                           {badge.label}
                         </span>
                       </div>
@@ -416,7 +429,7 @@ export default function ReviewVideosPage() {
                         {formatSize(v.size)} · {formatDate(v.uploadedAt)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                    <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                       <button
                         type="button"
                         className="btn btn-sm inline-flex items-center gap-1"
@@ -489,6 +502,18 @@ export default function ReviewVideosPage() {
               </p>
               <label className="block">
                 <span className="text-sm font-semibold">Was muss korrigiert werden?</span>
+                <div className="flex flex-wrap gap-1 mt-2 mb-2">
+                  {quickNotes.map((note) => (
+                    <button
+                      key={note}
+                      type="button"
+                      className="text-[0.7rem] px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 border border-gray-300 transition-colors"
+                      onClick={() => setFeedbackNote(prev => prev ? `${prev}\n${note}` : note)}
+                    >
+                      + {note}
+                    </button>
+                  ))}
+                </div>
                 <textarea
                   className="input-base w-full mt-1 min-h-[100px] resize-y"
                   value={feedbackNote}
@@ -508,12 +533,20 @@ export default function ReviewVideosPage() {
                 </button>
                 <button
                   type="button"
-                  className="btn flex-1"
-                  onClick={() => setFeedbackTarget(null)}
+                  className="btn btn-success flex-1 !bg-green-600 !text-white hover:!bg-green-700"
+                  disabled={reviewBusy === feedbackTarget.fileName}
+                  onClick={() => void handleReview(feedbackTarget.fileName, "approved", feedbackNote || undefined)}
                 >
-                  Abbrechen
+                  OK (Bestätigen)
                 </button>
               </div>
+              <button
+                type="button"
+                className="btn w-full mt-2"
+                onClick={() => setFeedbackTarget(null)}
+              >
+                Abbrechen
+              </button>
             </div>
           </div>
         )}
