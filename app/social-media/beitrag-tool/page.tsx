@@ -3477,6 +3477,27 @@ export default function BeitragToolPage() {
           </div>
         </div>
       )}
+    {/* Render-Overlay bei Video-Export */}
+    {exporting && (
+      <div className="fixed inset-0 z-[300] flex items-center justify-center bg-arena-bg/80">
+        <div className="bg-arena-bg rounded-xl shadow-2xl px-8 py-10 flex flex-col items-center gap-6 min-w-[320px] max-w-xs w-full border border-arena-border">
+          <svg className="animate-spin w-10 h-10 text-arena-accent" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-base font-semibold text-arena-accent">Video wird gerendert…</span>
+            <span className="text-sm text-arena-muted">Bitte nicht schließen oder neu laden.</span>
+          </div>
+          <div className="w-full bg-arena-border/40 rounded-full h-3 mt-2">
+            <div className="bg-arena-accent h-3 rounded-full transition-all" style={{ width: `${exportProgress}%` }}></div>
+          </div>
+          <div className="text-xs text-arena-muted mt-1">
+            {exportPhase === "convert" ? `Video wird kodiert… (${exportProgress}%)` : `Bilder werden gerendert… (${exportProgress}%)`}
+          </div>
+        </div>
+      </div>
+    )}
     </main>
   );
 }
