@@ -85,7 +85,7 @@ export default function AdminPage() {
 
   /* ── Haupt-Reiter ── */
   const router = useRouter();
-  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "nachrichten" | "users">("bdw");
+  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "nachrichten" | "users" | "buchzirkel">("bdw");
 
   /* ── User-Suche & Paginierung ── */
   const [userSearch, setUserSearch] = useState("");
@@ -129,6 +129,47 @@ export default function AdminPage() {
   const [bdwSpeakers, setBdwSpeakers] = useState<SpeakerOption[]>([]);
   const [bdwSpeakerQuery, setBdwSpeakerQuery] = useState("");
   const [bdwSpeakerOpen, setBdwSpeakerOpen] = useState(false);
+
+  /* ── Buchzirkel ── */
+  type BewerbungCount = { ausstehend: number; angenommen: number; abgelehnt: number; gesamt: number };
+  type AdminBuchzirkel = {
+    _id: string;
+    typ: string;
+    titel: string;
+    genre: string;
+    status: string;
+    veranstalterUsername: string;
+    bewerbungBis: string;
+    maxTeilnehmer: number;
+    createdAt: string;
+    updatedAt?: string;
+    bewerbungen: BewerbungCount;
+    teilnehmerAnzahl: number;
+    leseabschnitteAnzahl: number;
+  };
+  const [buchzirkelList, setBuchzirkelList] = useState<AdminBuchzirkel[]>([]);
+  const [buchzirkelLoading, setBuchzirkelLoading] = useState(false);
+  const [buchzirkelLoaded, setBuchzirkelLoaded] = useState(false);
+  const [buchzirkelFilter, setBuchzirkelFilter] = useState("");
+  const [buchzirkelStatusFilter, setBuchzirkelStatusFilter] = useState("alle");
+  const [buchzirkelBusy, setBuchzirkelBusy] = useState<string | null>(null);
+
+  async function changeBuchzirkelStatus(id: string, status: string) {
+    setBuchzirkelBusy(id);
+    try {
+      const res = await fetch("/api/admin/buchzirkel", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Fehler"); }
+      setBuchzirkelList((prev) => prev.map((z) => z._id === id ? { ...z, status } : z));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Status konnte nicht geändert werden.");
+    } finally {
+      setBuchzirkelBusy(null);
+    }
+  }
 
   /* ── Analytics ── */
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
@@ -264,6 +305,17 @@ export default function AdminPage() {
     loadAnalytics();
     setAnalyticsLoaded(true);
   }, [mainTab, account, loadAnalytics]);
+
+  useEffect(() => {
+    if (mainTab !== "buchzirkel" || buchzirkelLoaded) return;
+    setBuchzirkelLoaded(true);
+    setBuchzirkelLoading(true);
+    fetch("/api/admin/buchzirkel")
+      .then((r) => r.json())
+      .then((d) => setBuchzirkelList(d.docs ?? []))
+      .catch(() => {})
+      .finally(() => setBuchzirkelLoading(false));
+  }, [mainTab, buchzirkelLoaded]);
 
   async function saveBuchDerWoche() {
     setBdwLoading(true);
@@ -510,8 +562,9 @@ export default function AdminPage() {
             { key: "bdw" as const, label: "📖 Buch der Woche" },
             { key: "analytics" as const, label: "📊 Analyse" },
             { key: "nachrichten" as const, label: "✉ Nachrichten" },
+            { key: "buchzirkel" as const, label: "📚 Buchzirkel" },
           { key: "users" as const, label: "👥 User-Übersicht" },
-          ] as { key: "bdw" | "analytics" | "nachrichten" | "users"; label: string }[]).map((t) => (
+          ] as { key: "bdw" | "analytics" | "nachrichten" | "buchzirkel" | "users"; label: string }[]).map((t) => (
             <button
               key={t.key}
               className={`btn btn-sm${mainTab === t.key ? " btn-primary" : ""}`}
@@ -816,6 +869,140 @@ export default function AdminPage() {
             )}
           </div>
         )}
+
+        {/* ══ Tab: Buchzirkel ══ */}
+        {mainTab === "buchzirkel" && (() => {
+          const statusOptions = ["alle", "entwurf", "bewerbung", "aktiv", "abgeschlossen", "archiviert"];
+          const statusLabels: Record<string, string> = {
+            alle: "Alle", entwurf: "Entwurf", bewerbung: "Bewerbung",
+            aktiv: "Aktiv", abgeschlossen: "Abgeschlossen", archiviert: "Archiviert"
+          };
+          const statusColors: Record<string, string> = {
+            entwurf: "#888", bewerbung: "#2563eb", aktiv: "#16a34a",
+            abgeschlossen: "#d97706", archiviert: "#9ca3af"
+          };
+          const searchLower = buchzirkelFilter.toLowerCase();
+          const filtered = buchzirkelList.filter((z) => {
+            const matchStatus = buchzirkelStatusFilter === "alle" || z.status === buchzirkelStatusFilter;
+            const matchSearch = !searchLower || z.titel.toLowerCase().includes(searchLower) || z.veranstalterUsername.toLowerCase().includes(searchLower);
+            return matchStatus && matchSearch;
+          });
+          return (
+            <div className="grid gap-3">
+              {buchzirkelLoading ? (
+                <p style={{ color: "var(--color-arena-muted)" }}>Lade Buchzirkel…</p>
+              ) : (
+                <>
+                  {/* Filter-Zeile */}
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
+                    <input
+                      className="input-base"
+                      style={{ minWidth: 180, maxWidth: 300 }}
+                      placeholder="Titel oder Veranstalter…"
+                      value={buchzirkelFilter}
+                      onChange={(e) => setBuchzirkelFilter(e.target.value)}
+                    />
+                    {statusOptions.map((s) => (
+                      <button
+                        key={s}
+                        className={`btn btn-sm${buchzirkelStatusFilter === s ? " btn-primary" : ""}`}
+                        onClick={() => setBuchzirkelStatusFilter(s)}
+                      >
+                        {statusLabels[s]}
+                      </button>
+                    ))}
+                    <span className="text-xs text-arena-muted">{filtered.length} / {buchzirkelList.length}</span>
+                    <button className="btn btn-sm" onClick={() => { setBuchzirkelLoaded(false); setBuchzirkelList([]); }}>↺ Neu laden</button>
+                  </div>
+
+                  {/* Tabelle Desktop */}
+                  <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <table className="hidden sm:table w-full border-collapse" style={{ fontSize: "0.82rem", minWidth: 900 }}>
+                      <thead>
+                        <tr style={{ borderBottom: "2px solid var(--color-arena-border)" }}>
+                          {[
+                            "Titel", "Typ", "Status", "Veranstalter", "Genre",
+                            "Bewerbung bis", "Bew.", "Angenom.", "Abgel.", "Teiln.", "Max.", "Abschn.", "Erstellt"
+                          ].map((h) => (
+                            <th key={h} style={{ padding: "0.4rem 0.5rem", textAlign: "left", whiteSpace: "nowrap", background: "var(--color-arena-bg)", color: "var(--color-arena-muted)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.03em" }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filtered.length === 0 ? (
+                          <tr><td colSpan={13} style={{ padding: "1rem", color: "var(--color-arena-muted)" }}>Keine Buchzirkel gefunden.</td></tr>
+                        ) : filtered.map((z) => (
+                          <tr key={z._id} style={{ borderBottom: "1px solid var(--color-arena-border-light)" }} className="hover:bg-[#f5f5f5]">
+                            <td style={{ padding: "0.4rem 0.5rem", fontWeight: 500, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              <a href={`/buchzirkel/${z._id}`} target="_blank" rel="noreferrer" className="hover:underline">{z.titel}</a>
+                            </td>
+                            <td style={{ padding: "0.4rem 0.5rem", whiteSpace: "nowrap" }}>
+                              <span style={{ background: z.typ === "betaleser" ? "#dbeafe" : "#dcfce7", color: z.typ === "betaleser" ? "#1e40af" : "#15803d", borderRadius: 999, padding: "1px 8px", fontSize: "0.75rem", fontWeight: 600 }}>{z.typ}</span>
+                            </td>
+                            <td style={{ padding: "0.3rem 0.5rem", whiteSpace: "nowrap" }}>
+                              <select
+                                value={z.status}
+                                disabled={buchzirkelBusy === z._id}
+                                onChange={(e) => void changeBuchzirkelStatus(z._id, e.target.value)}
+                                style={{ fontSize: "0.78rem", padding: "2px 6px", borderRadius: 6, border: `1px solid ${statusColors[z.status] ?? "#ccc"}`, color: statusColors[z.status] ?? "#555", background: (statusColors[z.status] ?? "#888") + "18", fontWeight: 600, cursor: buchzirkelBusy === z._id ? "wait" : "pointer" }}
+                              >
+                                {["entwurf","bewerbung","aktiv","abgeschlossen","archiviert"].map((s) => (
+                                  <option key={s} value={s}>{s}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td style={{ padding: "0.4rem 0.5rem", whiteSpace: "nowrap" }}>
+                              <a href={`/profil?user=${encodeURIComponent(z.veranstalterUsername)}`} target="_blank" rel="noreferrer" className="hover:underline text-arena-muted">@{z.veranstalterUsername}</a>
+                            </td>
+                            <td style={{ padding: "0.4rem 0.5rem", whiteSpace: "nowrap", color: "var(--color-arena-muted)" }}>{z.genre}</td>
+                            <td style={{ padding: "0.4rem 0.5rem", whiteSpace: "nowrap", color: new Date(z.bewerbungBis) < new Date() && z.status === "bewerbung" ? "#dc2626" : undefined }}>
+                              {formatDate(z.bewerbungBis)}
+                            </td>
+                            <td style={{ padding: "0.4rem 0.5rem", textAlign: "center", fontWeight: 600 }}>{z.bewerbungen.gesamt}</td>
+                            <td style={{ padding: "0.4rem 0.5rem", textAlign: "center", color: "#16a34a", fontWeight: 600 }}>{z.bewerbungen.angenommen}</td>
+                            <td style={{ padding: "0.4rem 0.5rem", textAlign: "center", color: "#dc2626" }}>{z.bewerbungen.abgelehnt}</td>
+                            <td style={{ padding: "0.4rem 0.5rem", textAlign: "center", fontWeight: 600 }}>{z.teilnehmerAnzahl}</td>
+                            <td style={{ padding: "0.4rem 0.5rem", textAlign: "center", color: "var(--color-arena-muted)" }}>{z.maxTeilnehmer}</td>
+                            <td style={{ padding: "0.4rem 0.5rem", textAlign: "center", color: "var(--color-arena-muted)" }}>{z.leseabschnitteAnzahl}</td>
+                            <td style={{ padding: "0.4rem 0.5rem", whiteSpace: "nowrap", color: "var(--color-arena-muted)", fontSize: "0.75rem" }}>{formatDate(z.createdAt)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+
+                    {/* Mobile Cards */}
+                    <div className="sm:hidden grid gap-2">
+                      {filtered.map((z) => (
+                        <div key={z._id} style={{ border: "1px solid var(--color-arena-border)", borderRadius: 8, padding: "0.75rem" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
+                            <a href={`/buchzirkel/${z._id}`} target="_blank" rel="noreferrer" style={{ fontWeight: 600, fontSize: "0.9rem" }}>{z.titel}</a>
+                            <select
+                              value={z.status}
+                              disabled={buchzirkelBusy === z._id}
+                              onChange={(e) => void changeBuchzirkelStatus(z._id, e.target.value)}
+                              style={{ fontSize: "0.72rem", padding: "2px 6px", borderRadius: 6, border: `1px solid ${statusColors[z.status] ?? "#ccc"}`, color: statusColors[z.status] ?? "#555", background: (statusColors[z.status] ?? "#888") + "18", fontWeight: 600, cursor: buchzirkelBusy === z._id ? "wait" : "pointer" }}
+                            >
+                              {["entwurf","bewerbung","aktiv","abgeschlossen","archiviert"].map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div style={{ fontSize: "0.78rem", color: "var(--color-arena-muted)", marginBottom: 6 }}>@{z.veranstalterUsername} · {z.typ} · {z.genre}</div>
+                          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", fontSize: "0.78rem" }}>
+                            <span>📅 bis {formatDate(z.bewerbungBis)}</span>
+                            <span>📬 {z.bewerbungen.gesamt} Bew. ({z.bewerbungen.angenommen} ✓ / {z.bewerbungen.abgelehnt} ✗)</span>
+                            <span>👥 {z.teilnehmerAnzahl} / {z.maxTeilnehmer}</span>
+                            <span>📑 {z.leseabschnitteAnzahl} Abschn.</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ══ Tab: User-Übersicht ══ */}
         {mainTab === "users" && (
