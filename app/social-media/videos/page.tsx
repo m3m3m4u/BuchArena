@@ -416,20 +416,22 @@ export default function ReviewVideosPage() {
                   key={v.fileName}
                   className="rounded-lg border border-arena-border hover:border-gray-400 transition-colors"
                 >
-                  <div className="flex items-center gap-3 p-3">
-                    <PlayIcon className="w-6 h-6 text-arena-blue shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                        <p className="text-sm font-medium truncate shrink">{v.originalName ?? v.fileName}</p>
-                        <span className={`inline-block text-[0.7rem] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap ${badge.cls}`}>
-                          {badge.label}
-                        </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <PlayIcon className="w-6 h-6 text-arena-blue shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-medium truncate shrink min-w-0">{v.originalName ?? v.fileName}</p>
+                          <span className={`inline-block text-[0.7rem] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0 ${badge.cls}`}>
+                            {badge.label}
+                          </span>
+                        </div>
+                        <p className="text-xs text-arena-muted">
+                          {formatSize(v.size)} · {formatDate(v.uploadedAt)}
+                        </p>
                       </div>
-                      <p className="text-xs text-arena-muted">
-                        {formatSize(v.size)} · {formatDate(v.uploadedAt)}
-                      </p>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                    <div className="flex items-center gap-1.5 flex-wrap shrink-0">
                       <button
                         type="button"
                         className="btn btn-sm inline-flex items-center gap-1"
