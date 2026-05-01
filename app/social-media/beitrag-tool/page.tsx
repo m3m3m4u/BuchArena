@@ -32,7 +32,27 @@ type FormatPreset = "4:5" | "1:1" | "9:16";
 type AnimPreset = "none" | "fade" | "slide-left" | "slide-right" | "slide-up" | "slide-down" | "zoom";
 type FrameStyle = "none" | "simple" | "double" | "corners" | "elegant" | "vintage"
   | "perlen" | "passepartout" | "gestrichelt" | "eckakzent";
+type TransitionPreset = "none" | "fade" | "slide-left" | "slide-right" | "slide-up" | "slide-down" | "zoom";
 type HId = "tl" | "tr" | "bl" | "br";
+
+interface Slide {
+  id: string;
+  elements: CE[];
+  bgColor: string;
+  bgImage: string | null;
+  bgEvidenceId: string | null;
+  bgOffsetX: number;
+  bgOffsetY: number;
+  bgOpacity: number;
+  frameStyle: FrameStyle;
+  frameColor: string;
+  frameThickness: number;
+  frameInset: number;
+  /** Übergang VOM dieser Folie ZUR nächsten (nur video) */
+  transition: TransitionPreset;
+  transitionDuration: number; // Sekunden
+  slideDuration: number;      // Sekunden diese Folie gezeigt wird
+}
 type Align = "left" | "center" | "right";
 
 interface TextEl {
@@ -89,6 +109,18 @@ type PixabayEvidence = {
   accountAgeDays?: number;
   uploadedImageCount?: number;
 };
+
+const TRANSITION_PRESETS: { value: TransitionPreset; label: string }[] = [
+  { value: "none",        label: "Kein Übergang" },
+  { value: "fade",        label: "Einblenden" },
+  { value: "slide-left",  label: "Slide links" },
+  { value: "slide-right", label: "Slide rechts" },
+  { value: "slide-up",    label: "Slide oben" },
+  { value: "slide-down",  label: "Slide unten" },
+  { value: "zoom",        label: "Zoom" },
+];
+
+const MAX_SLIDES = 10;
 
 const FRAME_PRESETS: { value: FrameStyle; label: string }[] = [
   { value: "none",          label: "Kein Rahmen" },
@@ -740,6 +772,19 @@ export default function BeitragToolPage() {
   const [frameThickness, setFrameThickness] = useState(3);
   const [frameInset,     setFrameInset]     = useState(0);
 
+  /* Multi-Slide */
+  const [slides, setSlides] = useState<Slide[]>(() => [{
+    id: uid(),
+    elements: [],
+    bgColor: "#ffffff", bgImage: null, bgEvidenceId: null,
+    bgOffsetX: 0, bgOffsetY: 0, bgOpacity: 100,
+    frameStyle: "none", frameColor: "#1a1a1a", frameThickness: 3, frameInset: 0,
+    transition: "fade", transitionDuration: 0.5, slideDuration: 10,
+  }]);
+  const [currentSlideIdx, setCurrentSlideIdx] = useState(0);
+  /** Cache für Hintergrundbilder aller Folien */
+  const bgImgCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
+
   /* Video mode */
   const [editorMode,    setEditorMode]    = useState<"bild" | "video">("bild");
   const [videoDuration, setVideoDuration] = useState(10); // Sekunden
@@ -766,6 +811,7 @@ export default function BeitragToolPage() {
     bgOffsetX: number; bgOffsetY: number; bgOpacity: number;
     frameStyle: FrameStyle; frameColor: string; frameThickness: number; frameInset: number;
     format: FormatPreset;
+    slides: Slide[]; currentSlideIdx: number;
   };
   const historyRef = useRef<Snapshot[]>([]);
   const [canUndo, setCanUndo] = useState(false);
@@ -775,6 +821,8 @@ export default function BeitragToolPage() {
       elements: elements.map((e) => ({ ...e })),
       bgColor, bgImage, bgOffsetX, bgOffsetY, bgOpacity,
       frameStyle, frameColor, frameThickness, frameInset, format,
+      slides: slides.map((s) => ({ ...s, elements: s.elements.map((e) => ({ ...e })) })),
+      currentSlideIdx,
     };
     historyRef.current = [...historyRef.current.slice(-19), snap];
     setCanUndo(true);
@@ -795,6 +843,7 @@ export default function BeitragToolPage() {
     setFrameThickness(prev.frameThickness);
     setFrameInset(prev.frameInset);
     setFormat(prev.format);
+    if (prev.slides) { setSlides(prev.slides); setCurrentSlideIdx(prev.currentSlideIdx); }
     if (prev.bgImage !== bgImage) {
       if (prev.bgImage) {
         setBgImage(prev.bgImage);
@@ -811,6 +860,116 @@ export default function BeitragToolPage() {
   const sz      = useMemo(() => getSize(format), [format]);
   const selEl   = useMemo(() => elements.find((e) => e.id === selId) ?? null, [elements, selId]);
   const textEl  = selEl?.type === "text" ? (selEl as TextEl) : null;
+
+  /* ---- Folienverwaltung ---- */
+  function currentSlideSnapshot(): Slide {
+    return {
+      ...slides[currentSlideIdx],
+      elements: elements.map((e) => ({ ...e })),
+      bgColor, bgImage, bgEvidenceId, bgOffsetX, bgOffsetY, bgOpacity,
+      frameStyle, frameColor, frameThickness, frameInset,
+    };
+  }
+
+  function loadSlideState(s: Slide) {
+    setElements(s.elements);
+    setBgColor(s.bgColor);
+    setBgEvidenceId(s.bgEvidenceId ?? null);
+    setBgOffsetX(s.bgOffsetX);
+    setBgOffsetY(s.bgOffsetY);
+    setBgOpacity(s.bgOpacity);
+    setFrameStyle(s.frameStyle);
+    setFrameColor(s.frameColor);
+    setFrameThickness(s.frameThickness);
+    setFrameInset(s.frameInset);
+    if (s.bgImage) {
+      setBgImage(s.bgImage);
+      const cached = bgImgCacheRef.current.get(s.bgImage);
+      if (cached) { bgImgRef.current = cached; }
+      else {
+        bgImgRef.current = null;
+        loadImg(s.bgImage).then((img) => {
+          bgImgCacheRef.current.set(s.bgImage!, img);
+          bgImgRef.current = img;
+          setTick((t) => t + 1);
+        }).catch(() => {});
+      }
+    } else {
+      setBgImage(null);
+      bgImgRef.current = null;
+    }
+    setSelId(null);
+    setEditingId(null);
+    setTick((t) => t + 1);
+  }
+
+  function switchToSlide(newIdx: number) {
+    if (newIdx === currentSlideIdx) return;
+    const current = currentSlideSnapshot();
+    const newSlides = slides.map((s, i) => i === currentSlideIdx ? current : s);
+    setSlides(newSlides);
+    loadSlideState(newSlides[newIdx]);
+    setCurrentSlideIdx(newIdx);
+  }
+
+  function addSlide() {
+    if (slides.length >= MAX_SLIDES) return;
+    pushHistory();
+    const current = currentSlideSnapshot();
+    const newSlide: Slide = {
+      id: uid(), elements: [],
+      bgColor: "#ffffff", bgImage: null, bgEvidenceId: null,
+      bgOffsetX: 0, bgOffsetY: 0, bgOpacity: 100,
+      frameStyle: "none", frameColor: "#1a1a1a", frameThickness: 3, frameInset: 0,
+      transition: current.transition,
+      transitionDuration: current.transitionDuration,
+      slideDuration: current.slideDuration,
+    };
+    const newSlides = [...slides.map((s, i) => i === currentSlideIdx ? current : s), newSlide];
+    setSlides(newSlides);
+    const newIdx = newSlides.length - 1;
+    setElements([]);
+    setBgColor("#ffffff"); setBgImage(null); setBgEvidenceId(null);
+    bgImgRef.current = null;
+    setBgOffsetX(0); setBgOffsetY(0); setBgOpacity(100);
+    setFrameStyle("none"); setFrameColor("#1a1a1a"); setFrameThickness(3); setFrameInset(0);
+    setCurrentSlideIdx(newIdx);
+    setSelId(null); setEditingId(null);
+    setTick((t) => t + 1);
+  }
+
+  function duplicateSlide() {
+    if (slides.length >= MAX_SLIDES) return;
+    pushHistory();
+    const current = currentSlideSnapshot();
+    const dup: Slide = { ...current, id: uid(), elements: current.elements.map((e) => ({ ...e, id: uid() })) };
+    const newSlides = [...slides.map((s, i) => i === currentSlideIdx ? current : s)];
+    newSlides.splice(currentSlideIdx + 1, 0, dup);
+    setSlides(newSlides);
+    const newIdx = currentSlideIdx + 1;
+    loadSlideState(dup);
+    setCurrentSlideIdx(newIdx);
+  }
+
+  function deleteCurrentSlide() {
+    if (slides.length <= 1) return;
+    pushHistory();
+    const current = currentSlideSnapshot();
+    const newSlides = slides.map((s, i) => i === currentSlideIdx ? current : s).filter((_, i) => i !== currentSlideIdx);
+    const newIdx = Math.min(currentSlideIdx, newSlides.length - 1);
+    setSlides(newSlides);
+    loadSlideState(newSlides[newIdx]);
+    setCurrentSlideIdx(newIdx);
+  }
+
+  function updateSlideField<K extends keyof Slide>(field: K, value: Slide[K]) {
+    setSlides((prev) => prev.map((s, i) => i === currentSlideIdx ? { ...s, [field]: value } : s));
+  }
+
+  /** Alle Folien inklusive aktuellem Live-Stand zusammenführen */
+  function getAllSlides(): Slide[] {
+    return slides.map((s, i) => i === currentSlideIdx ? currentSlideSnapshot() : s);
+  }
 
   // Close anim panel when selection changes
   useEffect(() => { if (!selId) setShowAnimPanel(false); updPushedRef.current = false; }, [selId]);
@@ -958,16 +1117,18 @@ export default function BeitragToolPage() {
     }
 
     const start = performance.now();
+    // Vorschau-Dauer: bei Multi-Slide die aktuelle Folie, sonst global
+    const previewDur = slides.length > 1 ? slides[currentSlideIdx].slideDuration : videoDuration;
     function loop(now: number) {
       previewTRef.current = (now - start) / 1000;
       setTick((t) => t + 1);
       // Fade-Out rechtzeitig starten
-      if (previewAudioCtx.current && previewGain.current && fadeOut && videoDuration - previewTRef.current <= fadeOutDur && previewGain.current.gain.value > 0.01) {
+      if (previewAudioCtx.current && previewGain.current && fadeOut && previewDur - previewTRef.current <= fadeOutDur && previewGain.current.gain.value > 0.01) {
         previewGain.current.gain.cancelScheduledValues(previewAudioCtx.current.currentTime);
         previewGain.current.gain.setValueAtTime(previewGain.current.gain.value, previewAudioCtx.current.currentTime);
-        previewGain.current.gain.linearRampToValueAtTime(0, previewAudioCtx.current.currentTime + (videoDuration - previewTRef.current));
+        previewGain.current.gain.linearRampToValueAtTime(0, previewAudioCtx.current.currentTime + (previewDur - previewTRef.current));
       }
-      if (previewTRef.current < videoDuration) {
+      if (previewTRef.current < previewDur) {
         previewRafRef.current = requestAnimationFrame(loop);
       } else {
         previewTRef.current = 0;
@@ -982,7 +1143,7 @@ export default function BeitragToolPage() {
       stopAudio();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewing, videoDuration, selectedTrackId, musikTracks, musikFadeIn, musikFadeInDur, musikFadeOut, musikFadeOutDur]);
+  }, [previewing, videoDuration, slides, currentSlideIdx, selectedTrackId, musikTracks, musikFadeIn, musikFadeInDur, musikFadeOut, musikFadeOutDur]);
 
   /* Load Google Fonts for this page */
   useEffect(() => {
@@ -1486,12 +1647,16 @@ export default function BeitragToolPage() {
   }
 
   async function saveDesign(name: string) {
+    const allSlides = getAllSlides();
     const snapshot = JSON.stringify({
-      format, bgColor, bgImage, bgEvidenceId, bgOffsetX, bgOffsetY, bgOpacity, elements,
-      editorMode, videoDuration,
+      format, editorMode, videoDuration,
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
       musikFadeOut, musikFadeOutDur,
+      slides: allSlides,
+      currentSlideIdx,
+      // backward compat: top-level fields des aktuellen Slides
+      bgColor, bgImage, bgEvidenceId, bgOffsetX, bgOffsetY, bgOpacity, elements,
       frameStyle, frameColor, frameThickness, frameInset,
     });
     setSavingState("saving");
@@ -1516,31 +1681,20 @@ export default function BeitragToolPage() {
   function loadDesign(data: string, name?: string) {
     try {
       const s = JSON.parse(data) as {
-        format: FormatPreset; bgColor: string; bgImage?: string | null; bgEvidenceId?: string | null;
+        format: FormatPreset;
+        bgColor: string; bgImage?: string | null; bgEvidenceId?: string | null;
         bgOffsetX?: number; bgOffsetY?: number; bgOpacity?: number;
-        elements: CE[];
+        elements?: CE[];
         editorMode?: "bild" | "video"; videoDuration?: number;
         selectedTrackId?: string | null;
         musikFadeIn?: boolean; musikFadeInDur?: number;
         musikFadeOut?: boolean; musikFadeOutDur?: number;
         frameStyle?: FrameStyle; frameColor?: string; frameThickness?: number;
         frameInset?: number;
+        slides?: Slide[];
+        currentSlideIdx?: number;
       };
       setFormat(s.format ?? "4:5");
-      setBgColor(s.bgColor ?? "#ffffff");
-      if (s.bgImage) {
-        setBgImage(s.bgImage);
-        setBgEvidenceId(s.bgEvidenceId ?? null);
-        loadImg(s.bgImage).then((img) => { bgImgRef.current = img; setTick((t) => t + 1); }).catch(() => {});
-      } else {
-        setBgImage(null);
-        setBgEvidenceId(null);
-        bgImgRef.current = null;
-      }
-      setBgOffsetX(s.bgOffsetX ?? 0);
-      setBgOffsetY(s.bgOffsetY ?? 0);
-      setBgOpacity(s.bgOpacity ?? 100);
-      setElements(s.elements ?? []);
       if (s.editorMode) setEditorMode(s.editorMode);
       if (s.videoDuration != null) setVideoDuration(s.videoDuration);
       if (s.selectedTrackId !== undefined) setSelectedTrackId(s.selectedTrackId ?? null);
@@ -1548,10 +1702,57 @@ export default function BeitragToolPage() {
       if (s.musikFadeInDur != null) setMusikFadeInDur(s.musikFadeInDur);
       if (s.musikFadeOut != null) setMusikFadeOut(s.musikFadeOut);
       if (s.musikFadeOutDur != null) setMusikFadeOutDur(s.musikFadeOutDur);
-      if (s.frameStyle) setFrameStyle(s.frameStyle);
-      if (s.frameColor) setFrameColor(s.frameColor);
-      if (s.frameThickness != null) setFrameThickness(s.frameThickness);
-      if (s.frameInset != null) setFrameInset(s.frameInset);
+
+      if (s.slides && Array.isArray(s.slides) && s.slides.length > 0) {
+        // Neues Multi-Slide Format
+        setSlides(s.slides);
+        const idx = Math.min(s.currentSlideIdx ?? 0, s.slides.length - 1);
+        setCurrentSlideIdx(idx);
+        const cur = s.slides[idx];
+        setElements(cur.elements ?? []);
+        setBgColor(cur.bgColor ?? "#ffffff");
+        if (cur.bgImage) {
+          setBgImage(cur.bgImage);
+          setBgEvidenceId(cur.bgEvidenceId ?? null);
+          loadImg(cur.bgImage).then((img) => {
+            bgImgRef.current = img;
+            bgImgCacheRef.current.set(cur.bgImage!, img);
+            setTick((t) => t + 1);
+          }).catch(() => {});
+        } else { setBgImage(null); setBgEvidenceId(null); bgImgRef.current = null; }
+        setBgOffsetX(cur.bgOffsetX ?? 0); setBgOffsetY(cur.bgOffsetY ?? 0);
+        setBgOpacity(cur.bgOpacity ?? 100);
+        setFrameStyle(cur.frameStyle ?? "none"); setFrameColor(cur.frameColor ?? "#1a1a1a");
+        setFrameThickness(cur.frameThickness ?? 3); setFrameInset(cur.frameInset ?? 0);
+      } else {
+        // Altes Single-Slide Format – in 1 Folie einwickeln
+        const singleSlide: Slide = {
+          id: uid(),
+          elements: s.elements ?? [],
+          bgColor: s.bgColor ?? "#ffffff",
+          bgImage: s.bgImage ?? null, bgEvidenceId: s.bgEvidenceId ?? null,
+          bgOffsetX: s.bgOffsetX ?? 0, bgOffsetY: s.bgOffsetY ?? 0,
+          bgOpacity: s.bgOpacity ?? 100,
+          frameStyle: s.frameStyle ?? "none", frameColor: s.frameColor ?? "#1a1a1a",
+          frameThickness: s.frameThickness ?? 3, frameInset: s.frameInset ?? 0,
+          transition: "fade", transitionDuration: 0.5,
+          slideDuration: s.videoDuration ?? 10,
+        };
+        setSlides([singleSlide]);
+        setCurrentSlideIdx(0);
+        setBgColor(singleSlide.bgColor);
+        setElements(singleSlide.elements);
+        if (singleSlide.bgImage) {
+          setBgImage(singleSlide.bgImage);
+          setBgEvidenceId(singleSlide.bgEvidenceId ?? null);
+          loadImg(singleSlide.bgImage).then((img) => { bgImgRef.current = img; setTick((t) => t + 1); }).catch(() => {});
+        } else { setBgImage(null); setBgEvidenceId(null); bgImgRef.current = null; }
+        setBgOffsetX(singleSlide.bgOffsetX); setBgOffsetY(singleSlide.bgOffsetY);
+        setBgOpacity(singleSlide.bgOpacity);
+        setFrameStyle(singleSlide.frameStyle); setFrameColor(singleSlide.frameColor);
+        setFrameThickness(singleSlide.frameThickness); setFrameInset(singleSlide.frameInset);
+      }
+
       setSelId(null);
       setEditingId(null);
       setCurrentDesignName(name ?? null);
@@ -1567,12 +1768,15 @@ export default function BeitragToolPage() {
 
   function exportDesign() {
     if (editingId) commitEdit();
+    const allSlides = getAllSlides();
     const snapshot = JSON.stringify({
-      format, bgColor, bgImage, bgEvidenceId, bgOffsetX, bgOffsetY, bgOpacity, elements,
-      editorMode, videoDuration,
+      format, editorMode, videoDuration,
       selectedTrackId,
       musikFadeIn, musikFadeInDur,
       musikFadeOut, musikFadeOutDur,
+      slides: allSlides,
+      currentSlideIdx,
+      bgColor, bgImage, bgEvidenceId, bgOffsetX, bgOffsetY, bgOpacity, elements,
       frameStyle, frameColor, frameThickness, frameInset,
     }, null, 2);
     const blob = new Blob([snapshot], { type: "application/json" });
@@ -1620,9 +1824,13 @@ export default function BeitragToolPage() {
 
   function collectEvidenceIds() {
     const ids = new Set<string>();
-    if (bgEvidenceId) ids.add(bgEvidenceId);
-    for (const el of elements) {
-      if (el.type === "image" && el.evidenceId) ids.add(el.evidenceId);
+    // Alle Folien durchsuchen (inkl. aktuellem Live-Stand)
+    const allSld = getAllSlides();
+    for (const sld of allSld) {
+      if (sld.bgEvidenceId) ids.add(sld.bgEvidenceId);
+      for (const el of sld.elements) {
+        if (el.type === "image" && el.evidenceId) ids.add(el.evidenceId);
+      }
     }
     return Array.from(ids);
   }
@@ -1657,32 +1865,68 @@ export default function BeitragToolPage() {
     }
   }
 
+  async function renderSlideToPng(slide: Slide, fileName: string) {
+    const off = document.createElement("canvas");
+    off.width = sz.w; off.height = sz.h;
+    const ctx = off.getContext("2d")!;
+
+    // Hintergrundfarbe
+    if (!slide.bgImage && slide.bgOpacity < 100) {
+      ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, sz.w, sz.h);
+      ctx.globalAlpha = slide.bgOpacity / 100;
+      ctx.fillStyle = slide.bgColor; ctx.fillRect(0, 0, sz.w, sz.h);
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.fillStyle = slide.bgColor; ctx.fillRect(0, 0, sz.w, sz.h);
+    }
+
+    // Hintergrundbild
+    if (slide.bgImage) {
+      let bgImg = bgImgCacheRef.current.get(slide.bgImage) ?? null;
+      if (!bgImg) {
+        try { bgImg = await loadImg(slide.bgImage); bgImgCacheRef.current.set(slide.bgImage, bgImg); } catch { /* ignore */ }
+      }
+      if (bgImg) drawBgCover(ctx, bgImg, sz.w, sz.h, slide.bgOffsetX, slide.bgOffsetY, slide.bgOpacity);
+    }
+
+    // Elemente (alle Images vorladen)
+    const localCache = new Map<string, HTMLImageElement>(imgCache.current);
+    for (const el of slide.elements) {
+      if (el.type === "image") {
+        const src = (el as ImgEl).src;
+        if (!localCache.has(src)) {
+          try { const img = await loadImg(src); localCache.set(src, img); } catch { /* ignore */ }
+        }
+      }
+    }
+    for (const el of slide.elements) drawEl(ctx, el, localCache);
+    drawFrame(ctx, slide.frameStyle, sz.w, sz.h, slide.frameColor, slide.frameThickness, slide.frameInset);
+
+    const a = document.createElement("a");
+    a.href = off.toDataURL("image/png");
+    a.download = fileName + ".png";
+    a.click();
+  }
+
   function doDownload(name: string) {
     setShowDownload(false);
-    const fileName = (name.trim() || `beitrag-${format.replace(":", "x")}`) + ".png";
-    requestAnimationFrame(() => {
-      const off = document.createElement("canvas");
-      off.width = sz.w; off.height = sz.h;
-      const ctx = off.getContext("2d")!;
-      if (!bgImgRef.current && bgOpacity < 100) {
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, sz.w, sz.h);
-        ctx.globalAlpha = bgOpacity / 100;
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, sz.w, sz.h);
-        ctx.globalAlpha = 1;
-      } else {
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, sz.w, sz.h);
-      }
-      if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h, bgOffsetX, bgOffsetY, bgOpacity);
-      for (const el of elements) drawEl(ctx, el, imgCache.current);
-      drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
-      const a = document.createElement("a");
-      a.href     = off.toDataURL("image/png");
-      a.download = fileName;
-      a.click();
-    });
+    if (editingId) commitEdit();
+    const baseName = name.trim() || `beitrag-${format.replace(":", "x")}`;
+    const allSlides = getAllSlides();
+    if (allSlides.length === 1) {
+      // Single page – direkt herunterladen
+      requestAnimationFrame(() => {
+        void renderSlideToPng(allSlides[0], baseName);
+      });
+    } else {
+      // Multi-page – jede Seite einzeln (mit kurzem Delay dazwischen)
+      (async () => {
+        for (let i = 0; i < allSlides.length; i++) {
+          await renderSlideToPng(allSlides[i], `${baseName}-${i + 1}`);
+          if (i < allSlides.length - 1) await new Promise<void>((r) => setTimeout(r, 300));
+        }
+      })();
+    }
   }
 
   function startExportVideo() {
@@ -1700,62 +1944,174 @@ export default function BeitragToolPage() {
     setExportProgress(0);
     setExportPhase("record");
 
-    const off = document.createElement("canvas");
-    off.width  = sz.w;
-    off.height = sz.h;
-    const ctx  = off.getContext("2d")!;
+    const FPS = 30;
+    const allSlides = getAllSlides();
 
-    const FPS    = 30;
-    const frames = Math.ceil(videoDuration * FPS);
+    // ---- Frame-Zeitplan berechnen ----
+    interface RenderSlice {
+      kind: "slide" | "transition";
+      slide?: Slide;           // für "slide"
+      fromSlide?: Slide;       // für "transition"
+      toSlide?: Slide;         // für "transition"
+      numFrames: number;
+    }
+    const slices: RenderSlice[] = [];
+    for (let i = 0; i < allSlides.length; i++) {
+      const dur = allSlides.length === 1 ? videoDuration : allSlides[i].slideDuration;
+      slices.push({ kind: "slide", slide: allSlides[i], numFrames: Math.max(1, Math.ceil(dur * FPS)) });
+      if (i < allSlides.length - 1 && allSlides[i].transition !== "none") {
+        slices.push({
+          kind: "transition",
+          fromSlide: allSlides[i],
+          toSlide: allSlides[i + 1],
+          numFrames: Math.max(1, Math.ceil(allSlides[i].transitionDuration * FPS)),
+        });
+      }
+    }
+    const totalFrames = slices.reduce((acc, s) => acc + s.numFrames, 0);
+    const totalVideoDuration = totalFrames / FPS;
+
+    // ---- Alle Bilder aller Folien vorladen ----
+    const allImgCache = new Map<string, HTMLImageElement>(imgCache.current);
+    const allBgCache  = new Map<string, HTMLImageElement>(bgImgCacheRef.current);
+    for (const sld of allSlides) {
+      if (sld.bgImage && !allBgCache.has(sld.bgImage)) {
+        try { const img = await loadImg(sld.bgImage); allBgCache.set(sld.bgImage, img); } catch { /* ignore */ }
+      }
+      for (const el of sld.elements) {
+        if (el.type === "image") {
+          const src = (el as ImgEl).src;
+          if (!allImgCache.has(src)) {
+            try { const img = await loadImg(src); allImgCache.set(src, img); } catch { /* ignore */ }
+          }
+        }
+      }
+    }
+
+    // Offscreen Canvas
+    const off  = document.createElement("canvas");
+    off.width  = sz.w; off.height = sz.h;
+    const ctx  = off.getContext("2d")!;
+    // Zusatz-Canvas für Übergänge
+    const offA = document.createElement("canvas"); offA.width = sz.w; offA.height = sz.h;
+    const offB = document.createElement("canvas"); offB.width = sz.w; offB.height = sz.h;
+    const ctxA = offA.getContext("2d")!;
+    const ctxB = offB.getContext("2d")!;
+
+    function renderSlideToCtx(rc: CanvasRenderingContext2D, sld: Slide, t: number) {
+      if (!sld.bgImage && sld.bgOpacity < 100) {
+        rc.fillStyle = "#ffffff"; rc.fillRect(0, 0, sz.w, sz.h);
+        rc.globalAlpha = sld.bgOpacity / 100;
+        rc.fillStyle = sld.bgColor; rc.fillRect(0, 0, sz.w, sz.h);
+        rc.globalAlpha = 1;
+      } else {
+        rc.fillStyle = sld.bgColor; rc.fillRect(0, 0, sz.w, sz.h);
+      }
+      const bgImg = sld.bgImage ? allBgCache.get(sld.bgImage) ?? null : null;
+      if (bgImg) drawBgCover(rc, bgImg, sz.w, sz.h, sld.bgOffsetX, sld.bgOffsetY, sld.bgOpacity);
+      for (const el of sld.elements) drawElAnimated(rc, el, allImgCache, t);
+      drawFrame(rc, sld.frameStyle, sz.w, sz.h, sld.frameColor, sld.frameThickness, sld.frameInset);
+    }
+
+    function renderTransition(from: Slide, to: Slide, transType: TransitionPreset, p: number) {
+      // p = 0..1, ease-out quadratisch
+      const ease = 1 - Math.pow(1 - p, 2);
+      const fromDur = allSlides.length === 1 ? videoDuration : from.slideDuration;
+      renderSlideToCtx(ctxA, from, fromDur); // From-Folie am Ende ihrer Laufzeit
+      renderSlideToCtx(ctxB, to,   0);       // To-Folie ganz am Anfang
+      ctx.clearRect(0, 0, sz.w, sz.h);
+      switch (transType) {
+        case "fade":
+          ctx.globalAlpha = 1 - ease; ctx.drawImage(offA, 0, 0);
+          ctx.globalAlpha = ease;     ctx.drawImage(offB, 0, 0);
+          ctx.globalAlpha = 1;
+          break;
+        case "slide-left":
+          ctx.fillStyle = "#000"; ctx.fillRect(0, 0, sz.w, sz.h);
+          ctx.drawImage(offA, -ease * sz.w, 0);
+          ctx.drawImage(offB, (1 - ease) * sz.w, 0);
+          break;
+        case "slide-right":
+          ctx.fillStyle = "#000"; ctx.fillRect(0, 0, sz.w, sz.h);
+          ctx.drawImage(offA, ease * sz.w, 0);
+          ctx.drawImage(offB, -(1 - ease) * sz.w, 0);
+          break;
+        case "slide-up":
+          ctx.fillStyle = "#000"; ctx.fillRect(0, 0, sz.w, sz.h);
+          ctx.drawImage(offA, 0, -ease * sz.h);
+          ctx.drawImage(offB, 0, (1 - ease) * sz.h);
+          break;
+        case "slide-down":
+          ctx.fillStyle = "#000"; ctx.fillRect(0, 0, sz.w, sz.h);
+          ctx.drawImage(offA, 0, ease * sz.h);
+          ctx.drawImage(offB, 0, -(1 - ease) * sz.h);
+          break;
+        case "zoom":
+          ctx.save();
+          ctx.globalAlpha = 1 - ease;
+          ctx.translate(sz.w / 2, sz.h / 2);
+          ctx.scale(1 + ease * 0.5, 1 + ease * 0.5);
+          ctx.translate(-sz.w / 2, -sz.h / 2);
+          ctx.drawImage(offA, 0, 0);
+          ctx.restore();
+          ctx.globalAlpha = ease;
+          ctx.drawImage(offB, 0, 0);
+          ctx.globalAlpha = 1;
+          break;
+        default:
+          ctx.globalAlpha = 1 - ease; ctx.drawImage(offA, 0, 0);
+          ctx.globalAlpha = ease;     ctx.drawImage(offB, 0, 0);
+          ctx.globalAlpha = 1;
+      }
+    }
 
     try {
-      // FFmpeg vorab laden
       const { FFmpeg: FFmpegClass } = await getFFmpeg();
       const ffmpeg = new FFmpegClass();
-      await ffmpeg.load({
-        coreURL:  "/ffmpeg/ffmpeg-core.js",
-        wasmURL:  "/ffmpeg/ffmpeg-core.wasm",
-      });
+      await ffmpeg.load({ coreURL: "/ffmpeg/ffmpeg-core.js", wasmURL: "/ffmpeg/ffmpeg-core.wasm" });
 
-      // Phase 1: Alle Frames rendern und als JPEG in FFmpeg-FS schreiben
-      for (let i = 0; i < frames; i++) {
-        const t = i / FPS;
-        if (!bgImgRef.current && bgOpacity < 100) {
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, sz.w, sz.h);
-          ctx.globalAlpha = bgOpacity / 100;
-          ctx.fillStyle = bgColor;
-          ctx.fillRect(0, 0, sz.w, sz.h);
-          ctx.globalAlpha = 1;
+      // Phase 1: Frames rendern
+      let frameIdx = 0;
+      for (const slice of slices) {
+        if (slice.kind === "slide") {
+          const sld = slice.slide!;
+          for (let i = 0; i < slice.numFrames; i++) {
+            renderSlideToCtx(ctx, sld, i / FPS);
+            const blob: Blob = await new Promise((res) => off.toBlob((b) => res(b!), "image/jpeg", 0.92));
+            await ffmpeg.writeFile(`f${String(frameIdx).padStart(5, "0")}.jpg`, await fileToUint8(blob));
+            frameIdx++;
+            if (frameIdx % 5 === 0) {
+              setExportProgress(Math.round((frameIdx / totalFrames) * 100));
+              await new Promise((r) => setTimeout(r, 0));
+            }
+          }
         } else {
-          ctx.fillStyle = bgColor;
-          ctx.fillRect(0, 0, sz.w, sz.h);
-        }
-        if (bgImgRef.current) drawBgCover(ctx, bgImgRef.current, sz.w, sz.h, bgOffsetX, bgOffsetY, bgOpacity);
-        for (const el of elements) drawElAnimated(ctx, el, imgCache.current, t);
-        drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
-
-        const blob: Blob = await new Promise((res) => off.toBlob((b) => res(b!), "image/jpeg", 0.92));
-        await ffmpeg.writeFile(`f${String(i).padStart(5, "0")}.jpg`, await fileToUint8(blob));
-
-        if (i % 5 === 0) {
-          setExportProgress(Math.round(((i + 1) / frames) * 100));
-          await new Promise((r) => setTimeout(r, 0)); // UI-Thread freigeben
+          const { fromSlide: from, toSlide: to, numFrames } = slice;
+          const transType = from!.transition;
+          for (let i = 0; i < numFrames; i++) {
+            const p = (i + 1) / numFrames;
+            renderTransition(from!, to!, transType, p);
+            const blob: Blob = await new Promise((res) => off.toBlob((b) => res(b!), "image/jpeg", 0.92));
+            await ffmpeg.writeFile(`f${String(frameIdx).padStart(5, "0")}.jpg`, await fileToUint8(blob));
+            frameIdx++;
+            if (frameIdx % 5 === 0) {
+              setExportProgress(Math.round((frameIdx / totalFrames) * 100));
+              await new Promise((r) => setTimeout(r, 0));
+            }
+          }
         }
       }
       setExportProgress(100);
 
-      // Phase 2: FFmpeg-Encoding (Frames + optional Audio ? MP4)
+      // Phase 2: FFmpeg-Encoding
       setExportPhase("convert");
       setExportProgress(0);
-
       ffmpeg.on("progress", ({ progress }: { progress: number }) => {
         setExportProgress(Math.min(99, Math.round(progress * 100)));
       });
 
       const cmd: string[] = ["-framerate", String(FPS), "-i", "f%05d.jpg"];
 
-      // Audio hinzufügen (falls ausgewählt)
       let hasAudio = false;
       if (selectedTrackId) {
         const track = musikTracks.find((t) => t.id === selectedTrackId);
@@ -1767,21 +2123,19 @@ export default function BeitragToolPage() {
             await ffmpeg.writeFile(`audio.${ext}`, audioBuf);
             cmd.push("-i", `audio.${ext}`);
             hasAudio = true;
-          } catch { /* Audio überspringen bei Fehler */ }
+          } catch { /* Audio überspringen */ }
         }
       }
 
       cmd.push("-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-pix_fmt", "yuv420p");
-
       if (hasAudio) {
         const af: string[] = [];
         if (musikFadeIn)  af.push(`afade=t=in:st=0:d=${musikFadeInDur}`);
-        if (musikFadeOut) af.push(`afade=t=out:st=${Math.max(0, videoDuration - musikFadeOutDur)}:d=${musikFadeOutDur}`);
+        if (musikFadeOut) af.push(`afade=t=out:st=${Math.max(0, totalVideoDuration - musikFadeOutDur)}:d=${musikFadeOutDur}`);
         if (af.length) cmd.push("-af", af.join(","));
         cmd.push("-c:a", "aac", "-shortest");
       }
-
-      cmd.push("-t", String(videoDuration), "-movflags", "+faststart", "output.mp4");
+      cmd.push("-t", String(totalVideoDuration), "-movflags", "+faststart", "output.mp4");
       await ffmpeg.exec(cmd);
 
       const data = await ffmpeg.readFile("output.mp4") as Uint8Array;
@@ -1953,14 +2307,19 @@ export default function BeitragToolPage() {
             </div>
 
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-semibold">Hintergrund</span>
                   <input type="color" value={bgColor}
                     onChange={(e) => { setBgColor(e.target.value); setBgImage(null); bgImgRef.current = null; }}
-                    className="w-12 h-8 border border-arena-border rounded cursor-pointer p-0.5" />
-                  <button type="button" className="btn text-xs ml-auto"
+                    className="w-10 h-7 border border-arena-border rounded cursor-pointer p-0.5" />
+                  <input type="range" min={0} max={100} step={5}
+                    value={bgOpacity}
+                    onChange={(e) => setBgOpacity(Number(e.target.value))}
+                    className="flex-1 min-w-[60px]" />
+                  <span className="text-xs font-semibold w-8 text-right">{bgOpacity}%</span>
+                  <button type="button" className="btn text-xs"
                     onClick={() => { setPixabayBgMode(true); setShowPixabay(true); }}>
-                    Hintergrund von Pixabay
+                    von Pixabay
                   </button>
                 </div>
                 {bgImage && (
@@ -1996,13 +2355,6 @@ export default function BeitragToolPage() {
                     )}
                   </>
                 )}
-                <label className="text-xs flex flex-col gap-0.5">
-                  <span>Deckkraft: <strong>{bgOpacity}%</strong></span>
-                  <input type="range" min={0} max={100} step={5}
-                    value={bgOpacity}
-                    onChange={(e) => setBgOpacity(Number(e.target.value))}
-                    className="w-full" />
-                </label>
               </div>
 
             {/* Rahmen */}
@@ -2051,26 +2403,80 @@ export default function BeitragToolPage() {
             {editorMode === "video" && (
               <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
                 <p className="text-xs font-semibold truncate">Video-Einstellungen</p>
-                <label className="text-xs text-arena-muted">L&auml;nge: <strong>{videoDuration}s</strong></label>
-                <input type="range" min={3} max={60} step={1}
-                  value={videoDuration}
-                  onChange={(e) => setVideoDuration(Number(e.target.value))}
-                  className="w-full" />
-                <p className="text-xs font-medium mt-1">Musik</p>
-                {loadingMusik ? (
-                  <p className="text-xs text-arena-muted">Lade&hellip;</p>
-                ) : musikTracks.length === 0 ? (
-                  <p className="text-xs text-arena-muted">Keine Tracks verf&uuml;gbar.</p>
+
+                {/* Dauer: Single-Slide → global, Multi-Slide → pro Folie */}
+                {slides.length === 1 ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs text-arena-muted whitespace-nowrap">L&auml;nge:</label>
+                      <input type="range" min={3} max={60} step={1}
+                        value={videoDuration}
+                        onChange={(e) => setVideoDuration(Number(e.target.value))}
+                        className="flex-1" />
+                      <span className="text-xs font-semibold w-8 text-right">{videoDuration}s</span>
+                    </div>
+                  </>
                 ) : (
-                  <select className="input text-xs py-1 w-full min-w-0"
-                    value={selectedTrackId ?? ""}
-                    onChange={(e) => setSelectedTrackId(e.target.value || null)}>
-                    <option value="">Kein Musik</option>
-                    {musikTracks.map((t) => (
-                      <option key={t.id} value={t.id}>{t.title} &ndash; {t.style}</option>
-                    ))}
-                  </select>
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-arena-muted whitespace-nowrap">Folie {currentSlideIdx + 1} Dauer:</span>
+                      <input type="range" min={1} max={60} step={0.5}
+                        value={slides[currentSlideIdx].slideDuration}
+                        onChange={(e) => updateSlideField("slideDuration", Number(e.target.value))}
+                        className="flex-1" />
+                      <span className="text-xs font-semibold w-8 text-right">{slides[currentSlideIdx].slideDuration}s</span>
+                    </div>
+
+                    {/* Übergang nach dieser Folie */}
+                    {currentSlideIdx < slides.length - 1 && (
+                      <>
+                        <p className="text-xs font-medium mt-1">Übergang nach Folie {currentSlideIdx + 1}</p>
+                        <div className={`grid gap-1 ${fullscreen ? "grid-cols-4" : "grid-cols-2"}`}>
+                          {TRANSITION_PRESETS.map((tp) => (
+                            <button
+                              key={tp.value}
+                              type="button"
+                              className={`btn text-xs py-1 ${slides[currentSlideIdx].transition === tp.value ? "btn-primary" : ""}`}
+                              onClick={() => updateSlideField("transition", tp.value)}
+                            >
+                              {tp.label}
+                            </button>
+                          ))}
+                        </div>
+                        {slides[currentSlideIdx].transition !== "none" && (
+                          <label className="text-xs flex flex-col gap-0.5">
+                            <span>Übergangsdauer: <strong>{slides[currentSlideIdx].transitionDuration}s</strong></span>
+                            <input type="range" min={0.2} max={2} step={0.1}
+                              value={slides[currentSlideIdx].transitionDuration}
+                              onChange={(e) => updateSlideField("transitionDuration", Number(e.target.value))}
+                              className="w-full" />
+                          </label>
+                        )}
+                      </>
+                    )}
+                    {currentSlideIdx === slides.length - 1 && (
+                      <p className="text-xs text-arena-muted italic">Letzte Folie – kein Übergang danach.</p>
+                    )}
+                  </>
                 )}
+
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs font-medium whitespace-nowrap">Musik</span>
+                  {loadingMusik ? (
+                    <p className="text-xs text-arena-muted">Lade&hellip;</p>
+                  ) : musikTracks.length === 0 ? (
+                    <p className="text-xs text-arena-muted">Keine Tracks verf&uuml;gbar.</p>
+                  ) : (
+                    <select className="input text-xs py-1 flex-1 min-w-0"
+                      value={selectedTrackId ?? ""}
+                      onChange={(e) => setSelectedTrackId(e.target.value || null)}>
+                      <option value="">Klicke hier, um Musik auszuwählen</option>
+                      {musikTracks.map((t) => (
+                        <option key={t.id} value={t.id}>{t.title} &ndash; {t.style}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
                       {!exporting && (
                         <button type="button"
@@ -2122,6 +2528,68 @@ export default function BeitragToolPage() {
               </div>
             )}
 
+            {/* Seiten / Folien Panel */}
+            <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold">{editorMode === "video" ? "Folien" : "Seiten"}</p>
+                <span className="text-xs text-arena-muted ml-auto">{slides.length}/{MAX_SLIDES}</span>
+              </div>
+              <div className="flex gap-1 flex-wrap">
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`btn text-xs font-semibold min-w-[2rem] h-8 px-2 ${i === currentSlideIdx ? "btn-primary" : ""}`}
+                    onClick={() => switchToSlide(i)}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                {slides.length < MAX_SLIDES && (
+                  <button
+                    type="button"
+                    className="btn text-xs h-8 px-2"
+                    onClick={addSlide}
+                    title={`Neue ${editorMode === "video" ? "Folie" : "Seite"} hinzufügen`}
+                  >
+                    + Neu
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="btn text-xs h-8 px-2"
+                  disabled={slides.length >= MAX_SLIDES}
+                  onClick={duplicateSlide}
+                  title={`${editorMode === "video" ? "Folie" : "Seite"} ${currentSlideIdx + 1} duplizieren`}
+                >
+                  Duplizieren
+                </button>
+                {slides.length > 1 && (
+                  <button
+                    type="button"
+                    className="btn text-xs h-8 px-2 text-red-600"
+                    onClick={deleteCurrentSlide}
+                    title={`${editorMode === "video" ? "Folie" : "Seite"} ${currentSlideIdx + 1} löschen`}
+                  >
+                    Löschen
+                  </button>
+                )}
+              </div>
+              {editorMode === "video" && slides.length > 1 && (
+                <p className="text-xs text-arena-muted">
+                  Gesamtlänge: <strong>{
+                    (() => {
+                      const allS = getAllSlides();
+                      const total = allS.reduce((acc, s, i) => {
+                        return acc + s.slideDuration + (i < allS.length - 1 && s.transition !== "none" ? s.transitionDuration : 0);
+                      }, 0);
+                      return `${total.toFixed(1)}s`;
+                    })()
+                  }</strong>
+                </p>
+              )}
+            </div>
+
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
               <p className="text-sm font-semibold">Hinzuf&uuml;gen</p>
               <div className={fullscreen ? "grid grid-cols-4 gap-1.5" : "grid grid-cols-3 md:grid-cols-1 gap-1.5"}>
@@ -2147,10 +2615,26 @@ export default function BeitragToolPage() {
               )}
             </div>
 
-            {/* Entwurf speichern */}
-            {elements.length > 0 && (
+            {/* Entwurf löschen */}
+            {(elements.length > 0 || slides.length > 1) && (
               <button type="button" className="btn text-sm text-red-600"
-                onClick={() => { setEditingId(null); setElements([]); setSelId(null); setCurrentDesignName(null); }}>
+                onClick={() => {
+                  const freshSlide: Slide = {
+                    id: uid(), elements: [],
+                    bgColor: "#ffffff", bgImage: null, bgEvidenceId: null,
+                    bgOffsetX: 0, bgOffsetY: 0, bgOpacity: 100,
+                    frameStyle: "none", frameColor: "#1a1a1a", frameThickness: 3, frameInset: 0,
+                    transition: "fade", transitionDuration: 0.5, slideDuration: videoDuration,
+                  };
+                  setSlides([freshSlide]);
+                  setCurrentSlideIdx(0);
+                  setEditingId(null); setElements([]); setSelId(null);
+                  setBgColor("#ffffff"); setBgImage(null); setBgEvidenceId(null);
+                  bgImgRef.current = null;
+                  setBgOffsetX(0); setBgOffsetY(0); setBgOpacity(100);
+                  setFrameStyle("none"); setFrameColor("#1a1a1a"); setFrameThickness(3); setFrameInset(0);
+                  setCurrentDesignName(null);
+                }}>
                 Alles löschen
               </button>
             )}
@@ -2323,7 +2807,6 @@ export default function BeitragToolPage() {
                   maxHeight: fullscreen ? "100%" : undefined,
                   aspectRatio: `${sz.w}/${sz.h}`,
                   display: "block",
-                  borderRadius: 10,
                   cursor,
                   touchAction: "none",
                   margin: fullscreen ? "0 auto" : undefined,
@@ -2947,7 +3430,9 @@ export default function BeitragToolPage() {
             </div>
             <div className="grid gap-1">
               <label className="text-xs text-arena-muted">
-                {editorMode === "bild" ? "Dateiname (.png)" : "Dateiname (.mp4)"}
+                {editorMode === "bild"
+                  ? slides.length > 1 ? `Basisname (${slides.length} × .png)` : "Dateiname (.png)"
+                  : "Dateiname (.mp4)"}
               </label>
               <div className="flex items-center gap-1">
                 <input
@@ -2966,9 +3451,16 @@ export default function BeitragToolPage() {
                   spellCheck={false}
                 />
                 <span className="text-xs text-arena-muted flex-shrink-0">
-                  {editorMode === "bild" ? ".png" : ".mp4"}
+                  {editorMode === "bild"
+                    ? slides.length > 1 ? "-1.png … " : ".png"
+                    : ".mp4"}
                 </span>
               </div>
+              {editorMode === "bild" && slides.length > 1 && (
+                <p className="text-xs text-arena-muted">
+                  Es werden {slides.length} Dateien heruntergeladen: <em>{downloadName || "name"}-1.png</em>, <em>-2.png</em> usw.
+                </p>
+              )}
             </div>
             <div className="flex gap-2 justify-end">
               <button type="button" className="btn text-sm" onClick={() => setShowDownload(false)}>
@@ -2979,7 +3471,7 @@ export default function BeitragToolPage() {
                   if (editorMode === "bild") doDownload(downloadName);
                   else exportVideo(downloadName);
                 }}>
-                ? Herunterladen
+                Herunterladen
               </button>
             </div>
           </div>
