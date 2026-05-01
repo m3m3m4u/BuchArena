@@ -90,7 +90,7 @@ export async function PATCH(request: Request) {
     const collection = await getBuchzirkelCollection();
     const result = await collection.updateOne(
       { _id: new ObjectId(id) },
-      { $set: { status, updatedAt: new Date() } }
+      { $set: { status: status as import("@/lib/buchzirkel").BuchzirkelStatus, updatedAt: new Date() } }
     );
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: "Buchzirkel nicht gefunden." }, { status: 404 });
