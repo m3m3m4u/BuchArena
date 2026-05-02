@@ -718,6 +718,8 @@ export default function BeitragToolPage() {
   const [bgOpacity,  setBgOpacity]  = useState(100);
   const bgImgRef = useRef<HTMLImageElement | null>(null);
   const [elements,  setElements]  = useState<CE[]>([]);
+  const elementsRef = useRef<CE[]>([]);
+  const [snapLines, setSnapLines] = useState<{ type: "v" | "h"; pos: number }[]>([]);
   const [selId,     setSelId]     = useState<string | null>(null);
   const [cursor,    setCursor]    = useState("default");
   const [tick,      setTick]      = useState(0);
@@ -973,6 +975,9 @@ export default function BeitragToolPage() {
 
   // Close anim panel when selection changes
   useEffect(() => { if (!selId) setShowAnimPanel(false); updPushedRef.current = false; }, [selId]);
+
+  /* keep elementsRef in sync */
+  useEffect(() => { elementsRef.current = elements; }, [elements]);
 
   // Block body scroll in fullscreen
   useEffect(() => {
@@ -1294,6 +1299,43 @@ export default function BeitragToolPage() {
     const { mx, my } = toCanvasXY(clientX, clientY);
     const dx = mx - d.mx0, dy = my - d.my0;
     const MIN = 30;
+    if (d.mode === "move") {
+      const el = elementsRef.current.find((e) => e.id === d.id);
+      if (el) {
+        const SNAP = 10;
+        let nx = d.x0 + dx;
+        let ny = d.y0 + dy;
+        const newLines: { type: "v" | "h"; pos: number }[] = [];
+        const cw = sz.w, ch = sz.h;
+        const canvasCX = cw / 2, canvasCY = ch / 2;
+        const elCX = () => nx + el.w / 2, elCY = () => ny + el.h / 2;
+        /* canvas center snap */
+        if (Math.abs(elCX() - canvasCX) < SNAP) { nx = canvasCX - el.w / 2; newLines.push({ type: "v", pos: canvasCX }); }
+        if (Math.abs(elCY() - canvasCY) < SNAP) { ny = canvasCY - el.h / 2; newLines.push({ type: "h", pos: canvasCY }); }
+        /* canvas edge snap */
+        if (Math.abs(nx) < SNAP) { nx = 0; newLines.push({ type: "v", pos: 0 }); }
+        if (Math.abs(nx + el.w - cw) < SNAP) { nx = cw - el.w; newLines.push({ type: "v", pos: cw }); }
+        if (Math.abs(ny) < SNAP) { ny = 0; newLines.push({ type: "h", pos: 0 }); }
+        if (Math.abs(ny + el.h - ch) < SNAP) { ny = ch - el.h; newLines.push({ type: "h", pos: ch }); }
+        /* other elements center + edge snap */
+        for (const other of elementsRef.current) {
+          if (other.id === d.id) continue;
+          const oCX = other.x + other.w / 2, oCY = other.y + other.h / 2;
+          if (Math.abs(elCX() - oCX) < SNAP) { nx = oCX - el.w / 2; newLines.push({ type: "v", pos: oCX }); }
+          if (Math.abs(elCY() - oCY) < SNAP) { ny = oCY - el.h / 2; newLines.push({ type: "h", pos: oCY }); }
+          if (Math.abs(nx - other.x) < SNAP) { nx = other.x; newLines.push({ type: "v", pos: other.x }); }
+          if (Math.abs(nx + el.w - (other.x + other.w)) < SNAP) { nx = other.x + other.w - el.w; newLines.push({ type: "v", pos: other.x + other.w }); }
+          if (Math.abs(ny - other.y) < SNAP) { ny = other.y; newLines.push({ type: "h", pos: other.y }); }
+          if (Math.abs(ny + el.h - (other.y + other.h)) < SNAP) { ny = other.y + other.h - el.h; newLines.push({ type: "h", pos: other.y + other.h }); }
+        }
+        /* deduplicate lines */
+        const seen = new Set<string>();
+        const dedupedLines = newLines.filter((l) => { const k = l.type + l.pos; if (seen.has(k)) return false; seen.add(k); return true; });
+        setSnapLines(dedupedLines);
+        setElements((prev) => { elementsRef.current = prev.map((e) => e.id !== d.id ? e : { ...e, x: nx, y: ny }); return elementsRef.current; });
+        return;
+      }
+    }
     setElements((prev) => prev.map((el) => {
       if (el.id !== d.id) return el;
       if (d.mode === "move") return { ...el, x: d.x0 + dx, y: d.y0 + dy };
@@ -1389,7 +1431,7 @@ export default function BeitragToolPage() {
     setCursor("default");
   }
 
-  function onUp() { dragRef.current = null; updPushedRef.current = false; }
+  function onUp() { dragRef.current = null; updPushedRef.current = false; setSnapLines([]); }
 
   /* touch handlers for mobile */
   function onTouchDown(e: React.TouchEvent<HTMLCanvasElement>) {
@@ -1451,7 +1493,7 @@ export default function BeitragToolPage() {
     handleDragMove(touch.clientX, touch.clientY);
   }
 
-  function onTouchUp() { dragRef.current = null; }
+  function onTouchUp() { dragRef.current = null; setSnapLines([]); }
 
   /* add elements */
   function addText() {
@@ -2944,6 +2986,28 @@ export default function BeitragToolPage() {
                     ))}
                   </>
                 );
+              })()}
+              {/* Snap / Alignment guides */}
+              {snapLines.length > 0 && (() => {
+                const canvas = canvasRef.current;
+                if (!canvas) return null;
+                const scale = canvas.offsetWidth / sz.w;
+                const ox = canvas.offsetLeft;
+                const oy = canvas.offsetTop;
+                const cw = canvas.offsetWidth;
+                const ch = canvas.offsetHeight;
+                return snapLines.map((l, i) => (
+                  <div key={i} style={{
+                    position: "absolute",
+                    pointerEvents: "none",
+                    zIndex: 25,
+                    background: "#ef4444",
+                    opacity: 0.85,
+                    ...(l.type === "v"
+                      ? { left: ox + l.pos * scale - 1, top: oy, width: 2, height: ch }
+                      : { top: oy + l.pos * scale - 1, left: ox, height: 2, width: cw }),
+                  }} />
+                ));
               })()}
             </div>
 
