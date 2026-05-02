@@ -80,6 +80,7 @@ interface ImgEl {
   imgShadowColor?: string;
   imgShadowBlur?: number;
   imgRounded?: number;
+  rotation?: number;
 }
 type CE = TextEl | ImgEl;
 
@@ -340,8 +341,18 @@ function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLIm
     const hasShadow = el.imgShadow;
     const hasBorder = el.imgBorder && (el.imgBorderWidth ?? 2) > 0;
     const radius    = el.imgRounded ?? 0;
+    const rotation  = el.rotation ?? 0;
+    const cx = el.x + el.w / 2;
+    const cy = el.y + el.h / 2;
 
     ctx.save();
+
+    // Rotation
+    if (rotation !== 0) {
+      ctx.translate(cx, cy);
+      ctx.rotate(rotation * Math.PI / 180);
+      ctx.translate(-cx, -cy);
+    }
 
     // Schatten
     if (hasShadow) {
@@ -377,12 +388,10 @@ function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLIm
       ctx.fillText("Bild laedt...", el.x + el.w / 2, el.y + el.h / 2);
     }
 
-    ctx.restore();
-
-    // Rahmen
+    // Rahmen (innerhalb derselben Rotation)
     if (hasBorder) {
       const bw = el.imgBorderWidth ?? 2;
-      ctx.save();
+      ctx.shadowColor = "transparent";
       ctx.strokeStyle = el.imgBorderColor ?? "#1a1a1a";
       ctx.lineWidth   = bw;
       if (radius > 0) {
@@ -391,8 +400,9 @@ function drawEl(ctx: CanvasRenderingContext2D, el: CE, cache: Map<string, HTMLIm
       } else {
         ctx.strokeRect(el.x, el.y, el.w, el.h);
       }
-      ctx.restore();
     }
+
+    ctx.restore();
   } else {
     ctx.save();
     ctx.font = `${el.italic ? "italic " : ""}${el.bold ? "bold " : ""}${el.fontSize}px ${el.font}`;
@@ -1675,6 +1685,14 @@ export default function BeitragToolPage() {
     setSelId(null);
   }
 
+  function dup() {
+    if (!selEl) return;
+    pushHistory();
+    const clone = { ...selEl, id: uid(), x: selEl.x + 30, y: selEl.y + 30 };
+    setElements((p) => [...p, clone]);
+    setSelId(clone.id);
+  }
+
   /* load saved designs from API */
   useEffect(() => {
     fetch("/api/social-media/designs")
@@ -2729,6 +2747,7 @@ export default function BeitragToolPage() {
                       Anim.
                     </button>
                   )}
+                  <button type="button" className="btn h-8 px-2 text-xs" onClick={dup} title="Duplizieren">&#10064;</button>
                   <button type="button" className="btn h-8 px-3 text-xs text-red-600 font-bold ml-auto" onClick={del}>L&ouml;schen</button>
                 </>
               ) : selEl?.type === "image" ? (
@@ -2780,6 +2799,40 @@ export default function BeitragToolPage() {
                     className="w-14 h-8 accent-arena-accent" title="Eckenradius" />
 
                   <span className="text-arena-border">|</span>
+
+                  {/* Breite & Höhe */}
+                  <span className="text-xs text-arena-muted" title="Breite">B</span>
+                  <input type="number" min={10} max={1920} step={1}
+                    value={Math.round(selEl.w)}
+                    onChange={(e) => {
+                      const newW = Math.max(10, +e.target.value);
+                      upd({ w: newW });
+                    }}
+                    className="input h-8 w-16 text-xs px-1 py-0" title="Breite (px)" />
+                  <span className="text-xs text-arena-muted" title="Höhe">H</span>
+                  <input type="number" min={10} max={1920} step={1}
+                    value={Math.round(selEl.h)}
+                    onChange={(e) => {
+                      const newH = Math.max(10, +e.target.value);
+                      upd({ h: newH });
+                    }}
+                    className="input h-8 w-16 text-xs px-1 py-0" title="Höhe (px)" />
+
+                  {/* Rotation */}
+                  <span className="text-xs text-arena-muted" title="Rotation">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M13.65 2.35A8 8 0 1 0 15 8h-2a6 6 0 1 1-1.06-3.41l-1.65 1.66A.5.5 0 0 0 10.5 7H15a.5.5 0 0 0 .5-.5V2a.5.5 0 0 0-.85-.35l-1 1z"/></svg>
+                  </span>
+                  <input type="range" min={-180} max={180} step={1}
+                    value={(selEl as ImgEl).rotation ?? 0}
+                    onChange={(e) => upd({ rotation: +e.target.value })}
+                    className="w-20 h-8 accent-arena-accent" title="Rotation" />
+                  <input type="number" min={-180} max={180} step={1}
+                    value={(selEl as ImgEl).rotation ?? 0}
+                    onChange={(e) => upd({ rotation: +e.target.value })}
+                    className="input h-8 w-14 text-xs px-1 py-0" title="Grad" />
+                  <span className="text-xs text-arena-muted">°</span>
+
+                  <span className="text-arena-border">|</span>
                   <button type="button" className="btn h-8 px-2 text-xs" onClick={() => layer("up")} title="Ebene nach vorne">&#8679;</button>
                   <button type="button" className="btn h-8 px-2 text-xs" onClick={() => layer("down")} title="Ebene nach hinten">&#8681;</button>
                   {editorMode === "video" && (
@@ -2789,6 +2842,7 @@ export default function BeitragToolPage() {
                       Anim.
                     </button>
                   )}
+                  <button type="button" className="btn h-8 px-2 text-xs" onClick={dup} title="Duplizieren">&#10064;</button>
                   <button type="button" className="btn h-8 px-3 text-xs text-red-600 font-bold ml-auto" onClick={del}>L&ouml;schen</button>
                 </>
               ) : (
