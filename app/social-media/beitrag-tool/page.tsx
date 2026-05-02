@@ -719,6 +719,8 @@ export default function BeitragToolPage() {
     mx0: number; my0: number; x0: number; y0: number; w0: number; h0: number;
     fromHandle?: boolean;
   } | null>(null);
+  const dragSlideRef = useRef<number | null>(null);
+  const [dragOverSlideIdx, setDragOverSlideIdx] = useState<number | null>(null);
 
   const [format,    setFormat]    = useState<FormatPreset>("4:5");
   const [bgColor,   setBgColor]   = useState("#ffffff");
@@ -976,6 +978,22 @@ export default function BeitragToolPage() {
 
   function updateSlideField<K extends keyof Slide>(field: K, value: Slide[K]) {
     setSlides((prev) => prev.map((s, i) => i === currentSlideIdx ? { ...s, [field]: value } : s));
+  }
+
+  function reorderSlides(fromIdx: number, toIdx: number) {
+    if (fromIdx === toIdx) return;
+    pushHistory();
+    const current = currentSlideSnapshot();
+    const allSlides = slides.map((s, i) => i === currentSlideIdx ? current : s);
+    const updated = [...allSlides];
+    const [moved] = updated.splice(fromIdx, 1);
+    updated.splice(toIdx, 0, moved);
+    const newCurrentIdx = fromIdx === currentSlideIdx ? toIdx
+      : currentSlideIdx > fromIdx && currentSlideIdx <= toIdx ? currentSlideIdx - 1
+      : currentSlideIdx < fromIdx && currentSlideIdx >= toIdx ? currentSlideIdx + 1
+      : currentSlideIdx;
+    setSlides(updated);
+    setCurrentSlideIdx(newCurrentIdx);
   }
 
   /** Alle Folien inklusive aktuellem Live-Stand zusammenführen */
@@ -2599,8 +2617,36 @@ export default function BeitragToolPage() {
                   <button
                     key={i}
                     type="button"
-                    className={`btn text-xs font-semibold min-w-[2rem] h-8 px-2 ${i === currentSlideIdx ? "btn-primary" : ""}`}
+                    draggable
+                    className={`btn text-xs font-semibold min-w-[2rem] h-8 px-2 transition-opacity ${
+                      i === currentSlideIdx ? "btn-primary" : ""
+                    } ${
+                      dragOverSlideIdx === i && dragSlideRef.current !== i ? "ring-2 ring-blue-400 ring-offset-1" : ""
+                    } ${
+                      dragSlideRef.current === i ? "opacity-40" : ""
+                    }`}
                     onClick={() => switchToSlide(i)}
+                    onDragStart={(e) => {
+                      dragSlideRef.current = i;
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      if (dragOverSlideIdx !== i) setDragOverSlideIdx(i);
+                    }}
+                    onDragLeave={() => setDragOverSlideIdx(null)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const from = dragSlideRef.current;
+                      if (from !== null && from !== i) reorderSlides(from, i);
+                      dragSlideRef.current = null;
+                      setDragOverSlideIdx(null);
+                    }}
+                    onDragEnd={() => {
+                      dragSlideRef.current = null;
+                      setDragOverSlideIdx(null);
+                    }}
                   >
                     {i + 1}
                   </button>
