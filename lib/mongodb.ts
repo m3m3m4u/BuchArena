@@ -195,6 +195,10 @@ async function initializeDatabase(db: Db) {
   await buchempfehlungen.createIndex({ bookId: 1, createdAt: -1 });
   await buchempfehlungen.createIndex({ bookId: 1, username: 1 }, { unique: true });
 
+  const profilempfehlungen = db.collection("profilempfehlungen");
+  await profilempfehlungen.createIndex({ profileType: 1, profileUsername: 1, createdAt: -1 });
+  await profilempfehlungen.createIndex({ profileType: 1, profileUsername: 1, username: 1 }, { unique: true });
+
   const vorlagen = db.collection("bucharenavorlagen");
   await vorlagen.createIndex({ username: 1, updatedAt: -1 });
 

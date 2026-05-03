@@ -252,6 +252,40 @@ export async function awardBuchempfehlungErhalten(username: string): Promise<num
   return 1;
 }
 
+/** Profil-Empfehlung schreiben: +1 Lesezeichen, max. 3 pro Tag (teilt sich den Tageszähler mit Buchempfehlungen) */
+export async function awardProfilempfehlung(username: string): Promise<boolean> {
+  const today = todayKey();
+  const col = await getLesezeichenCollection();
+  await getOrCreateDoc(username);
+
+  const result = await col.updateOne(
+    { username, [`empfehlungenHeute.${today}`]: { $lt: 3 } },
+    {
+      $inc: { [`empfehlungenHeute.${today}`]: 1 },
+      $set: { updatedAt: new Date() },
+    },
+  );
+
+  if (result.modifiedCount === 0) {
+    const setResult = await col.updateOne(
+      { username, [`empfehlungenHeute.${today}`]: { $exists: false } },
+      {
+        $set: { [`empfehlungenHeute.${today}`]: 1, updatedAt: new Date() },
+      },
+    );
+    if (setResult.modifiedCount === 0) return false;
+  }
+
+  await addLesezeichen(username, "profilempfehlung", 1);
+  return true;
+}
+
+/** Profil-Empfehlung erhalten: +1 Lesezeichen für den Profilinhaber (ohne Tageslimit) */
+export async function awardProfilempfehlungErhalten(username: string): Promise<number> {
+  await addLesezeichen(username, "profilempfehlung_erhalten", 1);
+  return 1;
+}
+
 /** Termin erstellt: +1 Lesezeichen, max. 5 pro Tag */
 export async function awardTerminErstellt(username: string): Promise<boolean> {
   const today = todayKey();

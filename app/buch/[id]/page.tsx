@@ -99,6 +99,20 @@ export default function BookDetailPage({ params }: PageProps) {
   const [book, setBook] = useState<BookDetail | null>(null);
   const [author, setAuthor] = useState<AuthorInfo | null>(null);
   const [coAuthors, setCoAuthors] = useState<CoAuthorInfo[]>([]);
+  // Bücher des Autors (außer aktuelles Buch)
+  const [authorBooks, setAuthorBooks] = useState<{ id: string; title: string; genre: string }[]>([]);
+    // Weitere Bücher des Autors laden
+    useEffect(() => {
+      if (!author?.username || !bookId) return;
+      fetch(`/api/authors/profile?username=${encodeURIComponent(author.username)}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.author?.books) {
+            setAuthorBooks(data.author.books.filter((b: any) => b.id !== bookId));
+          }
+        })
+        .catch(() => setAuthorBooks([]));
+    }, [author?.username, bookId]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -299,6 +313,8 @@ export default function BookDetailPage({ params }: PageProps) {
               </div>
             </div>
 
+
+
             {book.description && (
               <div className="mb-5">
                 <h2 className="mb-2 text-lg">Beschreibung</h2>
@@ -368,8 +384,30 @@ export default function BookDetailPage({ params }: PageProps) {
               </div>
             )}
 
+            {/* ── Mehr zum Autor ── */}
+            {author && (
+              <div className="mb-8 border-t border-arena-border-light pt-6">
+                <h2 className="mb-2 text-lg">Mehr zum Autor</h2>
+                <p className="mb-2">Hier kommst du zum Profil von <Link href={`/autor/${author.username}`} className="underline hover:text-arena-accent">{author.name || author.username}</Link>.</p>
+                {authorBooks.length > 0 && (
+                  <div className="mb-2">
+                    <div className="font-semibold mb-1">Weitere Bücher von {author.name || author.username}:</div>
+                    <ul className="list-disc list-inside space-y-1">
+                      {authorBooks.map((b) => (
+                        <li key={b.id}>
+                          <Link href={`/buch/${b.id}`} className="underline hover:text-arena-accent">{b.title}</Link>
+                          {b.genre && (
+                            <span className="text-arena-muted text-sm"> &ndash; {b.genre.split(',').map((g: string) => normalizeGenre(g.trim())).filter(Boolean).join(', ')}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
             {/* ── Empfehlungen ── */}
-            <div className="mt-8">
+            <div className="mt-8 border-t border-arena-border-light pt-6">
               <h2 className="mb-3 text-lg">Empfehlungen</h2>
 
               {account && !alreadyRecommended && (

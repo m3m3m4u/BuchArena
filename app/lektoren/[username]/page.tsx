@@ -6,6 +6,7 @@ import { getStoredAccount } from "@/lib/client-account";
 import { createDefaultLektorenProfile, type LektorenProfileData } from "@/lib/profile";
 import { LinkifyText } from "@/app/components/linkify-text";
 import KooperationenAnzeige from "@/app/components/kooperationen-anzeige";
+import ProfileEmpfehlungenBlock from "@/app/components/profile-empfehlungen-block";
 
 const monthLabels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
@@ -244,6 +245,12 @@ export default function LektorenProfilePage({ params }: PageProps) {
           </>
         )}
         <KooperationenAnzeige username={username} isAutor={false} />
+        <ProfileEmpfehlungenBlock
+          profileType="lektor"
+          profileUsername={username}
+          loggedInUsername={loggedInUsername}
+          isProfileOwner={loggedInUsername === username}
+        />
         <Link href="/lektoren" className="btn">Zurück zu Lektoren entdecken</Link>
       </section>
     </main>
