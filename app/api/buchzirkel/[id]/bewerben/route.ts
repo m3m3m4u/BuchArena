@@ -65,6 +65,8 @@ export async function POST(
     const body = (await request.json()) as {
       antworten?: { frageIndex: number; antwort: string }[];
       agbAkzeptiert?: boolean;
+      kontaktHandynummer?: string;
+      kontaktEmail?: string;
     };
 
     if (zirkel.agbPflicht && !body.agbAkzeptiert) {
@@ -75,6 +77,9 @@ export async function POST(
     }
 
     const now = new Date();
+    // Kontaktdaten sanitieren (optional, nur alphanumerisch/übliche Zeichen, max. Länge)
+    const rawHandy = typeof body.kontaktHandynummer === "string" ? body.kontaktHandynummer.trim().slice(0, 30) : undefined;
+    const rawEmail = typeof body.kontaktEmail === "string" ? body.kontaktEmail.trim().slice(0, 200) : undefined;
     await bewerbungen.insertOne({
       buchzirkelId: new ObjectId(id),
       bewerberUsername: account.username,
@@ -82,6 +87,8 @@ export async function POST(
       antworten: body.antworten ?? [],
       agbAkzeptiert: body.agbAkzeptiert ?? false,
       agbAkzeptiertAt: body.agbAkzeptiert ? now : undefined,
+      kontaktHandynummer: rawHandy || undefined,
+      kontaktEmail: rawEmail || undefined,
       bewirbtSichAm: now,
     });
 

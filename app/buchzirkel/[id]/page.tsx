@@ -56,6 +56,8 @@ type Zirkel = {
   titel: string;
   beschreibung: string;
   coverImageUrl?: string;
+  youtubeUrl?: string;
+  mediaImageUrl?: string;
   genre: string;
   status: string;
   veranstalterUsername: string;
@@ -75,6 +77,21 @@ type Zirkel = {
   viewerHasTestleserProfile?: boolean;
 };
 
+function getYoutubeEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname === "youtu.be") return `https://www.youtube-nocookie.com/embed/${u.pathname.slice(1)}`;
+    if (u.hostname.includes("youtube.com")) {
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube-nocookie.com/embed/${v}`;
+      const parts = u.pathname.split("/");
+      const embedIdx = parts.indexOf("embed");
+      if (embedIdx !== -1 && parts[embedIdx + 1]) return `https://www.youtube-nocookie.com/embed/${parts[embedIdx + 1]}`;
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
 export default function BuchzirkelDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -90,6 +107,8 @@ export default function BuchzirkelDetailPage() {
   const [bewerbungSending, setBewerbungSending] = useState(false);
   const [bewerbungGestellt, setBewerbungGestellt] = useState(false);
   const [bewerbungError, setBewerbungError] = useState("");
+  const [kontaktHandynummer, setKontaktHandynummer] = useState("");
+  const [kontaktEmail, setKontaktEmail] = useState("");
 
   useEffect(() => {
     fetch(`/api/buchzirkel/${params.id}`)
@@ -114,6 +133,8 @@ export default function BuchzirkelDetailPage() {
           body: JSON.stringify({
             antworten: antworten.map((a, i) => ({ frageIndex: i, antwort: a })),
             agbAkzeptiert,
+            kontaktHandynummer: kontaktHandynummer.trim() || undefined,
+            kontaktEmail: kontaktEmail.trim() || undefined,
           }),
         });
         const data = await res.json() as { message?: string };
@@ -197,6 +218,29 @@ export default function BuchzirkelDetailPage() {
         </div>
       </section>
 
+      {/* Video / Medienbild */}
+      {(zirkel.youtubeUrl || zirkel.mediaImageUrl) && (
+        <section className="card mt-3">
+          {zirkel.youtubeUrl && (() => {
+            const embedUrl = getYoutubeEmbedUrl(zirkel.youtubeUrl);
+            return embedUrl ? (
+              <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                <iframe
+                  src={embedUrl}
+                  className="absolute inset-0 w-full h-full rounded-lg"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={zirkel.titel}
+                />
+              </div>
+            ) : null;
+          })()}
+          {!zirkel.youtubeUrl && zirkel.mediaImageUrl && (
+            <img src={zirkel.mediaImageUrl} alt={zirkel.titel} className="w-full rounded-lg object-cover max-h-80" />
+          )}
+        </section>
+      )}
+
       {/* Leseabschnitte */}
       {zirkel.leseabschnitte.length > 0 && (
         <section className="card mt-3">
@@ -242,8 +286,15 @@ export default function BuchzirkelDetailPage() {
       {/* Bewerbungsbereich */}
       {kannBewerben && (
         <section className="card mt-3">
-          <h2 className="text-base font-semibold m-0 mb-1">Bewerbung einreichen</h2>
-          <p className="text-sm text-arena-muted m-0 mb-3">Beantworte die Fragen des Autors und reiche deine Bewerbung ein. Der Autor prüft alle Bewerbungen und informiert dich per E-Mail über seine Entscheidung.</p>
+          <div className="flex items-start gap-4">
+            {zirkel.coverImageUrl && (
+              <img src={zirkel.coverImageUrl} alt={zirkel.titel} className="w-16 h-24 object-cover rounded-lg flex-shrink-0 border border-arena-border-light" />
+            )}
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base font-semibold m-0 mb-1">Bewerbung einreichen</h2>
+              <p className="text-sm text-arena-muted m-0 mb-3">Beantworte die Fragen des Autors und reiche deine Bewerbung ein. Der Autor prüft alle Bewerbungen und informiert dich per E-Mail über seine Entscheidung.</p>
+            </div>
+          </div>
 
           {zirkel.buchformateAngebot && zirkel.buchformateAngebot.length > 0 && (
             <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 mb-3 text-sm text-arena-blue">
@@ -287,6 +338,35 @@ export default function BuchzirkelDetailPage() {
                   />
                 </div>
               ))}
+
+              {/* Freiwillige Kontaktdaten */}
+              <div className="rounded-lg bg-gray-50 border border-arena-border-light p-3 flex flex-col gap-2">
+                <p className="text-xs font-semibold text-arena-muted m-0">Freiwillige Kontaktmöglichkeiten (nur für den Autor sichtbar)</p>
+                <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-arena-muted">Handynummer (optional)</label>
+                    <input
+                      type="tel"
+                      className="input-base w-full"
+                      placeholder="+43 123 456789"
+                      value={kontaktHandynummer}
+                      onChange={(e) => setKontaktHandynummer(e.target.value)}
+                      maxLength={30}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-arena-muted">E-Mail-Adresse (optional)</label>
+                    <input
+                      type="email"
+                      className="input-base w-full"
+                      placeholder="deine@email.at"
+                      value={kontaktEmail}
+                      onChange={(e) => setKontaktEmail(e.target.value)}
+                      maxLength={200}
+                    />
+                  </div>
+                </div>
+              </div>
 
               {zirkel.agbPflicht && (
                 <div>

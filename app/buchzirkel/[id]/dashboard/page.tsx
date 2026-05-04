@@ -14,6 +14,8 @@ type Bewerber = {
   antworten: { frageIndex: number; antwort: string }[];
   agbAkzeptiert?: boolean;
   bewirbtSichAm: string;
+  kontaktHandynummer?: string;
+  kontaktEmail?: string;
   testleserProfile?: {
     zuMir?: { value: string };
     genres?: { value: string };
@@ -335,6 +337,7 @@ export default function BuchzirkelDashboardPage() {
                   key={b._id}
                   bewerber={b}
                   fragen={zirkel.bewerbungsFragen}
+                  coverImageUrl={zirkel.coverImageUrl}
                   onEntscheidung={entscheidung}
                 />
               ))}
@@ -781,10 +784,12 @@ export default function BuchzirkelDashboardPage() {
 function BewerberKarte({
   bewerber,
   fragen,
+  coverImageUrl,
   onEntscheidung,
 }: {
   bewerber: Bewerber;
   fragen: string[];
+  coverImageUrl?: string;
   onEntscheidung: (id: string, e: "angenommen" | "abgelehnt") => void;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -792,17 +797,34 @@ function BewerberKarte({
   return (
     <div className="border border-arena-border rounded-lg p-3">
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <Link href={`/testleser/${bewerber.bewerberUsername}`} className="font-semibold hover:underline">
-            {bewerber.bewerberUsername}
-          </Link>
-          {bewerber.testleserProfile?.genres?.value && (
-            <span className="ml-2 text-xs text-arena-muted">· {bewerber.testleserProfile.genres.value}</span>
+        <div className="flex items-start gap-3">
+          {coverImageUrl && (
+            <img src={coverImageUrl} alt="Cover" className="w-10 h-14 object-cover rounded border border-arena-border-light flex-shrink-0" />
           )}
-          {bewerber.agbAkzeptiert && <span className="ml-2 text-xs text-green-700">AGB akzeptiert</span>}
-          <p className="text-xs text-arena-muted m-0 mt-0.5">
-            {new Date(bewerber.bewirbtSichAm).toLocaleDateString("de-AT")}
-          </p>
+          <div>
+            <Link href={`/testleser/${bewerber.bewerberUsername}`} className="font-semibold hover:underline">
+              {bewerber.bewerberUsername}
+            </Link>
+            {bewerber.testleserProfile?.genres?.value && (
+              <span className="ml-2 text-xs text-arena-muted">· {bewerber.testleserProfile.genres.value}</span>
+            )}
+            {bewerber.agbAkzeptiert && <span className="ml-2 text-xs text-green-700">AGB akzeptiert</span>}
+            <p className="text-xs text-arena-muted m-0 mt-0.5">
+              {new Date(bewerber.bewirbtSichAm).toLocaleDateString("de-AT")}
+            </p>
+            {(bewerber.kontaktHandynummer || bewerber.kontaktEmail) && (
+              <p className="text-xs text-arena-muted m-0 mt-1 flex flex-wrap gap-x-3">
+                {bewerber.kontaktHandynummer && (
+                  <span>📱 {bewerber.kontaktHandynummer}</span>
+                )}
+                {bewerber.kontaktEmail && (
+                  <a href={`mailto:${bewerber.kontaktEmail}`} className="text-arena-blue hover:underline">
+                    ✉️ {bewerber.kontaktEmail}
+                  </a>
+                )}
+              </p>
+            )}
+          </div>
         </div>
         <div className="flex gap-2">
           <button type="button" onClick={() => onEntscheidung(bewerber._id, "angenommen")} className="btn btn-primary btn-sm">
