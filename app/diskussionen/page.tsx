@@ -409,11 +409,9 @@ export default function DiskussionenPage() {
                         <span className="text-sm sm:text-base font-semibold line-clamp-2 min-w-0">
                           {poll.question}
                         </span>
-                        {poll.options.length > 0 && (
-                          <p className="text-xs text-arena-muted mt-1 line-clamp-1 truncate">
-                            {poll.options.slice(0, 3).join(" · ")}
-                          </p>
-                        )}
+                        <p className="text-xs text-arena-muted mt-1 m-0">
+                          {poll.options.length} Optionen
+                        </p>
                       </div>
                       <span className="text-xs text-arena-muted whitespace-nowrap flex-shrink-0">
                         {poll.totalVotes} {poll.totalVotes === 1 ? "Stimme" : "Stimmen"}
