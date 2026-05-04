@@ -53,6 +53,7 @@ type Zirkel = {
   fragebogen: { id: string; frage: string }[];
   dateien: { id: string; originalName: string; abschnittId?: string; uploadedAt: string }[];
   buchformateAngebot?: string[];
+  erwartungenAnTestleser?: string;
 };
 
 type Datei = { id: string; originalName: string; abschnittId?: string };

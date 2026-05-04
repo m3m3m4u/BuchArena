@@ -208,6 +208,11 @@ export default function DiskussionDetailPage() {
   const [inlineReplyBody, setInlineReplyBody] = useState("");
   const [lastReadAt, setLastReadAt] = useState<Date | null>(null);
 
+  // Editing state for replies
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [editingReplyBody, setEditingReplyBody] = useState("");
+  const [isUpdatingReply, setIsUpdatingReply] = useState(false);
+
   // Editing state for the discussion itself
   const [isEditingDiscussion, setIsEditingDiscussion] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -406,6 +411,36 @@ export default function DiskussionDetailPage() {
           ? error.message
           : "Diskussion konnte nicht gelöscht werden."
       );
+    }
+  }
+
+  function openEditReply(reply: ReplyItem) {
+    setEditingReplyId(reply.id);
+    setEditingReplyBody(reply.body);
+  }
+
+  async function handleUpdateReply(replyId: string) {
+    if (!editingReplyBody.trim()) return;
+    setIsUpdatingReply(true);
+    try {
+      const response = await fetch("/api/discussions/update-reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          discussionId,
+          replyId,
+          body: editingReplyBody.trim(),
+        }),
+      });
+      const data = (await response.json()) as { message?: string };
+      if (!response.ok) throw new Error(data.message ?? "Fehler beim Aktualisieren.");
+      setEditingReplyId(null);
+      setEditingReplyBody("");
+      await loadDiscussion();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Antwort konnte nicht aktualisiert werden.");
+    } finally {
+      setIsUpdatingReply(false);
     }
   }
 
@@ -608,18 +643,36 @@ export default function DiskussionDetailPage() {
                                   } else {
                                     setInlineReplyId(reply.id);
                                     setInlineReplyBody("");
+                                    setEditingReplyId(null);
                                   }
                                 }}
                               >
                                 {inlineReplyId === reply.id ? "Abbrechen" : "Antworten"}
                               </button>
                               {reply.authorUsername === username && (
-                                <button
-                                  className="btn btn-sm btn-danger text-xs"
-                                  onClick={() => handleDeleteReply(reply.id)}
-                                >
-                                  Löschen
-                                </button>
+                                <>
+                                  <button
+                                    className="btn btn-sm text-xs"
+                                    onClick={() => {
+                                      if (editingReplyId === reply.id) {
+                                        setEditingReplyId(null);
+                                        setEditingReplyBody("");
+                                      } else {
+                                        openEditReply(reply);
+                                        setInlineReplyId(null);
+                                        setInlineReplyBody("");
+                                      }
+                                    }}
+                                  >
+                                    {editingReplyId === reply.id ? "Abbrechen" : "Bearbeiten"}
+                                  </button>
+                                  <button
+                                    className="btn btn-sm btn-danger text-xs"
+                                    onClick={() => handleDeleteReply(reply.id)}
+                                  >
+                                    Löschen
+                                  </button>
+                                </>
                               )}
                             </div>
 
@@ -631,6 +684,35 @@ export default function DiskussionDetailPage() {
                               onReact={(emoji) => handleReact(emoji, reply.id)}
                             />
                           </article>
+
+                          {/* Inline Bearbeitungsformular */}
+                          {editingReplyId === reply.id && (
+                            <div className="mt-2 ml-3 sm:ml-6 pl-3 border-l-2 border-arena-blue/30 grid gap-2">
+                              <textarea
+                                className="input-base text-sm"
+                                value={editingReplyBody}
+                                onChange={(e) => setEditingReplyBody(e.target.value)}
+                                maxLength={3000}
+                                rows={3}
+                                autoFocus
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  className="btn btn-sm"
+                                  onClick={() => handleUpdateReply(reply.id)}
+                                  disabled={isUpdatingReply || !editingReplyBody.trim()}
+                                >
+                                  {isUpdatingReply ? "Wird gespeichert …" : "Speichern"}
+                                </button>
+                                <button
+                                  className="btn btn-sm"
+                                  onClick={() => { setEditingReplyId(null); setEditingReplyBody(""); }}
+                                >
+                                  Abbrechen
+                                </button>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Inline Antwortformular */}
                           {inlineReplyId === reply.id && (
