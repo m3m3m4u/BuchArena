@@ -103,6 +103,8 @@ export type BuchzirkelBewerbungDocument = {
   antworten: { frageIndex: number; antwort: string }[];
   agbAkzeptiert?: boolean;
   agbAkzeptiertAt?: Date;
+  kontaktHandynummer?: string;
+  kontaktEmail?: string;
   bewirbtSichAm: Date;
   entschiedenAm?: Date;
 };
