@@ -193,7 +193,7 @@ export default function BuchzirkelPage() {
           )}
         </section>
       ) : (
-        <section className="w-full grid grid-cols-2 gap-4 mt-3 max-sm:grid-cols-1">
+        <section className="w-full grid grid-cols-1 gap-2 mt-3">
           {zirkel
             .filter((z) => {
               const frist = new Date(z.bewerbungBis);
@@ -214,7 +214,7 @@ export default function BuchzirkelPage() {
       {account && meine.length > 0 && (
         <section className="card mt-6">
           <h2 className="text-base font-semibold mb-3">Meine abgeschlossenen Zirkel</h2>
-          <div className="w-full grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+          <div className="w-full grid grid-cols-1 gap-2">
             {meine.map((z) => (
               <ZirkelKarte key={z._id} zirkel={z} deletable={z.veranstalterUsername === account.username} onDelete={() => setMeine((prev) => prev.filter((m) => m._id !== z._id))} />
             ))}
@@ -261,10 +261,10 @@ function ZirkelKarte({ zirkel, deletable, onDelete }: { zirkel: Zirkel; deletabl
     <div className="relative group">
       <Link
         href={`/buchzirkel/${zirkel._id}`}
-        className="no-underline text-inherit flex gap-4 rounded-xl border border-arena-border bg-white p-4 hover:border-arena-blue transition-colors"
+        className="no-underline text-inherit flex gap-3 rounded-xl border border-arena-border bg-white p-3 hover:border-arena-blue transition-colors h-full overflow-hidden"
       >
         {/* Cover */}
-        <div className="flex-shrink-0 w-16 h-24 rounded-lg overflow-hidden bg-arena-border-light flex items-center justify-center">
+        <div className="flex-shrink-0 w-[62px] h-[88px] rounded-lg overflow-hidden bg-arena-border-light flex items-center justify-center">
           {zirkel.coverImageUrl ? (
             <img src={zirkel.coverImageUrl} alt={zirkel.titel} className="w-full h-full object-cover" />
           ) : (
@@ -273,8 +273,8 @@ function ZirkelKarte({ zirkel, deletable, onDelete }: { zirkel: Zirkel; deletabl
         </div>
 
         {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start gap-2 flex-wrap">
+        <div className="flex-1 min-w-0 flex flex-col">
+          <div className="flex items-start gap-1.5 flex-wrap">
             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
               {isBeta ? "Buchzirkel (Beta)" : "Buchzirkel"}
             </span>
@@ -292,18 +292,20 @@ function ZirkelKarte({ zirkel, deletable, onDelete }: { zirkel: Zirkel; deletabl
             )}
           </div>
 
-          <h2 className="text-base font-bold m-0 mt-1 truncate">{zirkel.titel}</h2>
-          <p className="text-xs text-arena-muted m-0">von {zirkel.veranstalterUsername}</p>
-          <p className="text-sm text-arena-muted m-0 mt-1 line-clamp-2">{zirkel.beschreibung}</p>
-
-          <div className="flex items-center gap-3 mt-2 text-xs text-arena-muted">
+          <h2 className="text-base font-bold m-0 mt-0.5 truncate">{zirkel.titel}</h2>
+          <div className="flex items-center gap-3 text-xs text-arena-muted m-0">
+            <span>von {zirkel.veranstalterUsername}</span>
+            <span>·</span>
             <span>max. {zirkel.maxTeilnehmer} Teilnehmer</span>
+            <span>·</span>
             {expired ? (
               <span className="text-red-600 font-medium">Bewerbung beendet</span>
             ) : (
               <span>Frist: {frist.toLocaleDateString("de-AT")}</span>
             )}
           </div>
+          <p className="text-sm text-arena-muted m-0 mt-0.5 line-clamp-1 flex-1">{zirkel.beschreibung}</p>
+
         </div>
         {deletable && (
           <button

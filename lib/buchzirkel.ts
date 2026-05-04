@@ -61,6 +61,7 @@ export type BuchzirkelDocument = {
   mediaImageUrl?: string;    // optionales hochgeladenes Bild
   genre: string;
   buchformateAngebot?: string[]; // z.B. ["gedruckt", "epub", "pdf"]
+  erwartungenAnTestleser?: string; // "Das erwarte ich mir von dir als Testleser"
 
   // Status
   status: BuchzirkelStatus;

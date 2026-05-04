@@ -48,6 +48,8 @@ export async function POST(request: Request) {
       leseabschnitte?: BuchzirkelLeseabschnitt[];
       diskussionsTopics?: BuchzirkelTopic[];
       fragebogen?: BuchzirkelFragebogenFrage[];
+      buchformateAngebot?: string[];
+      erwartungenAnTestleser?: string;
     };
 
     const typ = body.typ === "betaleser" ? "betaleser" : "testleser";
@@ -84,6 +86,8 @@ export async function POST(request: Request) {
       leseabschnitte: body.leseabschnitte ?? [],
       diskussionsTopics: body.diskussionsTopics ?? [...STANDARD_TOPICS],
       fragebogen: body.fragebogen ?? [],
+      buchformateAngebot: body.buchformateAngebot ?? [],
+      erwartungenAnTestleser: body.erwartungenAnTestleser?.trim() || undefined,
       dateien: [],
       createdAt: now,
       updatedAt: now,

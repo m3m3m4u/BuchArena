@@ -40,6 +40,9 @@ export default function BuchzirkelErstellenPage() {
   const [topics, setTopics] = useState<Topic[]>([...STANDARD_TOPICS]);
   const [fragebogen, setFragebogen] = useState<Frage[]>([]);
   const [buchformateAngebot, setBuchformateAngebot] = useState<string[]>([]);
+  const [erwartungenAnTestleser, setErwartungenAnTestleser] = useState("");
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverUploadError, setCoverUploadError] = useState("");
   const [neuerAbschnittTitel, setNeuerAbschnittTitel] = useState("");
   const [neuerAbschnittDeadline, setNeuerAbschnittDeadline] = useState("");
   const [neueFrage, setNeueFrage] = useState("");
@@ -81,6 +84,7 @@ export default function BuchzirkelErstellenPage() {
           beschreibung,
           genre,
           buchformateAngebot,
+          erwartungenAnTestleser: erwartungenAnTestleser.trim() || undefined,
           coverImageUrl: coverImageUrl.trim() || undefined,
           bewerbungBis: new Date(bewerbungBis).toISOString(),
           maxTeilnehmer,
@@ -181,7 +185,7 @@ export default function BuchzirkelErstellenPage() {
         <section className="card">
           <h2 className="text-base font-semibold m-0 mb-3">Buch-Informationen</h2>
           <div className="flex flex-col gap-3">
-            {typ === "testleser" && meineBuecher.length > 0 && (
+            {meineBuecher.length > 0 && (
               <div className="grid gap-1">
                 <label className="text-sm font-semibold">Aus meinen Büchern übernehmen (optional)</label>
                 <select
@@ -230,8 +234,32 @@ export default function BuchzirkelErstellenPage() {
               <p className="text-xs text-arena-muted">Was erhalten die Teilnehmer? Mehrfachwahl möglich.</p>
             </div>
             <div className="grid gap-1">
-              <label className="text-sm font-semibold" htmlFor="coverImageUrl">Cover-URL (optional)</label>
-              <input id="coverImageUrl" className="input-base w-full" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} placeholder="https://…" />
+              <label className="text-sm font-semibold" htmlFor="coverImageUrl">Cover (optional)</label>
+              <div className="flex gap-2 items-center flex-wrap">
+                <input id="coverImageUrl" className="input-base flex-1" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} placeholder="https://… oder Datei hochladen" />
+                <label className={`btn btn-secondary btn-sm cursor-pointer ${coverUploading ? "opacity-50 pointer-events-none" : ""}`}>
+                  {coverUploading ? "Lädt…" : "Datei hochladen"}
+                  <input type="file" accept="image/*" className="hidden" disabled={coverUploading}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setCoverUploading(true);
+                      setCoverUploadError("");
+                      const fd = new FormData();
+                      fd.append("file", file);
+                      try {
+                        const res = await fetch("/api/buchzirkel/upload-media-image", { method: "POST", body: fd });
+                        const data = await res.json() as { imageUrl?: string; message?: string };
+                        if (!res.ok) { setCoverUploadError(data.message ?? "Upload fehlgeschlagen."); return; }
+                        setCoverImageUrl(data.imageUrl ?? "");
+                      } catch { setCoverUploadError("Upload fehlgeschlagen."); }
+                      finally { setCoverUploading(false); }
+                    }}
+                  />
+                </label>
+              </div>
+              {coverImageUrl && <img src={coverImageUrl} alt="Cover-Vorschau" className="mt-1 w-16 h-24 object-cover rounded-lg border border-arena-border" />}
+              {coverUploadError && <p className="text-xs text-red-600">{coverUploadError}</p>}
             </div>
           </div>
         </section>
@@ -279,6 +307,19 @@ export default function BuchzirkelErstellenPage() {
               {mediaImageError && <p className="text-sm text-red-600">{mediaImageError}</p>}
             </div>
           )}
+        </section>
+
+        {/* Erwartungen an Testleser */}
+        <section className="card">
+          <h2 className="text-base font-semibold m-0 mb-1">Das erwarte (wünsche) ich mir von dir als Testleser</h2>
+          <p className="text-sm text-arena-muted m-0 mb-2">Beschreibe, was du von deinen Testlesern erwartest – z.B. Detailtiefe beim Feedback, Zeitrahmen, bevorzugte Kommunikation, Rezensionen.</p>
+          <textarea
+            className="input-base w-full"
+            rows={4}
+            value={erwartungenAnTestleser}
+            onChange={(e) => setErwartungenAnTestleser(e.target.value)}
+            placeholder="z.B. Ich wünsche mir ausführliches Feedback zu Charakteren und Handlungsbogen, möglichst innerhalb von 4 Wochen."
+          />
         </section>
 
         {/* Bewerbungsphase */}
