@@ -62,6 +62,16 @@ export default function TestleserProfilePage({ params }: PageProps) {
   const [message, setMessage] = useState("");
   const [loggedInUsername, setLoggedInUsername] = useState("");
 
+  type BuchzirkelBewertung = {
+    buchzirkelId: string;
+    buchzirkelTitel: string;
+    veranstalterUsername: string;
+    sterne: number;
+    kommentar: string;
+    bewertetAm: string;
+  };
+  const [buchzirkelBewertungen, setBuchzirkelBewertungen] = useState<BuchzirkelBewertung[]>([]);
+
   const [showCompose, setShowCompose] = useState(false);
   const [msgSubject, setMsgSubject] = useState("");
   const [msgBody, setMsgBody] = useState("");
@@ -88,6 +98,11 @@ export default function TestleserProfilePage({ params }: PageProps) {
         setProfileImageUrl(data.testleser.profileImageUrl ?? "");
         setProfileImageCrop(data.testleser.profileImageCrop);
         setTestleserProfile({ ...createDefaultTestleserProfile(), ...data.testleser.testleserProfile });
+        // Buchzirkel-Bewertungen parallel laden
+        fetch(`/api/testleser/bewertungen?username=${encodeURIComponent(data.testleser.username)}`)
+          .then((r) => r.json() as Promise<{ bewertungen?: BuchzirkelBewertung[] }>)
+          .then((d) => setBuchzirkelBewertungen(d.bewertungen ?? []))
+          .catch(() => {});
       } catch {
         setMessage("Testleserprofil konnte nicht geladen werden.");
       } finally {
@@ -213,6 +228,41 @@ export default function TestleserProfilePage({ params }: PageProps) {
                     );
                   })}
                 </ul>
+              </div>
+            )}
+
+            {buchzirkelBewertungen.length > 0 && (
+              <div className="my-4">
+                <h2 className="text-lg">Buchzirkel-Bewertungen</h2>
+                <div className="flex flex-col gap-3">
+                  {buchzirkelBewertungen.map((b) => (
+                    <div key={b.buchzirkelId} className="rounded-lg border border-arena-border-light bg-[#fafafa] p-4">
+                      <div className="mb-1 flex flex-wrap items-baseline gap-2">
+                        <span className="font-medium">{b.buchzirkelTitel}</span>
+                        <span className="text-arena-muted text-xs">
+                          von{" "}
+                          <a href={`/autor/${encodeURIComponent(b.veranstalterUsername)}`} className="text-arena-blue hover:underline">
+                            {b.veranstalterUsername}
+                          </a>
+                        </span>
+                        <span className="ml-auto text-xs text-arena-muted">
+                          {new Date(b.bewertetAm).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                        </span>
+                      </div>
+                      <div className="mb-1 flex gap-0.5 text-amber-400">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <span key={i} className={i < b.sterne ? "text-amber-400" : "text-gray-300"}>
+                            ★
+                          </span>
+                        ))}
+                        <span className="ml-1.5 text-sm text-arena-muted">{b.sterne}/5</span>
+                      </div>
+                      {b.kommentar && (
+                        <p className="mt-1 text-sm text-arena-text whitespace-pre-wrap">{b.kommentar}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

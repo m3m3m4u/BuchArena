@@ -129,6 +129,12 @@ export type TeilnehmerDatei = {
   webdavPath: string;   // personalisierter Pfad mit Wasserzeichen
 };
 
+export type VeranstalterBewertung = {
+  sterne: number;          // 1–5
+  kommentar: string;
+  bewertetAm: Date;
+};
+
 export type BuchzirkelTeilnahmeDocument = {
   _id?: ObjectId;
   buchzirkelId: ObjectId;
@@ -145,6 +151,9 @@ export type BuchzirkelTeilnahmeDocument = {
 
   // Fragebogen
   fragebogenAntworten: FragebogenAntwort[];
+
+  // Bewertung durch den Veranstalter (nach Abschluss)
+  veranstalterBewertung?: VeranstalterBewertung;
 
   // Gütesiegel
   abgebrochen: boolean;
