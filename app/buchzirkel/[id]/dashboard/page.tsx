@@ -102,6 +102,7 @@ export default function BuchzirkelDashboardPage() {
   const [editMediaImageUrl, setEditMediaImageUrl] = useState("");
   const [editMediaImageUploading, setEditMediaImageUploading] = useState(false);
   const [editMediaImageError, setEditMediaImageError] = useState("");
+  const [editErwartungenAnTestleser, setEditErwartungenAnTestleser] = useState("");
 
   const load = useCallback(async () => {
     const [zRes, bRes, tRes] = await Promise.all([
@@ -133,6 +134,7 @@ export default function BuchzirkelDashboardPage() {
       if (z.youtubeUrl) { setEditMediaTyp("youtube"); setEditYoutubeUrl(z.youtubeUrl); }
       else if (z.mediaImageUrl) { setEditMediaTyp("bild"); setEditMediaImageUrl(z.mediaImageUrl); }
       else { setEditMediaTyp("kein"); }
+      setEditErwartungenAnTestleser(z.erwartungenAnTestleser ?? "");
     }
     setLoading(false);
   }, [params.id]);
@@ -200,6 +202,7 @@ export default function BuchzirkelDashboardPage() {
         leseabschnitte: editAbschnitte.map((a) => ({ ...a, deadline: a.deadline ? new Date(a.deadline).toISOString() : undefined })),
         diskussionsTopics: editTopics,
         fragebogen: editFragebogen,
+        erwartungenAnTestleser: editErwartungenAnTestleser.trim() || undefined,
       }),
     });
     const data = await res.json() as { message?: string };
@@ -582,6 +585,19 @@ export default function BuchzirkelDashboardPage() {
                   })}
                 </div>
               </div>
+              {zirkel.typ === "testleser" && (
+                <div className="grid gap-1 mt-3">
+                  <label className="text-sm font-semibold">Das erwarte ich vom Testleser</label>
+                  <p className="text-sm text-arena-muted m-0 mb-1">Beschreibe, was du dir von deinen Testlesern erhoffst – z.B. Art des Feedbacks, Umfang, Fokusthemen.</p>
+                  <textarea
+                    className="input-base w-full text-sm"
+                    rows={4}
+                    value={editErwartungenAnTestleser}
+                    onChange={(e) => setEditErwartungenAnTestleser(e.target.value)}
+                    placeholder="z.B. Ich freue mich über detailliertes Feedback zu Charakterentwicklung und Spannung. Kapitelweise Anmerkungen sind willkommen …"
+                  />
+                </div>
+              )}
             </div>
           </section>
 

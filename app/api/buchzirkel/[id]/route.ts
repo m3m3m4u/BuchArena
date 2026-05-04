@@ -143,7 +143,7 @@ export async function PATCH(
     const allowed = [
       "titel", "beschreibung", "coverImageUrl", "youtubeUrl", "mediaImageUrl", "genre", "buchformateAngebot", "status",
       "bewerbungBis", "maxTeilnehmer", "bewerbungsFragen", "genreFilter",
-      "agbPflicht", "agbText", "leseabschnitte", "diskussionsTopics", "fragebogen",
+      "agbPflicht", "agbText", "leseabschnitte", "diskussionsTopics", "fragebogen", "erwartungenAnTestleser",
     ];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updates: Record<string, any> = { updatedAt: new Date() };

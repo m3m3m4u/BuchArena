@@ -74,6 +74,7 @@ type Zirkel = {
   isTeilnehmer: boolean;
   isBeworben: boolean;
   buchformateAngebot?: string[];
+  erwartungenAnTestleser?: string;
   viewerHasTestleserProfile?: boolean;
 };
 
@@ -304,6 +305,13 @@ export default function BuchzirkelDetailPage() {
                   {f === "gedruckt" ? "📖 Gedrucktes Buch" : f === "epub" ? "📱 EPUB" : f === "pdf" ? "📄 PDF" : f}
                 </span>
               ))}
+            </div>
+          )}
+
+          {zirkel.erwartungenAnTestleser && (
+            <div className="rounded-lg bg-arena-muted/10 border border-arena-border p-3 mb-3 text-sm">
+              <p className="font-semibold m-0 mb-1">Das erwartet der Autor von dir als Testleser:</p>
+              <p className="m-0 whitespace-pre-wrap">{zirkel.erwartungenAnTestleser}</p>
             </div>
           )}
 
