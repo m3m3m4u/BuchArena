@@ -161,6 +161,8 @@ async function initializeDatabase(db: Db) {
   const messages = db.collection<MessageDocument>("messages");
   await messages.createIndex({ recipientUsername: 1, createdAt: -1 });
   await messages.createIndex({ senderUsername: 1, createdAt: -1 });
+  await messages.createIndex({ senderUsername: 1, deletedBySender: 1, createdAt: -1 });
+  await messages.createIndex({ recipientUsername: 1, deletedByRecipient: 1, createdAt: -1 });
 
   const analytics = db.collection("analytics");
   await analytics.createIndex({ timestamp: -1 });

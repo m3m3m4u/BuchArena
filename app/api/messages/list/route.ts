@@ -78,32 +78,61 @@ export async function GET(request: Request) {
       return NextResponse.json({ messages: items });
     }
 
-    // ── Konversationsliste: alle Chats gruppiert nach Gesprächspartner ──
-    const docs = await messages
-      .find({
-        $or: [
-          { senderUsername: account.username, deletedBySender: { $ne: true } },
-          { recipientUsername: account.username, deletedByRecipient: { $ne: true } },
-        ],
-      })
-      .sort({ createdAt: -1 })
-      .limit(500)
+    // ── Konversationsliste: Aggregation gruppiert nach Gesprächspartner ──
+    const me = account.username;
+    const aggResult = await messages
+      .aggregate<{
+        _id: string;
+        latestDoc: {
+          _id: ObjectId;
+          senderUsername: string;
+          recipientUsername: string;
+          subject: string;
+          body: string;
+          read: boolean;
+          readAt: Date | null;
+          threadId: ObjectId | null;
+          kooperationId: string | null;
+          bookCoAuthorId: string | null;
+          createdAt: Date;
+        };
+        unreadCount: number;
+      }>([
+        {
+          $match: {
+            $or: [
+              { senderUsername: me, deletedBySender: { $ne: true } },
+              { recipientUsername: me, deletedByRecipient: { $ne: true } },
+            ],
+          },
+        },
+        { $sort: { createdAt: -1 } },
+        {
+          $addFields: {
+            partner: {
+              $cond: [{ $eq: ["$senderUsername", me] }, "$recipientUsername", "$senderUsername"],
+            },
+            isUnread: {
+              $cond: [
+                { $and: [{ $eq: ["$recipientUsername", me] }, { $eq: ["$read", false] }] },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$partner",
+            latestDoc: { $first: "$$ROOT" },
+            unreadCount: { $sum: "$isUnread" },
+          },
+        },
+        { $sort: { "latestDoc.createdAt": -1 } },
+      ])
       .toArray();
 
-    // Nach Partner gruppieren – pro Partner nur die neueste Nachricht
-    const partnerMap = new Map<string, typeof docs[number] & { unread: number }>();
-    for (const d of docs) {
-      const p = d.senderUsername === account.username ? d.recipientUsername : d.senderUsername;
-      if (!partnerMap.has(p)) {
-        partnerMap.set(p, { ...d, unread: 0 });
-      }
-      // Ungelesene zählen (nur empfangene)
-      if (d.recipientUsername === account.username && !d.read) {
-        partnerMap.get(p)!.unread += 1;
-      }
-    }
-
-    const partnerUsernames = [...partnerMap.keys()];
+    const partnerUsernames = aggResult.map((r) => r._id);
     const usersCol = await getUsersCollection();
     const userDocs = await usersCol
       .find(
@@ -123,25 +152,25 @@ export async function GET(request: Request) {
       profileImageMap.set(u.username, u.profile?.profileImage?.value ?? "");
     }
 
-    const items = [...partnerMap.values()].map((d) => ({
-      id: d._id!.toHexString(),
-      senderUsername: d.senderUsername,
-      recipientUsername: d.recipientUsername,
-      partner: d.senderUsername === account.username ? d.recipientUsername : d.senderUsername,
-      displayName: displayNameMap.get(
-        d.senderUsername === account.username ? d.recipientUsername : d.senderUsername,
-      ) ?? "",
-      profileImage: profileImageMap.get(
-        d.senderUsername === account.username ? d.recipientUsername : d.senderUsername,
-      ) ?? "",
-      subject: d.subject,
-      body: d.body,
-      read: d.read,
-      readAt: d.readAt?.toISOString() ?? null,
-      threadId: d.threadId?.toHexString() ?? null,
-      unreadCount: d.unread,
-      createdAt: d.createdAt.toISOString(),
-    }));
+    const items = aggResult.map((r) => {
+      const d = r.latestDoc;
+      const partner = r._id;
+      return {
+        id: d._id.toHexString(),
+        senderUsername: d.senderUsername,
+        recipientUsername: d.recipientUsername,
+        partner,
+        displayName: displayNameMap.get(partner) ?? "",
+        profileImage: profileImageMap.get(partner) ?? "",
+        subject: d.subject,
+        body: d.body,
+        read: d.read,
+        readAt: d.readAt?.toISOString() ?? null,
+        threadId: d.threadId?.toHexString() ?? null,
+        unreadCount: r.unreadCount,
+        createdAt: d.createdAt.toISOString(),
+      };
+    });
 
     return NextResponse.json({ conversations: items });
   } catch (err) {
