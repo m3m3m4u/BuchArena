@@ -366,18 +366,20 @@ export default function DiskussionenPage() {
                       className={`rounded-lg border p-3 sm:p-3.5 cursor-pointer transition-colors no-underline text-inherit ${d.unread ? "border-arena-yellow bg-arena-yellow/5 hover:bg-arena-yellow/10" : "border-arena-border hover:border-gray-500"}`}
                     >
                       <div className="flex items-start justify-between gap-2 sm:gap-3">
-                        <span className={`text-sm sm:text-base line-clamp-2 flex items-center gap-1.5 ${d.unread ? "font-bold" : "font-semibold"}`}>
+                        <div className="flex items-start gap-1.5 min-w-0 flex-1">
                           {d.unread && (
-                            <span className="inline-flex items-center gap-1 text-xs bg-arena-yellow text-arena-blue px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">
+                            <span className="inline-flex items-center gap-1 text-xs bg-arena-yellow text-arena-blue px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0 mt-0.5">
                               <span className="inline-block w-1.5 h-1.5 rounded-full bg-arena-blue/60" />
                               Neu
                             </span>
                           )}
-                          {d.title}
+                          <span className={`text-sm sm:text-base line-clamp-2 min-w-0 ${d.unread ? "font-bold" : "font-semibold"}`}>
+                            {d.title}
+                          </span>
                           {d.topic && d.topic !== "Allgemein" && (
-                            <span className="text-xs bg-arena-blue/10 text-arena-blue px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">{d.topic}</span>
+                            <span className="text-xs bg-arena-blue/10 text-arena-blue px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0 mt-0.5">{d.topic}</span>
                           )}
-                        </span>
+                        </div>
                         <span className="text-xs text-arena-muted whitespace-nowrap flex-shrink-0">
                           {d.replyCount} {d.replyCount === 1 ? "Antwort" : "Antworten"}
                         </span>
@@ -404,10 +406,12 @@ export default function DiskussionenPage() {
                   >
                     <div className="flex items-start justify-between gap-3 min-w-0">
                       <div className="flex flex-col min-w-0 flex-1">
-                        <span className="text-sm sm:text-base font-semibold line-clamp-2 flex items-center gap-1.5">
-                          {poll.question}
-                          <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">Abstimmung</span>
-                        </span>
+                        <div className="flex items-start gap-1.5">
+                          <span className="text-sm sm:text-base font-semibold line-clamp-2 min-w-0">
+                            {poll.question}
+                          </span>
+                          <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0 mt-0.5">Abstimmung</span>
+                        </div>
                         {poll.options.length > 0 && (
                           <p className="text-xs text-arena-muted mt-1 line-clamp-1 truncate">
                             {poll.options.slice(0, 3).join(" · ")}
