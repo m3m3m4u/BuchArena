@@ -24,7 +24,8 @@ export default function ProfileEmpfehlungenBlock({
   isProfileOwner,
 }: Props) {
   const [empfehlungen, setEmpfehlungen] = useState<Empfehlung[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState("");
   const [empText, setEmpText] = useState("");
   const [empBusy, setEmpBusy] = useState(false);
   const [empMsg, setEmpMsg] = useState("");
@@ -37,10 +38,11 @@ export default function ProfileEmpfehlungenBlock({
   useEffect(() => {
     if (!profileUsername) return;
     setIsLoading(true);
+    setFetchError("");
     fetch(
       `/api/profilempfehlungen?type=${profileType}&profileUsername=${encodeURIComponent(profileUsername)}`
     )
-      .then((r) => r.json() as Promise<{ empfehlungen?: Empfehlung[] }>)
+      .then((r) => r.json() as Promise<{ empfehlungen?: Empfehlung[]; message?: string }>)
       .then((data) => {
         const list = data.empfehlungen ?? [];
         setEmpfehlungen(list);
@@ -48,7 +50,10 @@ export default function ProfileEmpfehlungenBlock({
           setAlreadyRecommended(list.some((e) => e.username === loggedInUsername));
         }
       })
-      .catch(() => {/* still render empty */})
+      .catch((err) => {
+        console.error("ProfileEmpfehlungenBlock fetch error:", err);
+        setFetchError("Empfehlungen konnten nicht geladen werden.");
+      })
       .finally(() => setIsLoading(false));
   }, [profileType, profileUsername, loggedInUsername]);
 
@@ -160,6 +165,8 @@ export default function ProfileEmpfehlungenBlock({
 
       {isLoading ? (
         <p className="text-sm text-arena-muted">Lade Empfehlungen …</p>
+      ) : fetchError ? (
+        <p className="text-sm text-red-600">{fetchError}</p>
       ) : empfehlungen.length === 0 ? (
         <p className="text-sm text-arena-muted">
           Noch keine Empfehlungen.{" "}
