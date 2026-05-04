@@ -61,6 +61,7 @@ type PageProps = { params: Promise<{ username: string }> };
 
 export default function BloggerProfilePage({ params }: PageProps) {
   const [username, setUsername] = useState("");
+  const [actualUsername, setActualUsername] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [profileImageCrop, setProfileImageCrop] = useState<{ x: number; y: number; zoom: number } | undefined>();
   const [bloggerProfile, setBloggerProfile] = useState<BloggerProfileData>(createDefaultBloggerProfile());
@@ -91,6 +92,7 @@ export default function BloggerProfilePage({ params }: PageProps) {
         const res = await fetch(`/api/bloggers/profile?username=${encodeURIComponent(username)}`, { method: "GET" });
         const data = (await res.json()) as BloggerProfilePayload & { message?: string };
         if (!res.ok) throw new Error(data.message ?? "Bloggerprofil konnte nicht geladen werden.");
+        setActualUsername(data.blogger.username);
         setProfileImageUrl(data.blogger.profileImageUrl ?? "");
         setProfileImageCrop(data.blogger.profileImageCrop);
         setBloggerProfile({ ...createDefaultBloggerProfile(), ...data.blogger.bloggerProfile });
@@ -149,7 +151,7 @@ export default function BloggerProfilePage({ params }: PageProps) {
       const res = await fetch("/api/messages/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientUsername: username, subject: msgSubject, body: msgBody }),
+        body: JSON.stringify({ recipientUsername: actualUsername || username, subject: msgSubject, body: msgBody }),
       });
       const data = (await res.json()) as { message?: string };
       if (!res.ok) throw new Error(data.message ?? "Senden fehlgeschlagen.");
@@ -287,9 +289,9 @@ export default function BloggerProfilePage({ params }: PageProps) {
         <KooperationenAnzeige username={username} isAutor={false} />
         <ProfileEmpfehlungenBlock
           profileType="blogger"
-          profileUsername={username}
+          profileUsername={actualUsername || username}
           loggedInUsername={loggedInUsername}
-          isProfileOwner={loggedInUsername === username}
+          isProfileOwner={loggedInUsername === (actualUsername || username)}
         />
         <Link href="/blogger" className="btn">Zurück zu Blogger entdecken</Link>
       </section>

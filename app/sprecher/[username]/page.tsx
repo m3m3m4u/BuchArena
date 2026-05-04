@@ -60,6 +60,7 @@ type PageProps = { params: Promise<{ username: string }> };
 
 export default function SpeakerProfilePage({ params }: PageProps) {
   const [username, setUsername] = useState("");
+  const [actualUsername, setActualUsername] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [profileImageCrop, setProfileImageCrop] = useState<{ x: number; y: number; zoom: number } | undefined>();
   const [speakerProfile, setSpeakerProfile] = useState<SpeakerProfileData>(createDefaultSpeakerProfile());
@@ -90,6 +91,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
         const res = await fetch(`/api/speakers/profile?username=${encodeURIComponent(username)}`, { method: "GET" });
         const data = (await res.json()) as SpeakerProfilePayload & { message?: string };
         if (!res.ok) throw new Error(data.message ?? "Sprecherprofil konnte nicht geladen werden.");
+        setActualUsername(data.speaker.username);
         setProfileImageUrl(data.speaker.profileImageUrl ?? "");
         setProfileImageCrop(data.speaker.profileImageCrop);
         setSpeakerProfile({ ...createDefaultSpeakerProfile(), ...data.speaker.speakerProfile });
@@ -154,7 +156,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
       const res = await fetch("/api/messages/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientUsername: username, subject: msgSubject, body: msgBody }),
+        body: JSON.stringify({ recipientUsername: actualUsername || username, subject: msgSubject, body: msgBody }),
       });
       const data = (await res.json()) as { message?: string };
       if (!res.ok) throw new Error(data.message ?? "Senden fehlgeschlagen.");
@@ -316,9 +318,9 @@ export default function SpeakerProfilePage({ params }: PageProps) {
         <KooperationenAnzeige username={username} isAutor={false} />
         <ProfileEmpfehlungenBlock
           profileType="sprecher"
-          profileUsername={username}
+          profileUsername={actualUsername || username}
           loggedInUsername={loggedInUsername}
-          isProfileOwner={loggedInUsername === username}
+          isProfileOwner={loggedInUsername === (actualUsername || username)}
         />
         <Link href="/sprecher" className="btn">Zurück zu Sprecher entdecken</Link>
       </section>

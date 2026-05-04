@@ -55,6 +55,7 @@ type PageProps = { params: Promise<{ username: string }> };
 
 export default function LektorenProfilePage({ params }: PageProps) {
   const [username, setUsername] = useState("");
+  const [actualUsername, setActualUsername] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [profileImageCrop, setProfileImageCrop] = useState<{ x: number; y: number; zoom: number } | undefined>();
   const [lektorenProfile, setLektorenProfile] = useState<LektorenProfileData>(createDefaultLektorenProfile());
@@ -84,6 +85,7 @@ export default function LektorenProfilePage({ params }: PageProps) {
         const res = await fetch(`/api/lektoren/profile?username=${encodeURIComponent(username)}`, { method: "GET" });
         const data = (await res.json()) as LektorenProfilePayload & { message?: string };
         if (!res.ok) throw new Error(data.message ?? "Lektorenprofil konnte nicht geladen werden.");
+        setActualUsername(data.lektor.username);
         setProfileImageUrl(data.lektor.profileImageUrl ?? "");
         setProfileImageCrop(data.lektor.profileImageCrop);
         setLektorenProfile({ ...createDefaultLektorenProfile(), ...data.lektor.lektorenProfile });
@@ -130,7 +132,7 @@ export default function LektorenProfilePage({ params }: PageProps) {
       const res = await fetch("/api/messages/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientUsername: username, subject: msgSubject, body: msgBody }),
+        body: JSON.stringify({ recipientUsername: actualUsername || username, subject: msgSubject, body: msgBody }),
       });
       const data = (await res.json()) as { message?: string };
       if (!res.ok) throw new Error(data.message ?? "Senden fehlgeschlagen.");
@@ -247,9 +249,9 @@ export default function LektorenProfilePage({ params }: PageProps) {
         <KooperationenAnzeige username={username} isAutor={false} />
         <ProfileEmpfehlungenBlock
           profileType="lektor"
-          profileUsername={username}
+          profileUsername={actualUsername || username}
           loggedInUsername={loggedInUsername}
-          isProfileOwner={loggedInUsername === username}
+          isProfileOwner={loggedInUsername === (actualUsername || username)}
         />
         <Link href="/lektoren" className="btn">Zurück zu Lektoren entdecken</Link>
       </section>

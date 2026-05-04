@@ -54,6 +54,7 @@ type PageProps = { params: Promise<{ username: string }> };
 
 export default function TestleserProfilePage({ params }: PageProps) {
   const [username, setUsername] = useState("");
+  const [actualUsername, setActualUsername] = useState(""); // echter DB-Username (kann von Slug abweichen)
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [profileImageCrop, setProfileImageCrop] = useState<{ x: number; y: number; zoom: number } | undefined>();
   const [testleserProfile, setTestleserProfile] = useState<TestleserProfileData>(createDefaultTestleserProfile());
@@ -83,6 +84,7 @@ export default function TestleserProfilePage({ params }: PageProps) {
         const res = await fetch(`/api/testleser/profile?username=${encodeURIComponent(username)}`, { method: "GET" });
         const data = (await res.json()) as TestleserProfilePayload & { message?: string };
         if (!res.ok) throw new Error(data.message ?? "Testleserprofil konnte nicht geladen werden.");
+        setActualUsername(data.testleser.username);
         setProfileImageUrl(data.testleser.profileImageUrl ?? "");
         setProfileImageCrop(data.testleser.profileImageCrop);
         setTestleserProfile({ ...createDefaultTestleserProfile(), ...data.testleser.testleserProfile });
@@ -129,7 +131,7 @@ export default function TestleserProfilePage({ params }: PageProps) {
       const res = await fetch("/api/messages/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientUsername: username, subject: msgSubject, body: msgBody }),
+        body: JSON.stringify({ recipientUsername: actualUsername || username, subject: msgSubject, body: msgBody }),
       });
       const data = (await res.json()) as { message?: string };
       if (!res.ok) throw new Error(data.message ?? "Senden fehlgeschlagen.");
@@ -263,9 +265,9 @@ export default function TestleserProfilePage({ params }: PageProps) {
         <KooperationenAnzeige username={username} isAutor={false} />
         <ProfileEmpfehlungenBlock
           profileType="testleser"
-          profileUsername={username}
+          profileUsername={actualUsername || username}
           loggedInUsername={loggedInUsername}
-          isProfileOwner={loggedInUsername === username}
+          isProfileOwner={loggedInUsername === (actualUsername || username)}
         />
         <Link href="/testleser" className="btn">Zurück zu Testleser entdecken</Link>
       </section>
