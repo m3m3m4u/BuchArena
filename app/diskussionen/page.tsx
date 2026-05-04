@@ -404,10 +404,10 @@ export default function DiskussionenPage() {
                   >
                     <div className="flex items-start justify-between gap-3 min-w-0">
                       <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-sm sm:text-base font-semibold line-clamp-2 flex items-center gap-1.5">
+                          {poll.question}
                           <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">Abstimmung</span>
-                          <span className="text-sm sm:text-base font-semibold line-clamp-2">{poll.question}</span>
-                        </div>
+                        </span>
                         {poll.options.length > 0 && (
                           <p className="text-xs text-arena-muted mt-1 line-clamp-1 truncate">
                             {poll.options.slice(0, 3).join(" · ")}
