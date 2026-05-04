@@ -106,6 +106,21 @@ export async function GET(request: Request) {
             ],
           },
         },
+        // Nur benötigte Felder laden – reduziert Sort- und Group-Aufwand erheblich
+        {
+          $project: {
+            senderUsername: 1,
+            recipientUsername: 1,
+            subject: 1,
+            body: 1,
+            read: 1,
+            readAt: 1,
+            threadId: 1,
+            kooperationId: 1,
+            bookCoAuthorId: 1,
+            createdAt: 1,
+          },
+        },
         { $sort: { createdAt: -1 } },
         {
           $addFields: {

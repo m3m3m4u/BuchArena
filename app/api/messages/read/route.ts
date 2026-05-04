@@ -10,12 +10,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
     }
 
-    const { id } = (await request.json()) as { id?: string };
+    const body = (await request.json()) as { id?: string; partner?: string };
+    const messages = await getMessagesCollection();
+
+    // Batch-Modus: alle ungelesenen Nachrichten eines Partners als gelesen markieren
+    if (body.partner) {
+      await messages.updateMany(
+        { senderUsername: body.partner, recipientUsername: account.username, read: false },
+        { $set: { read: true, readAt: new Date() } }
+      );
+      return NextResponse.json({ message: "Als gelesen markiert." });
+    }
+
+    // Einzelne Nachricht
+    const { id } = body;
     if (!id || !ObjectId.isValid(id)) {
       return NextResponse.json({ message: "Ungültige Nachrichten-ID." }, { status: 400 });
     }
 
-    const messages = await getMessagesCollection();
     const result = await messages.updateOne(
       { _id: new ObjectId(id), recipientUsername: account.username },
       { $set: { read: true, readAt: new Date() } }

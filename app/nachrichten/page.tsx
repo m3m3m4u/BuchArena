@@ -164,16 +164,14 @@ export default function NachrichtenPage() {
         const msgs = data.messages ?? [];
         setChatMessages(msgs);
 
-        // Ungelesene als gelesen markieren
-        const unread = msgs.filter((m) => !m.read && m.recipientUsername === username);
-        for (const m of unread) {
+        // Ungelesene als gelesen markieren (ein Batch-Request statt N einzelner)
+        const hasUnread = msgs.some((m) => !m.read && m.recipientUsername === username);
+        if (hasUnread) {
           fetch("/api/messages/read", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: m.id }),
+            body: JSON.stringify({ partner }),
           }).catch(() => {});
-        }
-        if (unread.length > 0) {
           setChatMessages((prev) =>
             prev.map((m) =>
               m.recipientUsername === username && !m.read
