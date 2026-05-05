@@ -61,14 +61,32 @@ export default function HomePage() {
       <main className="top-centered-main">
         {/* Greeting */}
         <section className="card">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center justify-center w-14 h-14 rounded-full bg-linear-to-br from-arena-blue to-arena-blue-light text-white text-2xl font-bold shrink-0">
-              {account.username.charAt(0).toUpperCase()}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:divide-x md:divide-arena-border-light">
+            {/* Left: Begrüßung */}
+            <div className="flex items-center gap-4 md:col-span-1">
+              <div className="flex items-center justify-center w-14 h-14 rounded-full bg-linear-to-br from-arena-blue to-arena-blue-light text-white text-2xl font-bold shrink-0">
+                {account.username.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h1 className="text-xl m-0">Hallo, {account.username}! 👋</h1>
+                <p className="text-arena-muted text-sm m-0 mt-0.5">Willkommen zurück in der BuchArena</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl m-0">Hallo, {account.username}! 👋</h1>
-              <p className="text-arena-muted text-sm m-0 mt-0.5">Willkommen zurück in der BuchArena</p>
-            </div>
+            {/* Right: Werbefläche */}
+            <a
+              href="https://beyond-books.online/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 md:pl-4 no-underline text-inherit group md:col-span-2"
+            >
+              <img src="/beyondbooks.png" alt="BeyondBooks" className="h-16 w-auto shrink-0 rounded" />
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-arena-muted m-0 mb-0.5">Empfehlung der BuchArena</p>
+                <p className="text-xs text-arena-muted m-0 leading-snug group-hover:text-arena-blue transition-colors">
+                  BeyondBooks begleitet dein Buch von der ersten Idee bis zur Veröffentlichung – alles an einem Ort. Vernetze dich mit Dienstleistern für Lektorat, Cover, Satz und mehr, und finde die richtigen Menschen für dein Buch.
+                </p>
+              </div>
+            </a>
           </div>
         </section>
 
