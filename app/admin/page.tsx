@@ -139,6 +139,7 @@ export default function AdminPage() {
     genre: string;
     status: string;
     veranstalterUsername: string;
+    veranstalterInstagram: string;
     bewerbungBis: string;
     maxTeilnehmer: number;
     createdAt: string;
@@ -153,6 +154,16 @@ export default function AdminPage() {
   const [buchzirkelFilter, setBuchzirkelFilter] = useState("");
   const [buchzirkelStatusFilter, setBuchzirkelStatusFilter] = useState("alle");
   const [buchzirkelBusy, setBuchzirkelBusy] = useState<string | null>(null);
+
+  function cleanInstaHandle(raw: string): string {
+    // URL-Präfixe entfernen
+    let h = raw.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i, "");
+    // @ am Anfang entfernen
+    h = h.replace(/^@/, "");
+    // Alles ab / oder ? abschneiden
+    h = h.split(/[/?#]/)[0];
+    return h.trim();
+  }
 
   async function changeBuchzirkelStatus(id: string, status: string) {
     setBuchzirkelBusy(id);
@@ -921,7 +932,7 @@ export default function AdminPage() {
                       <thead>
                         <tr style={{ borderBottom: "2px solid var(--color-arena-border)" }}>
                           {[
-                            "Titel", "Typ", "Status", "Veranstalter", "Genre",
+                            "Titel", "Typ", "Status", "Veranstalter", "Insta", "Genre",
                             "Bewerbung bis", "Bew.", "Angenom.", "Abgel.", "Teiln.", "Max.", "Abschn.", "Erstellt"
                           ].map((h) => (
                             <th key={h} style={{ padding: "0.4rem 0.5rem", textAlign: "left", whiteSpace: "nowrap", background: "var(--color-arena-bg)", color: "var(--color-arena-muted)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.03em" }}>{h}</th>
@@ -930,7 +941,7 @@ export default function AdminPage() {
                       </thead>
                       <tbody>
                         {filtered.length === 0 ? (
-                          <tr><td colSpan={13} style={{ padding: "1rem", color: "var(--color-arena-muted)" }}>Keine Buchzirkel gefunden.</td></tr>
+                          <tr><td colSpan={14} style={{ padding: "1rem", color: "var(--color-arena-muted)" }}>Keine Buchzirkel gefunden.</td></tr>
                         ) : filtered.map((z) => (
                           <tr key={z._id} style={{ borderBottom: "1px solid var(--color-arena-border-light)" }} className="hover:bg-[#f5f5f5]">
                             <td style={{ padding: "0.4rem 0.5rem", fontWeight: 500, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -953,6 +964,19 @@ export default function AdminPage() {
                             </td>
                             <td style={{ padding: "0.4rem 0.5rem", whiteSpace: "nowrap" }}>
                               <a href={`/profil?user=${encodeURIComponent(z.veranstalterUsername)}`} target="_blank" rel="noreferrer" className="hover:underline text-arena-muted">@{z.veranstalterUsername}</a>
+                            </td>
+                            <td style={{ padding: "0.4rem 0.5rem", whiteSpace: "nowrap" }}>
+                              {z.veranstalterInstagram ? (
+                                <button
+                                  title={`@${cleanInstaHandle(z.veranstalterInstagram)} kopieren`}
+                                  onClick={() => void navigator.clipboard.writeText(cleanInstaHandle(z.veranstalterInstagram))}
+                                  style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.78rem", color: "#9333ea", background: "#f3e8ff", border: "none", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontWeight: 600 }}
+                                >
+                                  📋 @{cleanInstaHandle(z.veranstalterInstagram)}
+                                </button>
+                              ) : (
+                                <span style={{ color: "var(--color-arena-muted)", fontSize: "0.75rem" }}>–</span>
+                              )}
                             </td>
                             <td style={{ padding: "0.4rem 0.5rem", whiteSpace: "nowrap", color: "var(--color-arena-muted)" }}>{z.genre}</td>
                             <td style={{ padding: "0.4rem 0.5rem", whiteSpace: "nowrap", color: new Date(z.bewerbungBis) < new Date() && z.status === "bewerbung" ? "#dc2626" : undefined }}>
@@ -987,7 +1011,18 @@ export default function AdminPage() {
                               ))}
                             </select>
                           </div>
-                          <div style={{ fontSize: "0.78rem", color: "var(--color-arena-muted)", marginBottom: 6 }}>@{z.veranstalterUsername} · {z.typ} · {z.genre}</div>
+                          <div style={{ fontSize: "0.78rem", color: "var(--color-arena-muted)", marginBottom: 4 }}>@{z.veranstalterUsername} · {z.typ} · {z.genre}</div>
+                          {z.veranstalterInstagram && (
+                            <div style={{ marginBottom: 6 }}>
+                              <button
+                                title={`@${cleanInstaHandle(z.veranstalterInstagram)} kopieren`}
+                                onClick={() => void navigator.clipboard.writeText(cleanInstaHandle(z.veranstalterInstagram))}
+                                style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.75rem", color: "#9333ea", background: "#f3e8ff", border: "none", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontWeight: 600 }}
+                              >
+                                📋 Insta: @{cleanInstaHandle(z.veranstalterInstagram)}
+                              </button>
+                            </div>
+                          )}
                           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", fontSize: "0.78rem" }}>
                             <span>📅 bis {formatDate(z.bewerbungBis)}</span>
                             <span>📬 {z.bewerbungen.gesamt} Bew. ({z.bewerbungen.angenommen} ✓ / {z.bewerbungen.abgelehnt} ✗)</span>

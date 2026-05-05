@@ -4,6 +4,7 @@ import {
   getBuchzirkelCollection,
   getBuchzirkelBewerbungenCollection,
   getBuchzirkelTeilnahmenCollection,
+  getUsersCollection,
 } from "@/lib/mongodb";
 
 export async function GET() {
@@ -60,6 +61,21 @@ export async function GET() {
       teilnahmenMap.set(key, (teilnahmenMap.get(key) ?? 0) + 1);
     }
 
+    // Instagram-Accounts der Veranstalter laden
+    const veranstalterUsernames = [...new Set(docs.map((d) => d.veranstalterUsername))];
+    const usersCol = await getUsersCollection();
+    const usersRaw = await usersCol
+      .find(
+        { username: { $in: veranstalterUsernames } },
+        { projection: { username: 1, "profile.socialInstagram": 1 } }
+      )
+      .toArray();
+    const instaMap = new Map<string, string>();
+    for (const u of usersRaw) {
+      const handle = (u as { profile?: { socialInstagram?: { value?: string } } }).profile?.socialInstagram?.value ?? "";
+      if (handle) instaMap.set(u.username, handle);
+    }
+
     const result = docs.map((d) => {
       const key = d._id.toString();
       const bew = bewerbungMap.get(key) ?? { ausstehend: 0, angenommen: 0, abgelehnt: 0, gesamt: 0 };
@@ -68,6 +84,7 @@ export async function GET() {
         bewerbungen: bew,
         teilnehmerAnzahl: teilnahmenMap.get(key) ?? 0,
         leseabschnitteAnzahl: Array.isArray(d.leseabschnitte) ? d.leseabschnitte.length : 0,
+        veranstalterInstagram: instaMap.get(d.veranstalterUsername) ?? "",
       };
     });
 
