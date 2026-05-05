@@ -39,10 +39,10 @@ export async function POST(request: Request) {
       .find({ status: "active" }, { projection: { _id: 1, email: 1 } })
       .toArray();
 
-    // Registrierte Nutzer mit Newsletter-Opt-in laden
+    // Registrierte Nutzer mit Newsletter-Opt-in laden (status optional – nicht deaktivierte Nutzer)
     const usersCol = await getUsersCollection();
     const registeredOptIns = await usersCol
-      .find({ newsletterOptIn: true, status: "active" }, { projection: { _id: 1, email: 1 } })
+      .find({ newsletterOptIn: true, status: { $ne: "deactivated" } }, { projection: { _id: 1, email: 1 } })
       .toArray();
 
     // E-Mails deduplizieren (externe Abonnenten haben Vorrang)
