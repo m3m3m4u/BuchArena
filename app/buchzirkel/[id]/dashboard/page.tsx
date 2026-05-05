@@ -297,6 +297,11 @@ export default function BuchzirkelDashboardPage() {
               </button>
             )}
             {zirkel.status === "aktiv" && (
+              <button type="button" onClick={() => statusAendern("bewerbung")} className="btn btn-secondary btn-sm">
+                ← Bewerbungen wieder öffnen
+              </button>
+            )}
+            {zirkel.status === "aktiv" && (
               <button type="button" onClick={() => statusAendern("abgeschlossen")} className="btn btn-secondary btn-sm">
                 Abschließen
               </button>
