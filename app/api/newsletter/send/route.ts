@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
 import { getSubscribersCollection, getNewsletterQueueCollection, getNewsletterArchiveCollection } from "@/lib/newsletter";
+import { getUsersCollection } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 export async function POST(request: Request) {
   try {
@@ -31,22 +33,47 @@ export async function POST(request: Request) {
       );
     }
 
-    // Alle aktiven Abonnenten laden
+    // Alle aktiven externen Abonnenten laden
     const subscribersCol = await getSubscribersCollection();
-    const activeSubscribers = await subscribersCol
+    const externalSubscribers = await subscribersCol
       .find({ status: "active" }, { projection: { _id: 1, email: 1 } })
       .toArray();
 
-    if (activeSubscribers.length === 0) {
+    // Registrierte Nutzer mit Newsletter-Opt-in laden
+    const usersCol = await getUsersCollection();
+    const registeredOptIns = await usersCol
+      .find({ newsletterOptIn: true, status: "active" }, { projection: { _id: 1, email: 1 } })
+      .toArray();
+
+    // E-Mails deduplizieren (externe Abonnenten haben Vorrang)
+    const emailSet = new Set<string>();
+    const allRecipients: { _id: ObjectId; email: string }[] = [];
+
+    for (const sub of externalSubscribers) {
+      const mail = sub.email.toLowerCase();
+      if (!emailSet.has(mail) && sub._id) {
+        emailSet.add(mail);
+        allRecipients.push({ _id: sub._id, email: sub.email });
+      }
+    }
+    for (const user of registeredOptIns) {
+      const mail = user.email.toLowerCase();
+      if (!emailSet.has(mail) && user._id) {
+        emailSet.add(mail);
+        allRecipients.push({ _id: user._id, email: user.email });
+      }
+    }
+
+    if (allRecipients.length === 0) {
       return NextResponse.json({ message: "Keine aktiven Abonnenten vorhanden.", queued: 0 });
     }
 
-    // Für jeden Abonnenten einen Queue-Eintrag erstellen
+    // Für jeden Empfänger einen Queue-Eintrag erstellen
     const queueCol = await getNewsletterQueueCollection();
     const now = new Date();
     const batchId = `batch_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-    const queueEntries = activeSubscribers.map((sub) => ({
+    const queueEntries = allRecipients.map((sub) => ({
       subscriberId: sub._id!,
       email: sub.email,
       subject,
@@ -70,7 +97,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      message: `Newsletter für ${queueEntries.length} Abonnenten in die Warteschlange aufgenommen.`,
+      message: `Newsletter für ${queueEntries.length} Empfänger in die Warteschlange aufgenommen.`,
       queued: queueEntries.length,
       batchId,
     });

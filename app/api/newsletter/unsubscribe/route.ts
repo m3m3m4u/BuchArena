@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSubscribersCollection, verifyUnsubscribeToken } from "@/lib/newsletter";
+import { getUsersCollection } from "@/lib/mongodb";
 
 /**
  * GET /api/newsletter/unsubscribe?token=<HMAC-signed-token>
@@ -30,10 +31,18 @@ export async function GET(request: Request) {
   }
 
   try {
+    // Externe Abonnenten abmelden
     const col = await getSubscribersCollection();
     await col.updateOne(
       { email },
       { $set: { status: "unsubscribed", unsubscribedAt: new Date() } }
+    );
+
+    // Registrierte Nutzer: newsletterOptIn deaktivieren
+    const usersCol = await getUsersCollection();
+    await usersCol.updateOne(
+      { email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
+      { $set: { newsletterOptIn: false } }
     );
 
     return new NextResponse(
