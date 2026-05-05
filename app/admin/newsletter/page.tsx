@@ -521,6 +521,7 @@ export default function NewsletterAdminPage() {
   const [testMessage, setTestMessage] = useState("");
 
   const [archive, setArchive] = useState<ArchiveEntry[]>([]);
+  const [batchProgress, setBatchProgress] = useState<Record<string, { sent: number; failed: number; pending: number; total: number }>>({});
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [previewEntry, setPreviewEntry] = useState<{ subject: string; htmlContent: string } | null>(null);
 
@@ -546,7 +547,19 @@ export default function NewsletterAdminPage() {
     try {
       const res = await fetch("/api/newsletter/archive");
       const data = (await res.json()) as { archive?: ArchiveEntry[] };
-      setArchive(data.archive ?? []);
+      const entries = data.archive ?? [];
+      setArchive(entries);
+      // Fortschritt für alle Batches laden
+      const progressMap: Record<string, { sent: number; failed: number; pending: number; total: number }> = {};
+      await Promise.all(
+        entries.map(async (e) => {
+          try {
+            const pr = await fetch(`/api/newsletter/progress?batchId=${encodeURIComponent(e.batchId)}`);
+            if (pr.ok) progressMap[e.batchId] = (await pr.json()) as { sent: number; failed: number; pending: number; total: number };
+          } catch { /* ignore */ }
+        })
+      );
+      setBatchProgress(progressMap);
     } finally {
       setArchiveLoading(false);
     }
@@ -1041,7 +1054,26 @@ export default function NewsletterAdminPage() {
                   {archive.map((entry) => (
                     <tr key={entry._id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 font-medium text-gray-800 max-w-xs truncate">{entry.subject}</td>
-                      <td className="px-4 py-2 text-gray-600">{entry.recipientCount}</td>
+                      <td className="px-4 py-2 text-gray-600">
+                        {(() => {
+                          const p = batchProgress[entry.batchId];
+                          if (!p) return entry.recipientCount;
+                          const pct = p.total > 0 ? Math.round((p.sent / p.total) * 100) : 0;
+                          return (
+                            <div className="min-w-[120px]">
+                              <div className="flex justify-between text-xs mb-0.5">
+                                <span className="text-green-700">✓ {p.sent}</span>
+                                {p.failed > 0 && <span className="text-red-600">✗ {p.failed}</span>}
+                                {p.pending > 0 && <span className="text-orange-500">⏳ {p.pending}</span>}
+                                <span className="text-gray-400">/ {p.total}</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                <div className="h-1.5 rounded-full bg-green-500" style={{ width: `${pct}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </td>
                       <td className="px-4 py-2 text-gray-500">{entry.sentBy}</td>
                       <td className="px-4 py-2 text-gray-500 whitespace-nowrap">
                         {new Date(entry.createdAt).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}
