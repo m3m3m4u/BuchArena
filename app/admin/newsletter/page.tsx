@@ -508,6 +508,9 @@ export default function NewsletterAdminPage() {
   const [statusMessage, setStatusMessage] = useState("");
   const [sendProgress, setSendProgress] = useState<{ sent: number; failed: number; total: number } | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [retryCount, setRetryCount] = useState<number | null>(null);
+  const [retryStatus, setRetryStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [retryMessage, setRetryMessage] = useState("");
 
   const [htmlMode, setHtmlMode] = useState(false);
   const [htmlSource, setHtmlSource] = useState("");
@@ -531,6 +534,11 @@ export default function NewsletterAdminPage() {
   useEffect(() => {
     const acc = getStoredAccount();
     setIsAdmin(acc?.role === "ADMIN" || acc?.role === "SUPERADMIN");
+    fetch("/api/newsletter/retry")
+      .then((r) => r.json())
+      .then((d: { count?: number }) => setRetryCount(d.count ?? 0))
+      .catch(() => { /* ignore */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadArchive = useCallback(async () => {
@@ -663,6 +671,37 @@ export default function NewsletterAdminPage() {
       setStatusMessage("Netzwerkfehler – bitte versuche es erneut.");
     }
   }, [editor, subject, htmlMode, htmlSource]);
+
+  const loadRetryCount = useCallback(async () => {
+    try {
+      const res = await fetch("/api/newsletter/retry");
+      if (res.ok) {
+        const data = (await res.json()) as { count: number };
+        setRetryCount(data.count);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  const handleRetry = useCallback(async () => {
+    if (!window.confirm("Alle fehlgeschlagenen / hängenden Einträge erneut in die Warteschlange stellen?")) return;
+    setRetryStatus("loading");
+    setRetryMessage("");
+    try {
+      const res = await fetch("/api/newsletter/retry", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      const data = (await res.json()) as { message?: string; retried?: number };
+      if (res.ok) {
+        setRetryStatus("success");
+        setRetryMessage(data.message ?? "Erneut in Warteschlange gestellt.");
+        setRetryCount(0);
+      } else {
+        setRetryStatus("error");
+        setRetryMessage(data.message ?? "Unbekannter Fehler.");
+      }
+    } catch {
+      setRetryStatus("error");
+      setRetryMessage("Netzwerkfehler.");
+    }
+  }, []);
 
   const handleTestSend = useCallback(async () => {
     if (!editor) return;
@@ -907,6 +946,18 @@ export default function NewsletterAdminPage() {
           )}
           {status === "success" && <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">✓ {statusMessage}</div>}
           {status === "error" && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">✗ {statusMessage}</div>}
+
+          {retryCount !== null && retryCount > 0 && (
+            <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm">
+              <p className="text-orange-800 font-medium mb-2">⚠ {retryCount} fehlgeschlagene / hängende Einträge in der Queue</p>
+              <button type="button" onClick={handleRetry} disabled={retryStatus === "loading"}
+                className="bg-orange-500 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                {retryStatus === "loading" ? "Wird zurückgesetzt…" : "Jetzt erneut versuchen"}
+              </button>
+              {retryStatus === "success" && <p className="mt-2 text-green-700 text-xs">✓ {retryMessage}</p>}
+              {retryStatus === "error" && <p className="mt-2 text-red-600 text-xs">✗ {retryMessage}</p>}
+            </div>
+          )}
 
           <button type="button" onClick={handleSend} disabled={status === "sending"}
             className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
