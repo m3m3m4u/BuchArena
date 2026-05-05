@@ -68,7 +68,7 @@ export default function HomePage() {
                 {account.username.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h1 className="text-xl m-0">Hallo, {account.username}! 👋</h1>
+                <h1 className="text-xl m-0">Hallo, {account.username}!</h1>
                 <p className="text-arena-muted text-sm m-0 mt-0.5">Willkommen zurück in der BuchArena</p>
               </div>
             </div>
