@@ -13,6 +13,7 @@ import { sendMail } from "@/lib/mail";
 
 const SEND_INTERVAL_MS = 30_000;   // 30 Sekunden zwischen zwei E-Mails
 const IDLE_INTERVAL_MS = 60_000;   // 60 Sekunden Pause wenn Queue leer
+const DAILY_LIMIT = 80;             // Max. E-Mails pro Tag (Resend-Limit: 100)
 
 let workerRunning = false;
 
@@ -103,8 +104,37 @@ function appendUnsubscribeFooter(html: string, email: string): string {
   return html + footer;
 }
 
-async function processNextQueueEntry(): Promise<boolean> {
+/** Millisekunden bis zur nächsten Mitternacht UTC */
+function msUntilMidnightUTC(): number {
+  const now = new Date();
+  const midnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+  return midnight.getTime() - now.getTime();
+}
+
+/** Anzahl der heute (UTC) bereits gesendeten E-Mails */
+async function countSentToday(): Promise<number> {
   const queue = await getNewsletterQueueCollection();
+  const startOfDay = new Date(Date.UTC(
+    new Date().getUTCFullYear(),
+    new Date().getUTCMonth(),
+    new Date().getUTCDate()
+  ));
+  return queue.countDocuments({ status: "sent", sentAt: { $gte: startOfDay } });
+}
+
+/**
+ * Gibt zurück:
+ *  true     – E-Mail wurde verarbeitet
+ *  false    – Queue leer
+ *  "limit"  – Tageslimit erreicht
+ */
+async function processNextQueueEntry(): Promise<boolean | "limit"> {
+  const queue = await getNewsletterQueueCollection();
+
+  const sentToday = await countSentToday();
+  if (sentToday >= DAILY_LIMIT) {
+    return "limit";
+  }
 
   const entry = await queue.findOneAndUpdate(
     { status: "pending" },
@@ -141,9 +171,15 @@ async function processNextQueueEntry(): Promise<boolean> {
 async function workerLoop(): Promise<void> {
   while (true) {
     try {
-      const hadEntry = await processNextQueueEntry();
+      const result = await processNextQueueEntry();
 
-      if (hadEntry) {
+      if (result === "limit") {
+        // Tageslimit erreicht: bis Mitternacht UTC warten
+        const waitMs = msUntilMidnightUTC() + 60_000; // 1 Minute Puffer
+        const waitMin = Math.round(waitMs / 60_000);
+        console.log(`[Newsletter] Tageslimit (${DAILY_LIMIT}) erreicht. Weiter in ~${waitMin} Minuten (nach Mitternacht UTC).`);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+      } else if (result === true) {
         // 30 Sekunden warten, dann nächsten Eintrag verarbeiten
         await new Promise((resolve) => setTimeout(resolve, SEND_INTERVAL_MS));
       } else {
