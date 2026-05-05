@@ -37,6 +37,11 @@ html, body {
   overflow-x: hidden;
 }
 
+/* Bilder niemals breiter als ihr Container */
+img {
+  max-width: 100%;
+}
+
 body {
   height: 100dvh;
   display: flex;
@@ -51,6 +56,31 @@ h1 { margin: 0; }
 .ProseMirror img.ProseMirror-selectednode {
   box-shadow: 0 0 0 3px #2563eb;
 }
+/* Bilder immer auf Container-Breite begrenzen */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+}
+/* Tabellen: scrollbar bei Überlauf */
+.ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow-x: auto;
+  display: block;
+  max-width: 100%;
+}
+.ProseMirror td, .ProseMirror th {
+  border: 1px solid #e5e7eb;
+  padding: 0.4rem 0.65rem;
+  min-width: 60px;
+}
+/* Code-Blöcke: horizontal scrollbar statt Overflow */
+.ProseMirror pre {
+  overflow-x: auto;
+  max-width: 100%;
+  white-space: pre;
+}
+.ProseMirror code { font-size: 0.875em; }
 .ProseMirror h1 {
   font-size: 1.875rem;
   font-weight: 700;
@@ -80,7 +110,7 @@ h1 { margin: 0; }
   margin: 0.5rem 0;
 }
 .ProseMirror hr { border: none; border-top: 1px solid #e5e7eb; margin: 1rem 0; }
-.ProseMirror a { color: #2563eb; text-decoration: underline; }
+.ProseMirror a { color: #2563eb; text-decoration: underline; overflow-wrap: break-word; word-break: break-word; }
 
 /* ── Twemoji ── */
 .twemoji {
@@ -117,6 +147,7 @@ h1 { margin: 0; }
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: clip;
 }
 
 #modal-root {

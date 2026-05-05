@@ -59,7 +59,7 @@ export default function NewsPage() {
 
             {post.layout === "image-left" && (
               <div className="flex gap-5 items-start flex-wrap sm:flex-nowrap">
-                <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="min-w-0">
+                <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="max-sm:flex-none max-sm:w-full max-sm:max-w-full min-w-0">
                   {post.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" loading="lazy" />
@@ -78,7 +78,7 @@ export default function NewsPage() {
                   className="flex-1 min-w-0 ProseMirror text-[0.93rem] leading-relaxed text-gray-700"
                   dangerouslySetInnerHTML={{ __html: post.htmlContent }}
                 />
-                <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="min-w-0">
+                <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="max-sm:flex-none max-sm:w-full max-sm:max-w-full min-w-0">
                   {post.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" loading="lazy" />

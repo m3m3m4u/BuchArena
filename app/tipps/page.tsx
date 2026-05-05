@@ -122,10 +122,10 @@ export default function TippsPage() {
     <main className="centered-main">
       <section className="w-full max-w-[1100px] rounded-[14px] bg-white px-12 py-10 box-border max-sm:px-4 max-sm:py-6">
         {/* Haupt-Tabs */}
-        <div className="flex gap-2 mb-5 border-b border-arena-border-light">
+        <div className="flex gap-2 mb-5 border-b border-arena-border-light overflow-x-auto pb-px">
           <button
             type="button"
-            className={`px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
+            className={`shrink-0 whitespace-nowrap px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
               mainTab === "social"
                 ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
                 : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
@@ -136,7 +136,7 @@ export default function TippsPage() {
           </button>
           <button
             type="button"
-            className={`px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
+            className={`shrink-0 whitespace-nowrap px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
               mainTab === "musik"
                 ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
                 : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
@@ -147,7 +147,7 @@ export default function TippsPage() {
           </button>
           <button
             type="button"
-            className={`px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
+            className={`shrink-0 whitespace-nowrap px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
               mainTab === "glossar"
                 ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
                 : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
@@ -158,7 +158,7 @@ export default function TippsPage() {
           </button>
           <button
             type="button"
-            className={`px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
+            className={`shrink-0 whitespace-nowrap px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
               mainTab === "beitrag-tool"
                 ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
                 : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
