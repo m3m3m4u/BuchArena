@@ -104,22 +104,35 @@ function appendUnsubscribeFooter(html: string, email: string): string {
   return html + footer;
 }
 
-/** Millisekunden bis zur nächsten Mitternacht UTC */
-function msUntilMidnightUTC(): number {
+/** Millisekunden bis zum nächsten 8:00 Uhr Europe/Berlin */
+function msUntil8amBerlin(): number {
   const now = new Date();
-  const midnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
-  return midnight.getTime() - now.getTime();
+  // Aktuelle Uhrzeit in Europe/Berlin ermitteln
+  const berlinNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
+  const berlinTarget = new Date(berlinNow);
+  berlinTarget.setHours(8, 0, 0, 0);
+  if (berlinTarget <= berlinNow) {
+    berlinTarget.setDate(berlinTarget.getDate() + 1);
+  }
+  // UTC-Offset kompensieren
+  const offsetMs = now.getTime() - berlinNow.getTime();
+  return berlinTarget.getTime() + offsetMs - now.getTime();
 }
 
-/** Anzahl der heute (UTC) bereits gesendeten E-Mails */
+/** Anzahl der seit dem letzten 8-Uhr-Slot (Europe/Berlin) gesendeten E-Mails */
 async function countSentToday(): Promise<number> {
   const queue = await getNewsletterQueueCollection();
-  const startOfDay = new Date(Date.UTC(
-    new Date().getUTCFullYear(),
-    new Date().getUTCMonth(),
-    new Date().getUTCDate()
-  ));
-  return queue.countDocuments({ status: "sent", sentAt: { $gte: startOfDay } });
+  const now = new Date();
+  const berlinNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
+  const berlinSlot = new Date(berlinNow);
+  berlinSlot.setHours(8, 0, 0, 0);
+  if (berlinSlot > berlinNow) {
+    // Vor 8 Uhr: letzten 8-Uhr-Slot (gestern) nehmen
+    berlinSlot.setDate(berlinSlot.getDate() - 1);
+  }
+  const offsetMs = now.getTime() - berlinNow.getTime();
+  const since = new Date(berlinSlot.getTime() + offsetMs);
+  return queue.countDocuments({ status: "sent", sentAt: { $gte: since } });
 }
 
 /**
@@ -174,10 +187,10 @@ async function workerLoop(): Promise<void> {
       const result = await processNextQueueEntry();
 
       if (result === "limit") {
-        // Tageslimit erreicht: bis Mitternacht UTC warten
-        const waitMs = msUntilMidnightUTC() + 60_000; // 1 Minute Puffer
+        // Tageslimit erreicht: bis 8:00 Uhr Europe/Berlin warten
+        const waitMs = msUntil8amBerlin();
         const waitMin = Math.round(waitMs / 60_000);
-        console.log(`[Newsletter] Tageslimit (${DAILY_LIMIT}) erreicht. Weiter in ~${waitMin} Minuten (nach Mitternacht UTC).`);
+        console.log(`[Newsletter] Tageslimit (${DAILY_LIMIT}) erreicht. Weiter um 8:00 Uhr (Europe/Berlin) in ~${waitMin} Minuten.`);
         await new Promise((resolve) => setTimeout(resolve, waitMs));
       } else if (result === true) {
         // 30 Sekunden warten, dann nächsten Eintrag verarbeiten
