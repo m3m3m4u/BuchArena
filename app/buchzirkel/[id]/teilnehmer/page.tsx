@@ -506,6 +506,8 @@ function FragebogenTab({
   bestehend: { frageId: string; antwort: string }[];
   onSaved: () => void;
 }) {
+  const hatAntworten = bestehend.length > 0 && bestehend.some((a) => a.antwort.trim() !== "");
+  const [editMode, setEditMode] = useState(!hatAntworten);
   const [antworten, setAntworten] = useState<Record<string, string>>(() => {
     const m: Record<string, string> = {};
     for (const a of bestehend) m[a.frageId] = a.antwort;
@@ -513,6 +515,13 @@ function FragebogenTab({
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Sync wenn bestehend sich von außen ändert (z. B. nach onSaved + load())
+  useEffect(() => {
+    const m: Record<string, string> = {};
+    for (const a of bestehend) m[a.frageId] = a.antwort;
+    setAntworten(m);
+  }, [bestehend]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -526,29 +535,85 @@ function FragebogenTab({
     });
     setSaving(false);
     setSaved(true);
+    setEditMode(false);
     onSaved();
   }
 
+  // Lesemodus: gespeicherte Antworten anzeigen
+  if (!editMode) {
+    return (
+      <section className="card mt-3">
+        <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+          <div>
+            <h2 className="text-base font-semibold m-0">📝 Abschluss-Fragebogen</h2>
+            <p className="text-sm text-arena-muted m-0 mt-0.5">Deine gespeicherten Antworten</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setSaved(false); setEditMode(true); }}
+            className="btn btn-secondary btn-sm"
+          >
+            ✏️ Antworten bearbeiten
+          </button>
+        </div>
+        <div className="flex flex-col gap-4">
+          {fragen.map((f) => {
+            const antwort = antworten[f.id] ?? "";
+            return (
+              <div key={f.id} className="flex flex-col gap-1.5">
+                <p className="text-sm font-semibold text-arena-text m-0">{f.frage}</p>
+                {antwort.trim() ? (
+                  <p className="text-sm text-arena-text m-0 whitespace-pre-wrap bg-gray-50 border border-arena-border-light rounded-lg px-3 py-2.5">{antwort}</p>
+                ) : (
+                  <p className="text-sm text-arena-muted m-0 italic">Noch keine Antwort eingetragen.</p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {saved && <p className="text-green-700 text-sm mt-3">✅ Antworten wurden gespeichert.</p>}
+      </section>
+    );
+  }
+
+  // Bearbeitungsmodus
   return (
     <section className="card mt-3">
-      <h2 className="text-base font-semibold m-0 mb-1">📝 Abschluss-Fragebogen</h2>
-      <p className="text-sm text-arena-muted m-0 mb-3">Der Autor möchte am Ende dein Feedback zu diesen Fragen. Du kannst deine Antworten jederzeit ändern und erneut absenden.</p>
+      <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
+        <h2 className="text-base font-semibold m-0">📝 Abschluss-Fragebogen</h2>
+        {hatAntworten && (
+          <button
+            type="button"
+            onClick={() => setEditMode(false)}
+            className="btn btn-secondary btn-sm"
+          >
+            Abbrechen
+          </button>
+        )}
+      </div>
+      <p className="text-sm text-arena-muted m-0 mb-4">Der Autor möchte am Ende dein Feedback zu diesen Fragen. Du kannst deine Antworten jederzeit ändern und erneut absenden.</p>
       <form onSubmit={submit} className="flex flex-col gap-4">
         {fragen.map((f) => (
-          <div key={f.id}>
-            <label className="label">{f.frage}</label>
+          <div key={f.id} className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-arena-text">{f.frage}</label>
             <textarea
               className="input"
-              rows={3}
+              rows={5}
               value={antworten[f.id] ?? ""}
               onChange={(e) => setAntworten((prev) => ({ ...prev, [f.id]: e.target.value }))}
             />
           </div>
         ))}
-        {saved && <p className="text-green-700 text-sm">Antworten gespeichert.</p>}
-        <button type="submit" disabled={saving} className="btn btn-primary self-start">
-          {saving ? "Wird gespeichert…" : "Antworten absenden"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button type="submit" disabled={saving} className="btn btn-primary">
+            {saving ? "Wird gespeichert…" : "Antworten absenden"}
+          </button>
+          {hatAntworten && (
+            <button type="button" onClick={() => setEditMode(false)} className="btn btn-secondary">
+              Abbrechen
+            </button>
+          )}
+        </div>
       </form>
     </section>
   );

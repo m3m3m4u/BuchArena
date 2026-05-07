@@ -6,6 +6,7 @@
 export const runtime = "nodejs";
 
 const WEBDAV_TIMEOUT_MS = 30_000;
+const WEBDAV_UPLOAD_TIMEOUT_MS = 5 * 60_000; // 5 Minuten für große Uploads
 
 function b64(str: string) {
   try {
@@ -138,7 +139,7 @@ export async function davPut(
       ...(contentType ? { "Content-Type": contentType } : {}),
     },
     body: blobBody,
-    signal: AbortSignal.timeout(WEBDAV_TIMEOUT_MS),
+    signal: AbortSignal.timeout(WEBDAV_UPLOAD_TIMEOUT_MS),
   });
   if (res.status === 409) {
     await ensureParentDir(key, c.url, c.auth, true);
@@ -149,7 +150,7 @@ export async function davPut(
         ...(contentType ? { "Content-Type": contentType } : {}),
       },
       body: blobBody,
-      signal: AbortSignal.timeout(WEBDAV_TIMEOUT_MS),
+      signal: AbortSignal.timeout(WEBDAV_UPLOAD_TIMEOUT_MS),
     });
   }
   if (!res.ok) {

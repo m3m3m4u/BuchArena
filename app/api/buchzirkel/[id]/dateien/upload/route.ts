@@ -8,6 +8,8 @@ import {
 import { getServerAccount } from "@/lib/server-auth";
 import { davPut } from "@/lib/bucharena-webdav";
 
+export const maxDuration = 300; // 5 Minuten für große Datei-Uploads
+
 const BUCHZIRKEL_DIR = "buchzirkel";
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 const ALLOWED_TYPES = ["application/pdf", "application/epub+zip"];

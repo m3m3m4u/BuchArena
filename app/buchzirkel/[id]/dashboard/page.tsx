@@ -256,15 +256,28 @@ export default function BuchzirkelDashboardPage() {
     const formData = new FormData();
     formData.append("file", file);
     if (abschnittId) formData.append("abschnittId", abschnittId);
-    const res = await fetch(`/api/buchzirkel/${params.id}/dateien/upload`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json() as { message?: string };
-    if (!res.ok) { setUploadError(data.message ?? "Upload fehlgeschlagen."); }
-    else { await load(); }
-    setUploading(false);
-    e.target.value = "";
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000); // 5 Minuten
+    try {
+      const res = await fetch(`/api/buchzirkel/${params.id}/dateien/upload`, {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+      const data = await res.json() as { message?: string };
+      if (!res.ok) { setUploadError(data.message ?? "Upload fehlgeschlagen."); }
+      else { await load(); }
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        setUploadError("Der Upload hat zu lange gedauert. Bitte prüfe deine Verbindung und versuche es erneut.");
+      } else {
+        setUploadError("Upload fehlgeschlagen. Bitte versuche es erneut.");
+      }
+    } finally {
+      clearTimeout(timeoutId);
+      setUploading(false);
+      e.target.value = "";
+    }
   }
 
   if (loading || !account) return <main className="top-centered-main"><p className="text-arena-muted text-center py-8">Wird geladen…</p></main>;
