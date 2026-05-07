@@ -54,13 +54,20 @@ export async function POST(
     }
 
     // Datei direkt als Binary-Body lesen (kein Multipart-Parsing)
-    const arrayBuf = await request.arrayBuffer();
+    let arrayBuf: ArrayBuffer;
+    try {
+      arrayBuf = await request.arrayBuffer();
+    } catch (bufErr) {
+      console.error("buchzirkel/upload: arrayBuffer() fehlgeschlagen:", bufErr);
+      return NextResponse.json({ message: "Datei konnte nicht gelesen werden – möglicherweise zu groß oder Verbindungsabbruch." }, { status: 400 });
+    }
     if (arrayBuf.byteLength === 0) {
       return NextResponse.json({ message: "Keine Datei übermittelt." }, { status: 400 });
     }
     if (arrayBuf.byteLength > MAX_FILE_SIZE) {
-      return NextResponse.json({ message: "Datei darf maximal 50 MB groß sein." }, { status: 400 });
+      return NextResponse.json({ message: `Datei darf maximal 50 MB groß sein (empfangen: ${Math.round(arrayBuf.byteLength / 1024 / 1024 * 10) / 10} MB).` }, { status: 400 });
     }
+    console.log(`buchzirkel/upload: Datei empfangen – ${fileName}, ${Math.round(arrayBuf.byteLength / 1024)} KB`);
 
     const fileId = randomUUID();
     const ext = isEpub ? ".epub" : ".pdf";
@@ -68,7 +75,14 @@ export async function POST(
     const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
     const masterPath = `${BUCHZIRKEL_DIR}/${id}/master/${fileId}${ext}`;
 
-    await davPut(masterPath, new Uint8Array(arrayBuf), contentType);
+    let davResult: { url: string; key: string } | null;
+    try {
+      davResult = await davPut(masterPath, new Uint8Array(arrayBuf), contentType);
+    } catch (davErr) {
+      console.error("buchzirkel/upload: davPut fehlgeschlagen:", davErr);
+      return NextResponse.json({ message: "Datei konnte nicht auf den Speicher hochgeladen werden. Bitte versuche es erneut." }, { status: 500 });
+    }
+    console.log(`buchzirkel/upload: WebDAV-Upload OK – ${masterPath}`);
 
     const dateiEntry = {
       id: fileId,
