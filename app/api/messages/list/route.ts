@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import { getMessagesCollection, getUsersCollection } from "@/lib/mongodb";
+import { getMessagesCollection, getMessageConversationsCollection, getUsersCollection } from "@/lib/mongodb";
 
 export async function GET(request: Request) {
   try {
@@ -78,76 +78,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ messages: items });
     }
 
-    // ── Konversationsliste: Aggregation gruppiert nach Gesprächspartner ──
+    // ── Konversationsliste: schnelle Abfrage aus messageConversations-Collection ──
     const me = account.username;
-    const aggResult = await messages
-      .aggregate<{
-        _id: string;
-        latestDoc: {
-          _id: ObjectId;
-          senderUsername: string;
-          recipientUsername: string;
-          subject: string;
-          body: string;
-          read: boolean;
-          readAt: Date | null;
-          threadId: ObjectId | null;
-          kooperationId: string | null;
-          bookCoAuthorId: string | null;
-          createdAt: Date;
-        };
-        unreadCount: number;
-      }>([
-        {
-          $match: {
-            $or: [
-              { senderUsername: me, deletedBySender: { $ne: true } },
-              { recipientUsername: me, deletedByRecipient: { $ne: true } },
-            ],
-          },
-        },
-        // Nur benötigte Felder laden – reduziert Sort- und Group-Aufwand erheblich
-        {
-          $project: {
-            senderUsername: 1,
-            recipientUsername: 1,
-            subject: 1,
-            body: 1,
-            read: 1,
-            readAt: 1,
-            threadId: 1,
-            kooperationId: 1,
-            bookCoAuthorId: 1,
-            createdAt: 1,
-          },
-        },
-        { $sort: { createdAt: -1 } },
-        {
-          $addFields: {
-            partner: {
-              $cond: [{ $eq: ["$senderUsername", me] }, "$recipientUsername", "$senderUsername"],
-            },
-            isUnread: {
-              $cond: [
-                { $and: [{ $eq: ["$recipientUsername", me] }, { $eq: ["$read", false] }] },
-                1,
-                0,
-              ],
-            },
-          },
-        },
-        {
-          $group: {
-            _id: "$partner",
-            latestDoc: { $first: "$$ROOT" },
-            unreadCount: { $sum: "$isUnread" },
-          },
-        },
-        { $sort: { "latestDoc.createdAt": -1 } },
-      ])
+    const convCol = await getMessageConversationsCollection();
+    const convDocs = await convCol
+      .find({ $or: [{ userA: me }, { userB: me }] })
+      .sort({ updatedAt: -1 })
       .toArray();
 
-    const partnerUsernames = aggResult.map((r) => r._id);
+    const partnerUsernames = convDocs.map((c) => (c.userA === me ? c.userB : c.userA));
     const usersCol = await getUsersCollection();
     const userDocs = await usersCol
       .find(
@@ -167,23 +106,23 @@ export async function GET(request: Request) {
       profileImageMap.set(u.username, u.profile?.profileImage?.value ?? "");
     }
 
-    const items = aggResult.map((r) => {
-      const d = r.latestDoc;
-      const partner = r._id;
+    const items = convDocs.map((c) => {
+      const partner = c.userA === me ? c.userB : c.userA;
+      const unreadCount = c.userA === me ? c.unreadForA : c.unreadForB;
       return {
-        id: d._id.toHexString(),
-        senderUsername: d.senderUsername,
-        recipientUsername: d.recipientUsername,
+        id: c.latestMessageId.toHexString(),
+        senderUsername: c.latestSender,
+        recipientUsername: c.latestRecipient,
         partner,
         displayName: displayNameMap.get(partner) ?? "",
         profileImage: profileImageMap.get(partner) ?? "",
-        subject: d.subject,
-        body: d.body,
-        read: d.read,
-        readAt: d.readAt?.toISOString() ?? null,
-        threadId: d.threadId?.toHexString() ?? null,
-        unreadCount: r.unreadCount,
-        createdAt: d.createdAt.toISOString(),
+        subject: c.latestSubject,
+        body: c.latestBody,
+        read: unreadCount === 0,
+        readAt: null,
+        threadId: null,
+        unreadCount,
+        createdAt: c.latestCreatedAt.toISOString(),
       };
     });
 

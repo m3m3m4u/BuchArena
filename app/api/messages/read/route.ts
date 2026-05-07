@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import { getMessagesCollection } from "@/lib/mongodb";
+import { getMessagesCollection, getMessageConversationsCollection } from "@/lib/mongodb";
 
 export async function POST(request: Request) {
   try {
@@ -19,6 +19,11 @@ export async function POST(request: Request) {
         { senderUsername: body.partner, recipientUsername: account.username, read: false },
         { $set: { read: true, readAt: new Date() } }
       );
+      // Unread-Count in Konversations-Summary zurücksetzen
+      const [userA, userB] = [account.username, body.partner].sort();
+      const isA = account.username === userA;
+      const convCol = await getMessageConversationsCollection();
+      await convCol.updateOne({ userA, userB }, { $set: { [isA ? "unreadForA" : "unreadForB"]: 0 } });
       return NextResponse.json({ message: "Als gelesen markiert." });
     }
 

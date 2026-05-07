@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import { getUsersCollection, getMessagesCollection } from "@/lib/mongodb";
+import { getUsersCollection, getMessagesCollection, getMessageConversationsCollection } from "@/lib/mongodb";
 import type { SendMessagePayload } from "@/lib/messages";
 
 export async function POST(request: Request) {
@@ -55,6 +55,7 @@ export async function POST(request: Request) {
       threadId = new ObjectId(rawThreadId);
     }
 
+    const now = new Date();
     const insertResult = await messages.insertOne({
       senderUsername: account.username,
       recipientUsername,
@@ -64,7 +65,7 @@ export async function POST(request: Request) {
       threadId,
       deletedBySender: false,
       deletedByRecipient: false,
-      createdAt: new Date(),
+      createdAt: now,
     });
 
     // Wenn neue Nachricht (kein Thread), setze _id als threadId
@@ -74,6 +75,32 @@ export async function POST(request: Request) {
         { $set: { threadId: insertResult.insertedId } },
       );
     }
+
+    // ── messageConversations aktuell halten (für schnelle Konversationsliste) ──
+    const [userA, userB] = [account.username, recipientUsername].sort();
+    const isA = account.username === userA;
+    const convCol = await getMessageConversationsCollection();
+    await convCol.updateOne(
+      { userA, userB },
+      {
+        $set: {
+          latestMessageId: insertResult.insertedId,
+          latestSender: account.username,
+          latestRecipient: recipientUsername,
+          latestSubject: subject,
+          latestBody: body,
+          latestCreatedAt: now,
+          updatedAt: now,
+        },
+        $inc: { [isA ? "unreadForB" : "unreadForA"]: 1 },
+        $setOnInsert: {
+          userA,
+          userB,
+          [isA ? "unreadForA" : "unreadForB"]: 0,
+        },
+      },
+      { upsert: true },
+    );
 
     return NextResponse.json({ message: "Nachricht gesendet." });
   } catch (err) {

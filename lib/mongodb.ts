@@ -1,11 +1,32 @@
 import bcrypt from "bcryptjs";
-import { MongoClient, type Collection, type Db, MongoServerError } from "mongodb";
+import { MongoClient, ObjectId, type Collection, type Db, MongoServerError } from "mongodb";
 import type { BookDocument } from "@/lib/books";
 import type { ProfileData, SpeakerProfileData, BloggerProfileData, TestleserProfileData, LektorenProfileData, VerlageProfileData } from "@/lib/profile";
 import type { SupportPost } from "@/lib/support";
 import type { DiscussionDocument } from "@/lib/discussions";
 import type { PollDocument, TauschDocument } from "@/lib/discussions";
 import type { MessageDocument } from "@/lib/messages";
+
+export type MessageConversationDocument = {
+  _id?: ObjectId;
+  /** Alphabetisch kleinerer Username */
+  userA: string;
+  /** Alphabetisch größerer Username */
+  userB: string;
+  latestMessageId: ObjectId;
+  latestSender: string;
+  latestRecipient: string;
+  latestSubject: string;
+  latestBody: string;
+  latestKooperationId?: string | null;
+  latestBookCoAuthorId?: string | null;
+  latestCreatedAt: Date;
+  updatedAt: Date;
+  /** Anzahl ungelesener Nachrichten für userA */
+  unreadForA: number;
+  /** Anzahl ungelesener Nachrichten für userB */
+  unreadForB: number;
+};
 import type { KalenderEvent } from "@/lib/kalender";
 import type { KooperationDocument } from "@/lib/kooperationen";
 import type { BuchzirkelDocument, BuchzirkelBewerbungDocument, BuchzirkelTeilnahmeDocument, BuchzirkelBeitragDocument } from "@/lib/buchzirkel";
@@ -189,6 +210,11 @@ async function initializeDatabase(db: Db) {
   await messages.createIndex({ recipientUsername: 1, read: 1, deletedByRecipient: 1 });
   // Batch-Read by partner
   await messages.createIndex({ senderUsername: 1, recipientUsername: 1, read: 1 });
+
+  const messageConversations = db.collection<MessageConversationDocument>("messageConversations");
+  await messageConversations.createIndex({ userA: 1, userB: 1 }, { unique: true });
+  await messageConversations.createIndex({ userA: 1, updatedAt: -1 });
+  await messageConversations.createIndex({ userB: 1, updatedAt: -1 });
 
   const analytics = db.collection("analytics");
   await analytics.createIndex({ timestamp: -1 });
@@ -374,6 +400,11 @@ export async function getPollsCollection(): Promise<Collection<PollDocument>> {
 export async function getMessagesCollection(): Promise<Collection<MessageDocument>> {
   const db = await getDatabase();
   return db.collection<MessageDocument>("messages");
+}
+
+export async function getMessageConversationsCollection(): Promise<Collection<MessageConversationDocument>> {
+  const db = await getDatabase();
+  return db.collection<MessageConversationDocument>("messageConversations");
 }
 
 export async function getTauschCollection(): Promise<Collection<TauschDocument>> {
