@@ -2795,7 +2795,7 @@ function ProfilPageInner() {
           <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem" }}>
             <span className="text-sm font-semibold">📝 Angezeigter Name</span>
             <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
-              Dieser Name wird bei Nachrichten, Lesezeichen und im Treffpunkt angezeigt.
+              Dieser Name wird bei Nachrichten, Lesezeichen, im Treffpunkt und im Kalender angezeigt.
             </p>
             <div className="flex gap-2 items-end">
               <input

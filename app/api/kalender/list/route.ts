@@ -30,14 +30,27 @@ export async function GET(request: Request) {
       .toArray();
 
     // Look up displayNames for all creators
+    // createdBy may contain an old email-as-username, so match on both username and email
     const creatorUsernames = [...new Set(events.map((e) => e.createdBy))];
     const usersCol = await getUsersCollection();
     const creators = await usersCol
-      .find({ username: { $in: creatorUsernames } }, { projection: { username: 1, displayName: 1 } })
+      .find(
+        { $or: [{ username: { $in: creatorUsernames } }, { email: { $in: creatorUsernames } }] },
+        { projection: { username: 1, email: 1, displayName: 1 } }
+      )
       .toArray();
-    const displayNameMap = new Map<string, string>(
-      creators.map((u) => [u.username as string, (u.displayName as string | undefined) ?? ""])
-    );
+
+    const displayNameMap = new Map<string, string>();
+    for (const u of creators) {
+      const name = (u.displayName as string | undefined) || (u.username as string);
+      if (creatorUsernames.includes(u.username as string)) {
+        displayNameMap.set(u.username as string, name);
+      }
+      // legacy: createdBy was stored as email (when username was the email)
+      if (creatorUsernames.includes(u.email as string)) {
+        displayNameMap.set(u.email as string, name);
+      }
+    }
 
     const list = events.map((e) => ({
       id: e._id!.toString(),
