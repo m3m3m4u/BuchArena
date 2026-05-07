@@ -29,25 +29,28 @@ export async function GET(request: Request) {
       .sort({ date: 1, timeFrom: 1 })
       .toArray();
 
-    // Look up displayNames for all creators
+    // Look up displayNames for all creators AND participants
     // createdBy may contain an old email-as-username, so match on both username and email
     const creatorUsernames = [...new Set(events.map((e) => e.createdBy))];
+    const allParticipants = [...new Set(events.flatMap((e) => e.participants as string[]))];
+    const allLookupIds = [...new Set([...creatorUsernames, ...allParticipants])];
+
     const usersCol = await getUsersCollection();
-    const creators = await usersCol
+    const foundUsers = await usersCol
       .find(
-        { $or: [{ username: { $in: creatorUsernames } }, { email: { $in: creatorUsernames } }] },
+        { $or: [{ username: { $in: allLookupIds } }, { email: { $in: allLookupIds } }] },
         { projection: { username: 1, email: 1, displayName: 1 } }
       )
       .toArray();
 
     const displayNameMap = new Map<string, string>();
-    for (const u of creators) {
+    for (const u of foundUsers) {
       const name = (u.displayName as string | undefined) || (u.username as string);
-      if (creatorUsernames.includes(u.username as string)) {
+      if (allLookupIds.includes(u.username as string)) {
         displayNameMap.set(u.username as string, name);
       }
-      // legacy: createdBy was stored as email (when username was the email)
-      if (creatorUsernames.includes(u.email as string)) {
+      // legacy: stored as email
+      if (allLookupIds.includes(u.email as string)) {
         displayNameMap.set(u.email as string, name);
       }
     }
@@ -66,7 +69,10 @@ export async function GET(request: Request) {
       createdBy: e.createdBy,
       createdByDisplayName: displayNameMap.get(e.createdBy) || e.createdBy,
       participantCount: e.participants.length,
-      participants: e.participants,
+      participants: e.participants as string[],
+      participantDisplayNames: Object.fromEntries(
+        (e.participants as string[]).map((p) => [p, displayNameMap.get(p) || p])
+      ),
       createdAt: e.createdAt,
     }));
 

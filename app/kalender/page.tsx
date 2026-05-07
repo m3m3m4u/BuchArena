@@ -29,6 +29,7 @@ interface KalenderEvent {
   createdByDisplayName: string;
   participantCount: number;
   participants: string[];
+  participantDisplayNames: Record<string, string>;
   createdAt: string;
 }
 
@@ -1202,7 +1203,7 @@ export default function KalenderPage() {
                           href={`/autor/${encodeURIComponent(p)}`}
                           className="px-3 py-1 bg-[var(--color-arena-blue)] text-white text-sm rounded hover:bg-[var(--color-arena-blue-mid)] transition-colors"
                         >
-                          {p}
+                          {selectedEvent.participantDisplayNames?.[p] || p}
                         </Link>
                       ))}
                     </div>
