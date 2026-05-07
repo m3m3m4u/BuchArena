@@ -1028,7 +1028,7 @@ export default function KalenderPage() {
                                         onClick={(e) => e.stopPropagation()}
                                         className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-arena-blue)] text-white hover:opacity-80 transition-opacity"
                                       >
-                                        {p}
+                                        {event.participantDisplayNames?.[p] || p}
                                       </Link>
                                     ))}
                                   </div>
