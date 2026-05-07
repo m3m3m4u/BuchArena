@@ -44,14 +44,18 @@ export async function GET(request: Request) {
       .toArray();
 
     const displayNameMap = new Map<string, string>();
+    const usernameMap = new Map<string, string>(); // legacy-id -> real username
     for (const u of foundUsers) {
       const name = (u.displayName as string | undefined) || (u.username as string);
-      if (allLookupIds.includes(u.username as string)) {
-        displayNameMap.set(u.username as string, name);
+      const realUsername = u.username as string;
+      if (allLookupIds.includes(realUsername)) {
+        displayNameMap.set(realUsername, name);
+        usernameMap.set(realUsername, realUsername);
       }
       // legacy: stored as email
       if (allLookupIds.includes(u.email as string)) {
         displayNameMap.set(u.email as string, name);
+        usernameMap.set(u.email as string, realUsername);
       }
     }
 
@@ -67,11 +71,15 @@ export async function GET(request: Request) {
       location: e.location ?? null,
       link: e.link ?? null,
       createdBy: e.createdBy,
+      createdByUsername: usernameMap.get(e.createdBy) || e.createdBy,
       createdByDisplayName: displayNameMap.get(e.createdBy) || e.createdBy,
       participantCount: e.participants.length,
       participants: e.participants as string[],
       participantDisplayNames: Object.fromEntries(
         (e.participants as string[]).map((p) => [p, displayNameMap.get(p) || p])
+      ),
+      participantUsernames: Object.fromEntries(
+        (e.participants as string[]).map((p) => [p, usernameMap.get(p) || p])
       ),
       createdAt: e.createdAt,
     }));

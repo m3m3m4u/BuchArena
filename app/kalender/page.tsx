@@ -26,10 +26,12 @@ interface KalenderEvent {
   location: KalenderLocation | null;
   link: string | null;
   createdBy: string;
+  createdByUsername: string;
   createdByDisplayName: string;
   participantCount: number;
   participants: string[];
   participantDisplayNames: Record<string, string>;
+  participantUsernames: Record<string, string>;
   createdAt: string;
 }
 
@@ -1024,7 +1026,7 @@ export default function KalenderPage() {
                                     {event.participants.map((p) => (
                                       <Link
                                         key={p}
-                                        href={`/autor/${encodeURIComponent(p)}`}
+                                        href={`/autor/${encodeURIComponent(event.participantUsernames?.[p] || p)}`}
                                         onClick={(e) => e.stopPropagation()}
                                         className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-arena-blue)] text-white hover:opacity-80 transition-opacity"
                                       >
@@ -1188,7 +1190,7 @@ export default function KalenderPage() {
                   <div>
                     <label className="block font-semibold mb-1">Erstellt von</label>
                     <p>
-                      <Link href={`/autor/${encodeURIComponent(selectedEvent.createdBy)}`} className="text-[var(--color-arena-link)] hover:underline">
+                      <Link href={`/autor/${encodeURIComponent(selectedEvent.createdByUsername || selectedEvent.createdBy)}`} className="text-[var(--color-arena-link)] hover:underline">
                         {selectedEvent.createdByDisplayName || selectedEvent.createdBy}
                       </Link>
                     </p>
@@ -1200,7 +1202,7 @@ export default function KalenderPage() {
                       {selectedEvent.participants.map((p) => (
                         <Link
                           key={p}
-                          href={`/autor/${encodeURIComponent(p)}`}
+                          href={`/autor/${encodeURIComponent(selectedEvent.participantUsernames?.[p] || p)}`}
                           className="px-3 py-1 bg-[var(--color-arena-blue)] text-white text-sm rounded hover:bg-[var(--color-arena-blue-mid)] transition-colors"
                         >
                           {selectedEvent.participantDisplayNames?.[p] || p}
