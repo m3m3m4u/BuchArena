@@ -20,6 +20,7 @@ type DiscussionItem = {
   hasProfile?: boolean;
   hasSpeakerProfile?: boolean;
   hasBloggerProfile?: boolean;
+  isAdmin?: boolean;
   unread?: boolean;
 };
 
@@ -36,11 +37,12 @@ type PollItem = {
   createdAt: string;
 };
 
-function RoleBadges({ username, hasProfile, hasSpeakerProfile, hasBloggerProfile }: { username: string; hasProfile?: boolean; hasSpeakerProfile?: boolean; hasBloggerProfile?: boolean }) {
+function RoleBadges({ username, hasProfile, hasSpeakerProfile, hasBloggerProfile, isAdmin }: { username: string; hasProfile?: boolean; hasSpeakerProfile?: boolean; hasBloggerProfile?: boolean; isAdmin?: boolean }) {
   const badges: { label: string; href: string }[] = [];
   if (hasProfile) badges.push({ label: "Autor", href: `/autor/${encodeURIComponent(username)}` });
   if (hasBloggerProfile) badges.push({ label: "Blogger", href: `/blogger/${encodeURIComponent(username)}` });
   if (hasSpeakerProfile) badges.push({ label: "Sprecher", href: `/sprecher/${encodeURIComponent(username)}` });
+  if (isAdmin) badges.push({ label: "Admin", href: `/nachrichten?to=${encodeURIComponent(username)}` });
   if (badges.length === 0) return null;
   return (
     <span className="text-xs text-arena-muted">
@@ -386,7 +388,7 @@ export default function DiskussionenPage() {
                           )}
                           <span className="truncate">
                             von {d.displayName || d.authorUsername}{" "}
-                            <RoleBadges username={d.authorUsername} hasProfile={d.hasProfile} hasSpeakerProfile={d.hasSpeakerProfile} hasBloggerProfile={d.hasBloggerProfile} />
+                            <RoleBadges username={d.authorUsername} hasProfile={d.hasProfile} hasSpeakerProfile={d.hasSpeakerProfile} hasBloggerProfile={d.hasBloggerProfile} isAdmin={d.isAdmin} />
                           </span>
                         </div>
                         <span className="text-xs text-arena-muted flex-shrink-0">

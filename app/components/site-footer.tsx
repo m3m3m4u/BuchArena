@@ -16,6 +16,35 @@ export default function SiteFooter() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Support compose overlay
+  const [showSupport, setShowSupport] = useState(false);
+  const [supportSubject, setSupportSubject] = useState("");
+  const [supportBody, setSupportBody] = useState("");
+  const [supportMsg, setSupportMsg] = useState("");
+  const [supportSending, setSupportSending] = useState(false);
+
+  async function handleSupportSend() {
+    if (!supportBody.trim()) return;
+    setSupportSending(true);
+    try {
+      const res = await fetch("/api/messages/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipientUsername: "Kopernikus", subject: supportSubject.trim() || "Support-Anfrage", body: supportBody }),
+      });
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Senden fehlgeschlagen.");
+      setSupportMsg("Nachricht gesendet!");
+      setSupportSubject("");
+      setSupportBody("");
+      setTimeout(() => { setShowSupport(false); setSupportMsg(""); }, 1500);
+    } catch (err) {
+      setSupportMsg(err instanceof Error ? err.message : "Fehler beim Senden.");
+    } finally {
+      setSupportSending(false);
+    }
+  }
+
   const fetchUnread = useCallback(async () => {
     try {
       const res = await fetch("/api/messages/unread-count", { method: "GET" });
@@ -63,6 +92,7 @@ export default function SiteFooter() {
   }
 
   return (
+    <>
     <footer className="flex-shrink-0 border-t border-arena-border bg-white relative z-0">
       <div className="site-shell flex flex-wrap items-center justify-between gap-2 sm:gap-4">
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 text-[0.82rem] sm:text-[0.95rem]">
@@ -99,6 +129,9 @@ export default function SiteFooter() {
             <Link href="/info" className="btn">FAQ</Link>
             <Link href="/impressum" className="btn">Impressum &amp; Datenschutz</Link>
             <button type="button" className="btn" onClick={openCookieSettings}>Cookies</button>
+            {account && (
+              <button type="button" className="btn" onClick={() => { setSupportMsg(""); setShowSupport(true); }}>Support</button>
+            )}
           </div>
 
           {/* Mobile: 3-dot menu */}
@@ -123,6 +156,9 @@ export default function SiteFooter() {
                 <Link href="/info" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>FAQ</Link>
                 <Link href="/impressum" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Impressum &amp; Datenschutz</Link>
                 <button type="button" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50" onClick={() => { openCookieSettings(); setMenuOpen(false); }}>Cookies</button>
+                {account && (
+                  <button type="button" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50" onClick={() => { setSupportMsg(""); setShowSupport(true); setMenuOpen(false); }}>Support</button>
+                )}
                 {account && (
                   <>
                     <div className="my-1 border-t border-gray-100" />
@@ -159,5 +195,50 @@ export default function SiteFooter() {
         </div>
       </div>
     </footer>
+
+    {showSupport && (
+      <div className="overlay-backdrop" onClick={() => setShowSupport(false)}>
+        <div className="card" style={{ maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg m-0">Support-Nachricht</h2>
+            <button className="btn btn-sm" onClick={() => setShowSupport(false)}>✕</button>
+          </div>
+          <p className="text-sm text-arena-muted mt-1 mb-3">Schreib uns eine Nachricht – wir melden uns so schnell wie möglich.</p>
+          <label className="block">
+            <span className="text-sm font-semibold">Betreff</span>
+            <input
+              className="input-base w-full mt-1"
+              value={supportSubject}
+              onChange={(e) => setSupportSubject(e.target.value)}
+              placeholder="z.B. Problem mit meinem Profil"
+              maxLength={200}
+            />
+          </label>
+          <label className="block mt-2">
+            <span className="text-sm font-semibold">Nachricht</span>
+            <textarea
+              className="input-base w-full mt-1"
+              rows={6}
+              value={supportBody}
+              onChange={(e) => setSupportBody(e.target.value)}
+              placeholder="Beschreibe dein Anliegen ..."
+              maxLength={5000}
+            />
+          </label>
+          {supportMsg && (
+            <p className={`text-sm mt-1 ${supportMsg.includes("gesendet") ? "text-green-700" : "text-red-700"}`}>
+              {supportMsg}
+            </p>
+          )}
+          <div className="flex gap-2 mt-3">
+            <button className="btn btn-primary" disabled={supportSending || !supportBody.trim()} onClick={() => void handleSupportSend()}>
+              {supportSending ? "Wird gesendet …" : "Senden"}
+            </button>
+            <button className="btn" onClick={() => setShowSupport(false)}>Abbrechen</button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

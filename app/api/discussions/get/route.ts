@@ -33,19 +33,21 @@ export async function POST(request: Request) {
     const users = await getUsersCollection();
     const authorDocs = await users
       .find({ username: { $in: [...allAuthors] } })
-      .project({ username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, displayName: 1 })
+      .project({ username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, displayName: 1, role: 1 })
       .toArray();
 
-    const profileMap = new Map<string, { hasProfile: boolean; hasSpeakerProfile: boolean; hasBloggerProfile: boolean; displayName: string }>();
+    const profileMap = new Map<string, { hasProfile: boolean; hasSpeakerProfile: boolean; hasBloggerProfile: boolean; displayName: string; isAdmin: boolean }>();
     for (const u of authorDocs) {
       const p = u.profile as Record<string, unknown> | undefined;
       const sp = u.speakerProfile as Record<string, unknown> | undefined;
       const bp = u.bloggerProfile as Record<string, unknown> | undefined;
+      const role = (u.role as string) ?? "USER";
       profileMap.set(u.username, {
         hasProfile: !!(p?.name as { value?: string } | undefined)?.value?.trim(),
         hasSpeakerProfile: !!(sp?.name as { value?: string } | undefined)?.value?.trim(),
         hasBloggerProfile: !!(bp?.name as { value?: string } | undefined)?.value?.trim(),
         displayName: (u.displayName as string) || "",
+        isAdmin: role === "ADMIN" || role === "SUPERADMIN",
       });
     }
 
@@ -64,6 +66,7 @@ export async function POST(request: Request) {
         hasProfile: rProfiles?.hasProfile ?? false,
         hasSpeakerProfile: rProfiles?.hasSpeakerProfile ?? false,
         hasBloggerProfile: rProfiles?.hasBloggerProfile ?? false,
+        isAdmin: rProfiles?.isAdmin ?? false,
       };
     });
 
@@ -82,6 +85,7 @@ export async function POST(request: Request) {
         hasProfile: authorProfiles?.hasProfile ?? false,
         hasSpeakerProfile: authorProfiles?.hasSpeakerProfile ?? false,
         hasBloggerProfile: authorProfiles?.hasBloggerProfile ?? false,
+        isAdmin: authorProfiles?.isAdmin ?? false,
       },
     });
   } catch {

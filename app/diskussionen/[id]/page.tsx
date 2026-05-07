@@ -22,6 +22,7 @@ type ReplyItem = {
   hasProfile?: boolean;
   hasSpeakerProfile?: boolean;
   hasBloggerProfile?: boolean;
+  isAdmin?: boolean;
 };
 
 type DiscussionDetail = {
@@ -38,6 +39,7 @@ type DiscussionDetail = {
   hasProfile?: boolean;
   hasSpeakerProfile?: boolean;
   hasBloggerProfile?: boolean;
+  isAdmin?: boolean;
 };
 
 function formatBody(text: string) {
@@ -81,11 +83,12 @@ function timeAgo(dateString: string): string {
   return `vor ${months} Monat${months > 1 ? "en" : ""}`;
 }
 
-function RoleBadges({ username, hasProfile, hasSpeakerProfile, hasBloggerProfile }: { username: string; hasProfile?: boolean; hasSpeakerProfile?: boolean; hasBloggerProfile?: boolean }) {
+function RoleBadges({ username, hasProfile, hasSpeakerProfile, hasBloggerProfile, isAdmin }: { username: string; hasProfile?: boolean; hasSpeakerProfile?: boolean; hasBloggerProfile?: boolean; isAdmin?: boolean }) {
   const badges: { label: string; href: string }[] = [];
   if (hasProfile) badges.push({ label: "Autor", href: `/autor/${encodeURIComponent(username)}` });
   if (hasBloggerProfile) badges.push({ label: "Blogger", href: `/blogger/${encodeURIComponent(username)}` });
   if (hasSpeakerProfile) badges.push({ label: "Sprecher", href: `/sprecher/${encodeURIComponent(username)}` });
+  if (isAdmin) badges.push({ label: "Admin", href: `/nachrichten?to=${encodeURIComponent(username)}` });
   if (badges.length === 0) return null;
   return (
     <span className="text-xs text-arena-muted">
@@ -522,7 +525,7 @@ export default function DiskussionDetailPage() {
                 <div className="flex items-center justify-between gap-2 text-sm text-arena-muted">
                   <span>
                     von <strong>{discussion.displayName || discussion.authorUsername}</strong>{" "}
-                    <RoleBadges username={discussion.authorUsername} hasProfile={discussion.hasProfile} hasSpeakerProfile={discussion.hasSpeakerProfile} hasBloggerProfile={discussion.hasBloggerProfile} />
+                    <RoleBadges username={discussion.authorUsername} hasProfile={discussion.hasProfile} hasSpeakerProfile={discussion.hasSpeakerProfile} hasBloggerProfile={discussion.hasBloggerProfile} isAdmin={discussion.isAdmin} />
                   </span>
                   <span className="text-xs text-arena-muted">
                     {timeAgo(discussion.createdAt)}
@@ -618,7 +621,7 @@ export default function DiskussionDetailPage() {
                             <div className="flex items-center justify-between gap-2 mb-2">
                               <span className="flex items-center gap-1.5 flex-wrap">
                                 <strong>{reply.displayName || reply.authorUsername}</strong>{" "}
-                                <RoleBadges username={reply.authorUsername} hasProfile={reply.hasProfile} hasSpeakerProfile={reply.hasSpeakerProfile} hasBloggerProfile={reply.hasBloggerProfile} />
+                                <RoleBadges username={reply.authorUsername} hasProfile={reply.hasProfile} hasSpeakerProfile={reply.hasSpeakerProfile} hasBloggerProfile={reply.hasBloggerProfile} isAdmin={reply.isAdmin} />
                                 {lastReadAt && new Date(reply.createdAt) > lastReadAt && (
                                   <span className="text-xs bg-arena-yellow text-arena-blue px-1.5 py-0.5 rounded font-medium">Neu</span>
                                 )}

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { getStoredAccount, clearStoredAccount, type AccountRole } from "@/lib/client-account";
 
 /* ── Typen ── */
@@ -65,7 +65,9 @@ function formatDateSeparator(dateString: string): string {
 }
 
 /* ── Hauptseite ── */
-export default function NachrichtenPage() {
+function NachrichtenPageInner() {
+  const searchParams = useSearchParams();
+  const toParam = searchParams.get("to");
   const [username, setUsername] = useState("");
   const [accountRole, setAccountRole] = useState<AccountRole>("USER");
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
@@ -123,6 +125,14 @@ export default function NachrichtenPage() {
       setAccountRole(account.role);
     }
   }, []);
+
+  /* Auto-open new chat from ?to= query param */
+  useEffect(() => {
+    if (toParam) {
+      setNewRecipient(toParam);
+      setShowNewChat(true);
+    }
+  }, [toParam]);
 
   /* ── Konversationen laden ── */
   const router = useRouter();
@@ -882,5 +892,13 @@ export default function NachrichtenPage() {
         )}
       </section>
     </main>
+  );
+}
+
+export default function NachrichtenPage() {
+  return (
+    <Suspense>
+      <NachrichtenPageInner />
+    </Suspense>
   );
 }
