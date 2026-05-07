@@ -26,6 +26,7 @@ interface KalenderEvent {
   location: KalenderLocation | null;
   link: string | null;
   createdBy: string;
+  createdByDisplayName: string;
   participantCount: number;
   participants: string[];
   createdAt: string;
@@ -380,7 +381,7 @@ export default function KalenderPage() {
               <small>${event.category}</small><br>
               ${event.location?.street ? `${event.location.street}<br>` : ""}
               ${event.location?.zipCode ? `${event.location.zipCode} ` : ""}${event.location?.city ?? ""}<br>
-              <small>von ${event.createdBy}</small>
+              <small>von ${event.createdByDisplayName || event.createdBy}</small>
             </div>`
           );
 
@@ -1014,7 +1015,7 @@ export default function KalenderPage() {
                               )}
                             </div>
                             <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 shrink-0 flex-wrap">
-                              <div className="text-xs text-[var(--color-arena-muted)]">von {event.createdBy}</div>
+                              <div className="text-xs text-[var(--color-arena-muted)]">von {event.createdByDisplayName || event.createdBy}</div>
                               {event.participants.length > 0 && (
                                 <div className="sm:text-right">
                                   <div className="text-xs text-[var(--color-arena-muted)] mb-1">Dabei ({event.participants.length}):</div>
@@ -1187,7 +1188,7 @@ export default function KalenderPage() {
                     <label className="block font-semibold mb-1">Erstellt von</label>
                     <p>
                       <Link href={`/autor/${encodeURIComponent(selectedEvent.createdBy)}`} className="text-[var(--color-arena-link)] hover:underline">
-                        {selectedEvent.createdBy}
+                        {selectedEvent.createdByDisplayName || selectedEvent.createdBy}
                       </Link>
                     </p>
                   </div>
@@ -1232,7 +1233,7 @@ export default function KalenderPage() {
                         ✎ Bearbeiten
                       </button>
                     )}
-                    {isUserRole === "admin" && (
+                    {(isUserRole === "user" || isUserRole === "admin") && (
                       <button
                         onClick={handleDeleteEvent}
                         className="px-4 py-2 border border-red-500 text-red-600 font-bold rounded hover:bg-red-50"

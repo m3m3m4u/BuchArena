@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getKalenderCollection } from "@/lib/mongodb";
+import { getKalenderCollection, getUsersCollection } from "@/lib/mongodb";
 
 export async function GET(request: Request) {
   try {
@@ -29,6 +29,16 @@ export async function GET(request: Request) {
       .sort({ date: 1, timeFrom: 1 })
       .toArray();
 
+    // Look up displayNames for all creators
+    const creatorUsernames = [...new Set(events.map((e) => e.createdBy))];
+    const usersCol = await getUsersCollection();
+    const creators = await usersCol
+      .find({ username: { $in: creatorUsernames } }, { projection: { username: 1, displayName: 1 } })
+      .toArray();
+    const displayNameMap = new Map<string, string>(
+      creators.map((u) => [u.username as string, (u.displayName as string | undefined) ?? ""])
+    );
+
     const list = events.map((e) => ({
       id: e._id!.toString(),
       title: e.title,
@@ -41,6 +51,7 @@ export async function GET(request: Request) {
       location: e.location ?? null,
       link: e.link ?? null,
       createdBy: e.createdBy,
+      createdByDisplayName: displayNameMap.get(e.createdBy) || e.createdBy,
       participantCount: e.participants.length,
       participants: e.participants,
       createdAt: e.createdAt,

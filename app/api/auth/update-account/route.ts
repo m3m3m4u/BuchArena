@@ -178,6 +178,14 @@ export async function POST(request: Request) {
         { username: oldUsername },
         { $set: { username: updatedUsername } }
       );
+      await database.collection("kalender").updateMany(
+        { createdBy: oldUsername },
+        { $set: { createdBy: updatedUsername } }
+      );
+      await database.collection("kalender").updateMany(
+        { participants: oldUsername },
+        { $set: { "participants.$": updatedUsername } }
+      );
     }
 
     // Issue new JWT with updated info
