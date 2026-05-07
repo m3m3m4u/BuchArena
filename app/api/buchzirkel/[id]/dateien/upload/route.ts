@@ -12,7 +12,6 @@ export const maxDuration = 300; // 5 Minuten für große Datei-Uploads
 
 const BUCHZIRKEL_DIR = "buchzirkel";
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
-const ALLOWED_TYPES = ["application/pdf", "application/epub+zip"];
 
 export async function POST(
   request: Request,
@@ -47,7 +46,10 @@ export async function POST(
       return NextResponse.json({ message: "Keine Datei übermittelt." }, { status: 400 });
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    const lowerName = file.name.toLowerCase();
+    const isEpub = lowerName.endsWith(".epub");
+    const isPdf = lowerName.endsWith(".pdf");
+    if (!isEpub && !isPdf) {
       return NextResponse.json({ message: "Nur PDF- und EPUB-Dateien sind erlaubt." }, { status: 400 });
     }
 
@@ -56,12 +58,13 @@ export async function POST(
     }
 
     const fileId = randomUUID();
-    const ext = file.name.endsWith(".epub") ? ".epub" : ".pdf";
+    const ext = isEpub ? ".epub" : ".pdf";
+    const contentType = isEpub ? "application/epub+zip" : "application/pdf";
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
     const masterPath = `${BUCHZIRKEL_DIR}/${id}/master/${fileId}${ext}`;
 
     const bytes = new Uint8Array(await file.arrayBuffer());
-    await davPut(masterPath, bytes, file.type);
+    await davPut(masterPath, bytes, contentType);
 
     // Teilnehmer-spezifische Wasserzeichen-Pfade anlegen
     // Die Datei wird beim ersten Zugriff dynamisch mit Wasserzeichen gerendert

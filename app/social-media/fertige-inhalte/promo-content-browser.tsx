@@ -75,8 +75,8 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
     ? "inline-flex w-fit items-center rounded-full bg-arena-blue px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-arena-yellow"
     : "inline-flex w-fit items-center rounded-full bg-arena-yellow px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-arena-blue";
   const noticeClassName = notice?.tone === "blue"
-    ? "rounded-xl border border-arena-blue/30 bg-arena-blue/5 p-5 text-sm leading-relaxed text-arena-text"
-    : "rounded-xl border border-arena-yellow/30 bg-arena-yellow/10 p-5 text-sm leading-relaxed text-arena-text";
+    ? "rounded-xl bg-arena-blue p-5 text-sm leading-relaxed text-white"
+    : "rounded-xl bg-arena-yellow p-5 text-sm leading-relaxed text-arena-blue";
 
   async function copyCaption(itemId: string, captionIndex: number, caption: string) {
     try {
@@ -102,9 +102,9 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
           </div>
         </div>
 
-        <div className="rounded-xl border-2 border-arena-yellow/40 bg-arena-yellow/10 p-6">
-          <h2 className="text-lg font-bold m-0 mb-3 text-arena-blue">Download plus Caption</h2>
-          <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
+        <div className="rounded-xl bg-arena-blue p-6">
+          <h2 className="text-lg font-bold m-0 mb-3 text-white">Download plus Caption</h2>
+          <p className="m-0 text-[0.95rem] leading-relaxed text-white/90">
             Lade die Datei herunter und kopiere darunter einen Caption-Vorschlag.
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
               <Link
                 key={item.id}
                 href={`${categoryPath}/${item.id}`}
-                className="rounded-xl border border-arena-blue/20 bg-gradient-to-br from-white to-arena-yellow/10 p-5 no-underline text-inherit shadow-sm transition-transform hover:-translate-y-0.5 hover:border-arena-blue"
+                className="rounded-xl border border-arena-blue bg-white p-5 no-underline text-inherit shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-arena-blue/5"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="grid gap-1">
@@ -163,7 +163,7 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
             const captionListClass = "grid gap-3";
 
             return (
-              <article className="rounded-xl border border-arena-blue/20 bg-gradient-to-br from-white to-arena-blue/5 p-5 space-y-5 shadow-sm">
+              <article className="rounded-xl border border-arena-blue bg-white p-5 space-y-5 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-bold text-arena-blue text-base m-0">{selectedItem.title}</p>
@@ -200,13 +200,13 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
                       {selectedItem.captions.map((caption, index) => {
                         const copyKey = `${selectedItem.id}-${index}`;
                         return (
-                          <div key={copyKey} className="rounded-xl border border-arena-yellow/30 bg-arena-yellow/10 p-4">
+                          <div key={copyKey} className="rounded-xl bg-arena-yellow p-4">
                             <div className="flex items-start justify-between gap-3 mb-2">
                               <p className="text-sm font-semibold text-arena-blue m-0">Vorschlag {index + 1}</p>
                               <button
                                 type="button"
                                 onClick={() => void copyCaption(selectedItem.id, index, caption)}
-                                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-arena-blue/20 text-sm font-medium cursor-pointer hover:border-arena-blue hover:text-arena-blue transition-colors"
+                                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-arena-blue text-white text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity"
                               >
                                 {copiedCaption === copyKey ? "Kopiert" : "Caption kopieren"}
                               </button>
