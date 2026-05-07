@@ -26,6 +26,25 @@ export type SocialMediaGalleryItem = {
   createdAt: Date;
 };
 
+export type SocialMediaPromoContentItem = {
+  _id?: import("mongodb").ObjectId;
+  title: string;
+  mediaType: "image" | "video";
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
+  files?: Array<{
+    fileUrl: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+  }>;
+  captions: [string, string, string];
+  createdAt: Date;
+  uploadedBy: string;
+};
+
 export type SocialMediaPixabayUploaderBlacklist = {
   _id?: import("mongodb").ObjectId;
   userId: number;
@@ -182,6 +201,10 @@ async function initializeDatabase(db: Db) {
 
   const socialMediaGallery = db.collection("social_media_gallery");
   await socialMediaGallery.createIndex({ order: 1, createdAt: 1 });
+
+  const socialMediaPromoContent = db.collection("social_media_promo_content");
+  await socialMediaPromoContent.createIndex({ createdAt: -1 });
+  await socialMediaPromoContent.createIndex({ mediaType: 1, createdAt: -1 });
 
   const pixabayBlacklist = db.collection("social_media_pixabay_blacklist");
   await pixabayBlacklist.createIndex({ userId: 1 }, { unique: true });
@@ -371,6 +394,11 @@ export async function getSocialMediaDesignsCollection(): Promise<Collection<Soci
 export async function getSocialMediaGalleryCollection(): Promise<Collection<SocialMediaGalleryItem>> {
   const db = await getDatabase();
   return db.collection<SocialMediaGalleryItem>("social_media_gallery");
+}
+
+export async function getSocialMediaPromoContentCollection(): Promise<Collection<SocialMediaPromoContentItem>> {
+  const db = await getDatabase();
+  return db.collection<SocialMediaPromoContentItem>("social_media_promo_content");
 }
 
 export async function getSocialMediaPixabayUploaderBlacklistCollection(): Promise<Collection<SocialMediaPixabayUploaderBlacklist>> {

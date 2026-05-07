@@ -228,6 +228,20 @@ export default function SocialMediaPage() {
                 <span className="text-arena-muted self-center shrink-0">→</span>
               </Link>
 
+              <Link
+                href="/social-media/fertige-inhalte"
+                className={`${optionCls} no-underline text-inherit`}
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-pink-50 text-pink-700">
+                  <ArrowDownTrayIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1">
+                  <strong className="text-[0.95rem]">Fertige Inhalte für Social Media (Beiträge und Reels)</strong>
+                  <span className="text-sm text-arena-muted">Lade vorbereitete Bilder und Videos herunter und nutze passende Caption-Vorschläge, wenn dir eigener Content fehlt.</span>
+                </div>
+                <span className="text-arena-muted self-center shrink-0">→</span>
+              </Link>
+
               {/* d) Fertiges Video kontrollieren */}
               <Link
                 href="/social-media/videos"
@@ -466,6 +480,20 @@ export default function SocialMediaPage() {
                 <div className="grid gap-0.5 flex-1 text-[0.95rem]">
                   <strong>Schnipsel verwalten</strong>
                   <span className="text-sm text-arena-muted">Alle eingereichten Schnipsel – Audio herunterladen, löschen, als XLSX exportieren.</span>
+                </div>
+                <span className="text-amber-600 shrink-0">→</span>
+              </Link>
+
+              <Link
+                href="/admin/social-media-content"
+                className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 no-underline text-inherit hover:border-amber-500 transition-colors"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                  <ArrowDownTrayIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1 text-[0.95rem]">
+                  <strong>Fertige Inhalte für Social Media</strong>
+                  <span className="text-sm text-arena-muted">Bilder und Videos hochladen, die Mitglieder später inklusive Caption-Vorschlägen herunterladen können.</span>
                 </div>
                 <span className="text-amber-600 shrink-0">→</span>
               </Link>

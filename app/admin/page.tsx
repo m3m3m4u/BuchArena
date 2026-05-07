@@ -620,6 +620,12 @@ export default function AdminPage() {
           >
             🖼️ Social-Media-Galerie
           </button>
+          <button
+            className="btn btn-sm"
+            onClick={() => router.push("/admin/social-media-content")}
+          >
+            ⬇️ Fertige Inhalte
+          </button>
         </div>
 
         {/* ══ Tab: Buch der Woche ══ */}
