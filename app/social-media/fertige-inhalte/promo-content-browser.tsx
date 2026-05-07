@@ -26,6 +26,10 @@ type PromoContentBrowserProps = {
   title: string;
   description: string;
   itemId?: string;
+  notice?: {
+    tone?: "emerald" | "blue";
+    paragraphs: string[];
+  };
 };
 
 function formatBytes(size: number) {
@@ -43,7 +47,7 @@ function getItemFiles(item: PromoContentItem) {
   }];
 }
 
-export default function PromoContentBrowser({ mediaType, title, description, itemId }: PromoContentBrowserProps) {
+export default function PromoContentBrowser({ mediaType, title, description, itemId, notice }: PromoContentBrowserProps) {
   const [items, setItems] = useState<PromoContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedCaption, setCopiedCaption] = useState<string | null>(null);
@@ -67,6 +71,12 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
   );
   const categoryPath = mediaType === "video" ? "/social-media/fertige-inhalte/reels" : "/social-media/fertige-inhalte/beitraege";
   const categoryLabel = mediaType === "video" ? "Reels" : "Beiträge";
+  const categoryChipClassName = mediaType === "video"
+    ? "inline-flex w-fit items-center rounded-full bg-arena-blue px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-arena-yellow"
+    : "inline-flex w-fit items-center rounded-full bg-arena-yellow px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-arena-blue";
+  const noticeClassName = notice?.tone === "blue"
+    ? "rounded-xl border border-arena-blue/30 bg-arena-blue/5 p-5 text-sm leading-relaxed text-arena-text"
+    : "rounded-xl border border-arena-yellow/30 bg-arena-yellow/10 p-5 text-sm leading-relaxed text-arena-text";
 
   async function copyCaption(itemId: string, captionIndex: number, caption: string) {
     try {
@@ -84,17 +94,30 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
   return (
     <main className="top-centered-main">
       <section className="card grid gap-5">
-        <div className="grid gap-2">
-          <h1 className="text-xl font-bold m-0">{title}</h1>
-          <p className="text-[0.95rem] text-arena-muted leading-relaxed m-0">{description}</p>
+        <div className="rounded-2xl bg-arena-blue px-6 py-7 text-white shadow-sm">
+          <div className="grid gap-3">
+            <span className={categoryChipClassName}>{categoryLabel}</span>
+            <h1 className="text-xl font-bold m-0 text-white">{title}</h1>
+            <p className="text-[0.95rem] leading-relaxed m-0 text-white/90">{description}</p>
+          </div>
         </div>
 
-        <div className="rounded-xl border-2 border-arena-blue/30 bg-arena-blue/5 p-6">
-          <h2 className="text-lg font-bold m-0 mb-3">Download plus Caption</h2>
-          <p className="m-0 text-[0.95rem] leading-relaxed">
+        <div className="rounded-xl border-2 border-arena-yellow/40 bg-arena-yellow/10 p-6">
+          <h2 className="text-lg font-bold m-0 mb-3 text-arena-blue">Download plus Caption</h2>
+          <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
             Lade die Datei herunter und kopiere darunter einen Caption-Vorschlag.
           </p>
         </div>
+
+        {notice && notice.paragraphs.length > 0 && (
+          <div className={noticeClassName}>
+            {notice.paragraphs.map((paragraph, index) => (
+              <p key={`${mediaType}-notice-${index}`} className={index === 0 ? "m-0" : "m-0 mt-3"}>
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        )}
 
         {loading ? (
           <p className="text-sm text-arena-muted">Lade Inhalte…</p>
@@ -106,12 +129,15 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
               <Link
                 key={item.id}
                 href={`${categoryPath}/${item.id}`}
-                className="rounded-xl border border-arena-border-light bg-white p-5 no-underline text-inherit transition-transform hover:-translate-y-0.5"
+                className="rounded-xl border border-arena-blue/20 bg-gradient-to-br from-white to-arena-yellow/10 p-5 no-underline text-inherit shadow-sm transition-transform hover:-translate-y-0.5 hover:border-arena-blue"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="grid gap-1">
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-arena-blue m-0">{categoryLabel}</p>
-                    <h3 className="text-lg font-bold m-0">{item.title}</h3>
+                    <span className={mediaType === "video"
+                      ? "inline-flex w-fit items-center rounded-full bg-arena-blue px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-arena-yellow"
+                      : "inline-flex w-fit items-center rounded-full bg-arena-yellow px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-arena-blue"
+                    }>{categoryLabel}</span>
+                    <h3 className="text-lg font-bold m-0 text-arena-blue">{item.title}</h3>
                     <p className="text-sm text-arena-muted m-0">
                       {item.mediaType === "video"
                         ? `Reel · ${formatBytes(item.fileSize)}`
@@ -127,21 +153,20 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
           <p className="text-sm text-arena-muted">Dieser Inhalt wurde nicht gefunden oder ist nicht mehr verfügbar.</p>
         ) : (
           (() => {
-            const mediaWrapperClass = selectedItem.mediaType === "video"
+            const isVideo = selectedItem.mediaType === "video";
+            const mediaWrapperClass = isVideo
               ? "mx-auto w-full max-w-[26rem]"
               : "grid gap-3";
-            const detailLayoutClass = selectedItem.mediaType === "video"
+            const detailLayoutClass = isVideo
               ? "grid gap-5 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] xl:items-start"
-              : "grid gap-5";
-            const captionListClass = selectedItem.mediaType === "video"
-              ? "grid gap-3"
-              : "grid gap-3 xl:grid-cols-3";
+              : "grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)] xl:items-start";
+            const captionListClass = "grid gap-3";
 
             return (
-              <article className="rounded-xl border border-arena-border-light bg-white p-5 space-y-5">
+              <article className="rounded-xl border border-arena-blue/20 bg-gradient-to-br from-white to-arena-blue/5 p-5 space-y-5 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="font-bold text-arena-text text-base m-0">{selectedItem.title}</p>
+                    <p className="font-bold text-arena-blue text-base m-0">{selectedItem.title}</p>
                     <p className="text-sm text-arena-muted m-0 mt-1">
                       {selectedItem.mediaType === "video"
                         ? `Reel · ${formatBytes(selectedItem.fileSize)}`
@@ -159,7 +184,7 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
 
                 <div className={detailLayoutClass}>
                   <div className={mediaWrapperClass}>
-                    {selectedItem.mediaType === "video" ? (
+                    {isVideo ? (
                       <video controls className="w-full rounded-xl border border-arena-border-light bg-black" src={selectedItem.fileUrl} />
                     ) : (
                       getItemFiles(selectedItem).map((file, index) => (
@@ -170,18 +195,18 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
                   </div>
 
                   <div className="grid gap-3">
-                    <h3 className="text-[1rem] font-bold m-0">Caption-Vorschläge</h3>
+                    <h3 className="text-[1rem] font-bold m-0 text-arena-blue">Caption-Vorschläge</h3>
                     <div className={captionListClass}>
                       {selectedItem.captions.map((caption, index) => {
                         const copyKey = `${selectedItem.id}-${index}`;
                         return (
-                          <div key={copyKey} className="rounded-xl border border-arena-border-light bg-arena-bg p-4">
+                          <div key={copyKey} className="rounded-xl border border-arena-yellow/30 bg-arena-yellow/10 p-4">
                             <div className="flex items-start justify-between gap-3 mb-2">
-                              <p className="text-sm font-semibold text-arena-text m-0">Vorschlag {index + 1}</p>
+                              <p className="text-sm font-semibold text-arena-blue m-0">Vorschlag {index + 1}</p>
                               <button
                                 type="button"
                                 onClick={() => void copyCaption(selectedItem.id, index, caption)}
-                                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-arena-border-light text-sm font-medium cursor-pointer hover:border-arena-blue hover:text-arena-blue transition-colors"
+                                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-arena-blue/20 text-sm font-medium cursor-pointer hover:border-arena-blue hover:text-arena-blue transition-colors"
                               >
                                 {copiedCaption === copyKey ? "Kopiert" : "Caption kopieren"}
                               </button>
