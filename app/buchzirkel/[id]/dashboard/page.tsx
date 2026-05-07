@@ -78,6 +78,7 @@ export default function BuchzirkelDashboardPage() {
   // Datei-Upload
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [deletingDatei, setDeletingDatei] = useState<string | null>(null);
 
   // Einstellungen-Edit-State
   const [editTitel, setEditTitel] = useState("");
@@ -277,6 +278,23 @@ export default function BuchzirkelDashboardPage() {
       clearTimeout(timeoutId);
       setUploading(false);
       e.target.value = "";
+    }
+  }
+
+  async function handleDeleteDatei(dateiId: string) {
+    if (!confirm("Datei wirklich löschen? Das kann nicht rückgängig gemacht werden.")) return;
+    setDeletingDatei(dateiId);
+    try {
+      const res = await fetch(`/api/buchzirkel/${params.id}/datei/${dateiId}`, { method: "DELETE" });
+      if (res.ok) { await load(); }
+      else {
+        const data = await res.json() as { message?: string };
+        setUploadError(data.message ?? "Löschen fehlgeschlagen.");
+      }
+    } catch {
+      setUploadError("Löschen fehlgeschlagen.");
+    } finally {
+      setDeletingDatei(null);
     }
   }
 
@@ -550,6 +568,14 @@ export default function BuchzirkelDashboardPage() {
                     </span>
                   )}
                   <span className="text-xs text-arena-muted">{new Date(d.uploadedAt).toLocaleDateString("de-AT")}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteDatei(d.id)}
+                    disabled={deletingDatei === d.id}
+                    className="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
+                  >
+                    {deletingDatei === d.id ? "…" : "🗑 Löschen"}
+                  </button>
                 </div>
               ))}
             </div>

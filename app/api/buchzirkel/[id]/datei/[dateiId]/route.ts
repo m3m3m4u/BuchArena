@@ -15,7 +15,7 @@ import {
   getBuchzirkelTeilnahmenCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import { davGet } from "@/lib/bucharena-webdav";
+import { davGet, davDelete } from "@/lib/bucharena-webdav";
 
 export const runtime = "nodejs";
 
@@ -199,4 +199,51 @@ function fixXhtmlDivBalance(content: string): string {
     return result.replace(/<\/body\s*>/i, () => "</div>".repeat(depth) + "</body>");
   }
   return result;
+}
+
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string; dateiId: string }> }
+) {
+  try {
+    const { id, dateiId } = await params;
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ message: "Ungültige ID." }, { status: 400 });
+    }
+
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
+    const zirkelCol = await getBuchzirkelCollection();
+    const zirkel = await zirkelCol.findOne({ _id: new ObjectId(id) });
+
+    if (!zirkel) {
+      return NextResponse.json({ message: "Buchzirkel nicht gefunden." }, { status: 404 });
+    }
+    if (zirkel.veranstalterUsername !== account.username && account.role !== "SUPERADMIN") {
+      return NextResponse.json({ message: "Nur der Veranstalter darf Dateien löschen." }, { status: 403 });
+    }
+
+    const datei = zirkel.dateien?.find((d: { id: string }) => d.id === dateiId);
+    if (!datei) {
+      return NextResponse.json({ message: "Datei nicht gefunden." }, { status: 404 });
+    }
+
+    // WebDAV-Datei löschen (Fehler ignorieren – DB-Eintrag trotzdem entfernen)
+    await davDelete(datei.webdavPath).catch((err) =>
+      console.error("buchzirkel datei DELETE: davDelete fehlgeschlagen:", err)
+    );
+
+    await zirkelCol.updateOne(
+      { _id: new ObjectId(id) },
+      { $pull: { dateien: { id: dateiId } }, $set: { updatedAt: new Date() } }
+    );
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("buchzirkel datei DELETE:", err);
+    return NextResponse.json({ message: "Serverfehler." }, { status: 500 });
+  }
 }
