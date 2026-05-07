@@ -574,7 +574,7 @@ export default function BuchzirkelDashboardPage() {
                     disabled={deletingDatei === d.id}
                     className="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
                   >
-                    {deletingDatei === d.id ? "…" : "🗑 Löschen"}
+                    {deletingDatei === d.id ? "…" : "Löschen"}
                   </button>
                 </div>
               ))}
