@@ -253,15 +253,15 @@ export default function BuchzirkelDashboardPage() {
     if (!file) return;
     setUploading(true);
     setUploadError("");
-    const formData = new FormData();
-    formData.append("file", file);
-    if (abschnittId) formData.append("abschnittId", abschnittId);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000); // 5 Minuten
     try {
-      const res = await fetch(`/api/buchzirkel/${params.id}/dateien/upload`, {
+      const qs = new URLSearchParams({ fileName: file.name });
+      if (abschnittId) qs.set("abschnittId", abschnittId);
+      const res = await fetch(`/api/buchzirkel/${params.id}/dateien/upload?${qs}`, {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/octet-stream" },
+        body: file,
         signal: controller.signal,
       });
       const data = await res.json() as { message?: string };

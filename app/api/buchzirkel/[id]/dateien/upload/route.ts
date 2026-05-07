@@ -3,7 +3,6 @@ import { ObjectId } from "mongodb";
 import { randomUUID } from "crypto";
 import {
   getBuchzirkelCollection,
-  getBuchzirkelTeilnahmenCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { davPut } from "@/lib/bucharena-webdav";
@@ -38,38 +37,38 @@ export async function POST(
       return NextResponse.json({ message: "Nur der Veranstalter darf Dateien hochladen." }, { status: 403 });
     }
 
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
-    const abschnittId = (formData.get("abschnittId") as string | null)?.trim() || undefined;
+    // Dateiname und abschnittId kommen als Query-Parameter
+    const url = new URL(request.url);
+    const fileName = url.searchParams.get("fileName") ?? "";
+    const abschnittId = url.searchParams.get("abschnittId") ?? undefined;
 
-    if (!file) {
-      return NextResponse.json({ message: "Keine Datei übermittelt." }, { status: 400 });
+    if (!fileName) {
+      return NextResponse.json({ message: "Kein Dateiname angegeben." }, { status: 400 });
     }
 
-    const lowerName = file.name.toLowerCase();
+    const lowerName = fileName.toLowerCase();
     const isEpub = lowerName.endsWith(".epub");
     const isPdf = lowerName.endsWith(".pdf");
     if (!isEpub && !isPdf) {
       return NextResponse.json({ message: "Nur PDF- und EPUB-Dateien sind erlaubt." }, { status: 400 });
     }
 
-    if (file.size > MAX_FILE_SIZE) {
+    // Datei direkt als Binary-Body lesen (kein Multipart-Parsing)
+    const arrayBuf = await request.arrayBuffer();
+    if (arrayBuf.byteLength === 0) {
+      return NextResponse.json({ message: "Keine Datei übermittelt." }, { status: 400 });
+    }
+    if (arrayBuf.byteLength > MAX_FILE_SIZE) {
       return NextResponse.json({ message: "Datei darf maximal 50 MB groß sein." }, { status: 400 });
     }
 
     const fileId = randomUUID();
     const ext = isEpub ? ".epub" : ".pdf";
     const contentType = isEpub ? "application/epub+zip" : "application/pdf";
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
+    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
     const masterPath = `${BUCHZIRKEL_DIR}/${id}/master/${fileId}${ext}`;
 
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    await davPut(masterPath, bytes, contentType);
-
-    // Teilnehmer-spezifische Wasserzeichen-Pfade anlegen
-    // Die Datei wird beim ersten Zugriff dynamisch mit Wasserzeichen gerendert
-    // Hier nur den Master speichern – der /api/buchzirkel/[id]/datei/[dateiId]/[username] Endpunkt
-    // liefert die Wasserzeichen-Version on-demand
+    await davPut(masterPath, new Uint8Array(arrayBuf), contentType);
 
     const dateiEntry = {
       id: fileId,
