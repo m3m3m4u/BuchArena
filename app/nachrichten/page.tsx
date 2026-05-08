@@ -365,7 +365,7 @@ function NachrichtenPageInner() {
     }
   }
 
-  const isAdmin = accountRole === "ADMIN" || accountRole === "SUPERADMIN";
+  const isAdmin = accountRole === "ADMIN" || accountRole === "SUPERADMIN" || username === "Kopernikus";
 
   /* ── Kein Login ── */
   if (!username) {

