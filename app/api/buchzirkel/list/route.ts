@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import { getBuchzirkelCollection, getBuchzirkelBewerbungenCollection, getBuchzirkelTeilnahmenCollection } from "@/lib/mongodb";
+import { getBuchzirkelCollection, getBuchzirkelBewerbungenCollection, getBuchzirkelTeilnahmenCollection, getUsersCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 
 export async function GET(request: Request) {
@@ -34,12 +34,28 @@ export async function GET(request: Request) {
       })
       .toArray();
 
+    // Deaktivierte Veranstalter-Profile ausfiltern
+    const veranstalterUsernames = [...new Set(docs.map((d) => d.veranstalterUsername))];
+    const usersCol = await getUsersCollection();
+    const veranstalterUsers = await usersCol
+      .find(
+        { username: { $in: veranstalterUsernames } },
+        { projection: { username: 1, status: 1, "profile.deaktiviert": 1 } }
+      )
+      .toArray();
+    const deaktiviertSet = new Set(
+      veranstalterUsers
+        .filter((u) => u.status === "deactivated" || u.profile?.deaktiviert)
+        .map((u) => u.username)
+    );
+    const filteredDocs = docs.filter((d) => !deaktiviertSet.has(d.veranstalterUsername));
+
     // User-spezifische Flags (isBeworben, isTeilnehmer)
     const account = await getServerAccount();
     let beworbenIds = new Set<string>();
     let teilnehmerIds = new Set<string>();
     if (account) {
-      const ids = docs.map((d) => new ObjectId(d._id));
+      const ids = filteredDocs.map((d) => new ObjectId(d._id));
       const [bewerbungen, teilnahmen] = await Promise.all([
         (await getBuchzirkelBewerbungenCollection()).find(
           { buchzirkelId: { $in: ids }, bewerberUsername: account.username },
@@ -54,7 +70,7 @@ export async function GET(request: Request) {
       teilnehmerIds = new Set(teilnahmen.map((t) => t.buchzirkelId.toString()));
     }
 
-    const result = docs.map((d) => ({
+    const result = filteredDocs.map((d) => ({
       ...d,
       isBeworben: beworbenIds.has(d._id.toString()),
       isTeilnehmer: teilnehmerIds.has(d._id.toString()),

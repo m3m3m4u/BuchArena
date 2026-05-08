@@ -25,6 +25,14 @@ export async function GET(request: Request) {
       );
     }
 
+    // Deaktivierte Profile ausblenden
+    if (user.status === "deactivated" || user.profile?.deaktiviert) {
+      return NextResponse.json(
+        { message: "Autor nicht gefunden." },
+        { status: 404 }
+      );
+    }
+
     const rawBooks = await books
       .find(
         { ownerUsername: user.username },

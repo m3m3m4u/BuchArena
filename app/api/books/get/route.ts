@@ -29,8 +29,16 @@ export async function GET(request: Request) {
     const users = await getUsersCollection();
     const user = await users.findOne(
       { username: book.ownerUsername },
-      { projection: { profile: 1 } }
+      { projection: { profile: 1, status: 1 } }
     );
+
+    // Deaktiviertes Konto oder deaktiviertes Profil: Buch verstecken
+    if (user?.status === "deactivated" || user?.profile?.deaktiviert) {
+      return NextResponse.json(
+        { message: "Buch nicht gefunden." },
+        { status: 404 }
+      );
+    }
 
     const profile = user?.profile ?? createDefaultProfile();
     const authorImageUrl =

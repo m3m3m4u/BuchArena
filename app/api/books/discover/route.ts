@@ -34,11 +34,11 @@ export async function GET(request: NextRequest) {
           localField: "ownerUsername",
           foreignField: "username",
           as: "_owner",
-          pipeline: [{ $project: { status: 1, username: 1, "profile.name.value": 1 } }],
+          pipeline: [{ $project: { status: 1, username: 1, "profile.name.value": 1, "profile.deaktiviert": 1 } }],
         },
       },
       { $unwind: { path: "$_owner", preserveNullAndEmptyArrays: true } },
-      { $match: { "_owner.status": { $ne: "deactivated" } } },
+      { $match: { "_owner.status": { $ne: "deactivated" }, "_owner.profile.deaktiviert": { $ne: true } } },
     ];
     const raw = await books.aggregate(pipeline).toArray();
 
