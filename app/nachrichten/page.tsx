@@ -343,6 +343,28 @@ function NachrichtenPageInner() {
     }
   }
 
+  /* ── Komplette Unterhaltung löschen (nur Admin) ── */
+  async function handleDeleteConversation() {
+    if (!activePartner) return;
+    if (!confirm(`Möchtest du die gesamte Unterhaltung mit ${activePartnerDisplayName || activePartner} wirklich unwiderruflich löschen?`)) return;
+
+    try {
+      const res = await fetch(`/api/admin/delete-conversation?partner=${encodeURIComponent(activePartner)}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setActivePartner(null);
+        setChatMessages([]);
+        void loadConversations();
+      } else {
+        const data = await res.json();
+        alert(data.message || "Fehler beim Löschen.");
+      }
+    } catch {
+      alert("Ein technischer Fehler ist aufgetreten.");
+    }
+  }
+
   const isAdmin = accountRole === "ADMIN" || accountRole === "SUPERADMIN";
 
   /* ── Kein Login ── */
@@ -670,6 +692,16 @@ function NachrichtenPageInner() {
                       </span>
                     )}
                   </div>
+                  {/* Admin: Unterhaltung löschen */}
+                  {isAdmin && (
+                    <button
+                      className="ml-auto btn btn-sm !py-1 !px-2 text-arena-danger bg-arena-danger/10 border-arena-danger/20 hover:bg-arena-danger hover:text-white transition-colors"
+                      onClick={() => void handleDeleteConversation()}
+                      title="Gesamte Unterhaltung löschen"
+                    >
+                      Unterhaltung löschen
+                    </button>
+                  )}
                 </div>
 
                 {/* Nachrichten-Bereich */}

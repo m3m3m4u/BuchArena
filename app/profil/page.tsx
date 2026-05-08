@@ -2271,7 +2271,9 @@ function ProfilPageInner() {
           <div>
             <span className="text-sm font-semibold">{testleserProfile.verfuegbar ? "✅ Freie Kapazitäten: Verfügbar" : "🚫 Freie Kapazitäten: Nicht verfügbar"}</span>
             <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: testleserProfile.verfuegbar ? "#16a34a" : "#dc2626" }}>
-              {testleserProfile.verfuegbar ? "Du bist aktuell als Testleser verfügbar." : "Du bist aktuell nicht als Testleser verfügbar."}
+              {testleserProfile.verfuegbar 
+                ? "Du bist aktuell als Testleser verfügbar." 
+                : "Du bist aktuell nicht allgemein verfügbar. Bewerbungen für Buchzirkel sind dennoch möglich."}
             </p>
           </div>
           <button

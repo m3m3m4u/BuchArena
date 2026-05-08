@@ -280,6 +280,22 @@ const allgemeinFaq: FaqItem[] = [
     ),
   },
   {
+    question: "Gibt es Regeln für die Community?",
+    answer: (
+      <>
+        <p className="mb-2">
+          Ja, uns ist ein respektvolles Miteinander extrem wichtig. Die <strong>BuchArena</strong> ist eine 
+          freundliche und positive Plattform für alle Buchbegeisterten.
+        </p>
+        <p>
+          Beleidigungen, Hassrede oder respektloses Verhalten werden nicht toleriert und führen zur 
+          <strong> sofortigen Deaktivierung des Profils</strong>. Wir möchten, dass sich hier jede Autorin, 
+          jeder Sprecher und jeder Leser wohlfühlt.
+        </p>
+      </>
+    ),
+  },
+  {
     question: "Gibt es eine App für die BuchArena?",
     answer: (
       <p>

@@ -47,6 +47,19 @@ export default function ImpressumPage() {
           </p>
         </div>
 
+        {/* ── Community-Richtlinien ── */}
+        <div className="mb-8 rounded-lg bg-arena-bg-light p-6 border border-arena-border">
+          <h2 className="mb-3 text-xl text-arena-text">Community-Richtlinien</h2>
+          <p className="my-2 leading-relaxed text-[#444]">
+            Die BuchArena ist eine <strong>freundliche und positive Plattform</strong> für den literarischen Austausch. 
+            Wir legen großen Wert auf einen respektvollen Umgang miteinander. 
+          </p>
+          <p className="my-2 leading-relaxed text-[#444]">
+            Beleidigungen, Diskriminierung, Hassrede oder ähnliches Fehlverhalten werden nicht toleriert. 
+            Verstöße gegen diese Grundsätze führen zur <strong>sofortigen Deaktivierung des Profils</strong>.
+          </p>
+        </div>
+
         {/* ── Datenschutzerklärung ── */}
         <h2 className="mb-6 mt-12 border-b-2 border-gray-200 pb-4 text-2xl max-sm:text-xl" id="datenschutz">Datenschutzerklärung</h2>
 
