@@ -206,6 +206,7 @@ export default function DiskussionDetailPage() {
   const [replyBody, setReplyBody] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [username, setUsername] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const [replyingTo, setReplyingTo] = useState<{ id: string; author: string } | null>(null);
   const [inlineReplyId, setInlineReplyId] = useState<string | null>(null);
   const [inlineReplyBody, setInlineReplyBody] = useState("");
@@ -248,6 +249,7 @@ export default function DiskussionDetailPage() {
     const account = getStoredAccount();
     if (account) {
       setUsername(account.username);
+      setIsAdmin(account.role === "ADMIN" || account.role === "SUPERADMIN");
     }
   }, []);
 
@@ -540,6 +542,17 @@ export default function DiskussionDetailPage() {
                 }}
               />
 
+              {isAdmin && (
+                <div className="flex gap-2 mt-3">
+                  <button
+                    className="btn btn-sm btn-danger"
+                    onClick={handleDeleteDiscussion}
+                  >
+                    Löschen
+                  </button>
+                </div>
+              )}
+
               {discussion.authorUsername === username && (
                 <div className="flex gap-2 mt-3">
                   <button
@@ -547,12 +560,6 @@ export default function DiskussionDetailPage() {
                     onClick={openEditDiscussion}
                   >
                     Bearbeiten
-                  </button>
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={handleDeleteDiscussion}
-                  >
-                    Löschen
                   </button>
                 </div>
               )}

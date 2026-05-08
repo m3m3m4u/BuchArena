@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     };
 
     const id = body.id?.trim();
-    const authorUsername = account.username;
+    const isAdmin = account.role === "ADMIN" || account.role === "SUPERADMIN";
 
     if (!id || !ObjectId.isValid(id)) {
       return NextResponse.json(
@@ -27,10 +27,11 @@ export async function POST(request: Request) {
 
     const discussions = await getDiscussionsCollection();
 
-    const result = await discussions.deleteOne({
-      _id: new ObjectId(id),
-      authorUsername,
-    });
+    const filter = isAdmin
+      ? { _id: new ObjectId(id) }
+      : { _id: new ObjectId(id), authorUsername: account.username };
+
+    const result = await discussions.deleteOne(filter);
 
     if (result.deletedCount === 0) {
       return NextResponse.json(

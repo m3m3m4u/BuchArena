@@ -92,6 +92,7 @@ export default function DiskussionenPage() {
   const [topic, setTopic] = useState("Allgemein");
   const [isSaving, setIsSaving] = useState(false);
   const [username, setUsername] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   /* ── Filter / Suche ── */
   const [searchTerm, setSearchTerm] = useState("");
@@ -111,6 +112,7 @@ export default function DiskussionenPage() {
     const account = getStoredAccount();
     if (account) {
       setUsername(account.username);
+      setIsAdmin(account.role === "ADMIN" || account.role === "SUPERADMIN");
     }
   }, []);
 
@@ -198,8 +200,23 @@ export default function DiskussionenPage() {
     }
   }
 
+  async function handleAdminDelete(id: string) {
+    if (!confirm("Diskussion wirklich löschen?")) return;
+    try {
+      const res = await fetch("/api/discussions/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Fehler");
+      await loadDiscussions();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Diskussion konnte nicht gelöscht werden.");
+    }
+  }
+
   async function handleCreate() {
-    if (!title.trim() || !body.trim()) return;
 
     setIsSaving(true);
 
@@ -391,9 +408,19 @@ export default function DiskussionenPage() {
                             <RoleBadges username={d.authorUsername} hasProfile={d.hasProfile} hasSpeakerProfile={d.hasSpeakerProfile} hasBloggerProfile={d.hasBloggerProfile} isAdmin={d.isAdmin} />
                           </span>
                         </div>
-                        <span className="text-xs text-arena-muted flex-shrink-0">
-                          zuletzt aktiv {timeAgo(d.lastActivityAt)}
-                        </span>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-xs text-arena-muted">
+                            zuletzt aktiv {timeAgo(d.lastActivityAt)}
+                          </span>
+                          {isAdmin && (
+                            <button
+                              className="text-xs text-red-500 hover:text-red-700 px-1.5 py-0.5 rounded hover:bg-red-50 transition-colors"
+                              onClick={(e) => { e.stopPropagation(); void handleAdminDelete(d.id); }}
+                            >
+                              Löschen
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

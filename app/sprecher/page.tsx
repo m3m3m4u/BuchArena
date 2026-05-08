@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+const PAGE_SIZE = 10;
 
 function mulberry32(seed: number) {
   return () => {
@@ -40,6 +42,8 @@ export default function SprecherPage() {
   const [speakers, setSpeakers] = useState<DiscoverSpeaker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
 
   useEffect(() => {
@@ -60,7 +64,28 @@ export default function SprecherPage() {
     void loadSpeakers();
   }, []);
 
-  const sortedSpeakers = useMemo(() => weightedShuffle(speakers, seed), [speakers, seed]);
+  const sortedSpeakers = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const base = q
+      ? speakers.filter((s) =>
+          s.displayName.toLowerCase().includes(q) ||
+          s.username.toLowerCase().includes(q) ||
+          s.ort?.toLowerCase().includes(q) ||
+          s.motto?.toLowerCase().includes(q)
+        )
+      : speakers;
+    return weightedShuffle(base, seed);
+  }, [speakers, searchQuery, seed]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedSpeakers.length / PAGE_SIZE));
+  const paged = sortedSpeakers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const goTo = useCallback((p: number) => {
+    setPage(Math.max(1, Math.min(p, totalPages)));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [totalPages]);
+
+  useEffect(() => { setPage(1); }, [searchQuery]);
 
   return (
     <main className="top-centered-main">
@@ -73,6 +98,11 @@ export default function SprecherPage() {
           Hier findest du Hörbuchsprecher und ihre Sprechproben.
         </p>
 
+        <label className="grid gap-1 text-[0.95rem]">
+          Suche
+          <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name oder Ort …" />
+        </label>
+
         {message && <p className="text-red-700">{message}</p>}
 
         {isLoading ? (
@@ -80,8 +110,9 @@ export default function SprecherPage() {
         ) : speakers.length === 0 ? (
           <p>Noch keine Sprecher vorhanden.</p>
         ) : (
+          <>
           <div className="grid gap-3 min-[700px]:grid-cols-2">
-            {sortedSpeakers.map((speaker) => (
+            {paged.map((speaker) => (
               <Link
                 key={speaker.username}
                 href={`/sprecher/${encodeURIComponent(speaker.profileSlug || speaker.username)}`}
@@ -118,6 +149,15 @@ export default function SprecherPage() {
               </Link>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
+              <button className="btn btn-sm text-sm" disabled={page === 1} onClick={() => goTo(page - 1)}>← Zurück</button>
+              <span className="text-sm text-arena-muted">Seite {page} / {totalPages}</span>
+              <button className="btn btn-sm text-sm" disabled={page === totalPages} onClick={() => goTo(page + 1)}>Weiter →</button>
+            </div>
+          )}
+          </>
         )}
 
         <div className="pt-2">

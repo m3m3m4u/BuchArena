@@ -43,6 +43,7 @@ export default function TestleserPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [filterGenre, setFilterGenre] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
 
@@ -69,11 +70,19 @@ export default function TestleserPage() {
   ).sort((a, b) => a.localeCompare(b, "de"));
 
   const filtered = useMemo(() => {
-    const base = filterGenre
-      ? testleser.filter((t) => t.genres.includes(filterGenre) || t.genres.length === 0)
-      : testleser;
-    return weightedShuffle(base, seed);
-  }, [testleser, filterGenre, seed]);
+    const q = searchQuery.trim().toLowerCase();
+    let base = testleser;
+    if (q) {
+      base = base.filter((t) =>
+        t.displayName.toLowerCase().includes(q) ||
+        t.username.toLowerCase().includes(q)
+      );
+    }
+    const withGenre = filterGenre
+      ? base.filter((t) => t.genres.includes(filterGenre) || t.genres.length === 0)
+      : base;
+    return weightedShuffle(withGenre, seed);
+  }, [testleser, filterGenre, searchQuery, seed]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -83,7 +92,7 @@ export default function TestleserPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [totalPages]);
 
-  useEffect(() => { setPage(1); }, [filterGenre]);
+  useEffect(() => { setPage(1); }, [filterGenre, searchQuery]);
 
   return (
     <main className="top-centered-main">
@@ -95,6 +104,11 @@ export default function TestleserPage() {
         <p className="text-arena-muted text-[0.95rem]">
           Hier findest du (Test)Leser und ihre bevorzugten Genres.
         </p>
+
+        <label className="grid gap-1 text-[0.95rem]">
+          Suche
+          <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name …" />
+        </label>
 
         {allGenres.length > 0 && (
           <label className="grid gap-1 text-[0.95rem]">

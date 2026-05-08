@@ -45,6 +45,7 @@ export default function BloggerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [filterGenre, setFilterGenre] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
 
@@ -72,9 +73,20 @@ export default function BloggerPage() {
   ).sort((a, b) => a.localeCompare(b, "de"));
 
   const filtered = useMemo(() => {
-    const base = filterGenre ? bloggers.filter((b) => b.genres.includes(filterGenre)) : bloggers;
+    const q = searchQuery.trim().toLowerCase();
+    let base = bloggers;
+    if (q) {
+      base = base.filter((b) =>
+        b.displayName.toLowerCase().includes(q) ||
+        b.username.toLowerCase().includes(q) ||
+        b.motto?.toLowerCase().includes(q) ||
+        b.lieblingsbuch?.toLowerCase().includes(q) ||
+        b.beschreibung?.toLowerCase().includes(q)
+      );
+    }
+    if (filterGenre) base = base.filter((b) => b.genres.includes(filterGenre));
     return weightedShuffle(base, seed);
-  }, [bloggers, filterGenre, seed]);
+  }, [bloggers, filterGenre, searchQuery, seed]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -85,7 +97,7 @@ export default function BloggerPage() {
   }, [totalPages]);
 
   // Filter-Wechsel → Seite zurücksetzen
-  useEffect(() => { setPage(1); }, [filterGenre]);
+  useEffect(() => { setPage(1); }, [filterGenre, searchQuery]);
 
   return (
     <main className="top-centered-main">
@@ -97,6 +109,11 @@ export default function BloggerPage() {
         <p className="text-arena-muted text-[0.95rem]">
           Hier findest du Buchblogger und ihre Lieblingsgenres.
         </p>
+
+        <label className="grid gap-1 text-[0.95rem]">
+          Suche
+          <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name …" />
+        </label>
 
         {allGenres.length > 0 && (
           <label className="grid gap-1 text-[0.95rem]">
