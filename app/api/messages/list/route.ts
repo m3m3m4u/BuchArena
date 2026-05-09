@@ -81,10 +81,17 @@ export async function GET(request: Request) {
     // ── Konversationsliste: schnelle Abfrage aus messageConversations-Collection ──
     const me = account.username;
     const convCol = await getMessageConversationsCollection();
-    const convDocs = await convCol
-      .find({ $or: [{ userA: me }, { userB: me }] })
-      .sort({ updatedAt: -1 })
-      .toArray();
+
+    // Zwei parallele Queries statt $or → beide nutzen je ihren Compound-Index
+    // { userA: 1, updatedAt: -1 } und { userB: 1, updatedAt: -1 }
+    const [convDocsA, convDocsB] = await Promise.all([
+      convCol.find({ userA: me }).sort({ updatedAt: -1 }).toArray(),
+      convCol.find({ userB: me }).sort({ updatedAt: -1 }).toArray(),
+    ]);
+    // Zusammenführen und nach updatedAt sortieren
+    const convDocs = [...convDocsA, ...convDocsB].sort(
+      (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
+    );
 
     const partnerUsernames = convDocs.map((c) => (c.userA === me ? c.userB : c.userA));
     const usersCol = await getUsersCollection();

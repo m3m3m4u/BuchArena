@@ -12,7 +12,7 @@
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
-import { getUsersCollection, type UserRole } from "@/lib/mongodb";
+import { type UserRole } from "@/lib/mongodb";
 
 export type ServerAccount = {
   username: string;
@@ -60,20 +60,14 @@ export const getServerAccount = cache(async (): Promise<ServerAccount | null> =>
 
     const { payload } = await jwtVerify(token, getJwtSecret(), { issuer: JWT_ISSUER });
     const p = payload as AuthTokenPayload;
-    if (!p.sub) return null;
+    if (!p.sub || !p.email || !p.role) return null;
 
-    // DB-Verifikation: User existiert und ist aktiv
-    const users = await getUsersCollection();
-    const dbUser = await users.findOne(
-      { username: p.sub, status: { $ne: "deactivated" } },
-      { projection: { username: 1, email: 1, role: 1 } },
-    );
-    if (!dbUser) return null;
-
+    // Kein extra DB-Roundtrip – JWT ist signiert und enthält alle nötigen Daten.
+    // Deaktivierte Nutzer werden beim Login blockiert; ihr Token läuft nach 7 Tagen ab.
     return {
-      username: dbUser.username,
-      email: dbUser.email,
-      role: dbUser.role as UserRole,
+      username: p.sub,
+      email: p.email,
+      role: p.role,
     };
   } catch {
     return null;
