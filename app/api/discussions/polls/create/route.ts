@@ -48,6 +48,7 @@ export async function POST(request: Request) {
       question,
       options,
       votes: [],
+      replies: [],
       createdAt: now,
     };
 
