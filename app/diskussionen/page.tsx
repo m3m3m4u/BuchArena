@@ -26,6 +26,14 @@ type DiscussionItem = {
 
 type PollVoteItem = { username: string; optionIndex: number };
 
+type PollReplyItem = {
+  id: string;
+  authorUsername: string;
+  displayName?: string;
+  body: string;
+  createdAt: string;
+};
+
 type PollItem = {
   id: string;
   authorUsername: string;
@@ -34,6 +42,7 @@ type PollItem = {
   options: string[];
   votes: PollVoteItem[];
   totalVotes: number;
+  replies: PollReplyItem[];
   createdAt: string;
 };
 
@@ -107,6 +116,8 @@ export default function DiskussionenPage() {
   const [isSavingPoll, setIsSavingPoll] = useState(false);
   const [votingPoll, setVotingPoll] = useState<string | null>(null);
   const [openPollId, setOpenPollId] = useState<string | null>(null);
+  const [pollReplyBody, setPollReplyBody] = useState("");
+  const [isSavingPollReply, setIsSavingPollReply] = useState(false);
 
   useEffect(() => {
     const account = getStoredAccount();
@@ -197,6 +208,44 @@ export default function DiskussionenPage() {
       setMessage(error instanceof Error ? error.message : "Stimme konnte nicht abgegeben werden.");
     } finally {
       setVotingPoll(null);
+    }
+  }
+
+  async function handlePollReply(pollId: string) {
+    const text = pollReplyBody.trim();
+    if (!text) return;
+    setIsSavingPollReply(true);
+    try {
+      const res = await fetch("/api/discussions/polls/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pollId, body: text }),
+      });
+      const data = (await res.json()) as { message?: string; lesezeichen?: number };
+      if (!res.ok) throw new Error(data.message ?? "Fehler");
+      if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
+      setPollReplyBody("");
+      await loadPolls();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Antwort konnte nicht gespeichert werden.");
+    } finally {
+      setIsSavingPollReply(false);
+    }
+  }
+
+  async function handleDeletePollReply(pollId: string, replyId: string) {
+    if (!confirm("Antwort wirklich löschen?")) return;
+    try {
+      const res = await fetch("/api/discussions/polls/delete-reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pollId, replyId }),
+      });
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Fehler");
+      await loadPolls();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Antwort konnte nicht gelöscht werden.");
     }
   }
 
@@ -442,9 +491,14 @@ export default function DiskussionenPage() {
                           {poll.options.length} Optionen
                         </p>
                       </div>
-                      <span className="text-xs text-arena-muted whitespace-nowrap flex-shrink-0">
-                        {poll.totalVotes} {poll.totalVotes === 1 ? "Stimme" : "Stimmen"}
-                      </span>
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <span className="text-xs text-arena-muted whitespace-nowrap">
+                          {poll.totalVotes} {poll.totalVotes === 1 ? "Stimme" : "Stimmen"}
+                        </span>
+                        <span className="text-xs text-arena-muted whitespace-nowrap">
+                          {poll.replies.length} {poll.replies.length === 1 ? "Kommentar" : "Kommentare"}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-sm text-arena-muted mt-1">
                       <div className="flex flex-wrap items-center gap-1.5">
@@ -470,8 +524,8 @@ export default function DiskussionenPage() {
         const total = poll.totalVotes;
 
         return (
-          <div className="overlay-backdrop" onClick={() => setOpenPollId(null)}>
-            <div className="w-[min(560px,100%)] bg-white rounded-xl p-4 sm:p-5 box-border grid gap-3 sm:gap-4" onClick={(e) => e.stopPropagation()}>
+          <div className="overlay-backdrop" onClick={() => { setOpenPollId(null); setPollReplyBody(""); }}>
+            <div className="w-[min(600px,100%)] bg-white rounded-xl p-4 sm:p-5 box-border grid gap-3 sm:gap-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div>
                 <h2 className="m-0 mb-1 text-lg sm:text-xl">{poll.question}</h2>
                 <p className="text-sm text-arena-muted m-0">
@@ -522,8 +576,59 @@ export default function DiskussionenPage() {
 
               {hasVoted && <p className="text-xs text-arena-muted m-0">Du hast bereits abgestimmt.</p>}
 
+              {/* ── Antworten ── */}
+              <div className="border-t border-arena-border-light pt-3 grid gap-3">
+                <h3 className="text-sm font-semibold m-0">
+                  Kommentare ({poll.replies.length})
+                </h3>
+
+                {poll.replies.length > 0 && (
+                  <div className="grid gap-2">
+                    {poll.replies.map((r) => (
+                      <div key={r.id} className="rounded-lg border border-arena-border-light p-2.5 text-sm">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="font-medium text-xs">{r.displayName || r.authorUsername}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-arena-muted">{timeAgo(r.createdAt)}</span>
+                            {(isAdmin || r.authorUsername === username) && (
+                              <button
+                                className="text-xs text-red-500 hover:text-red-700"
+                                onClick={() => void handleDeletePollReply(poll.id, r.id)}
+                              >
+                                Löschen
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <p className="m-0 text-sm whitespace-pre-wrap">{r.body}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="grid gap-2">
+                  <textarea
+                    className="input-base text-sm"
+                    rows={3}
+                    maxLength={3000}
+                    placeholder="Kommentar schreiben …"
+                    value={pollReplyBody}
+                    onChange={(e) => setPollReplyBody(e.target.value)}
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button
+                      className="btn text-sm"
+                      disabled={isSavingPollReply || !pollReplyBody.trim()}
+                      onClick={() => void handlePollReply(poll.id)}
+                    >
+                      {isSavingPollReply ? "Wird gespeichert …" : "Kommentieren"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex justify-end">
-                <button className="btn" onClick={() => setOpenPollId(null)}>Schließen</button>
+                <button className="btn" onClick={() => { setOpenPollId(null); setPollReplyBody(""); }}>Schließen</button>
               </div>
             </div>
           </div>

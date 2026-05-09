@@ -67,12 +67,20 @@ export type PollVote = {
   votedAt: Date;
 };
 
+export type PollReply = {
+  _id?: ObjectId;
+  authorUsername: string;
+  body: string;
+  createdAt: Date;
+};
+
 export type PollDocument = {
   _id?: ObjectId;
   authorUsername: string;
   question: string;
   options: string[];
   votes: PollVote[];
+  replies: PollReply[];
   createdAt: Date;
 };
 

@@ -9,11 +9,15 @@ export async function GET() {
       .sort({ createdAt: -1 })
       .toArray();
 
-    // Lookup displayName for poll authors
-    const authorNames = [...new Set(docs.map((d) => d.authorUsername))];
+    // Collect all usernames (authors + reply authors)
+    const allUsernames = new Set<string>();
+    for (const d of docs) {
+      allUsernames.add(d.authorUsername);
+      for (const r of d.replies ?? []) allUsernames.add(r.authorUsername);
+    }
     const usersCol = await getUsersCollection();
     const authorDocs = await usersCol
-      .find({ username: { $in: authorNames } })
+      .find({ username: { $in: [...allUsernames] } })
       .project({ username: 1, displayName: 1 })
       .toArray();
     const dnMap = new Map<string, string>();
@@ -32,6 +36,13 @@ export async function GET() {
         optionIndex: v.optionIndex,
       })),
       totalVotes: d.votes.length,
+      replies: (d.replies ?? []).map((r) => ({
+        id: r._id!.toString(),
+        authorUsername: r.authorUsername,
+        displayName: dnMap.get(r.authorUsername) ?? "",
+        body: r.body,
+        createdAt: r.createdAt,
+      })),
       createdAt: d.createdAt,
     }));
 
