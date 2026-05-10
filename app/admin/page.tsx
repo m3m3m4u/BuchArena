@@ -140,6 +140,7 @@ export default function AdminPage() {
     status: string;
     veranstalterUsername: string;
     veranstalterInstagram: string;
+    veranstalterName: string;
     bewerbungBis: string;
     maxTeilnehmer: number;
     createdAt: string;
@@ -147,6 +148,9 @@ export default function AdminPage() {
     bewerbungen: BewerbungCount;
     teilnehmerAnzahl: number;
     leseabschnitteAnzahl: number;
+    coverImageUrl?: string;
+    mediaImageUrl?: string;
+    genreFilter?: string[];
   };
   const [buchzirkelList, setBuchzirkelList] = useState<AdminBuchzirkel[]>([]);
   const [buchzirkelLoading, setBuchzirkelLoading] = useState(false);
@@ -154,6 +158,7 @@ export default function AdminPage() {
   const [buchzirkelFilter, setBuchzirkelFilter] = useState("");
   const [buchzirkelStatusFilter, setBuchzirkelStatusFilter] = useState("alle");
   const [buchzirkelBusy, setBuchzirkelBusy] = useState<string | null>(null);
+  const [buchzirkelSocialView, setBuchzirkelSocialView] = useState(false);
 
   function cleanInstaHandle(raw: string): string {
     // URL-Präfixe entfernen
@@ -930,7 +935,98 @@ export default function AdminPage() {
                     ))}
                     <span className="text-xs text-arena-muted">{filtered.length} / {buchzirkelList.length}</span>
                     <button className="btn btn-sm" onClick={() => { setBuchzirkelLoaded(false); setBuchzirkelList([]); }}>↺ Neu laden</button>
+                    <button
+                      className={`btn btn-sm${buchzirkelSocialView ? " btn-primary" : ""}`}
+                      onClick={() => setBuchzirkelSocialView((v) => !v)}
+                      title="Zeigt die 12 neuesten Buchzirkel als Social-Media-Kachelraster"
+                    >
+                      📸 Social Media
+                    </button>
                   </div>
+
+                  {/* Social-Media-Ansicht: 2-spaltiges Kachelraster */}
+                  {buchzirkelSocialView && (() => {
+                    const newest12 = [...buchzirkelList].filter((z) => z.status === "bewerbung").slice(0, 12);
+                    return (
+                      <div style={{ marginTop: "0.5rem" }}>
+                        <p style={{ fontSize: "0.8rem", color: "var(--color-arena-muted)", marginBottom: "0.75rem" }}>
+                          Die 12 neuesten Buchzirkel mit offener Bewerbungsphase:
+                        </p>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                          {newest12.map((z) => {
+                            const imgUrl = z.coverImageUrl || z.mediaImageUrl;
+                            const genres = [...new Set([z.genre, ...(z.genreFilter ?? [])].filter(Boolean))].slice(0, 4);
+                            return (
+                              <a
+                                key={z._id}
+                                href={`/buchzirkel/${z._id}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start", border: "1px solid var(--color-arena-border)", borderRadius: 10, padding: "0.75rem", textDecoration: "none", color: "inherit" }}
+                              >
+                                {imgUrl ? (
+                                  <img
+                                    src={imgUrl}
+                                    alt={z.titel}
+                                    style={{ width: 64, height: 96, objectFit: "cover", borderRadius: 6, flexShrink: 0, border: "1px solid var(--color-arena-border-light)" }}
+                                  />
+                                ) : (
+                                  <div style={{ width: 64, height: 96, borderRadius: 6, flexShrink: 0, background: "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem" }}>📚</div>
+                                )}
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{ fontWeight: 700, fontSize: "0.88rem", lineHeight: 1.3, marginBottom: "0.25rem" }}>
+                                    {z.titel} <span style={{ fontWeight: 400, color: "var(--color-arena-muted)", fontSize: "0.82rem" }}>von {z.veranstalterName}</span>
+                                  </div>
+                                  {genres.length > 0 && (
+                                    <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap", marginTop: "0.3rem" }}>
+                                      {genres.map((g) => (
+                                        <span key={g} style={{ fontSize: "0.68rem", background: "#f3f4f6", color: "#374151", borderRadius: 999, padding: "1px 7px", border: "1px solid #e5e7eb" }}>{g}</span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </a>
+                            );
+                          })}
+                        </div>
+
+                        {/* Caption */}
+                        {newest12.length > 0 && (() => {
+                          const captionLines = [
+                            "Gemeinsam lesen macht mehr Spaß! 📚",
+                            "Wir suchen liebe Menschen für eine neue Leserunde im Buchzirkel der BuchArena.",
+                            "Wenn du Lust hast auf gemeinsames Lesen, Austauschen, Lieblingsstellen und vielleicht ein bisschen emotionales Leiden zusammen 🥹, dann bist du herzlich willkommen!",
+                            "",
+                            "Das sind die 12 aktuellsten Bücher unseres Buchzirkels:",
+                            "",
+                            ...newest12.map((z) => {
+                              const insta = z.veranstalterInstagram ? ` (@${cleanInstaHandle(z.veranstalterInstagram)})` : "";
+                              const genres = [...new Set([z.genre, ...(z.genreFilter ?? [])].filter(Boolean))].slice(0, 4);
+                              const genreStr = genres.length > 0 ? ` | ${genres.join(", ")}` : "";
+                              return `📖 ${z.titel} von ${z.veranstalterName}${insta}${genreStr}`;
+                            }),
+                          ].join("\n");
+                          return (
+                            <div style={{ marginTop: "1.25rem" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                                <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>Caption</span>
+                                <button
+                                  className="btn btn-sm"
+                                  onClick={() => void navigator.clipboard.writeText(captionLines)}
+                                  style={{ fontSize: "0.75rem" }}
+                                >
+                                  📋 Kopieren
+                                </button>
+                              </div>
+                              <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: "0.82rem", lineHeight: 1.6, background: "#f9fafb", border: "1px solid var(--color-arena-border)", borderRadius: 8, padding: "0.9rem 1rem", margin: 0, color: "var(--color-arena-text)" }}>
+                                {captionLines}
+                              </pre>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    );
+                  })()}
 
                   {/* Tabelle Desktop */}
                   <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">

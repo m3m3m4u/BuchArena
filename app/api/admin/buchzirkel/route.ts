@@ -28,6 +28,8 @@ export async function GET() {
         buchId: 1,
         leseabschnitte: 1,
         genreFilter: 1,
+        coverImageUrl: 1,
+        mediaImageUrl: 1,
       })
       .toArray();
 
@@ -67,13 +69,16 @@ export async function GET() {
     const usersRaw = await usersCol
       .find(
         { username: { $in: veranstalterUsernames } },
-        { projection: { username: 1, "profile.socialInstagram": 1 } }
+        { projection: { username: 1, "profile.socialInstagram": 1, "profile.name": 1 } }
       )
       .toArray();
     const instaMap = new Map<string, string>();
+    const nameMap = new Map<string, string>();
     for (const u of usersRaw) {
-      const handle = (u as { profile?: { socialInstagram?: { value?: string } } }).profile?.socialInstagram?.value ?? "";
+      const handle = (u as { profile?: { socialInstagram?: { value?: string }; name?: { value?: string } } }).profile?.socialInstagram?.value ?? "";
+      const displayName = (u as { profile?: { name?: { value?: string } } }).profile?.name?.value ?? "";
       if (handle) instaMap.set(u.username, handle);
+      if (displayName) nameMap.set(u.username, displayName);
     }
 
     const result = docs.map((d) => {
@@ -85,6 +90,7 @@ export async function GET() {
         teilnehmerAnzahl: teilnahmenMap.get(key) ?? 0,
         leseabschnitteAnzahl: Array.isArray(d.leseabschnitte) ? d.leseabschnitte.length : 0,
         veranstalterInstagram: instaMap.get(d.veranstalterUsername) ?? "",
+        veranstalterName: nameMap.get(d.veranstalterUsername) ?? d.veranstalterUsername,
       };
     });
 
