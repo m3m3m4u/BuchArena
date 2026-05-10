@@ -237,7 +237,9 @@ export default function BuchzirkelDetailPage() {
             ) : null;
           })()}
           {!zirkel.youtubeUrl && zirkel.mediaImageUrl && (
-            <img src={zirkel.mediaImageUrl} alt={zirkel.titel} className="w-full rounded-lg object-cover max-h-80" />
+            <div className="flex justify-center">
+              <img src={zirkel.mediaImageUrl} alt={zirkel.titel} className="rounded-lg max-w-full w-auto max-h-[600px]" />
+            </div>
           )}
         </section>
       )}
