@@ -306,9 +306,9 @@ export default function DiskussionenPage() {
     return (
       <main className="top-centered-main">
         <section className="card">
-          <h1>Diskussionen</h1>
+          <h1>Treffpunkt</h1>
           <p>
-            Bitte <Link href="/auth">melde dich an</Link>, um an Diskussionen
+            Bitte <Link href="/auth">melde dich an</Link>, um am Treffpunkt
             teilzunehmen.
           </p>
         </section>
@@ -320,7 +320,7 @@ export default function DiskussionenPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <h1 className="text-xl sm:text-2xl">Diskussionen</h1>
+          <h1 className="text-xl sm:text-2xl">Treffpunkt</h1>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <Link href="/quiz" className="btn text-sm sm:text-base">Quiz</Link>
             <Link href="/tauschboerse" className="btn text-sm sm:text-base">Tauschbörse</Link>
@@ -334,6 +334,10 @@ export default function DiskussionenPage() {
         </div>
 
         {message && <p className="text-red-700">{message}</p>}
+
+        <p className="text-sm text-arena-muted -mt-1">
+          Der Treffpunkt dient dem gegenseitigen Austausch aller BuchArena-Mitglieder. Reine Werbeposts sind nicht vorgesehen. Wir freuen uns aber, wenn du durch kompetente Beiträge auf dich aufmerksam machst und so die Diskussion bereicherst.
+        </p>
 
         {/* ═══ Such- und Filterleiste ═══ */}
         <div className="grid gap-2">
