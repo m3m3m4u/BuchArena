@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 import { DISCUSSION_TOPICS } from "@/lib/discussions";
+import { CommentToolbar } from "@/app/components/comment-toolbar";
 
 type DiscussionItem = {
   id: string;
@@ -102,6 +103,8 @@ export default function DiskussionenPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [username, setUsername] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const newBodyRef = useRef<HTMLTextAreaElement>(null);
 
   /* ── Filter / Suche ── */
   const [searchTerm, setSearchTerm] = useState("");
@@ -669,13 +672,10 @@ export default function DiskussionenPage() {
               </select>
             </label>
 
-            <label className="grid gap-1 text-[0.95rem]">
-              Beschreibung
-              <p className="text-xs text-arena-muted">
-                Formatierung: **fett**, *kursiv*, [Linktext](URL) und direkte URLs
-                werden erkannt.
-              </p>
+            <div className="grid gap-1 text-[0.95rem]">
+              <span>Beschreibung</span>
               <textarea
+                ref={newBodyRef}
                 className="input-base"
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
@@ -683,7 +683,12 @@ export default function DiskussionenPage() {
                 rows={8}
                 placeholder="Beschreibe das Thema genauer ..."
               />
-            </label>
+              <CommentToolbar
+                textareaRef={newBodyRef}
+                value={body}
+                onChange={setBody}
+              />
+            </div>
 
             <div className="flex gap-2 justify-end">
               <button

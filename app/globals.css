@@ -112,6 +112,10 @@ h1 { margin: 0; }
 .ProseMirror hr { border: none; border-top: 1px solid #e5e7eb; margin: 1rem 0; }
 .ProseMirror a { color: #2563eb; text-decoration: underline; overflow-wrap: break-word; word-break: break-word; }
 
+/* ── Links in Diskussions-Body (formatBody output) ── */
+.discussion-body a { color: #2563eb; text-decoration: underline; overflow-wrap: break-word; word-break: break-word; }
+.discussion-body a:hover { color: #1d4ed8; }
+
 /* ── Twemoji ── */
 .twemoji {
   display: inline-block;

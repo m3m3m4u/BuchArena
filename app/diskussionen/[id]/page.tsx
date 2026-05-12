@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
+import { CommentToolbar } from "@/app/components/comment-toolbar";
 
 type ReactionItem = {
   username: string;
@@ -43,23 +44,79 @@ type DiscussionDetail = {
 };
 
 function formatBody(text: string) {
-  const escaped = text
+  // 1) Bilder ![alt](url) vor HTML-Escaping extrahieren
+  // URL kann absolut (https://) oder relativ (/api/...) sein
+  const imageTokens: string[] = [];
+  let processed = text.replace(
+    /!\[([^\]]{0,200})\]\(((?:https?:\/\/|\/)[^\s)]{1,1000})\)/g,
+    (_, alt: string, url: string) => {
+      const safeAlt = alt.replace(/[<>"&]/g, "");
+      const safeUrl = url.replace(/[<>"]/g, "");
+      const token = `\u0000IMG${imageTokens.length}\u0000`;
+      imageTokens.push(
+        `<img src="${safeUrl}" alt="${safeAlt}" class="max-w-full rounded my-1" style="max-height:400px;display:block;" loading="lazy" />`
+      );
+      return token;
+    }
+  );
+
+  // 2) YouTube-URLs vor HTML-Escaping extrahieren
+  const youtubeTokens: string[] = [];
+  processed = processed.replace(
+    /(https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})[^\s]*)/g,
+    (fullMatch: string, _: string, videoId: string) => {
+      const isShort = fullMatch.includes("/shorts/");
+      const token = `\u0000YT${youtubeTokens.length}\u0000`;
+      if (isShort) {
+        // 9:16 – Hochformat (max 315px breit wie YouTube Shorts)
+        youtubeTokens.push(
+          `<div class="my-2" style="max-width:315px;position:relative;padding-bottom:177.78%;height:0;overflow:hidden;">` +
+          `<iframe src="https://www.youtube-nocookie.com/embed/${videoId}" frameborder="0" ` +
+          `allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" ` +
+          `allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"></iframe></div>`
+        );
+      } else {
+        // 16:9 – Querformat
+        youtubeTokens.push(
+          `<div class="my-2" style="max-width:560px;position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">` +
+          `<iframe src="https://www.youtube-nocookie.com/embed/${videoId}" frameborder="0" ` +
+          `allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" ` +
+          `allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"></iframe></div>`
+        );
+      }
+      return token;
+    }
+  );
+
+  // 3) HTML-Escaping
+  const escaped = processed
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-  const formatted = escaped
+  const linkStyle = 'color:#2563eb;text-decoration:underline;overflow-wrap:break-word;word-break:break-word;';
+
+  // 4) Markdown-Formatierung
+  let formatted = escaped
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(
       /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noreferrer">$1</a>'
+      `<a href="$2" target="_blank" rel="noreferrer noopener" style="${linkStyle}">$1</a>`
     )
     .replace(
-      /(^|[^"(])(https?:\/\/[^\s<]+)/g,
-      '$1<a href="$2" target="_blank" rel="noreferrer">$2</a>'
+      /(^|\s)(https?:\/\/[^\s<>"]+?)([.,):;!?'"]*(?:\s|$))/gm,
+      `$1<a href="$2" target="_blank" rel="noreferrer noopener" style="${linkStyle}">$2</a>$3`
     )
     .replace(/\n/g, "<br />");
+
+  // 5) Tokens wiederherstellen
+  imageTokens.forEach((img, i) => {
+    formatted = formatted.split(`\u0000IMG${i}\u0000`).join(img);
+  });
+  youtubeTokens.forEach((yt, i) => {
+    formatted = formatted.split(`\u0000YT${i}\u0000`).join(yt);
+  });
 
   return formatted;
 }
@@ -222,6 +279,11 @@ export default function DiskussionDetailPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Refs für Toolbar-Integration
+  const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const inlineReplyTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const editReplyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const EMOJIS = ["👍", "❤️", "😂", "🎉", "🤔", "👎"];
 
@@ -536,7 +598,7 @@ export default function DiskussionDetailPage() {
               </div>
 
               <div
-                className="mt-1 text-[0.95rem] leading-relaxed [overflow-wrap:break-word]" style={{ wordBreak: "break-word" }}
+                className="discussion-body mt-1 text-[0.95rem] leading-relaxed [overflow-wrap:break-word]" style={{ wordBreak: "break-word" }}
                 dangerouslySetInnerHTML={{
                   __html: formatBody(discussion.body),
                 }}
@@ -576,15 +638,21 @@ export default function DiskussionDetailPage() {
             {/* Reply form – direkt unter der Frage */}
             <div className="grid gap-2 mt-2 border-t border-arena-border-light pt-4">
               <p className="text-xs text-arena-muted m-0">
-                Formatierung: **fett**, *kursiv*, [Linktext](URL) und direkte URLs werden erkannt.
+                Formatierung: **fett**, *kursiv*, direkte URLs und Links werden erkannt. Bilder und YouTube-Videos können über die Symbole unten eingefügt werden.
               </p>
               <textarea
+                ref={replyTextareaRef}
                 className="input-base"
                 value={replyBody}
                 onChange={(e) => setReplyBody(e.target.value)}
                 maxLength={3000}
                 rows={3}
                 placeholder="Deine Antwort zur Diskussion …"
+              />
+              <CommentToolbar
+                textareaRef={replyTextareaRef}
+                value={replyBody}
+                onChange={setReplyBody}
               />
               <button
                 className="btn self-start"
@@ -638,7 +706,7 @@ export default function DiskussionDetailPage() {
                               </span>
                             </div>
                             <div
-                              className="mt-1 text-[0.95rem] leading-relaxed [overflow-wrap:break-word]" style={{ wordBreak: "break-word" }}
+                              className="discussion-body mt-1 text-[0.95rem] leading-relaxed [overflow-wrap:break-word]" style={{ wordBreak: "break-word" }}
                               dangerouslySetInnerHTML={{
                                 __html: formatBody(reply.body),
                               }}
@@ -699,12 +767,18 @@ export default function DiskussionDetailPage() {
                           {editingReplyId === reply.id && (
                             <div className="mt-2 ml-3 sm:ml-6 pl-3 border-l-2 border-arena-blue/30 grid gap-2">
                               <textarea
+                                ref={editReplyTextareaRef}
                                 className="input-base text-sm"
                                 value={editingReplyBody}
                                 onChange={(e) => setEditingReplyBody(e.target.value)}
                                 maxLength={3000}
                                 rows={3}
                                 autoFocus
+                              />
+                              <CommentToolbar
+                                textareaRef={editReplyTextareaRef}
+                                value={editingReplyBody}
+                                onChange={setEditingReplyBody}
                               />
                               <div className="flex gap-2">
                                 <button
@@ -728,6 +802,7 @@ export default function DiskussionDetailPage() {
                           {inlineReplyId === reply.id && (
                             <div className="mt-2 ml-3 sm:ml-6 pl-3 border-l-2 border-arena-blue/30 grid gap-2">
                               <textarea
+                                ref={inlineReplyTextareaRef}
                                 className="input-base text-sm"
                                 value={inlineReplyBody}
                                 onChange={(e) => setInlineReplyBody(e.target.value)}
@@ -735,6 +810,11 @@ export default function DiskussionDetailPage() {
                                 rows={3}
                                 placeholder={`Antwort an ${reply.displayName || reply.authorUsername} …`}
                                 autoFocus
+                              />
+                              <CommentToolbar
+                                textareaRef={inlineReplyTextareaRef}
+                                value={inlineReplyBody}
+                                onChange={setInlineReplyBody}
                               />
                               <div className="flex gap-2">
                                 <button

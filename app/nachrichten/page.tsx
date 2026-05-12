@@ -147,7 +147,11 @@ function NachrichtenPageInner() {
         return;
       }
       const data = (await res.json()) as { conversations?: ConversationItem[] };
-      setConversations(data.conversations ?? []);
+      const raw = data.conversations ?? [];
+      // Duplikate nach partner entfernen (nur den ersten Eintrag behalten)
+      const seen = new Set<string>();
+      const deduped = raw.filter((c) => { if (seen.has(c.partner)) return false; seen.add(c.partner); return true; });
+      setConversations(deduped);
     } catch {
       /* ignore */
     } finally {
@@ -599,9 +603,9 @@ function NachrichtenPageInner() {
                   Noch keine Unterhaltungen.
                 </p>
               ) : (
-                conversations.map((conv) => (
+                conversations.map((conv, idx) => (
                   <button
-                    key={conv.partner}
+                    key={`${conv.partner}-${idx}`}
                     className={`w-full text-left px-4 py-3 border-b border-arena-border-light cursor-pointer transition-colors flex items-center gap-3 ${
                       activePartner === conv.partner
                         ? "bg-blue-50"
