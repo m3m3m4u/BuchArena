@@ -8,26 +8,36 @@ export async function GET(request: NextRequest) {
     const db = await getDatabase();
     const empfCol = db.collection("buchempfehlungen");
 
-    // Optional: Server-seitige Suche per ?q=
+    // Optional: Server-seitige Suche per ?q= und Genre-Filter per ?genre=
     const q = request.nextUrl.searchParams.get("q")?.trim();
-    const matchStage = q
-      ? {
-          $match: {
-            $or: [
-              { title: { $regex: q, $options: "i" } },
-              { publisher: { $regex: q, $options: "i" } },
-              { isbn: { $regex: q, $options: "i" } },
-              { ownerUsername: { $regex: q, $options: "i" } },
-            ],
-          },
-        }
+    const genreParam = request.nextUrl.searchParams.get("genre")?.trim();
+
+    const matchConditions: object[] = [];
+    if (q) {
+      matchConditions.push({
+        $or: [
+          { title: { $regex: q, $options: "i" } },
+          { publisher: { $regex: q, $options: "i" } },
+          { isbn: { $regex: q, $options: "i" } },
+          { ownerUsername: { $regex: q, $options: "i" } },
+        ],
+      });
+    }
+    if (genreParam) {
+      // Genre-Feld kann kommagetrennte Liste sein – prüfe ob genreParam darin enthalten ist
+      matchConditions.push({ genre: { $regex: genreParam, $options: "i" } });
+    }
+    const matchStage = matchConditions.length > 0
+      ? { $match: matchConditions.length === 1 ? matchConditions[0] : { $and: matchConditions } }
       : null;
+
+    const hasFilter = !!q || !!genreParam;
 
     // Bücher laden, deaktivierte User per Lookup ausschließen
     const pipeline: object[] = [
       ...(matchStage ? [matchStage] : []),
       { $sort: { createdAt: -1 as const } },
-      ...(q ? [] : [{ $limit: 500 }]),
+      ...(hasFilter ? [] : [{ $limit: 500 }]),
       {
         $lookup: {
           from: "users",

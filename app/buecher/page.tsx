@@ -4,7 +4,7 @@ import { ProgressiveImage } from "@/app/components/progressive-image";
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { normalizeGenre } from "@/lib/genres";
+import { normalizeGenre, GENRE_OPTIONS } from "@/lib/genres";
 
 function mulberry32(seed: number) {
   return () => {
@@ -80,9 +80,10 @@ function BuecherContent() {
       setIsLoading(true);
       setMessage("");
       try {
-        const url = debouncedQuery
-          ? `/api/books/discover?q=${encodeURIComponent(debouncedQuery)}`
-          : "/api/books/discover";
+        const params = new URLSearchParams();
+        if (debouncedQuery) params.set("q", debouncedQuery);
+        if (genreFilter) params.set("genre", genreFilter);
+        const url = params.size > 0 ? `/api/books/discover?${params.toString()}` : "/api/books/discover";
         const response = await fetch(url, { method: "GET" });
         const data = (await response.json()) as { books?: DiscoverBook[]; message?: string };
         if (!response.ok) throw new Error(data.message ?? "Bücher konnten nicht geladen werden.");
@@ -94,14 +95,9 @@ function BuecherContent() {
       }
     }
     void loadBooks();
-  }, [debouncedQuery]);
+  }, [debouncedQuery, genreFilter]);
 
-  const genres = useMemo(() => {
-    const unique = new Set(
-      books.flatMap((b) => (b.genre ?? "").split(",").map((g) => normalizeGenre(g.trim())).filter(Boolean)),
-    );
-    return [...unique].sort((a, b) => a.localeCompare(b, "de"));
-  }, [books]);
+  const genres = GENRE_OPTIONS;
 
   const filteredBooks = useMemo(() => {
     const age = Number(ageFilter);
