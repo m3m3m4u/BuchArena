@@ -575,11 +575,11 @@ export default function AdminPage() {
         {/* ── Haupt-Reiter ── */}
         <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
           {([
-            { key: "bdw" as const, label: "📖 Buch der Woche" },
-            { key: "analytics" as const, label: "📊 Analyse" },
-            { key: "nachrichten" as const, label: "✉ Nachrichten" },
-            { key: "buchzirkel" as const, label: "📚 Buchzirkel" },
-          { key: "users" as const, label: "👥 User-Übersicht" },
+            { key: "bdw" as const, label: "Buch der Woche" },
+            { key: "analytics" as const, label: "Analyse" },
+            { key: "nachrichten" as const, label: "Nachrichten" },
+            { key: "buchzirkel" as const, label: "Buchzirkel" },
+          { key: "users" as const, label: "User-Übersicht" },
           ] as { key: "bdw" | "analytics" | "nachrichten" | "buchzirkel" | "users"; label: string }[]).map((t) => (
             <button
               key={t.key}
@@ -593,7 +593,7 @@ export default function AdminPage() {
             className="btn btn-sm"
             onClick={() => router.push("/admin/news")}
           >
-            📰 News
+            News
           </button>
           <button
             className="btn btn-sm"
@@ -605,31 +605,31 @@ export default function AdminPage() {
             className="btn btn-sm"
             onClick={() => router.push("/admin/newsletter")}
           >
-            📬 Newsletter
+            Newsletter
           </button>
           <button
             className="btn btn-sm"
             onClick={() => router.push("/admin/musik")}
           >
-            🎵 Musik
+            Musik
           </button>
           <button
             className="btn btn-sm"
             onClick={() => router.push("/admin/einreichungen")}
           >
-            📬 Einreichungen
+            Einreichungen
           </button>
           <button
             className="btn btn-sm"
             onClick={() => router.push("/admin/social-media")}
           >
-            🖼️ Social-Media-Galerie
+            Social-Media-Galerie
           </button>
           <button
             className="btn btn-sm"
             onClick={() => router.push("/admin/social-media-content")}
           >
-            ⬇️ Fertige Inhalte
+            Fertige Inhalte
           </button>
           <button
             className="btn btn-sm"
