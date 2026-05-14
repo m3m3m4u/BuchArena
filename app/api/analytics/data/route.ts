@@ -61,7 +61,33 @@ export async function POST(request: NextRequest) {
             ],
             topReferrers: [
               { $match: { referrer: { $ne: "" } } },
-              { $group: { _id: "$referrer", count: { $sum: 1 } } },
+              {
+                $addFields: {
+                  referrerHost: {
+                    $let: {
+                      vars: {
+                        m: {
+                          $regexFind: {
+                            input: "$referrer",
+                            regex: "^(?:https?://)?([^/?#:]+)",
+                          },
+                        },
+                      },
+                      in: {
+                        $ifNull: [{ $arrayElemAt: ["$$m.captures", 0] }, "$referrer"],
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                $match: {
+                  referrerHost: {
+                    $nin: ["bucharena.org", "www.bucharena.org"],
+                  },
+                },
+              },
+              { $group: { _id: "$referrerHost", count: { $sum: 1 } } },
               { $sort: { count: -1 } },
               { $limit: 20 },
             ],
