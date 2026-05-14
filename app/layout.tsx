@@ -44,6 +44,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://bucharena.org",
   },
+  verification: {
+    google: "QLwdhZctTXMDNbCg3ABgu9W2MbU3sex9wc-MAKWP0Fc",
+  },
 };
 
 export default function RootLayout({
