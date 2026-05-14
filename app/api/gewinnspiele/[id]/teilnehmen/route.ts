@@ -38,10 +38,10 @@ export async function POST(req: Request, { params }: Params) {
   if (doc.status !== "anmeldung") {
     return NextResponse.json({ message: "Die Anmeldephase ist nicht aktiv." }, { status: 400 });
   }
-  if (now < doc.anmeldungVon) {
+  if (now < new Date(doc.anmeldungVon as string)) {
     return NextResponse.json({ message: "Die Anmeldephase hat noch nicht begonnen." }, { status: 400 });
   }
-  if (now > doc.anmeldungBis) {
+  if (now > new Date(doc.anmeldungBis as string)) {
     return NextResponse.json({ message: "Die Anmeldephase ist abgelaufen." }, { status: 400 });
   }
 
