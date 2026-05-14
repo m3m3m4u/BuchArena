@@ -30,8 +30,8 @@ export async function POST(req: Request, { params }: Params) {
   }
 
   // Ziehung darf erst ab ziehungAm durchgeführt werden (nur bei erster Ziehung)
-  if (doc.status === "anmeldung" && doc.ziehungAm && new Date() < new Date(doc.ziehungAm as string)) {
-    const datum = new Date(doc.ziehungAm as string).toLocaleString("de-DE", {
+  if (doc.status === "anmeldung" && doc.ziehungAm && new Date() < doc.ziehungAm) {
+    const datum = doc.ziehungAm.toLocaleString("de-DE", {
       day: "2-digit", month: "2-digit", year: "numeric",
       hour: "2-digit", minute: "2-digit",
     });
