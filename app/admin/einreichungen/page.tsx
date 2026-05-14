@@ -74,7 +74,7 @@ export default function BucharenaAdminSubmissions() {
   }, []);
 
   useEffect(() => {
-    if (account !== null && account.role !== "SUPERADMIN") router.push("/");
+    if (account !== null && account.role !== "SUPERADMIN" && account.role !== "ADMIN") router.push("/");
   }, [account, router]);
 
   const loadSubmissions = useCallback(async () => {
@@ -88,7 +88,7 @@ export default function BucharenaAdminSubmissions() {
     finally { setLoading(false); }
   }, [filter]);
 
-  useEffect(() => { if (account?.role === "SUPERADMIN") loadSubmissions(); }, [account, loadSubmissions]);
+  useEffect(() => { if (account?.role === "SUPERADMIN" || account?.role === "ADMIN") loadSubmissions(); }, [account, loadSubmissions]);
 
   const fmtSize = (b: number) => b < 1024 * 1024 ? `${(b / 1024).toFixed(1)} KB` : `${(b / (1024 * 1024)).toFixed(1)} MB`;
   const fmtDate = (d: string) => new Date(d).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });

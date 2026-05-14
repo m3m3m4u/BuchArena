@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getBucharenaSubmissionsCollection, getBucharenaReelVorlagenCollection } from "@/lib/bucharena-db";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 import { davGet } from "@/lib/bucharena-webdav";
 import { buildKurzVideoPptx } from "@/lib/pptx-vorlage";
 
@@ -10,7 +10,7 @@ export const maxDuration = 120;
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) return NextResponse.json({ success: false, error: "Keine Berechtigung" }, { status: 403 });
 
     const { id } = await params;
