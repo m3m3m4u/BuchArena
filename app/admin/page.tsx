@@ -631,6 +631,12 @@ export default function AdminPage() {
           >
             ⬇️ Fertige Inhalte
           </button>
+          <button
+            className="btn btn-sm"
+            onClick={() => router.push("/admin/gewinnspiele")}
+          >
+            Gewinnspiele
+          </button>
         </div>
 
         {/* ══ Tab: Buch der Woche ══ */}

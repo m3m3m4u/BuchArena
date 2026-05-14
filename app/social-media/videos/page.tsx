@@ -111,7 +111,7 @@ export default function ReviewVideosPage() {
     if (accountLoaded) void loadVideos();
   }, [accountLoaded, loadVideos]);
 
-  const isAdmin = account?.role === "SUPERADMIN";
+  const isAdmin = account?.role === "ADMIN" || account?.role === "SUPERADMIN";
 
   const CHUNK_SIZE = 4 * 1024 * 1024; // 4 MB pro Chunk
 

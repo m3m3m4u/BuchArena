@@ -17,7 +17,7 @@ export default function KurzGefragtPage() {
     const acc = getStoredAccount();
     if (acc) {
       setUsername(acc.username);
-      setIsAdmin(acc.role === "SUPERADMIN");
+      setIsAdmin(acc.role === "ADMIN" || acc.role === "SUPERADMIN");
     }
   }, []);
 

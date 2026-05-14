@@ -273,7 +273,7 @@ export default function SocialMediaPage() {
               </Link>
 
               {/* f) Admin – nur für Admins */}
-              {account?.role === "SUPERADMIN" && (
+              {(account?.role === "ADMIN" || account?.role === "SUPERADMIN") && (
                 <button
                   type="button"
                   className={`${optionCls} border-amber-300 bg-amber-50 hover:border-amber-500 hover:bg-amber-50`}
@@ -420,7 +420,7 @@ export default function SocialMediaPage() {
         )}
 
         {/* ═══ SCHRITT 2f: Admin-Bereich ═══ */}
-        {wizardStep === "admin" && account?.role === "SUPERADMIN" && (
+        {wizardStep === "admin" && (account?.role === "ADMIN" || account?.role === "SUPERADMIN") && (
           <div className="grid gap-4">
             <div>
               <h2 className="text-lg font-semibold">Admin-Bereich</h2>

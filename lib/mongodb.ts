@@ -30,6 +30,7 @@ export type MessageConversationDocument = {
 import type { KalenderEvent } from "@/lib/kalender";
 import type { KooperationDocument } from "@/lib/kooperationen";
 import type { BuchzirkelDocument, BuchzirkelBewerbungDocument, BuchzirkelTeilnahmeDocument, BuchzirkelBeitragDocument } from "@/lib/buchzirkel";
+import type { GewinnspielDocument, GewinnspielteilnahmeDocument } from "@/lib/gewinnspiel";
 
 export type SocialMediaDesign = {
   _id?: import("mongodb").ObjectId;
@@ -305,6 +306,15 @@ async function initializeDatabase(db: Db) {
   await buchzirkelBeitraege.createIndex({ buchzirkelId: 1, topicId: 1, lastActivityAt: -1 });
   await buchzirkelBeitraege.createIndex({ autorUsername: 1 });
 
+  const gewinnspiele = db.collection("gewinnspiele");
+  await gewinnspiele.createIndex({ status: 1, anmeldungBis: -1 });
+  await gewinnspiele.createIndex({ autorUsername: 1, createdAt: -1 });
+  await gewinnspiele.createIndex({ ziehungAm: 1, status: 1 });
+
+  const gewinnspielteilnahmen = db.collection("gewinnspielteilnahmen");
+  await gewinnspielteilnahmen.createIndex({ gewinnspielId: 1, username: 1 }, { unique: true });
+  await gewinnspielteilnahmen.createIndex({ username: 1, angemeldetAt: -1 });
+
   // Superadmin beim Serverstart anlegen / Passwort synchronisieren
   const defaultPassword = process.env.SUPERADMIN_PASSWORD ?? "12345";
   const existingSuperAdmin = await users.findOne(
@@ -470,6 +480,16 @@ export async function getBuchzirkelTeilnahmenCollection(): Promise<Collection<Bu
 export async function getBuchzirkelBeitraegeCollection(): Promise<Collection<BuchzirkelBeitragDocument>> {
   const db = await getDatabase();
   return db.collection<BuchzirkelBeitragDocument>("buchzirkel_beitraege");
+}
+
+export async function getGewinnspieleCollection(): Promise<Collection<GewinnspielDocument>> {
+  const db = await getDatabase();
+  return db.collection<GewinnspielDocument>("gewinnspiele");
+}
+
+export async function getGewinnspielteilnahmenCollection(): Promise<Collection<GewinnspielteilnahmeDocument>> {
+  const db = await getDatabase();
+  return db.collection<GewinnspielteilnahmeDocument>("gewinnspielteilnahmen");
 }
 
 export function isDuplicateKeyError(error: unknown) {
