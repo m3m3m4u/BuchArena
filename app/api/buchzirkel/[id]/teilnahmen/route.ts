@@ -25,7 +25,7 @@ export async function GET(
       { projection: { veranstalterUsername: 1 } }
     );
     if (!zirkel) return NextResponse.json({ message: "Nicht gefunden." }, { status: 404 });
-    if (zirkel.veranstalterUsername !== account.username && account.role !== "SUPERADMIN") {
+    if (zirkel.veranstalterUsername !== account.username && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
       return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
     }
 
@@ -61,7 +61,7 @@ export async function PATCH(
       { projection: { veranstalterUsername: 1 } }
     );
     if (!zirkel) return NextResponse.json({ message: "Nicht gefunden." }, { status: 404 });
-    if (zirkel.veranstalterUsername !== account.username && account.role !== "SUPERADMIN") {
+    if (zirkel.veranstalterUsername !== account.username && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
       return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
     }
 

@@ -57,13 +57,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (target.role === "ADMIN" && admin.role !== "SUPERADMIN") {
-      return NextResponse.json(
-        { message: "Admin-E-Mails können nur vom SuperAdmin geändert werden." },
-        { status: 403 },
-      );
-    }
-
     if (target.email === newEmail) {
       return NextResponse.json(
         { message: "Die neue E-Mail ist identisch mit der aktuellen." },

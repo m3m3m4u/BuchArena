@@ -173,7 +173,7 @@ export default function BucharenaAdminSubmissions() {
     return <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "0.15rem 0.5rem", borderRadius: 999, fontSize: "0.75rem", fontWeight: 500, background: m.bg, color: m.color }}><Icon style={{ width: 12, height: 12 }} />{m.label}</span>;
   };
 
-  if (account?.role !== "SUPERADMIN") return null;
+  if (account && account.role !== "SUPERADMIN" && account.role !== "ADMIN") return null;
 
   const filterBtn = (f: string) => {
     const active = filter === f;

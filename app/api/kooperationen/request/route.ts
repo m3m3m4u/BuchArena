@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Ungültige Parameter." }, { status: 400 });
     }
 
-    if (partnerUsername === account.username && account.role !== "SUPERADMIN") {
+    if (partnerUsername === account.username && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
       return NextResponse.json({ message: "Du kannst dich nicht selbst als Partner angeben." }, { status: 400 });
     }
 

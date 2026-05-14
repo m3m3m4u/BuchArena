@@ -50,7 +50,7 @@ export default function SnippetsAdminPage() {
   }, []);
 
   useEffect(() => {
-    if (account !== null && account.role !== "SUPERADMIN") router.push("/social-media");
+    if (account !== null && account.role !== "SUPERADMIN" && account.role !== "ADMIN") router.push("/social-media");
   }, [account, router]);
 
   const loadSnippets = useCallback(async () => {
@@ -64,7 +64,7 @@ export default function SnippetsAdminPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { if (account?.role === "SUPERADMIN") loadSnippets(); }, [account, loadSnippets]);
+  useEffect(() => { if (account?.role === "SUPERADMIN" || account?.role === "ADMIN") loadSnippets(); }, [account, loadSnippets]);
 
   const handleStatusUpdate = async (id: string, newStatus: "pending" | "processed") => {
     setActionLoading(id);
@@ -92,7 +92,7 @@ export default function SnippetsAdminPage() {
   const handleExport = () => window.open("/api/bucharena/snippets/export", "_blank");
   const handleDownloadAudio = (id: string) => window.open(`/api/bucharena/snippets/${id}/audio`, "_blank");
 
-  if (account?.role !== "SUPERADMIN") return null;
+  if (account && account.role !== "SUPERADMIN" && account.role !== "ADMIN") return null;
 
   const filtered = snippets.filter(s => filter === "all" || s.status === filter);
   const pendingCount = snippets.filter(s => s.status === "pending").length;

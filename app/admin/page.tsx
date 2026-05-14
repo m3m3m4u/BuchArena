@@ -494,9 +494,9 @@ export default function AdminPage() {
     }
   }
 
-  /* ── Admin-Rolle umschalten (nur SUPERADMIN) ── */
+  /* ── Admin-Rolle umschalten (ADMIN oder SUPERADMIN) ── */
   async function handleToggleRole(targetUsername: string, currentRole: string) {
-    if (!account || account.role !== "SUPERADMIN") return;
+    if (!account || (account.role !== "SUPERADMIN" && account.role !== "ADMIN")) return;
     const newRole = currentRole === "ADMIN" ? "USER" : "ADMIN";
     const label = newRole === "ADMIN" ? "zum Admin machen" : "Admin-Rechte entziehen";
     if (!confirm(`„${targetUsername}" wirklich ${label}?`)) return;
@@ -529,7 +529,7 @@ export default function AdminPage() {
 
   /* ── Als Benutzer einloggen ── */
   async function handleImpersonate(targetUsername: string) {
-    if (!account || account.role !== "SUPERADMIN") return;
+    if (!account || (account.role !== "SUPERADMIN" && account.role !== "ADMIN")) return;
     if (!confirm(`Als „${targetUsername}" einloggen? Du kannst danach über den Banner oben zurückkehren.`)) return;
     setBusyUser(targetUsername);
     try {
@@ -1290,8 +1290,8 @@ export default function AdminPage() {
                       </td>
                       <td className="p-2 border-b border-arena-border-light">
                         <div className="flex gap-1 flex-wrap">
-                          {/* SuperAdmin: Als Benutzer einloggen */}
-                          {!isSuperAdmin && account.role === "SUPERADMIN" && (
+                          {/* Admin/SuperAdmin: Als Benutzer einloggen */}
+                          {!isSuperAdmin && (account.role === "SUPERADMIN" || account.role === "ADMIN") && (
                             <button
                               type="button"
                               className="btn btn-sm"
@@ -1302,8 +1302,8 @@ export default function AdminPage() {
                               👤 Als User
                             </button>
                           )}
-                          {/* SuperAdmin: Rolle umschalten */}
-                          {!isSuperAdmin && account.role === "SUPERADMIN" && (
+                          {/* Admin/SuperAdmin: Rolle umschalten */}
+                          {!isSuperAdmin && (account.role === "SUPERADMIN" || account.role === "ADMIN") && (
                             <button
                               type="button"
                               className={`btn btn-sm ${isAdmin ? "btn-danger" : ""}`}
@@ -1313,7 +1313,7 @@ export default function AdminPage() {
                               {isAdmin ? "Admin ✕" : "→ Admin"}
                             </button>
                           )}
-                          {!isSuperAdmin && !(isAdmin && account.role !== "SUPERADMIN") && (
+                          {!isSuperAdmin && (
                             <>
                               <button
                                 type="button"
@@ -1465,8 +1465,8 @@ export default function AdminPage() {
                       </Link>
                     </div>
                     <div className="flex gap-1.5 flex-wrap">
-                      {/* SuperAdmin: Als Benutzer einloggen */}
-                      {!isSuperAdmin && account.role === "SUPERADMIN" && (
+                      {/* Admin/SuperAdmin: Als Benutzer einloggen */}
+                      {!isSuperAdmin && (account.role === "SUPERADMIN" || account.role === "ADMIN") && (
                         <button
                           type="button"
                           className="btn btn-sm"
@@ -1477,8 +1477,8 @@ export default function AdminPage() {
                           👤 Als User
                         </button>
                       )}
-                      {/* SuperAdmin: Rolle umschalten */}
-                      {!isSuperAdmin && account.role === "SUPERADMIN" && (
+                      {/* Admin/SuperAdmin: Rolle umschalten */}
+                      {!isSuperAdmin && (account.role === "SUPERADMIN" || account.role === "ADMIN") && (
                         <button
                           type="button"
                           className={`btn btn-sm ${isAdmin ? "btn-danger" : ""}`}
@@ -1488,7 +1488,7 @@ export default function AdminPage() {
                           {isAdmin ? "Admin ✕" : "→ Admin"}
                         </button>
                       )}
-                      {!isSuperAdmin && !(isAdmin && account.role !== "SUPERADMIN") && (
+                      {!isSuperAdmin && (
                         <>
                           <button
                             type="button"

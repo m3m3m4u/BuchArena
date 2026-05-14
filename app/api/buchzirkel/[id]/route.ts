@@ -18,7 +18,7 @@ export async function DELETE(
     if (!doc) {
       return NextResponse.json({ message: "Nicht gefunden." }, { status: 404 });
     }
-    if (doc.veranstalterUsername !== account.username && account.role !== "SUPERADMIN") {
+    if (doc.veranstalterUsername !== account.username && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
       return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
     }
 
@@ -133,7 +133,7 @@ export async function PATCH(
     if (!doc) {
       return NextResponse.json({ message: "Buchzirkel nicht gefunden." }, { status: 404 });
     }
-    if (doc.veranstalterUsername !== account.username && account.role !== "SUPERADMIN") {
+    if (doc.veranstalterUsername !== account.username && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
       return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
     }
 

@@ -33,7 +33,7 @@ export async function POST(
     if (!zirkel) {
       return NextResponse.json({ message: "Buchzirkel nicht gefunden." }, { status: 404 });
     }
-    if (zirkel.veranstalterUsername !== account.username && account.role !== "SUPERADMIN") {
+    if (zirkel.veranstalterUsername !== account.username && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
       return NextResponse.json({ message: "Nur der Veranstalter darf Dateien hochladen." }, { status: 403 });
     }
 

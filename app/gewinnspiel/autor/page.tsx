@@ -25,7 +25,7 @@ type Gewinnspiel = {
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  vorschlag: "Eingereicht – wartet auf Admin",
+  vorschlag: "Eingereicht – Zeitraum noch nicht festgelegt",
   anmeldung: "Anmeldephase aktiv",
   verlost: "Verlost – bitte versenden",
   versendet: "Versendet",

@@ -50,13 +50,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (target.role === "ADMIN" && admin.role !== "SUPERADMIN") {
-      return NextResponse.json(
-        { message: "Admin-Konten können nur vom SuperAdmin geändert werden." },
-        { status: 403 }
-      );
-    }
-
     if (action === "delete") {
       await users.deleteOne({ username: targetUsername });
 

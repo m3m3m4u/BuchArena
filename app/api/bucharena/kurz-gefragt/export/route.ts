@@ -34,7 +34,7 @@ type SurveyDoc = {
 export async function GET() {
   try {
     const account = await getServerAccount();
-    if (!account || account.role !== "SUPERADMIN") {
+    if (!account || (account.role !== "SUPERADMIN" && account.role !== "ADMIN")) {
       return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
     }
 

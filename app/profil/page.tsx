@@ -2988,7 +2988,7 @@ function ProfilPageInner() {
         <p className={isError ? "min-h-[1.3rem] mt-3.5 text-red-700" : "min-h-[1.3rem] mt-3.5"}>{message}</p>
 
         {/* Konto deaktivieren – nur für den eigenen Account (nicht als Admin für andere) */}
-        {account && (!requestedUser || requestedUser === account.username) && account.role !== "SUPERADMIN" && (
+        {account && (!requestedUser || requestedUser === account.username) && account.role !== "SUPERADMIN" && account.role !== "ADMIN" && (
           <div className="mt-6">
             <hr />
             <h2>Konto deaktivieren</h2>

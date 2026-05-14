@@ -47,7 +47,7 @@ export default function ReviewsAdminPage() {
   }, []);
 
   useEffect(() => {
-    if (account !== null && account.role !== "SUPERADMIN") router.push("/social-media");
+    if (account !== null && account.role !== "SUPERADMIN" && account.role !== "ADMIN") router.push("/social-media");
   }, [account, router]);
 
   const loadReviews = useCallback(async () => {
@@ -61,7 +61,7 @@ export default function ReviewsAdminPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { if (account?.role === "SUPERADMIN") loadReviews(); }, [account, loadReviews]);
+  useEffect(() => { if (account?.role === "SUPERADMIN" || account?.role === "ADMIN") loadReviews(); }, [account, loadReviews]);
 
   const handleStatusUpdate = async (id: string, newStatus: "pending" | "processed") => {
     setActionLoading(id);
@@ -102,7 +102,7 @@ export default function ReviewsAdminPage() {
     finally { setActionLoading(null); }
   };
 
-  if (account?.role !== "SUPERADMIN") return null;
+  if (account && account.role !== "SUPERADMIN" && account.role !== "ADMIN") return null;
 
   const filtered = reviews.filter(r => filter === "all" || r.status === filter);
   const pendingCount = reviews.filter(r => r.status === "pending").length;

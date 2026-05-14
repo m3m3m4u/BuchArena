@@ -108,7 +108,7 @@ export async function PATCH(
 
     const { zirkel, isVeranstalter } = await getZirkelAndCheckVeranstalter(id, account.username);
     if (!zirkel) return NextResponse.json({ message: "Nicht gefunden." }, { status: 404 });
-    if (!isVeranstalter && account.role !== "SUPERADMIN") {
+    if (!isVeranstalter && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
       return NextResponse.json({ message: "Nur der Veranstalter darf Beiträge teilen." }, { status: 403 });
     }
 

@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Eintrag nicht gefunden." }, { status: 404 });
     }
 
-    if (doc.authorUsername !== account.username && account.role !== "SUPERADMIN") {
+    if (doc.authorUsername !== account.username && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
       return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
     }
 

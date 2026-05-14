@@ -78,13 +78,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (target.role === "ADMIN" && admin.role !== "SUPERADMIN") {
-      return NextResponse.json(
-        { message: "Admin-Benutzernamen können nur vom SuperAdmin geändert werden." },
-        { status: 403 },
-      );
-    }
-
     // Username in users-Collection ändern
     try {
       await users.updateOne(

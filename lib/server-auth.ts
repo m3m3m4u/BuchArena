@@ -80,7 +80,7 @@ export const getServerAccount = cache(async (): Promise<ServerAccount | null> =>
  */
 export async function requireSuperAdmin(): Promise<ServerAccount | null> {
   const account = await getServerAccount();
-  if (!account || account.role !== "SUPERADMIN") return null;
+  if (!account || (account.role !== "ADMIN" && account.role !== "SUPERADMIN")) return null;
   return account;
 }
 

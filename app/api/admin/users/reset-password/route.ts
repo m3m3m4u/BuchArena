@@ -57,13 +57,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (target.role === "ADMIN" && admin.role !== "SUPERADMIN") {
-      return NextResponse.json(
-        { message: "Admin-Passwörter können nur vom SuperAdmin geändert werden." },
-        { status: 403 },
-      );
-    }
-
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await users.updateOne(
       { username: targetUsername },

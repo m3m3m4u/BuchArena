@@ -34,7 +34,7 @@ export async function GET(
     if (!zirkel) {
       return NextResponse.json({ message: "Buchzirkel nicht gefunden." }, { status: 404 });
     }
-    if (zirkel.veranstalterUsername !== account.username && account.role !== "SUPERADMIN") {
+    if (zirkel.veranstalterUsername !== account.username && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
       return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
     }
 
@@ -88,7 +88,7 @@ export async function PATCH(
     if (!zirkel) {
       return NextResponse.json({ message: "Buchzirkel nicht gefunden." }, { status: 404 });
     }
-    if (zirkel.veranstalterUsername !== account.username && account.role !== "SUPERADMIN") {
+    if (zirkel.veranstalterUsername !== account.username && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
       return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
     }
 

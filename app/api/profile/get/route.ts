@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
     const body = (await request.json()) as GetProfilePayload;
     const username =
-      account.role === "SUPERADMIN" && body.username?.trim()
+      (account.role === "SUPERADMIN" || account.role === "ADMIN") && body.username?.trim()
         ? body.username.trim()
         : account.username;
 
