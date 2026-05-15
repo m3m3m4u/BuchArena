@@ -2018,6 +2018,7 @@ export default function BeitragToolPage() {
   async function exportVideo(videoFileName?: string) {
     if (exporting) return;
     if (editingId) commitEdit();
+    setShowDownload(false);
     setExporting(true);
     setExportProgress(0);
     setExportPhase("record");
