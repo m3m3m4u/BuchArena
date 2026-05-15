@@ -76,15 +76,13 @@ export default function GewinnspielUebersichtPage() {
             Bücher gewinnen – direkt von den Autoren der BuchArena-Community
           </p>
         </div>
-        {account && (
-          <Link
-            href="/gewinnspiel/autor"
-            className="px-4 py-2 rounded text-sm font-medium"
-            style={{ background: "var(--color-arena-blue)", color: "white" }}
-          >
-            + Buch verlosen (Autor)
-          </Link>
-        )}
+        <Link
+          href="/gewinnspiel/autor"
+          className="px-5 py-2.5 rounded-lg font-semibold text-sm"
+          style={{ background: "var(--color-arena-blue)", color: "white" }}
+        >
+          + Buch verlosen (Autor)
+        </Link>
       </div>
 
       {/* Hinweis-Banner */}
@@ -120,46 +118,48 @@ export default function GewinnspielUebersichtPage() {
           {tab === "aktiv" ? "Aktuell laufen keine Gewinnspiele." : "Noch keine archivierten Gewinnspiele."}
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="flex flex-col gap-4">
           {displayed.map((g) => (
             <Link
               key={g._id}
               href={`/gewinnspiel/${g._id}`}
-              className="border rounded-xl overflow-hidden hover:shadow-md transition-shadow flex flex-col group"
+              className="border rounded-xl overflow-hidden hover:shadow-md transition-shadow flex flex-row group"
               style={{ borderColor: "var(--color-arena-border)" }}
             >
-              {/* Cover */}
-              <div className="relative h-44 bg-gray-100 flex items-center justify-center overflow-hidden">
+              {/* Cover – hochkant */}
+              <div className="relative shrink-0 w-24 sm:w-32 bg-gray-100 flex items-center justify-center overflow-hidden">
                 {g.coverImageUrl ? (
-                  <img src={g.coverImageUrl} alt={g.buchTitel} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <img src={g.coverImageUrl} alt={g.buchTitel} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" style={{ aspectRatio: "2/3", objectPosition: "center" }} />
                 ) : (
                   <span className="text-4xl">📚</span>
                 )}
-                <span className={`absolute top-2 right-2 text-xs px-2 py-0.5 rounded-full font-medium ${
-                  g.status === "anmeldung" ? "bg-green-500 text-white" :
-                  g.status === "verlost" ? "bg-yellow-400 text-[var(--color-arena-blue)]" :
-                  "bg-gray-400 text-white"
-                }`}>
-                  {STATUS_LABEL[g.status]}
-                </span>
               </div>
 
               {/* Info */}
-              <div className="p-3 flex flex-col flex-1">
-                <h3 className="font-bold text-sm leading-snug mb-1 line-clamp-2">{g.buchTitel}</h3>
-                <p className="text-xs opacity-60 mb-2">von {g.autorName}</p>
+              <div className="p-4 flex flex-col flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <h3 className="font-bold text-base leading-snug line-clamp-2">{g.buchTitel}</h3>
+                  <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
+                    g.status === "anmeldung" ? "bg-green-500 text-white" :
+                    g.status === "verlost" ? "bg-yellow-400 text-[var(--color-arena-blue)]" :
+                    "bg-gray-400 text-white"
+                  }`}>
+                    {STATUS_LABEL[g.status]}
+                  </span>
+                </div>
+                <p className="text-sm opacity-60 mb-2">von {g.autorName}</p>
 
                 {g.beschreibung && (
-                  <p className="text-xs opacity-70 mb-2 line-clamp-2">{g.beschreibung}</p>
+                  <p className="text-sm opacity-70 mb-3 line-clamp-2">{g.beschreibung}</p>
                 )}
 
-                <div className="mt-auto text-xs opacity-60 space-y-0.5">
-                  <div>Format: {FORMAT_LABEL[g.format]}</div>
+                <div className="mt-auto text-xs opacity-60 flex flex-wrap gap-x-4 gap-y-1">
+                  <span>Format: {FORMAT_LABEL[g.format]}</span>
                   {g.status === "anmeldung" && (
-                    <div>Anmeldung bis: <strong>{fmtDate(g.anmeldungBis)}</strong></div>
+                    <span>Anmeldung bis: <strong>{fmtDate(g.anmeldungBis)}</strong></span>
                   )}
                   {g.status !== "anmeldung" && g.gewinnerName && (
-                    <div className="text-green-700 font-medium">🏆 {g.gewinnerName}</div>
+                    <span className="text-green-700 font-medium">🏆 {g.gewinnerName}</span>
                   )}
                 </div>
               </div>

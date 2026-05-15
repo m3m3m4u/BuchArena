@@ -325,6 +325,7 @@ export default function DiskussionenPage() {
         <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-3 sm:gap-4">
           <h1 className="text-xl sm:text-2xl">Treffpunkt</h1>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            <Link href="/diskussionen/genre" className="btn text-sm sm:text-base">Genre-Treffpunkt</Link>
             <Link href="/quiz" className="btn text-sm sm:text-base">Quiz</Link>
             <Link href="/tauschboerse" className="btn text-sm sm:text-base">Tauschbörse</Link>
             <button className="btn text-sm sm:text-base" onClick={() => setShowPollOverlay(true)}>

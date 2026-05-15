@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getDiscussionsCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { awardTreffpunktBeitrag } from "@/lib/lesezeichen";
-import { DISCUSSION_TOPICS, type DiscussionTopic } from "@/lib/discussions";
+import { DISCUSSION_TOPICS, GENRE_TOPICS, type DiscussionTopic } from "@/lib/discussions";
 
 export async function POST(request: Request) {
   try {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!(DISCUSSION_TOPICS as readonly string[]).includes(topic)) {
+    if (!(DISCUSSION_TOPICS as readonly string[]).includes(topic) && !(GENRE_TOPICS as readonly string[]).includes(topic)) {
       return NextResponse.json(
         { message: "Ungültiges Thema." },
         { status: 400 }

@@ -45,7 +45,29 @@ export const DISCUSSION_TOPICS = [
   "Abstimmung",
 ] as const;
 
-export type DiscussionTopic = (typeof DISCUSSION_TOPICS)[number];
+export const GENRE_TOPICS = [
+  "Krimi",
+  "Thriller",
+  "Fantasy",
+  "Science-Fiction",
+  "Liebesroman",
+  "Historischer Roman",
+  "Horror",
+  "Abenteuer",
+  "Jugendbuch",
+  "Kinderbuch",
+  "Sachbuch",
+  "Reiseführer",
+  "Biographie",
+  "Poesie",
+  "Anthologie",
+] as const;
+
+export type GenreTopic = (typeof GENRE_TOPICS)[number];
+
+export const ALL_DISCUSSION_TOPICS = [...DISCUSSION_TOPICS, ...GENRE_TOPICS] as const;
+
+export type DiscussionTopic = (typeof ALL_DISCUSSION_TOPICS)[number];
 
 export type CreateDiscussionPayload = {
   authorUsername?: string;
