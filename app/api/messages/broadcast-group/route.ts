@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getUsersCollection, getMessagesCollection } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { getUsersCollection, getMessagesCollection, getMessageConversationsCollection } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/server-auth";
 
 export type BroadcastGroup =
@@ -87,6 +88,7 @@ export async function POST(request: Request) {
     const now = new Date();
 
     const docs = allUsers.map((u) => ({
+      _id: new ObjectId(),
       senderUsername: admin.username,
       recipientUsername: u.username,
       subject,
@@ -99,6 +101,40 @@ export async function POST(request: Request) {
     }));
 
     await messages.insertMany(docs);
+
+    // messageConversations aktualisieren, damit die Broadcast-Nachricht in der
+    // Konversationsliste erscheint und als gelesen markiert werden kann
+    const convCol = await getMessageConversationsCollection();
+    const convOps = allUsers.map((u, i) => {
+      const [userA, userB] = [admin.username, u.username].sort();
+      const adminIsA = admin.username === userA;
+      return {
+        updateOne: {
+          filter: { userA, userB },
+          update: {
+            $set: {
+              latestMessageId: docs[i]._id,
+              latestSender: admin.username,
+              latestRecipient: u.username,
+              latestSubject: subject,
+              latestBody: body,
+              latestCreatedAt: now,
+              updatedAt: now,
+            },
+            $inc: { [adminIsA ? "unreadForB" : "unreadForA"]: 1 },
+            $setOnInsert: {
+              userA,
+              userB,
+              [adminIsA ? "unreadForA" : "unreadForB"]: 0,
+            },
+          },
+          upsert: true,
+        },
+      };
+    });
+    if (convOps.length > 0) {
+      await convCol.bulkWrite(convOps, { ordered: false });
+    }
 
     return NextResponse.json({
       message: `Nachricht an ${allUsers.length} Empfänger gesendet.`,

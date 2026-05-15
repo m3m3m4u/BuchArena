@@ -85,20 +85,28 @@ export async function GET(request: Request) {
     // Zwei parallele Queries statt $or → beide nutzen je ihren Compound-Index
     // { userA: 1, updatedAt: -1 } und { userB: 1, updatedAt: -1 }
     const [convDocsA, convDocsB] = await Promise.all([
-      convCol.find({ userA: me }).sort({ updatedAt: -1 }).toArray(),
-      convCol.find({ userB: me }).sort({ updatedAt: -1 }).toArray(),
+      convCol.find({ userA: me }).sort({ updatedAt: -1 }).limit(200).toArray(),
+      convCol.find({ userB: me }).sort({ updatedAt: -1 }).limit(200).toArray(),
     ]);
     // Zusammenführen und nach updatedAt sortieren
     const convDocs = [...convDocsA, ...convDocsB].sort(
       (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
-    );
+    ).slice(0, 200);
 
     const partnerUsernames = convDocs.map((c) => (c.userA === me ? c.userB : c.userA));
     const usersCol = await getUsersCollection();
     const userDocs = await usersCol
       .find(
         { username: { $in: partnerUsernames } },
-        { projection: { username: 1, profile: 1, displayName: 1 } },
+        {
+          projection: {
+            username: 1,
+            displayName: 1,
+            "profile.name.value": 1,
+            "profile.name.visibility": 1,
+            "profile.profileImage.value": 1,
+          },
+        },
       )
       .toArray();
     const displayNameMap = new Map<string, string>();
@@ -132,6 +140,69 @@ export async function GET(request: Request) {
         createdAt: c.latestCreatedAt.toISOString(),
       };
     });
+
+    // Verwaiste ungelesene Nachrichten: Broadcast-Nachrichten, die keinen
+    // messageConversations-Eintrag haben (Altdaten vor dem Fix).
+    // Index { recipientUsername, read, deletedByRecipient } wird genutzt,
+    // danach In-Memory-Filter statt $nin (vermeidet Full-Collection-Scan).
+    const knownPartners = new Set(partnerUsernames);
+    const unreadMsgs = await messages
+      .find({
+        recipientUsername: me,
+        read: false,
+        deletedByRecipient: { $ne: true },
+      })
+      .project({ senderUsername: 1, subject: 1, body: 1, createdAt: 1, _id: 1, recipientUsername: 1 })
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .toArray();
+    const orphanMsgs = unreadMsgs.filter((m) => !knownPartners.has(m.senderUsername));
+
+    if (orphanMsgs.length > 0) {
+      // Fehlende Absender-Infos nachladen
+      const orphanSenders = [...new Set(orphanMsgs.map((m) => m.senderUsername))];
+      const orphanSenderDocs = await usersCol
+        .find(
+          { username: { $in: orphanSenders } },
+          { projection: { username: 1, profile: 1, displayName: 1 } },
+        )
+        .toArray();
+      for (const u of orphanSenderDocs) {
+        const name =
+          u.displayName ||
+          (u.profile?.name?.visibility === "public" && u.profile?.name?.value
+            ? u.profile.name.value
+            : "");
+        displayNameMap.set(u.username, name);
+        profileImageMap.set(u.username, u.profile?.profileImage?.value ?? "");
+      }
+
+      // Gruppieren nach Absender, jeweils die neueste Nachricht als Konversation
+      const orphanByPartner = new Map<string, typeof orphanMsgs[0]>();
+      for (const msg of orphanMsgs) {
+        if (!orphanByPartner.has(msg.senderUsername)) {
+          orphanByPartner.set(msg.senderUsername, msg);
+        }
+      }
+      for (const [partner, msg] of orphanByPartner) {
+        const unreadCount = orphanMsgs.filter((m) => m.senderUsername === partner).length;
+        items.push({
+          id: msg._id!.toHexString(),
+          senderUsername: msg.senderUsername,
+          recipientUsername: msg.recipientUsername,
+          partner,
+          displayName: displayNameMap.get(partner) ?? "",
+          profileImage: profileImageMap.get(partner) ?? "",
+          subject: msg.subject,
+          body: msg.body,
+          read: false,
+          readAt: null,
+          threadId: null,
+          unreadCount,
+          createdAt: msg.createdAt.toISOString(),
+        });
+      }
+    }
 
     return NextResponse.json({ conversations: items });
   } catch (err) {
