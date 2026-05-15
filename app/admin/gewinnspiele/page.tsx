@@ -49,6 +49,10 @@ export default function AdminGewinnspielePage() {
   const [msg, setMsg] = useState("");
 
 
+  // Einreichung-Toggle
+  const [einreichungAktiv, setEinreichungAktiv] = useState<boolean | null>(null);
+  const [toggleSaving, setToggleSaving] = useState(false);
+
   // Filter
   const [statusFilter, setStatusFilter] = useState("vorschlag");
 
@@ -79,7 +83,23 @@ export default function AdminGewinnspielePage() {
       return;
     }
     load();
+    fetch("/api/admin/gewinnspiele-einreichung")
+      .then((r) => r.json() as Promise<{ aktiv: boolean }>)
+      .then((d) => setEinreichungAktiv(d.aktiv))
+      .catch(() => setEinreichungAktiv(true));
   }, [load, router]);
+
+  async function toggleEinreichung(aktiv: boolean) {
+    setToggleSaving(true);
+    const r = await fetch("/api/admin/gewinnspiele-einreichung", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ aktiv }),
+    });
+    if (r.ok) { setEinreichungAktiv(aktiv); setMsg(aktiv ? "Einreichung aktiviert." : "Einreichung deaktiviert."); }
+    else { setMsg("Fehler beim Speichern."); }
+    setToggleSaving(false);
+  }
 
   async function doStatusChange(id: string, status: string) {
     const r = await fetch(`/api/gewinnspiele/${id}`, {
@@ -153,6 +173,32 @@ export default function AdminGewinnspielePage() {
           <button className="ml-3 text-xs underline" onClick={() => setMsg("")}>✕</button>
         </div>
       )}
+
+      {/* Einreichung-Toggle */}
+      <div className="mb-6 flex items-center gap-4 p-4 rounded-lg border" style={{ borderColor: "var(--color-arena-border)" }}>
+        <div className="flex-1">
+          <p className="font-medium text-sm">Einreichung durch Autoren</p>
+          <p className="text-xs opacity-60 mt-0.5">Wenn deaktiviert, sehen Autoren kein Formular zum Einreichen neuer Bücher.</p>
+        </div>
+        {einreichungAktiv === null ? (
+          <span className="text-xs opacity-50">Lade…</span>
+        ) : (
+          <button
+            onClick={() => toggleEinreichung(!einreichungAktiv)}
+            disabled={toggleSaving}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${
+              einreichungAktiv ? "bg-green-500" : "bg-gray-300"
+            }`}
+          >
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+              einreichungAktiv ? "translate-x-6" : "translate-x-1"
+            }`} />
+          </button>
+        )}
+        <span className={`text-sm font-medium ${einreichungAktiv ? "text-green-700" : "text-gray-500"}`}>
+          {einreichungAktiv ? "Aktiv" : "Deaktiviert"}
+        </span>
+      </div>
 
       {/* Filter */}
       <div className="flex gap-2 mb-4 flex-wrap">

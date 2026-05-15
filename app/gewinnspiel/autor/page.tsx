@@ -50,6 +50,7 @@ export default function AutorGewinnspielPage() {
   const [eigeneGewinnspiele, setEigeneGewinnspiele] = useState<Gewinnspiel[]>([]);
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [einreichungAktiv, setEinreichungAktiv] = useState<boolean>(true);
 
   const [buchId, setBuchId] = useState("");
   const [format, setFormat] = useState<"ebook" | "print" | "both">("print");
@@ -92,6 +93,10 @@ export default function AutorGewinnspielPage() {
     const acc = getStoredAccount();
     if (!acc) { router.push("/auth"); return; }
     load();
+    fetch("/api/admin/gewinnspiele-einreichung")
+      .then((r) => r.json() as Promise<{ aktiv: boolean }>)
+      .then((d) => setEinreichungAktiv(d.aktiv))
+      .catch(() => {});
     const sync = () => {
       const a = getStoredAccount();
       if (!a) router.push("/auth");
@@ -171,6 +176,11 @@ export default function AutorGewinnspielPage() {
       )}
 
       {/* Formular: neues Gewinnspiel */}
+      {!einreichungAktiv ? (
+        <div className="mb-8 p-4 rounded-lg border text-sm opacity-70" style={{ borderColor: "var(--color-arena-border)" }}>
+          Aktuell können keine neuen Bücher für Gewinnspiele eingereicht werden.
+        </div>
+      ) : (
       <div className="border rounded-lg p-5 mb-8" style={{ borderColor: "var(--color-arena-border)", background: "var(--color-arena-bg)" }}>
         <h2 className="text-lg font-semibold mb-4">Neues Buch einreichen</h2>
         <form onSubmit={einreichen} className="flex flex-col gap-4">
@@ -258,6 +268,7 @@ export default function AutorGewinnspielPage() {
           </button>
         </form>
       </div>
+      )}
 
       {/* Eigene Gewinnspiele */}
       <h2 className="text-lg font-semibold mb-3">Meine Gewinnspiele</h2>

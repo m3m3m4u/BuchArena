@@ -12,7 +12,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Sanitize inputs - only allow reasonable lengths
-    const sanitizedPage = page.slice(0, 500);
+    const rawPage = page.slice(0, 500);
+    // Normalize page: strip any domain prefix so only the path is stored
+    let sanitizedPage = rawPage;
+    try {
+      if (rawPage.startsWith("http://") || rawPage.startsWith("https://")) {
+        sanitizedPage = new URL(rawPage).pathname || "/";
+      }
+    } catch { /* keep as-is */ }
     const rawReferrer = typeof referrer === "string" ? referrer.slice(0, 1000) : "";
 
     // Referrer normalisieren: doppelte Hostnamen im Pfad entfernen

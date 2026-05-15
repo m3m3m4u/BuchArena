@@ -55,7 +55,30 @@ export async function POST(request: NextRequest) {
               { $sort: { _id: 1 } },
             ],
             topPages: [
-              { $group: { _id: "$page", count: { $sum: 1 } } },
+              {
+                $addFields: {
+                  normalizedPage: {
+                    $replaceOne: {
+                      input: {
+                        $replaceOne: {
+                          input: {
+                            $replaceOne: {
+                              input: "$page",
+                              find: "https://www.bucharena.org",
+                              replacement: "",
+                            },
+                          },
+                          find: "https://bucharena.org",
+                          replacement: "",
+                        },
+                      },
+                      find: "http://bucharena.org",
+                      replacement: "",
+                    },
+                  },
+                },
+              },
+              { $group: { _id: "$normalizedPage", count: { $sum: 1 } } },
               { $sort: { count: -1 } },
               { $limit: 30 },
             ],

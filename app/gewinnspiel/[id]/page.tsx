@@ -116,18 +116,16 @@ export default function GewinnspielDetailPage() {
       <Link href="/gewinnspiel" className="text-sm opacity-60 hover:opacity-100 mb-4 inline-block">← Alle Gewinnspiele</Link>
 
       <div className="border rounded-xl overflow-hidden" style={{ borderColor: "var(--color-arena-border)" }}>
-        {/* Cover-Header */}
-        {g.coverImageUrl && (
-          <div className="h-56 overflow-hidden">
-            <img src={g.coverImageUrl} alt={g.buchTitel} className="w-full h-full object-cover" />
-          </div>
-        )}
-
         <div className="p-5">
           <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-            <div>
-              <h1 className="text-2xl font-bold" style={{ color: "var(--color-arena-blue)" }}>{g.buchTitel}</h1>
-              <p className="text-sm opacity-70">von <Link href={`/autor/${g.autorUsername}`} className="underline">{g.autorName}</Link></p>
+            <div className="flex gap-4 items-start">
+              {g.coverImageUrl && (
+                <img src={g.coverImageUrl} alt={g.buchTitel} className="w-24 rounded shadow-md flex-shrink-0 object-cover" style={{ aspectRatio: "2/3" }} />
+              )}
+              <div>
+                <h1 className="text-2xl font-bold" style={{ color: "var(--color-arena-blue)" }}>{g.buchTitel}</h1>
+                <p className="text-sm opacity-70">von <Link href={`/autor/${g.autorUsername}`} className="underline">{g.autorName}</Link></p>
+              </div>
             </div>
             <span className={`text-sm px-3 py-1 rounded-full font-medium ${
               g.status === "anmeldung" ? "bg-green-100 text-green-800" :
@@ -146,8 +144,6 @@ export default function GewinnspielDetailPage() {
             <dd className="font-medium">{FORMAT_LABEL[g.format]}</dd>
             <dt className="opacity-60">Anmeldung bis</dt>
             <dd>{fmtDt(g.anmeldungBis)}</dd>
-            <dt className="opacity-60">Ziehung am</dt>
-            <dd>{fmtDt(g.ziehungAm)}</dd>
             <dt className="opacity-60">Teilnehmer</dt>
             <dd>{g.teilnehmerAnzahl}</dd>
           </dl>
@@ -168,7 +164,6 @@ export default function GewinnspielDetailPage() {
                   <p className="text-2xl font-bold mb-1">🎉 Du hast gewonnen!</p>
                   <p className="text-sm font-medium">Du hast das Buch <strong>{g.buchTitel}</strong> gewonnen.</p>
                   <p className="text-xs opacity-70 mt-1">Der Autor wird sich bei dir melden.</p>
-                  {g.verlostAm && <p className="text-xs opacity-60 mt-1">Gezogen am {fmtDt(g.verlostAm)}</p>}
                 </div>
               );
             }
@@ -177,7 +172,6 @@ export default function GewinnspielDetailPage() {
                 <div className="mb-4 p-4 rounded-lg text-center bg-gray-100 text-gray-700">
                   <p className="font-semibold">Leider hast du diesmal nicht gewonnen.</p>
                   <p className="text-xs opacity-70 mt-1">Gewonnen hat: {g.gewinnerName}</p>
-                  {g.verlostAm && <p className="text-xs opacity-60">Gezogen am {fmtDt(g.verlostAm)}</p>}
                 </div>
               );
             }
@@ -185,7 +179,6 @@ export default function GewinnspielDetailPage() {
               <div className="mb-4 p-4 rounded-lg text-center font-bold text-lg"
                 style={{ background: "var(--color-arena-yellow)", color: "var(--color-arena-blue)" }}>
                 Gewinner: {g.gewinnerName}
-                {g.verlostAm && <span className="text-sm font-normal block opacity-70">Gezogen am {fmtDt(g.verlostAm)}</span>}
               </div>
             );
           })()}

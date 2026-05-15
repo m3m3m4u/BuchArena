@@ -384,13 +384,12 @@ export async function buildKurzVideoPptx(vorlage: BucharenaReelVorlageDoc): Prom
     : geschlecht + " & Coverdesign: " + autorFull;
   let s1 = await zip.file("ppt/slides/slide1.xml")!.async("string");
   s1 = replaceParagraphTexts(s1, [
-    ["Autorin: Martina Zöchinger", geschlecht + ": " + autorFull],
+    ["Autorin: Martina Z�chinger", geschlecht + ": " + autorFull],
     ["Erscheinungsjahr: 2025", "Erscheinungsjahr: " + vorlage.erscheinungsjahr],
-    ["Genre: Fantasy, Spiritualität", vorlage.genre?.trim() ? "Genre: " + vorlage.genre : ""],
+    ["Genre: Fantasy, Spiritualit�t", vorlage.genre?.trim() ? "Genre: " + vorlage.genre : ""],
     ["Hintergrund: basiert auf einer wahren Begebenheit", vorlage.hintergrund?.trim() ? "Hintergrund: " + vorlage.hintergrund : ""],
-    ["Titel", vorlage.buchtitel],
-    ["Hüter - Die Ausbildung beginnt", vorlage.buchtitel],
-    ["Autorin & Coverdesign: Martina Zöchinger", coverDesignText],
+    ["H�ter - Die Ausbildung beginnt", vorlage.buchtitel],
+    ["Autorin & Coverdesign: Martina Z�chinger", coverDesignText],
     ["Verlag: Independently published", vorlage.verlag?.trim() ? "Verlag: " + vorlage.verlag : ""],
   ]);
   zip.file("ppt/slides/slide1.xml", s1);
@@ -399,17 +398,17 @@ export async function buildKurzVideoPptx(vorlage: BucharenaReelVorlageDoc): Prom
   let s2 = await zip.file("ppt/slides/slide2.xml")!.async("string");
   s2 = replaceParagraphTexts(s2, [
     ["Thema: Tod & Jenseits", vorlage.thema?.trim() ? "Thema: " + vorlage.thema : ""],
-    ["Hauptfigur: ein Verstorbener auf dem Weg zum Hüter", vorlage.hauptfigur?.trim() ? "Hauptfigur: " + vorlage.hauptfigur : ""],
-    ["Inhalte: Wahrheitssuche, Prüfungen", vorlage.inhalte?.trim() ? "Inhalte: " + vorlage.inhalte : ""],
+    ["Hauptfigur: ein Verstorbener auf dem Weg zum H�ter", vorlage.hauptfigur?.trim() ? "Hauptfigur: " + vorlage.hauptfigur : ""],
+    ["Inhalte: Wahrheitssuche, Pr�fungen", vorlage.inhalte?.trim() ? "Inhalte: " + vorlage.inhalte : ""],
   ]);
   zip.file("ppt/slides/slide2.xml", s2);
 
-  /* Slide 3: Über die Autorin */
+  /* Slide 3: �ber die Autorin */
   let s3 = await zip.file("ppt/slides/slide3.xml")!.async("string");
   s3 = replaceParagraphTexts(s3, [
     ["Über die Autorin", geschlecht === "Autorin" ? "Über die Autorin" : geschlecht === "Autor" ? "Über den Autor" : "Über " + geschlecht],
-    ["Martina Zöchinger", autorFull],
-    ["Österreich, Steiermark", vorlage.autorHerkunft || ""],
+    ["Martina Z�chinger", autorFull],
+    ["�sterreich, Steiermark", vorlage.autorHerkunft || ""],
     ["Mutter, Medienfachfrau, Mentaltrainerin", vorlage.autorBeruf || ""],
     ["Stil: authentisch, autobiografisch", vorlage.autorStil?.trim() ? "Stil: " + vorlage.autorStil : ""],
   ]);
