@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
-import { getBooksCollection, getMessagesCollection, getUsersCollection } from "@/lib/mongodb";
+import { getBooksCollection, getMessagesCollection, getMessageConversationsCollection, getUsersCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -90,6 +90,32 @@ export async function POST(request: Request) {
     await messages.updateOne(
       { _id: insertResult.insertedId },
       { $set: { threadId: insertResult.insertedId } },
+    );
+
+    // messageConversations aktualisieren, damit die Nachricht in der Liste erscheint
+    const [userA, userB] = [account.username, coAuthorUsername].sort();
+    const isA = account.username === userA;
+    const convCol = await getMessageConversationsCollection();
+    await convCol.updateOne(
+      { userA, userB },
+      {
+        $set: {
+          latestMessageId: insertResult.insertedId,
+          latestSender: account.username,
+          latestRecipient: coAuthorUsername,
+          latestSubject: subject,
+          latestBody: msgBody,
+          latestCreatedAt: now,
+          updatedAt: now,
+        },
+        $inc: { [isA ? "unreadForB" : "unreadForA"]: 1 },
+        $setOnInsert: {
+          userA,
+          userB,
+          [isA ? "unreadForA" : "unreadForB"]: 0,
+        },
+      },
+      { upsert: true },
     );
 
     return NextResponse.json({ message: "Einladung gesendet!" });

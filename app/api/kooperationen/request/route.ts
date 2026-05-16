@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
-import { getUsersCollection, getKooperationenCollection, getMessagesCollection } from "@/lib/mongodb";
+import { getUsersCollection, getKooperationenCollection, getMessagesCollection, getMessageConversationsCollection } from "@/lib/mongodb";
 import { ROLLE_LABELS, type KooperationsRolle } from "@/lib/kooperationen";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -111,6 +111,33 @@ export async function POST(req: NextRequest) {
     await messages.updateOne(
       { _id: insertResult.insertedId },
       { $set: { threadId: insertResult.insertedId } },
+    );
+
+    // messageConversations aktualisieren, damit die Nachricht in der Liste erscheint
+    const [userA, userB] = [account.username, partnerUsername].sort();
+    const isA = account.username === userA;
+    const convCol = await getMessageConversationsCollection();
+    const msgCreatedAt = new Date();
+    await convCol.updateOne(
+      { userA, userB },
+      {
+        $set: {
+          latestMessageId: insertResult.insertedId,
+          latestSender: account.username,
+          latestRecipient: partnerUsername,
+          latestSubject: subject,
+          latestBody: msgBody,
+          latestCreatedAt: msgCreatedAt,
+          updatedAt: msgCreatedAt,
+        },
+        $inc: { [isA ? "unreadForB" : "unreadForA"]: 1 },
+        $setOnInsert: {
+          userA,
+          userB,
+          [isA ? "unreadForA" : "unreadForB"]: 0,
+        },
+      },
+      { upsert: true },
     );
 
     return NextResponse.json({ message: "Kooperationsanfrage gesendet!" });
