@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import { getDatabase, getBooksCollection, getUsersCollection, getMessagesCollection } from "@/lib/mongodb";
+import { getDatabase, getBooksCollection, getUsersCollection, getMessagesCollection, getMessageConversationsCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { awardBuchempfehlung, awardBuchempfehlungErhalten } from "@/lib/lesezeichen";
 
@@ -159,6 +159,30 @@ export async function POST(req: NextRequest) {
         await messages.updateOne(
           { _id: insertResult.insertedId },
           { $set: { threadId: insertResult.insertedId } },
+        );
+        const [convUserA, convUserB] = [account.username, book.ownerUsername].sort();
+        const convIsA = account.username === convUserA;
+        const convCol = await getMessageConversationsCollection();
+        await convCol.updateOne(
+          { userA: convUserA, userB: convUserB },
+          {
+            $set: {
+              latestMessageId: insertResult.insertedId,
+              latestSender: account.username,
+              latestRecipient: book.ownerUsername,
+              latestSubject: msgDoc.subject,
+              latestBody: msgDoc.body,
+              latestCreatedAt: msgDoc.createdAt,
+              updatedAt: msgDoc.createdAt,
+            },
+            $inc: { [convIsA ? "unreadForB" : "unreadForA"]: 1 },
+            $setOnInsert: {
+              userA: convUserA,
+              userB: convUserB,
+              [convIsA ? "unreadForA" : "unreadForB"]: 0,
+            },
+          },
+          { upsert: true },
         );
       } catch (msgErr) {
         console.error("Empfehlungs-Benachrichtigung fehlgeschlagen:", msgErr);

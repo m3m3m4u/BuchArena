@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import { getKalenderCollection, getMessagesCollection } from "@/lib/mongodb";
+import { getKalenderCollection, getMessagesCollection, getMessageConversationsCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 
 const ADMIN_USERNAME = "Kopernikus";
@@ -50,6 +50,7 @@ export async function POST(request: Request) {
       recipients.add(event.createdBy);
     }
 
+    const convCol = await getMessageConversationsCollection();
     for (const recipient of recipients) {
       const result = await messages.insertOne({
         senderUsername: account.username,
@@ -64,6 +65,29 @@ export async function POST(request: Request) {
       await messages.updateOne(
         { _id: result.insertedId },
         { $set: { threadId: result.insertedId } },
+      );
+      const [userA, userB] = [account.username, recipient].sort();
+      const isA = account.username === userA;
+      await convCol.updateOne(
+        { userA, userB },
+        {
+          $set: {
+            latestMessageId: result.insertedId,
+            latestSender: account.username,
+            latestRecipient: recipient,
+            latestSubject: subject,
+            latestBody: msgBody,
+            latestCreatedAt: now,
+            updatedAt: now,
+          },
+          $inc: { [isA ? "unreadForB" : "unreadForA"]: 1 },
+          $setOnInsert: {
+            userA,
+            userB,
+            [isA ? "unreadForA" : "unreadForB"]: 0,
+          },
+        },
+        { upsert: true },
       );
     }
 
