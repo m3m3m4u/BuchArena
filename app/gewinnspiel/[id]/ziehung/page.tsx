@@ -175,6 +175,7 @@ export default function ZiehungsradPage() {
   const [winner, setWinner] = useState<Teilnehmer | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportingReel, setExportingReel] = useState(false);
+  const [reelError, setReelError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const exportBlobRef = useRef<Blob | null>(null);
 
@@ -366,6 +367,14 @@ export default function ZiehungsradPage() {
 
   async function exportReel() {
     if (aktiveTeilnehmer.length === 0) return;
+    setReelError(null);
+
+    // WebCodecs-Support prüfen
+    if (typeof VideoEncoder === "undefined") {
+      setReelError("Dein Browser unterstützt keine Videoerstellung (WebCodecs). Bitte Chrome 94+ oder Edge verwenden.");
+      return;
+    }
+
     setExportingReel(true);
     try {
 
@@ -545,22 +554,14 @@ export default function ZiehungsradPage() {
     const exportCycles = exportMinCycles + 2 + Math.floor(Math.random() * 3);
     const targetScrollY = (exportCycles * n + slotWinnerRelative) * SLOT_H;
 
-    // ── Audio: MP3 offline dekodieren (kein Echtzeit-Stream nötig) ───────────
-    const mp3Files = [
-      "/mp3/Asphalt_Crown.mp3",
-      "/mp3/Before_the_Dawn_Breaks.mp3",
-      "/mp3/Blue_Grey_Hush.mp3",
-      "/mp3/Chipped_Paint_Mug.mp3",
-      "/mp3/Clear_Path_Forward.mp3",
-      "/mp3/Crown_from_the_Concrete.mp3",
-      "/mp3/Ghost_of_the_Boulevard.mp3",
-      "/mp3/Pulso_en_la_Vena.mp3",
-      "/mp3/Rain_Against_The_Glass.mp3",
-      "/mp3/Weight_of_the_Tide.mp3",
-      "/mp3/Where_the_World_Begins.mp3",
-    ];
-    const randomMp3 = mp3Files[Math.floor(Math.random() * mp3Files.length)];
-    const audioResp = await fetch(randomMp3);
+    // ── Audio: Track von API laden (WebDAV, nicht /public/mp3) ───────────────
+    const tracksResp = await fetch("/api/musik");
+    const tracksData = await tracksResp.json();
+    const tracks: { fileUrl: string }[] = tracksData.tracks ?? [];
+    if (tracks.length === 0) throw new Error("Keine Musik-Tracks verfügbar. Bitte zuerst Tracks hochladen.");
+    const randomTrack = tracks[Math.floor(Math.random() * tracks.length)];
+    const audioResp = await fetch(randomTrack.fileUrl);
+    if (!audioResp.ok) throw new Error(`Audio konnte nicht geladen werden (${audioResp.status}): ${randomTrack.fileUrl}`);
     const decodeCtx = new AudioContext();
     const decodedAudio = await decodeCtx.decodeAudioData(await audioResp.arrayBuffer());
     await decodeCtx.close();
@@ -658,7 +659,9 @@ export default function ZiehungsradPage() {
     URL.revokeObjectURL(url);
     setExportingReel(false);
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       console.error("Reel-Export fehlgeschlagen:", err);
+      setReelError(`Export fehlgeschlagen: ${msg}`);
       setExportingReel(false);
     }
   }
@@ -744,6 +747,13 @@ export default function ZiehungsradPage() {
               {exportingReel ? "Reel wird erstellt…" : "🎬 Reel (9:16) erstellen"}
             </button>
           </div>
+
+          {reelError && (
+            <div className="mt-3 p-3 rounded-lg text-sm font-medium"
+              style={{ background: "#fef2f2", border: "1px solid #fca5a5", color: "#991b1b" }}>
+              {reelError}
+            </div>
+          )}
 
           <p className="text-xs opacity-50 text-center mt-3">
             Das 1:1-Video (1080×1080) ist für Feeds optimiert, das 9:16-Reel (1080×1920) für Reels, Stories &amp; TikTok – mit Cover, Autor und BuchArena-Branding.
