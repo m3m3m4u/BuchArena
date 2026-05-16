@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getStoredAccount } from "@/lib/client-account";
 
@@ -710,7 +710,7 @@ const CURSOR_MAP: Record<HId, string> = {
 };
 
 /* ---- Component ---- */
-export default function BeitragToolPage() {
+function BeitragToolPage() {
   const canvasRef   = useRef<HTMLCanvasElement>(null);
   const wrapRef     = useRef<HTMLDivElement>(null);
   const editAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -3684,5 +3684,13 @@ export default function BeitragToolPage() {
       </div>
     )}
     </main>
+  );
+}
+
+export default function BeitragToolPageWrapper() {
+  return (
+    <Suspense>
+      <BeitragToolPage />
+    </Suspense>
   );
 }
