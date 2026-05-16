@@ -176,6 +176,8 @@ export default function ZiehungsradPage() {
   const [exporting, setExporting] = useState(false);
   const [exportingReel, setExportingReel] = useState(false);
   const [reelError, setReelError] = useState<string | null>(null);
+  const [musikTracks, setMusikTracks] = useState<{ _id: string; title: string; style: string; fileUrl: string }[]>([]);
+  const [selectedTrackId, setSelectedTrackId] = useState<string>("random");
   const [isAdmin, setIsAdmin] = useState(false);
   const exportBlobRef = useRef<Blob | null>(null);
 
@@ -198,6 +200,11 @@ export default function ZiehungsradPage() {
       setTeilnehmer(tList as Teilnehmer[]);
       setLoading(false);
     }).catch(() => setLoading(false));
+
+    // Musik-Tracks laden
+    fetch("/api/musik").then((r) => r.json()).then((d) => {
+      setMusikTracks(d.tracks ?? []);
+    }).catch(() => {});
   }, [id, router]);
 
   const DUMMY_TEILNEHMER: Teilnehmer[] = [
@@ -554,14 +561,17 @@ export default function ZiehungsradPage() {
     const exportCycles = exportMinCycles + 2 + Math.floor(Math.random() * 3);
     const targetScrollY = (exportCycles * n + slotWinnerRelative) * SLOT_H;
 
-    // ── Audio: Track von API laden (WebDAV, nicht /public/mp3) ───────────────
-    const tracksResp = await fetch("/api/musik");
-    const tracksData = await tracksResp.json();
-    const tracks: { fileUrl: string }[] = tracksData.tracks ?? [];
-    if (tracks.length === 0) throw new Error("Keine Musik-Tracks verfügbar. Bitte zuerst Tracks hochladen.");
-    const randomTrack = tracks[Math.floor(Math.random() * tracks.length)];
-    const audioResp = await fetch(randomTrack.fileUrl);
-    if (!audioResp.ok) throw new Error(`Audio konnte nicht geladen werden (${audioResp.status}): ${randomTrack.fileUrl}`);
+    // ── Audio: gewählten oder zufälligen Track laden ────────────────────────
+    let chosenTrack: { fileUrl: string } | undefined;
+    if (selectedTrackId !== "random") {
+      chosenTrack = musikTracks.find((t) => t._id === selectedTrackId);
+    }
+    if (!chosenTrack) {
+      if (musikTracks.length === 0) throw new Error("Keine Musik-Tracks verfügbar. Bitte zuerst Tracks hochladen.");
+      chosenTrack = musikTracks[Math.floor(Math.random() * musikTracks.length)];
+    }
+    const audioResp = await fetch(chosenTrack.fileUrl);
+    if (!audioResp.ok) throw new Error(`Audio konnte nicht geladen werden (${audioResp.status}): ${chosenTrack.fileUrl}`);
     const decodeCtx = new AudioContext();
     const decodedAudio = await decodeCtx.decodeAudioData(await audioResp.arrayBuffer());
     await decodeCtx.close();
@@ -747,6 +757,23 @@ export default function ZiehungsradPage() {
               {exportingReel ? "Reel wird erstellt…" : "🎬 Reel (9:16) erstellen"}
             </button>
           </div>
+
+          {musikTracks.length > 0 && (
+            <div className="mt-4">
+              <label className="text-xs font-medium opacity-60 block mb-1">Musik fürs Reel</label>
+              <select
+                value={selectedTrackId}
+                onChange={(e) => setSelectedTrackId(e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+                style={{ borderColor: "var(--color-arena-blue-light, #93c5fd)", color: "var(--color-arena-blue)" }}
+              >
+                <option value="random">🎲 Zufällig</option>
+                {musikTracks.map((t) => (
+                  <option key={t._id} value={t._id}>{t.title} · {t.style}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {reelError && (
             <div className="mt-3 p-3 rounded-lg text-sm font-medium"
