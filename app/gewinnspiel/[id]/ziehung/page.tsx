@@ -30,12 +30,23 @@ function easeOut(t: number): number {
   return 1 - Math.pow(1 - t, 4);
 }
 
-// Für Reel-Export: 85% der Zeit konstante Geschwindigkeit, letzte 15% bremsen
+// Für Reel-Export: sanftes Anfahren (15%), Vollgas (60%), sanftes Bremsen (25%)
+// Trapezförmiges Geschwindigkeitsprofil – keine Geschwindigkeitssprünge
 function reelEaseOut(t: number): number {
-  const split = 0.85;
-  if (t <= split) return t;   // linear
-  const t2 = (t - split) / (1 - split);
-  return split + (1 - split) * (1 - (1 - t2) * (1 - t2));  // quadratisch auslaufen
+  const A = 0.15;  // Anlaufphase
+  const B = 0.25;  // Auslaufphase
+  const vMax = 1 / (1 - A / 2 - B / 2); // ≈ 1.25 (Spitzengeschwindigkeit)
+  if (t <= A) {
+    // Gleichmäßige Beschleunigung von 0 auf vMax
+    return vMax * t * t / (2 * A);
+  } else if (t <= 1 - B) {
+    // Konstante Maximalgeschwindigkeit
+    return vMax * A / 2 + vMax * (t - A);
+  } else {
+    // Gleichmäßige Verzögerung von vMax auf 0
+    const s = t - (1 - B);
+    return (1 - vMax * B / 2) + vMax * s - vMax * s * s / (2 * B);
+  }
 }
 
 // ── Slot-Machine Konstanten ──────────────────────────────────────────────────
@@ -457,11 +468,16 @@ export default function ZiehungsradPage() {
       const cX = SLOT_X - cardPad, cY = SLOT_Y - cardPad;
       const cW = SLOT_SIZE + cardPad * 2, cH = SLOT_SIZE + cardPad * 2;
 
-      // Schatten
+      // Schatten: gestapelte Offset-Rects statt shadowBlur (viel schneller)
       rctx.save();
-      rctx.shadowColor = "rgba(10,26,78,0.18)";
-      rctx.shadowBlur = 40;
-      rctx.shadowOffsetY = 8;
+      for (let s = 3; s >= 1; s--) {
+        rctx.globalAlpha = 0.06;
+        rctx.beginPath();
+        rctx.roundRect(cX + s * 4, cY + s * 6, cW, cH, cardR + s);
+        rctx.fillStyle = "#0a1a4e";
+        rctx.fill();
+      }
+      rctx.globalAlpha = 1;
       rctx.beginPath();
       rctx.roundRect(cX, cY, cW, cH, cardR);
       rctx.fillStyle = "#0d1b3e";
@@ -516,7 +532,20 @@ export default function ZiehungsradPage() {
       rctx.fillText("bucharena.org", W / 2, H - 40);
     }
 
-    // ── Audio ────────────────────────────────────────────────────
+    // ── Timing & Scroll ──────────────────────────────────────────
+    const spinDelay = 1000;
+    const spinDuration = 11000;
+    const winnerHold = 3000;
+    const TOTAL_MS = spinDelay + spinDuration + winnerHold;
+    const FPS = 30;
+    const TOTAL_FRAMES = Math.ceil(TOTAL_MS / 1000 * FPS); // 450
+
+    const slotWinnerRelative = (winnerIdx - SLOT_CENTER + n) % n;
+    const exportMinCycles = Math.max(Math.ceil(20 / n), 2);
+    const exportCycles = exportMinCycles + 2 + Math.floor(Math.random() * 3);
+    const targetScrollY = (exportCycles * n + slotWinnerRelative) * SLOT_H;
+
+    // ── Audio: MP3 offline dekodieren (kein Echtzeit-Stream nötig) ───────────
     const mp3Files = [
       "/mp3/Asphalt_Crown.mp3",
       "/mp3/Before_the_Dawn_Breaks.mp3",
@@ -531,86 +560,103 @@ export default function ZiehungsradPage() {
       "/mp3/Where_the_World_Begins.mp3",
     ];
     const randomMp3 = mp3Files[Math.floor(Math.random() * mp3Files.length)];
-    const audioEl = new Audio(randomMp3);
-    audioEl.loop = true;
-    const audioCtx = new AudioContext();
-    const audioSrc = audioCtx.createMediaElementSource(audioEl);
-    const audioDest = audioCtx.createMediaStreamDestination();
-    audioSrc.connect(audioDest);
+    const audioResp = await fetch(randomMp3);
+    const decodeCtx = new AudioContext();
+    const decodedAudio = await decodeCtx.decodeAudioData(await audioResp.arrayBuffer());
+    await decodeCtx.close();
 
-    // ── Recording ────────────────────────────────────────────────
-    // Chrome 130+ unterstützt MP4/H.264 in MediaRecorder; vorher auf WebM ausweichen
-    const mimeTypes = [
-      "video/mp4;codecs=avc1,mp4a.40.2",
-      "video/mp4;codecs=avc1",
-      "video/mp4",
-      "video/webm;codecs=vp9,opus",
-      "video/webm",
-    ];
-    const mimeType = mimeTypes.find((t) => MediaRecorder.isTypeSupported(t)) ?? "video/webm";
-    const fileExt = mimeType.startsWith("video/mp4") ? "mp4" : "webm";
+    const SAMPLE_RATE = 44100;
+    const totalAudioSamples = Math.ceil(TOTAL_MS / 1000 * SAMPLE_RATE);
+    const left  = new Float32Array(totalAudioSamples);
+    const right = new Float32Array(totalAudioSamples);
+    const srcL = decodedAudio.getChannelData(0);
+    const srcR = decodedAudio.numberOfChannels > 1 ? decodedAudio.getChannelData(1) : srcL;
+    for (let s = 0; s < totalAudioSamples; s++) {
+      left[s]  = srcL[s % decodedAudio.length];
+      right[s] = srcR[s % decodedAudio.length];
+    }
 
-    const videoStream = reelCanvas.captureStream(30);
-    const combinedStream = new MediaStream([
-      ...videoStream.getVideoTracks(),
-      ...audioDest.stream.getAudioTracks(),
-    ]);
-    const recorder = new MediaRecorder(combinedStream, { mimeType, videoBitsPerSecond: 8_000_000 });
-    const chunks: Blob[] = [];
-    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-    recorder.onerror = () => { audioEl.pause(); audioCtx.close(); setExportingReel(false); };
-
-    const spinDelay = 1000;
-    const spinDuration = 11000;
-    const winnerHold = 3000;
-
-    const slotWinnerRelative = (winnerIdx - SLOT_CENTER + n) % n;
-    const exportMinCycles = Math.max(Math.ceil(20 / n), 2);
-    const exportCycles = exportMinCycles + 2 + Math.floor(Math.random() * 3);
-    const targetScrollY = (exportCycles * n + slotWinnerRelative) * SLOT_H;
-
-    drawReelFrame(0, false, null);
-
-    await new Promise<void>((resolve) => {
-      recorder.onstop = () => {
-        audioEl.pause();
-        audioCtx.close();
-        const blob = new Blob(chunks, { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `gewinnspiel-reel-${id}.${fileExt}`;
-        a.click();
-        URL.revokeObjectURL(url);
-        setExportingReel(false);
-        resolve();
-      };
-
-      audioEl.play().catch(() => {});
-      recorder.start();
-      const startTime = performance.now();
-      let frameTimer: ReturnType<typeof setInterval>;
-
-      function renderFrame() {
-        const elapsed = performance.now() - startTime;
-        if (elapsed < spinDelay) {
-          drawReelFrame(0, false, null);
-        } else {
-          const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
-          const scrollY = targetScrollY * reelEaseOut(t);
-          const done = t >= 1;
-          drawReelFrame(scrollY, done, done ? winnerIdx : null);
-          if (done && elapsed >= spinDelay + spinDuration + winnerHold) {
-            clearInterval(frameTimer);
-            drawReelFrame(targetScrollY, true, winnerIdx);
-            recorder.stop();
-            return;
-          }
-        }
-      }
-      // setInterval statt setTimeout: fester Takt, kein Drift, läuft auch im Hintergrund
-      frameTimer = setInterval(renderFrame, 1000 / 30);
+    // ── WebCodecs + mp4-muxer: perfektes CFR-Video ohne Jitter ───────────────
+    const { Muxer, ArrayBufferTarget } = await import("mp4-muxer");
+    const target = new ArrayBufferTarget();
+    const muxer = new Muxer({
+      target,
+      video: { codec: "avc", width: W, height: H },
+      audio: { codec: "aac", sampleRate: SAMPLE_RATE, numberOfChannels: 2 },
+      fastStart: "in-memory",
     });
+
+    const videoEncoder = new VideoEncoder({
+      output: (chunk, meta) => muxer.addVideoChunk(chunk, meta!),
+      error: (e) => { throw e; },
+    });
+    videoEncoder.configure({
+      codec: "avc1.640028",   // H.264 High Profile Level 4.0
+      width: W, height: H,
+      bitrate: 4_000_000,
+      framerate: FPS,
+      avc: { format: "avc" },
+    });
+
+    const audioEncoder = new AudioEncoder({
+      output: (chunk, meta) => muxer.addAudioChunk(chunk, meta!),
+      error: (e) => console.error("Audio-Encoder:", e),
+    });
+    audioEncoder.configure({
+      codec: "mp4a.40.2",   // AAC-LC
+      sampleRate: SAMPLE_RATE,
+      numberOfChannels: 2,
+      bitrate: 128_000,
+    });
+
+    // Audio in 10ms-Blöcken encodieren
+    const AUDIO_CHUNK = Math.floor(SAMPLE_RATE / 100); // 441 samples = 10ms
+    for (let i = 0; i < totalAudioSamples; i += AUDIO_CHUNK) {
+      const frames = Math.min(AUDIO_CHUNK, totalAudioSamples - i);
+      const plane = new Float32Array(frames * 2);
+      plane.set(left.subarray(i, i + frames), 0);
+      plane.set(right.subarray(i, i + frames), frames);
+      const ad = new AudioData({
+        format: "f32-planar", sampleRate: SAMPLE_RATE,
+        numberOfFrames: frames, numberOfChannels: 2,
+        timestamp: Math.floor(i * 1_000_000 / SAMPLE_RATE),
+        data: plane,
+      });
+      audioEncoder.encode(ad);
+      ad.close();
+    }
+
+    // Video-Frames schneller-als-Echtzeit rendern → exakte Timestamps, kein Ruckeln
+    for (let frameIdx = 0; frameIdx < TOTAL_FRAMES; frameIdx++) {
+      const elapsed = (frameIdx / FPS) * 1000;
+      if (elapsed < spinDelay) {
+        drawReelFrame(0, false, null);
+      } else {
+        const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
+        const scrollY = targetScrollY * reelEaseOut(t);
+        const done = t >= 1;
+        drawReelFrame(scrollY, done, done ? winnerIdx : null);
+      }
+      const ts = Math.round(frameIdx * 1_000_000 / FPS);
+      const frame = new VideoFrame(reelCanvas, { timestamp: ts, duration: Math.round(1_000_000 / FPS) });
+      videoEncoder.encode(frame, { keyFrame: frameIdx % (FPS * 2) === 0 });
+      frame.close();
+      // Alle 30 Frames kurz yielden damit die Seite nicht einfriert
+      if (frameIdx % 30 === 0) await new Promise<void>(r => setTimeout(r, 0));
+    }
+
+    await videoEncoder.flush();
+    await audioEncoder.flush();
+    muxer.finalize();
+
+    const blob = new Blob([target.buffer], { type: "video/mp4" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gewinnspiel-reel-${id}.mp4`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setExportingReel(false);
     } catch (err) {
       console.error("Reel-Export fehlgeschlagen:", err);
       setExportingReel(false);
