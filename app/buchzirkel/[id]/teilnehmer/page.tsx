@@ -59,6 +59,14 @@ export default function TeilnehmerBereichPage() {
   const [posting, setPosting] = useState(false);
   const [tab, setTab] = useState<"diskussion" | "dateien" | "fortschritt" | "fragebogen" | "rezensionen">("diskussion");
   const [epubReaderUrl, setEpubReaderUrl] = useState<string | null>(null);
+  const [epubReaderDateiId, setEpubReaderDateiId] = useState<string | null>(null);
+
+  // Leseposition: EPUB-CFI und PDF-Seite pro Datei-ID (localStorage)
+  const lsKeyEpub = (dateiId: string) => `bz-epub-cfi-${params.id}-${dateiId}`;
+  const lsKeyPdf  = (dateiId: string) => `bz-pdf-page-${params.id}-${dateiId}`;
+  const getSavedCfi  = (dateiId: string) => (typeof window !== "undefined" ? localStorage.getItem(lsKeyEpub(dateiId)) ?? undefined : undefined);
+  const getSavedPage = (dateiId: string) => (typeof window !== "undefined" ? Number(localStorage.getItem(lsKeyPdf(dateiId))) || 1 : 1);
+  const [pdfPageInput, setPdfPageInput] = useState<Record<string, string>>({});
 
   // Rezensions-Links
   const [rlPlattform, setRlPlattform] = useState("");
@@ -274,7 +282,14 @@ export default function TeilnehmerBereichPage() {
 
       {/* EPUB Reader Modal */}
       {epubReaderUrl && (
-        <EpubReader url={epubReaderUrl} onClose={() => setEpubReaderUrl(null)} />
+        <EpubReader
+          url={epubReaderUrl}
+          initialCfi={epubReaderDateiId ? getSavedCfi(epubReaderDateiId) : undefined}
+          onCfiChange={(cfi) => {
+            if (epubReaderDateiId) localStorage.setItem(lsKeyEpub(epubReaderDateiId), cfi);
+          }}
+          onClose={() => { setEpubReaderUrl(null); setEpubReaderDateiId(null); }}
+        />
       )}
 
       {/* Dateien / PDF-Viewer */}
@@ -289,35 +304,72 @@ export default function TeilnehmerBereichPage() {
                 const isEpub = d.originalName.toLowerCase().endsWith(".epub");
                 const isPdf = d.originalName.toLowerCase().endsWith(".pdf");
                 const dateiUrl = `/api/buchzirkel/${zirkel._id}/datei/${d.id}`;
+                const savedPage = getSavedPage(d.id);
+                const pdfInput = pdfPageInput[d.id] ?? "";
+                const activePdfPage = Number(pdfInput) > 0 ? Number(pdfInput) : savedPage;
+                const savedCfi = getSavedCfi(d.id);
                 return (
                   <div key={d.id} className="border border-arena-border rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between p-3 bg-gray-50">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{isEpub ? "📖" : "📄"}</span>
                         <span className="font-medium text-sm">{d.originalName}</span>
+                        {isEpub && savedCfi && (
+                          <span className="text-xs text-arena-muted">(letzte Position gespeichert)</span>
+                        )}
+                        {isPdf && savedPage > 1 && (
+                          <span className="text-xs text-arena-muted">(zuletzt: Seite {savedPage})</span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         {isEpub && (
                           <button
-                            onClick={() => setEpubReaderUrl(dateiUrl)}
+                            onClick={() => { setEpubReaderUrl(dateiUrl); setEpubReaderDateiId(d.id); }}
                             className="btn btn-primary btn-sm"
                           >
-                            Im Browser lesen
+                            {savedCfi ? "Weiterlesen" : "Im Browser lesen"}
                           </button>
+                        )}
+                        {isPdf && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-arena-muted">Seite:</span>
+                            <input
+                              type="number"
+                              min={1}
+                              value={pdfInput}
+                              placeholder={String(savedPage)}
+                              onChange={(e) => setPdfPageInput((prev) => ({ ...prev, [d.id]: e.target.value }))}
+                              onBlur={(e) => {
+                                const n = Number(e.target.value);
+                                if (n > 0) localStorage.setItem(lsKeyPdf(d.id), String(n));
+                              }}
+                              className="input text-sm w-16 py-1"
+                            />
+                          </div>
+                        )}
+                        {isPdf && (
+                          <a
+                            href={`${dateiUrl}#page=${activePdfPage}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-secondary btn-sm"
+                          >
+                            Im Viewer öffnen ↗
+                          </a>
                         )}
                         <a
                           href={dateiUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          download={d.originalName}
                           className="btn btn-secondary btn-sm"
                         >
-                          {isEpub ? "Extern öffnen / Download" : "Im Viewer öffnen ↗"}
+                          ⬇ Herunterladen
                         </a>
                       </div>
                     </div>
                     {isPdf && (
                       <iframe
-                        src={dateiUrl}
+                        key={activePdfPage}
+                        src={`${dateiUrl}#page=${activePdfPage}`}
                         className="w-full"
                         style={{ height: "70vh" }}
                         title={d.originalName}

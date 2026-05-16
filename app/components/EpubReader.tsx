@@ -6,9 +6,11 @@ import { createPortal } from "react-dom";
 interface EpubReaderProps {
   url: string;
   onClose: () => void;
+  initialCfi?: string;
+  onCfiChange?: (cfi: string) => void;
 }
 
-export default function EpubReader({ url, onClose }: EpubReaderProps) {
+export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: EpubReaderProps) {
   const viewerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renditionRef = useRef<any>(null);
@@ -47,7 +49,7 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
         });
         renditionRef.current = rendition;
 
-        await rendition.display();
+        await rendition.display(initialCfi ?? undefined);
         if (!destroyed) setLoading(false);
 
         book.locations.generate(1024).then(() => {
@@ -75,6 +77,8 @@ export default function EpubReader({ url, onClose }: EpubReaderProps) {
             setCurrentPage(Math.max(1, Math.min(total, Math.round(pct * total) + 1)));
             setTotalPages(total);
           }
+          const cfi = location?.start;
+          if (typeof cfi === "string" && cfi) onCfiChange?.(cfi);
         });
       } catch (err) {
         console.error("EpubReader:", err);
