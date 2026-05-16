@@ -12,15 +12,23 @@ export async function POST(req: Request, { params }: Params) {
   const account = await getServerAccount();
   if (!account) return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
 
-  // Testleser-Profil prüfen
+  // Profil prüfen – jedes Profil auf BuchArena berechtigt zur Teilnahme
   const usersCol = await getUsersCollection();
   const user = await usersCol.findOne(
     { username: account.username },
-    { projection: { testleserProfile: 1, email: 1, displayName: 1 } }
+    { projection: { testleserProfile: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, lektorenProfile: 1, verlageProfile: 1, email: 1, displayName: 1 } }
   );
-  if (!user?.testleserProfile) {
+  const hasAnyProfile = !!(
+    user?.testleserProfile ||
+    user?.profile ||
+    user?.speakerProfile ||
+    user?.bloggerProfile ||
+    user?.lektorenProfile ||
+    user?.verlageProfile
+  );
+  if (!hasAnyProfile) {
     return NextResponse.json(
-      { message: "Für die Teilnahme benötigst du ein Testleser-Profil.", needsProfile: true },
+      { message: "Für die Teilnahme benötigst du ein Profil auf BuchArena.", needsProfile: true },
       { status: 403 }
     );
   }

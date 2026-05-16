@@ -12,10 +12,12 @@ export async function POST(request: Request) {
     const body = (await request.json()) as {
       question?: string;
       options?: string[];
+      genre?: string;
     };
 
     const question = body.question?.trim();
     const options = body.options?.map((o) => o.trim()).filter(Boolean);
+    const genre = body.genre?.trim() || undefined;
 
     if (!question || !options || options.length < 2 || options.length > 10) {
       return NextResponse.json(
@@ -49,6 +51,7 @@ export async function POST(request: Request) {
       options,
       votes: [],
       replies: [],
+      ...(genre ? { genre } : {}),
       createdAt: now,
     };
 

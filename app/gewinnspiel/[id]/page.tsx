@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
 
 type GewinnspielDetail = {
@@ -88,7 +89,7 @@ export default function GewinnspielDetailPage() {
       await load();
     } else if (d.needsProfile) {
       setMsg({
-        text: "Für die Teilnahme benötigst du ein Testleser-Profil.",
+        text: "Für die Teilnahme benötigst du ein Profil auf BuchArena.",
         ok: false,
       });
     } else {
@@ -186,8 +187,17 @@ export default function GewinnspielDetailPage() {
           {msg && (
             <div className={`mb-4 p-3 rounded text-sm ${msg.ok ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
               {msg.text}
-              {!msg.ok && msg.text.includes("Testleser") && (
-                <Link href="/profil?tab=testleser" className="ml-2 underline">Jetzt Profil anlegen →</Link>
+              {!msg.ok && msg.text.includes("Profil") && (
+                <span className="ml-2">
+                  Anlegen als:{" "}
+                  <Link href="/testleser" className="underline">Testleser</Link>,{" "}
+                  <Link href="/fuer-autoren" className="underline">Autor</Link>,{" "}
+                  <Link href="/sprecher" className="underline">Sprecher</Link>,{" "}
+                  <Link href="/blogger" className="underline">Blogger</Link>,{" "}
+                  <Link href="/lektoren" className="underline">Lektor</Link>{" "}
+                  oder{" "}
+                  <Link href="/verlage" className="underline">Verlag</Link>
+                </span>
               )}
               <button className="ml-3 text-xs underline" onClick={() => setMsg(null)}>✕</button>
             </div>
@@ -217,7 +227,7 @@ export default function GewinnspielDetailPage() {
           {anmeldungLaeuft && !g.hatTeilgenommen && (
             <div className="flex flex-col items-center gap-2">
               <p className="w-full text-xs rounded-lg px-3 py-2 mb-1" style={{ background: "#eff6ff", color: "#1e40af" }}>
-                ℹ️ Für die Teilnahme ist ein <Link href="/testleser" className="underline font-medium">Testleser-Profil</Link> erforderlich. Für Versand und Verlosung ist der Autor verantwortlich – nicht BuchArena.
+                ℹ️ Für die Teilnahme ist ein Profil auf BuchArena erforderlich (z.&nbsp;B. als <Link href="/testleser" className="underline font-medium">Testleser</Link>, <Link href="/fuer-autoren" className="underline font-medium">Autor</Link>, <Link href="/sprecher" className="underline font-medium">Sprecher</Link> u.&nbsp;v.&nbsp;m.). Für Versand und Verlosung ist der Autor verantwortlich – nicht BuchArena.
               </p>
               <button
                 onClick={teilnehmen}
@@ -247,6 +257,43 @@ export default function GewinnspielDetailPage() {
           )}
           {!anmeldungLaeuft && g.status === "anmeldung" && now > new Date(g.anmeldungBis) && (
             <p className="text-sm opacity-60 text-center">Die Anmeldephase ist abgelaufen.</p>
+          )}
+
+          {/* Vorlagen für den Autor/Admin */}
+          {account && (account.username === g.autorUsername || account.role === "ADMIN" || account.role === "SUPERADMIN") && (
+            <div className="mt-6 pt-5 border-t" style={{ borderColor: "var(--color-arena-border)" }}>
+              <p className="text-sm font-semibold mb-3" style={{ color: "var(--color-arena-blue)" }}>
+                Reel für dein Gewinnspiel erstellen
+              </p>
+              <div className="flex gap-3 flex-wrap">
+                {[
+                  { file: "gewinnebuch.png",  label: "Vorlage 1" },
+                  { file: "gewinnebuch2.png", label: "Vorlage 2" },
+                ].map(({ file, label }) => {
+                  const href = `/social-media/beitrag-tool?format=9:16&bgImage=/gewinnspiel/${encodeURIComponent(file)}`;
+                  return (
+                    <div key={file} className="flex flex-col items-center gap-2">
+                      <div className="relative w-24 rounded overflow-hidden shadow border" style={{ aspectRatio: "9/16", borderColor: "var(--color-arena-border)" }}>
+                        <Image
+                          src={`/gewinnspiel/${file}`}
+                          alt={label}
+                          fill
+                          className="object-cover"
+                          sizes="96px"
+                        />
+                      </div>
+                      <Link
+                        href={href}
+                        className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-opacity hover:opacity-80"
+                        style={{ background: "var(--color-arena-blue)", color: "white" }}
+                      >
+                        Reel erstellen →
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
       </div>

@@ -309,7 +309,7 @@ export default function DiskussionenPage() {
     return (
       <main className="top-centered-main">
         <section className="card">
-          <h1>Treffpunkt</h1>
+          <h1 className="text-2xl font-bold">Treffpunkt</h1>
           <p>
             Bitte <Link href="/auth">melde dich an</Link>, um am Treffpunkt
             teilzunehmen.
@@ -323,7 +323,7 @@ export default function DiskussionenPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <h1 className="text-xl sm:text-2xl">Treffpunkt</h1>
+          <h1 className="text-2xl font-bold">Treffpunkt</h1>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <Link href="/diskussionen/genre" className="btn text-sm sm:text-base">Genre-Treffpunkt</Link>
             <Link href="/quiz" className="btn text-sm sm:text-base">Quiz</Link>
@@ -535,7 +535,7 @@ export default function DiskussionenPage() {
           <div className="overlay-backdrop" onClick={() => { setOpenPollId(null); setPollReplyBody(""); }}>
             <div className="w-[min(600px,100%)] bg-white rounded-xl p-4 sm:p-5 box-border grid gap-3 sm:gap-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div>
-                <h2 className="m-0 mb-1 text-lg sm:text-xl">{poll.question}</h2>
+                <h2 className="m-0 mb-1 text-lg font-semibold">{poll.question}</h2>
                 <p className="text-sm text-arena-muted m-0">
                   von {poll.displayName || poll.authorUsername} · {timeAgo(poll.createdAt)} · {total} {total === 1 ? "Stimme" : "Stimmen"}
                 </p>
@@ -586,7 +586,7 @@ export default function DiskussionenPage() {
 
               {/* ── Antworten ── */}
               <div className="border-t border-arena-border-light pt-3 grid gap-3">
-                <h3 className="text-sm font-semibold m-0">
+                <h3 className="text-base font-semibold m-0">
                   Kommentare ({poll.replies.length})
                 </h3>
 
@@ -646,7 +646,7 @@ export default function DiskussionenPage() {
       {showOverlay && (
         <div className="overlay-backdrop" onClick={() => setShowOverlay(false)}>
           <div className="w-[min(660px,100%)] bg-white rounded-xl p-4 box-border grid gap-3.5" onClick={(e) => e.stopPropagation()}>
-            <h2>Neues Diskussionsthema</h2>
+            <h2 className="text-lg font-semibold">Neues Diskussionsthema</h2>
 
             <label className="grid gap-1 text-[0.95rem]">
               Titel
@@ -713,7 +713,7 @@ export default function DiskussionenPage() {
       {showPollOverlay && (
         <div className="overlay-backdrop" onClick={() => setShowPollOverlay(false)}>
           <div className="w-[min(520px,100%)] bg-white rounded-xl p-4 box-border grid gap-3.5" onClick={(e) => e.stopPropagation()}>
-            <h2>Neue Abstimmung</h2>
+            <h2 className="text-lg font-semibold">Neue Abstimmung</h2>
 
             <label className="grid gap-1 text-[0.95rem]">
               Frage

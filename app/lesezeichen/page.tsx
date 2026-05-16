@@ -84,8 +84,8 @@ export default function LesezeichenPage() {
         {/* Eigener Stand */}
         {loggedIn && myStats && (
           <section className="card flex-shrink-0">
-            <h1 className="text-lg sm:text-xl flex items-center gap-2">
-              🔖 Deine Lesezeichen
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              Deine Lesezeichen
             </h1>
             <div className="rounded-lg bg-arena-bg border border-arena-border-light p-3 sm:p-5 text-center">
               <p className="text-3xl sm:text-4xl font-bold m-0">{myStats.total}</p>
@@ -110,8 +110,8 @@ export default function LesezeichenPage() {
 
         {/* Regeln */}
         <section className="card flex-shrink-0">
-          <h2 className="text-xl flex items-center gap-2 m-0">
-            📖 So sammelst du Lesezeichen
+          <h2 className="text-lg font-semibold flex items-center gap-2 m-0">
+            So sammelst du Lesezeichen
           </h2>
           <p className="text-arena-muted text-sm m-0 mt-3">
             Lesezeichen sind deine Belohnung für Aktivität auf BuchArena. Sammle so viele wie möglich!
@@ -139,8 +139,8 @@ export default function LesezeichenPage() {
 
         {/* Highscores */}
         <section className="card flex flex-col">
-          <h2 className="text-xl flex items-center gap-2 flex-shrink-0">
-            🏅 Rangliste
+          <h2 className="text-lg font-semibold flex items-center gap-2 flex-shrink-0">
+            Rangliste
           </h2>
 
           {loggedIn && myStats && (

@@ -372,6 +372,13 @@ export default function AdminGewinnspielePage() {
                 >
                   Teilnehmer
                 </a>
+                <a
+                  href={`/gewinnspiel/${g._id}/ziehung`}
+                  className="px-3 py-1.5 text-sm rounded font-medium border hover:opacity-80"
+                  style={{ borderColor: "var(--color-arena-blue)", color: "var(--color-arena-blue)" }}
+                >
+                  🎬 Ziehung / Reel-Test
+                </a>
                 <button
                   onClick={() => doDelete(g._id)}
                   className="px-3 py-1.5 text-sm rounded border border-red-300 text-red-600 hover:bg-red-50"

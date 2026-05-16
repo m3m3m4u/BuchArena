@@ -708,7 +708,7 @@ export default function KalenderPage() {
               >
                 ← <span className="hidden sm:inline">Zurück</span>
               </button>
-              <h1 className="text-lg sm:text-2xl font-bold text-center flex-1 sm:flex-none sm:min-w-[14rem]" style={{ color: "var(--color-arena-blue)" }}>
+              <h1 className="text-2xl font-bold text-center text-arena-blue flex-1 sm:flex-none sm:min-w-[14rem]">
                 {getMonthLabel(year, month)}
               </h1>
               <button
@@ -783,7 +783,7 @@ export default function KalenderPage() {
           <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4" style={{ zIndex: 10000 }}>
             <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="sticky top-0 bg-white border-b border-[var(--color-arena-border)] p-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold" style={{ color: "var(--color-arena-blue)" }}>
+                <h2 className="text-lg font-semibold text-arena-blue">
                   Neuer Termin
                 </h2>
                 <button
@@ -970,7 +970,7 @@ export default function KalenderPage() {
               <div className="space-y-6">
                 {sortedDates.map((date) => (
                   <div key={date}>
-                    <h3 className="font-bold text-lg mb-3" style={{ color: "var(--color-arena-blue)" }}>
+                    <h3 className="font-semibold text-base mb-3 text-arena-blue">
                       {new Date(date + "T00:00:00").toLocaleDateString("de-DE", {
                         weekday: "long",
                         day: "numeric",
@@ -1096,7 +1096,7 @@ export default function KalenderPage() {
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4" style={{ zIndex: 10000 }}>
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b border-[var(--color-arena-border)] p-3 sm:p-4 flex items-center justify-between gap-2">
-              <h2 className="text-base sm:text-xl font-bold line-clamp-2" style={{ color: "var(--color-arena-blue)" }}>
+              <h2 className="text-lg font-semibold line-clamp-2 text-arena-blue">
                 {selectedEvent.title}
               </h2>
               <button

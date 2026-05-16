@@ -1021,7 +1021,7 @@ function ProfilPageInner() {
     return (
       <main className="centered-main">
         <section className="card">
-          <h1>Profil</h1>
+          <h1 className="text-2xl font-bold">Profil</h1>
           <p>Bitte zuerst anmelden, um dein Profil auszufüllen.</p>
           <Link href="/auth" className="btn">
             Zur Anmeldung
@@ -1044,7 +1044,7 @@ function ProfilPageInner() {
   return (
     <main className="centered-main">
       <section className="card">
-        <h1>Profil ausfüllen</h1>
+        <h1 className="text-2xl font-bold">Profil ausfüllen</h1>
         {account.role === "SUPERADMIN" && requestedUser && (
           <p>
             Profil von <strong>{targetUsername}</strong>
@@ -1120,7 +1120,7 @@ function ProfilPageInner() {
 
         {activeTab === "autor" && (
         <>
-        <h2 className="text-lg mt-0">Autorenprofil</h2>
+        <h2 className="text-lg font-semibold mt-0">Autorenprofil</h2>
         <p className="text-arena-muted text-[0.95rem]">
           Fülle dein Autorenprofil aus. Öffentlich sichtbare Felder werden auf deiner Autorenseite angezeigt.
         </p>
@@ -1519,7 +1519,7 @@ function ProfilPageInner() {
 
         {activeTab === "sprecher" && (
         <>
-        <h2 className="text-lg mt-0">Sprecherprofil</h2>
+        <h2 className="text-lg font-semibold mt-0">Sprecherprofil</h2>
         <p className="text-arena-muted text-[0.95rem]">
           Fülle dein Profil als Hörbuchsprecher aus. Öffentlich sichtbare Felder werden auf deiner Sprecherseite angezeigt.
         </p>
@@ -1664,7 +1664,7 @@ function ProfilPageInner() {
         />
 
         <div className="mt-2">
-          <h3 className="text-[0.95rem] font-semibold mb-2">Sprechproben (MP3)</h3>
+          <h3 className="text-base font-semibold mb-2">Sprechproben (MP3)</h3>
 
           {speakerProfile.sprechproben.length > 0 && (
             <div className="grid gap-2 mb-3">
@@ -1703,7 +1703,7 @@ function ProfilPageInner() {
           </label>
         </div>
 
-        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Social Media</h3>
+        <h3 className="text-base font-semibold mt-4 mb-1">Social Media</h3>
         <FieldWithVisibility
           label="Social Media: Instagram"
           value={speakerProfile.socialInstagram?.value ?? ""}
@@ -1864,7 +1864,7 @@ function ProfilPageInner() {
 
         {activeTab === "blogger" && (
         <>
-        <h2 className="text-lg mt-0">Bloggerprofil</h2>
+        <h2 className="text-lg font-semibold mt-0">Bloggerprofil</h2>
         <p className="text-arena-muted text-[0.95rem]">
           Fülle dein Profil als Buchblogger aus. Öffentlich sichtbare Felder werden auf deiner Bloggerseite angezeigt.
         </p>
@@ -2189,7 +2189,7 @@ function ProfilPageInner() {
 
         {activeTab === "testleser" && (
         <>
-        <h2 className="text-lg mt-0">(Test)Leser-Profil</h2>
+        <h2 className="text-lg font-semibold mt-0">(Test)Leser-Profil</h2>
         <p className="text-arena-muted text-[0.95rem]">
           Fülle dein Profil als Testleser aus. Öffentlich sichtbare Felder werden auf deiner Testleserseite angezeigt.
         </p>
@@ -2297,12 +2297,12 @@ function ProfilPageInner() {
           </button>
         </div>
 
-        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Standort</h3>
+        <h3 className="text-base font-semibold mt-4 mb-1">Standort</h3>
         <FieldWithVisibility label="Postleitzahl" value={testleserProfile.postalCode?.value ?? ""} visibility={testleserProfile.postalCode?.visibility ?? "internal"} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, postalCode: { ...c.postalCode, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, postalCode: { ...c.postalCode, visibility } }))} />
         <FieldWithVisibility label="Wohnort" value={testleserProfile.city?.value ?? ""} visibility={testleserProfile.city?.visibility ?? "internal"} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, city: { ...c.city, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, city: { ...c.city, visibility } }))} />
         <FieldWithVisibility label="Land" value={testleserProfile.country?.value ?? ""} visibility={testleserProfile.country?.visibility ?? "internal"} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, country: { ...c.country, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, country: { ...c.country, visibility } }))} />
 
-        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Kontakt / Social Media</h3>
+        <h3 className="text-base font-semibold mt-4 mb-1">Kontakt / Social Media</h3>
         <FieldWithVisibility label="Social Media: Instagram" value={testleserProfile.socialInstagram.value} visibility={testleserProfile.socialInstagram.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, visibility } }))} />
         <FieldWithVisibility label="Social Media: Facebook" value={testleserProfile.socialFacebook.value} visibility={testleserProfile.socialFacebook.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, visibility } }))} />
         <FieldWithVisibility label="Social Media: LinkedIn" value={testleserProfile.socialLinkedin.value} visibility={testleserProfile.socialLinkedin.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialLinkedin: { ...c.socialLinkedin, visibility } }))} />
@@ -2316,7 +2316,7 @@ function ProfilPageInner() {
         <FieldWithVisibility label="WhatsApp-Kanal" value={testleserProfile.socialWhatsapp.value} visibility={testleserProfile.socialWhatsapp.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialWhatsapp: { ...c.socialWhatsapp, visibility } }))} />
         <FieldWithVisibility label="Mailadresse" value={testleserProfile.socialEmail.value} visibility={testleserProfile.socialEmail.visibility} onValueChange={(value) => setTestleserProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))} onVisibilityChange={(visibility) => setTestleserProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))} />
 
-        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Meine Rezensionen</h3>
+        <h3 className="text-base font-semibold mt-4 mb-1">Meine Rezensionen</h3>
         <div className="grid gap-1">
           <label className="text-sm font-semibold">Rezensions-Links <span className="font-normal text-arena-muted">(1 URL pro Zeile)</span></label>
           <span className="text-xs text-arena-muted">Links zu deinen verfassten Rezensionen auf Amazon, Goodreads, deinem Blog usw.</span>
@@ -2356,7 +2356,7 @@ function ProfilPageInner() {
 
         {activeTab === "lektoren" && (
         <>
-        <h2 className="text-lg mt-0">Lektorenprofil</h2>
+        <h2 className="text-lg font-semibold mt-0">Lektorenprofil</h2>
         <p className="text-arena-muted text-[0.95rem]">
           Fülle dein Profil als Lektor aus. Öffentlich sichtbare Felder werden auf deiner Lektorenseite angezeigt.
         </p>
@@ -2431,7 +2431,7 @@ function ProfilPageInner() {
 
         {/* Kapazitäten-Kalender */}
         <div className="mt-2">
-          <h3 className="text-[0.95rem] font-semibold mb-2">Kapazitäten nach Monat</h3>
+          <h3 className="text-base font-semibold mb-2">Kapazitäten nach Monat</h3>
           <p className="text-arena-muted text-xs mb-2">Klicke auf die Monate, in denen du Kapazitäten hast.</p>
           <div className="flex flex-wrap gap-1.5">
             {["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"].map((label, index) => {
@@ -2458,12 +2458,12 @@ function ProfilPageInner() {
           </div>
         </div>
 
-        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Standort</h3>
+        <h3 className="text-base font-semibold mt-4 mb-1">Standort</h3>
         <FieldWithVisibility label="Postleitzahl" value={lektorenProfile.postalCode?.value ?? ""} visibility={lektorenProfile.postalCode?.visibility ?? "internal"} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, postalCode: { ...c.postalCode, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, postalCode: { ...c.postalCode, visibility } }))} />
         <FieldWithVisibility label="Wohnort" value={lektorenProfile.city?.value ?? ""} visibility={lektorenProfile.city?.visibility ?? "internal"} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, city: { ...c.city, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, city: { ...c.city, visibility } }))} />
         <FieldWithVisibility label="Land" value={lektorenProfile.country?.value ?? ""} visibility={lektorenProfile.country?.visibility ?? "internal"} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, country: { ...c.country, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, country: { ...c.country, visibility } }))} />
 
-        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Kontakt / Social Media</h3>
+        <h3 className="text-base font-semibold mt-4 mb-1">Kontakt / Social Media</h3>
         <FieldWithVisibility label="Website" value={lektorenProfile.socialWebsite.value} visibility={lektorenProfile.socialWebsite.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, visibility } }))} />
         <FieldWithVisibility label="Social Media: Instagram" value={lektorenProfile.socialInstagram.value} visibility={lektorenProfile.socialInstagram.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, visibility } }))} />
         <FieldWithVisibility label="Social Media: Facebook" value={lektorenProfile.socialFacebook.value} visibility={lektorenProfile.socialFacebook.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, visibility } }))} />
@@ -2504,7 +2504,7 @@ function ProfilPageInner() {
 
         {activeTab === "verlage" && (
         <>
-        <h2 className="text-lg mt-0">Verlagsprofil</h2>
+        <h2 className="text-lg font-semibold mt-0">Verlagsprofil</h2>
         <p className="text-arena-muted text-[0.95rem]">
           Fülle dein Profil als Verlag aus. Öffentlich sichtbare Felder werden auf deiner Verlagsseite angezeigt.
         </p>
@@ -2598,7 +2598,7 @@ function ProfilPageInner() {
 
         {/* Kapazitäten-Kalender */}
         <div className="mt-2">
-          <h3 className="text-[0.95rem] font-semibold mb-2">Kapazitäten nach Monat</h3>
+          <h3 className="text-base font-semibold mb-2">Kapazitäten nach Monat</h3>
           <p className="text-arena-muted text-xs mb-2">Klicke auf die Monate, in denen du Kapazitäten hast.</p>
           <div className="flex flex-wrap gap-1.5">
             {["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"].map((label, index) => {
@@ -2625,12 +2625,12 @@ function ProfilPageInner() {
           </div>
         </div>
 
-        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Standort</h3>
+        <h3 className="text-base font-semibold mt-4 mb-1">Standort</h3>
         <FieldWithVisibility label="Postleitzahl" value={verlageProfile.postalCode?.value ?? ""} visibility={verlageProfile.postalCode?.visibility ?? "internal"} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, postalCode: { ...c.postalCode, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, postalCode: { ...c.postalCode, visibility } }))} />
         <FieldWithVisibility label="Wohnort" value={verlageProfile.city?.value ?? ""} visibility={verlageProfile.city?.visibility ?? "internal"} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, city: { ...c.city, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, city: { ...c.city, visibility } }))} />
         <FieldWithVisibility label="Land" value={verlageProfile.country?.value ?? ""} visibility={verlageProfile.country?.visibility ?? "internal"} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, country: { ...c.country, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, country: { ...c.country, visibility } }))} />
 
-        <h3 className="text-[0.95rem] font-semibold mt-4 mb-1">Webseite / Social Media</h3>
+        <h3 className="text-base font-semibold mt-4 mb-1">Webseite / Social Media</h3>
         <FieldWithVisibility label="Website" value={verlageProfile.socialWebsite.value} visibility={verlageProfile.socialWebsite.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, visibility } }))} />
         <FieldWithVisibility label="Social Media: Instagram" value={verlageProfile.socialInstagram.value} visibility={verlageProfile.socialInstagram.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, visibility } }))} />
         <FieldWithVisibility label="Social Media: Facebook" value={verlageProfile.socialFacebook.value} visibility={verlageProfile.socialFacebook.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, visibility } }))} />
@@ -2675,7 +2675,7 @@ function ProfilPageInner() {
 
         {activeTab === "buecher" && (
           <>
-          <h2 className="text-lg mt-0">Meine Bücher</h2>
+          <h2 className="text-lg font-semibold mt-0">Meine Bücher</h2>
           <p className="text-arena-muted text-[0.95rem]">
             Lege hier deine Bücher an und verwalte sie. Die Bücher werden auf deiner Autorenseite und in der Bücherübersicht angezeigt.
           </p>
@@ -2685,7 +2685,7 @@ function ProfilPageInner() {
 
         {activeTab === "konto" && (
           <>
-          <h2 className="text-lg mt-0">Kontoeinstellungen</h2>
+          <h2 className="text-lg font-semibold mt-0">Kontoeinstellungen</h2>
 
           {/* ── Newsletter Opt-In ── */}
           <div style={{ background: newsletterOptIn ? "#f0fdf4" : "#f7f7fa", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", transition: "background 0.2s" }}>
@@ -3441,3 +3441,4 @@ function VisibilityToggle({ value, onChange }: VisibilityToggleProps) {
     </div>
   );
 }
+

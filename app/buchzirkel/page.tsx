@@ -84,7 +84,7 @@ export default function BuchzirkelPage() {
 
       {/* So funktioniert's */}
       <section className="card mt-3">
-        <h2 className="text-base font-semibold m-0 mb-3">So funktioniert ein Buchzirkel</h2>
+        <h2 className="text-lg font-semibold m-0 mb-3">So funktioniert ein Buchzirkel</h2>
         <ol className="flex flex-col gap-2 text-sm text-arena-text pl-0 list-none m-0">
           <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">1</span><span><strong>Autor erstellt einen Zirkel</strong> – mit Beschreibung, Bewerbungsfrist und optionalen Fragen an Interessenten.</span></li>
           <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">2</span><span><strong>Leser bewerben sich</strong> – innerhalb der Bewerbungsfrist können registrierte Mitglieder eine Bewerbung einreichen.</span></li>
@@ -213,7 +213,7 @@ export default function BuchzirkelPage() {
       {/* Meine abgeschlossenen Zirkel */}
       {account && meine.length > 0 && (
         <section className="card mt-6">
-          <h2 className="text-base font-semibold mb-3">Meine abgeschlossenen Zirkel</h2>
+          <h2 className="text-lg font-semibold mb-3">Meine abgeschlossenen Zirkel</h2>
           <div className="w-full grid grid-cols-1 gap-2">
             {meine.map((z) => (
               <ZirkelKarte key={z._id} zirkel={z} deletable={z.veranstalterUsername === account.username} onDelete={() => setMeine((prev) => prev.filter((m) => m._id !== z._id))} />
@@ -292,7 +292,7 @@ function ZirkelKarte({ zirkel, deletable, onDelete }: { zirkel: Zirkel; deletabl
             )}
           </div>
 
-          <h2 className="text-base font-bold m-0 mt-0.5 truncate">{zirkel.titel}</h2>
+          <h2 className="text-base font-semibold m-0 mt-0.5 truncate">{zirkel.titel}</h2>
           <div className="flex items-center gap-3 text-xs text-arena-muted m-0">
             <span>von {zirkel.veranstalterUsername}</span>
             <span>·</span>

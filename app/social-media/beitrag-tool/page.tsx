@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { getStoredAccount } from "@/lib/client-account";
 
 /* ---- FFmpeg UMD loader (bypasses Turbopack bundling) ---- */
@@ -1018,6 +1019,25 @@ export default function BeitragToolPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.innerWidth >= 1024) setFullscreen(true);
+  }, []);
+
+  // URL-Parameter: format + bgImage (z. B. von Gewinnspiel-Seite)
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const fmtParam = searchParams.get("format") as FormatPreset | null;
+    const bgParam  = searchParams.get("bgImage");
+    if (fmtParam === "9:16" || fmtParam === "1:1" || fmtParam === "4:5") {
+      setFormat(fmtParam);
+      if (fmtParam === "9:16") setEditorMode("video");
+    }
+    if (bgParam) {
+      setBgImage(bgParam);
+      loadImg(bgParam).then((img) => {
+        bgImgRef.current = img;
+        setTick((t) => t + 1);
+      }).catch(() => {});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Detect admin role

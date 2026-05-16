@@ -30,6 +30,14 @@ function easeOut(t: number): number {
   return 1 - Math.pow(1 - t, 4);
 }
 
+// Für Reel-Export: 85% der Zeit konstante Geschwindigkeit, letzte 15% bremsen
+function reelEaseOut(t: number): number {
+  const split = 0.85;
+  if (t <= split) return t;   // linear
+  const t2 = (t - split) / (1 - split);
+  return split + (1 - split) * (1 - (1 - t2) * (1 - t2));  // quadratisch auslaufen
+}
+
 // ── Slot-Machine Konstanten ──────────────────────────────────────────────────
 const SLOT_H = 70;      // Zeilenhöhe im Slot
 const SLOT_VISIBLE = 7; // Sichtbare Zeilen
@@ -44,16 +52,19 @@ function drawSlotFrame(
   namen: string[],
   scrollY: number,
   done: boolean,
-  winnerIdx: number | null
+  winnerIdx: number | null,
+  seamless = false   // true = kein eigener Hintergrund (für Reel)
 ) {
   const n = namen.length;
 
-  // Hintergrund
-  ctx.fillStyle = "#0d1b3e";
-  ctx.fillRect(0, 0, SIZE, SIZE);
+  // Hintergrund (nur im normalen Modus)
+  if (!seamless) {
+    ctx.fillStyle = "#0d1b3e";
+    ctx.fillRect(0, 0, SIZE, SIZE);
+  }
 
   // Drum-Hintergrund
-  ctx.fillStyle = "#112256";
+  ctx.fillStyle = seamless ? "rgba(0,8,40,0.72)" : "#112256";
   ctx.fillRect(SLOT_DRUM_X, SLOT_DRUM_Y, SLOT_DRUM_W, SLOT_DRUM_H);
 
   const startItemIndex = Math.floor(scrollY / SLOT_H);
@@ -90,16 +101,17 @@ function drawSlotFrame(
   ctx.restore();
 
   // Verlaufschattierung oben
+  const drumBg = seamless ? "0,8,40" : "17,34,86";
   const gradTop = ctx.createLinearGradient(0, SLOT_DRUM_Y, 0, SLOT_DRUM_Y + SLOT_H * 2);
-  gradTop.addColorStop(0, "rgba(17,34,86,1)");
-  gradTop.addColorStop(1, "rgba(17,34,86,0)");
+  gradTop.addColorStop(0, `rgba(${drumBg},1)`);
+  gradTop.addColorStop(1, `rgba(${drumBg},0)`);
   ctx.fillStyle = gradTop;
   ctx.fillRect(SLOT_DRUM_X, SLOT_DRUM_Y, SLOT_DRUM_W, SLOT_H * 2);
 
   // Verlaufschattierung unten
   const gradBot = ctx.createLinearGradient(0, SLOT_DRUM_Y + SLOT_DRUM_H - SLOT_H * 2, 0, SLOT_DRUM_Y + SLOT_DRUM_H);
-  gradBot.addColorStop(0, "rgba(17,34,86,0)");
-  gradBot.addColorStop(1, "rgba(17,34,86,1)");
+  gradBot.addColorStop(0, `rgba(${drumBg},0)`);
+  gradBot.addColorStop(1, `rgba(${drumBg},1)`);
   ctx.fillStyle = gradBot;
   ctx.fillRect(SLOT_DRUM_X, SLOT_DRUM_Y + SLOT_DRUM_H - SLOT_H * 2, SLOT_DRUM_W, SLOT_H * 2);
 
@@ -117,15 +129,17 @@ function drawSlotFrame(
   ctx.strokeRect(SLOT_DRUM_X, SLOT_DRUM_Y, SLOT_DRUM_W, SLOT_DRUM_H);
   ctx.restore();
 
-  // Titel oben
-  ctx.fillStyle = "rgba(249,168,37,0.9)";
-  ctx.font = "bold 20px sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("BuchArena Gewinnspiel", SIZE / 2, 40);
+  // Titel oben (nur im normalen Modus)
+  if (!seamless) {
+    ctx.fillStyle = "rgba(249,168,37,0.9)";
+    ctx.font = "bold 20px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("BuchArena Gewinnspiel", SIZE / 2, 40);
+  }
 
-  // Gewinner-Banner unten (nur im exportierten Video sichtbar)
-  if (done && winnerIdx !== null) {
+  // Gewinner-Banner unten (nur im normalen Modus)
+  if (!seamless && done && winnerIdx !== null) {
     ctx.fillStyle = "rgba(17,34,86,0.92)";
     ctx.fillRect(0, SIZE - 85, SIZE, 85);
     ctx.fillStyle = "#f9a825";
@@ -149,6 +163,8 @@ export default function ZiehungsradPage() {
   const [spinning, setSpinning] = useState(false);
   const [winner, setWinner] = useState<Teilnehmer | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [exportingReel, setExportingReel] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const exportBlobRef = useRef<Blob | null>(null);
 
   const rotRef = useRef(0);
@@ -162,30 +178,41 @@ export default function ZiehungsradPage() {
       fetch(`/api/gewinnspiele/${id}`).then((r) => r.json()),
       fetch(`/api/gewinnspiele/${id}/teilnehmer`).then((r) => r.json()),
     ]).then(([gInfo, tList]) => {
-      const isAdmin = acc.role === "ADMIN" || acc.role === "SUPERADMIN";
+      const adminFlag = acc.role === "ADMIN" || acc.role === "SUPERADMIN";
       const isAutor = acc.username === (gInfo as GewinnspielInfo).autorUsername;
-      if (!isAdmin && !isAutor) { router.replace("/gewinnspiel"); return; }
+      if (!adminFlag && !isAutor) { router.replace("/gewinnspiel"); return; }
+      if (adminFlag) setIsAdmin(true);
       setInfo(gInfo as GewinnspielInfo);
       setTeilnehmer(tList as Teilnehmer[]);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [id, router]);
 
+  const DUMMY_TEILNEHMER: Teilnehmer[] = [
+    { username: "test1", displayName: "Anna Mustermann", angemeldetAt: "" },
+    { username: "test2", displayName: "Ben Schreiber", angemeldetAt: "" },
+    { username: "test3", displayName: "Clara Lesefreudig", angemeldetAt: "" },
+    { username: "test4", displayName: "David Bücherwurm", angemeldetAt: "" },
+    { username: "test5", displayName: "Eva Romanliebhaberin", angemeldetAt: "" },
+  ];
+  const aktiveTeilnehmer = teilnehmer.length > 0 ? teilnehmer : (isAdmin ? DUMMY_TEILNEHMER : []);
+
   // Initial zeichnen
   useEffect(() => {
-    if (!canvasRef.current || teilnehmer.length === 0) return;
+    if (!canvasRef.current || aktiveTeilnehmer.length === 0) return;
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
     rotRef.current = 0;
-    drawSlotFrame(ctx, teilnehmer.map((t) => t.displayName), 0, false, null);
-  }, [teilnehmer]);
+    drawSlotFrame(ctx, aktiveTeilnehmer.map((t) => t.displayName), 0, false, null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teilnehmer, isAdmin]);
 
   function spin() {
-    if (spinning || teilnehmer.length === 0) return;
+    if (spinning || aktiveTeilnehmer.length === 0) return;
     setSpinning(true);
     setWinner(null);
 
-    const namen = teilnehmer.map((t) => t.displayName);
+    const namen = aktiveTeilnehmer.map((t) => t.displayName);
     const n = namen.length;
     const arr = new Uint32Array(1);
     crypto.getRandomValues(arr);
@@ -212,14 +239,14 @@ export default function ZiehungsradPage() {
         rafRef.current = requestAnimationFrame(animateSlot);
       } else {
         setSpinning(false);
-        setWinner(teilnehmer[winnerIdx]);
+        setWinner(aktiveTeilnehmer[winnerIdx]);
       }
     }
     rafRef.current = requestAnimationFrame(animateSlot);
   }
 
   async function exportVideo() {
-    if (!canvasRef.current || teilnehmer.length === 0) return;
+    if (!canvasRef.current || aktiveTeilnehmer.length === 0) return;
     setExporting(true);
     exportBlobRef.current = null;
 
@@ -229,7 +256,7 @@ export default function ZiehungsradPage() {
     exportCanvas.height = 1080;
     const ectx = exportCanvas.getContext("2d")!;
 
-    const namen = teilnehmer.map((t) => t.displayName);
+    const namen = aktiveTeilnehmer.map((t) => t.displayName);
     const n = namen.length;
 
     // Gewinner für das Export-Video
@@ -237,12 +264,11 @@ export default function ZiehungsradPage() {
     crypto.getRandomValues(arr);
     const winnerIdx = arr[0] % n;
 
-    const mimeType = MediaRecorder.isTypeSupported("video/mp4;codecs=h264")
-      ? "video/mp4;codecs=h264"
-      : MediaRecorder.isTypeSupported("video/mp4")
-      ? "video/mp4"
-      : "video/webm;codecs=vp9";
-    const fileExt = mimeType.startsWith("video/mp4") ? "mp4" : "webm";
+    // Chrome MediaRecorder unterstützt nur WebM zuverlässig
+    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+      ? "video/webm;codecs=vp9"
+      : "video/webm";
+    const fileExt = "webm";
 
     const stream = exportCanvas.captureStream(30);
     const recorder = new MediaRecorder(stream, {
@@ -327,6 +353,270 @@ export default function ZiehungsradPage() {
     });
   }
 
+  async function exportReel() {
+    if (aktiveTeilnehmer.length === 0) return;
+    setExportingReel(true);
+    try {
+
+    const W = 1080, H = 1920;
+    const reelCanvas = document.createElement("canvas");
+    reelCanvas.width = W; reelCanvas.height = H;
+    const rctx = reelCanvas.getContext("2d")!;
+
+    const namen = aktiveTeilnehmer.map((t) => t.displayName);
+    const n = namen.length;
+    const arr = new Uint32Array(1);
+    crypto.getRandomValues(arr);
+    const winnerIdx = arr[0] % n;
+
+    // Buchcover laden (nicht mehr direkt verwendet, aber vorhanden für spätere Nutzung)
+    let coverImg: HTMLImageElement | null = null;
+    if (info?.coverImageUrl) {
+      coverImg = await new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = info!.coverImageUrl!;
+      });
+    }
+
+    // Slot-Canvas (intern SIZE×SIZE)
+    const tmp = document.createElement("canvas");
+    tmp.width = SIZE; tmp.height = SIZE;
+    const tctx = tmp.getContext("2d")!;
+
+    // Layout: 1080×1920  (Slot 20% kleiner, gleichmäßige Abstände)
+    const SLOT_SIZE = 800;
+    const SLOT_X = (W - SLOT_SIZE) / 2;   // 140px Rand
+    const SLOT_Y = 560;
+    const BOT_Y  = SLOT_Y + SLOT_SIZE;    // 1360
+
+    function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+      const words = text.split(" ");
+      const lines: string[] = [];
+      let cur = "";
+      for (const word of words) {
+        const test = cur ? `${cur} ${word}` : word;
+        if (ctx.measureText(test).width > maxWidth && cur) { lines.push(cur); cur = word; }
+        else cur = test;
+      }
+      if (cur) lines.push(cur);
+      return lines;
+    }
+
+    function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+      ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+      ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+      ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
+      ctx.closePath();
+    }
+
+    function drawReelFrame(scrollY: number, done: boolean, hl: number | null) {
+      rctx.clearRect(0, 0, W, H);
+
+      // ── HINTERGRUND: reines Weiß (passend zum Logo-Hintergrund) ──
+      rctx.fillStyle = "#ffffff";
+      rctx.fillRect(0, 0, W, H);
+
+      // ── HELPER ──────────────────────────────────────────────────
+      function hLine(y: number, alpha = 0.25) {
+        const lg = rctx.createLinearGradient(0,0,W,0);
+        lg.addColorStop(0,   "rgba(10,26,78,0)");
+        lg.addColorStop(0.15,`rgba(10,26,78,${alpha})`);
+        lg.addColorStop(0.85,`rgba(10,26,78,${alpha})`);
+        lg.addColorStop(1,   "rgba(10,26,78,0)");
+        rctx.strokeStyle = lg; rctx.lineWidth = 1.5;
+        rctx.beginPath(); rctx.moveTo(0,y); rctx.lineTo(W,y); rctx.stroke();
+      }
+
+      // ── TOP: Headline ──────────────────────────────────────────
+      rctx.textAlign = "center"; rctx.textBaseline = "middle";
+
+      // "GEWINNSPIEL"  (y=190)
+      rctx.font = "bold 70px sans-serif";
+      rctx.fillStyle = "#f9a825";
+      rctx.fillText("GEWINNSPIEL", W / 2, 190);
+
+      hLine(268, 0.18);
+
+      // "Wer gewinnt?" / "THE WINNER IS:"  (y=410, viel Platz)
+      rctx.font = "bold 80px sans-serif";
+      rctx.fillStyle = "#0a1a4e";
+      rctx.fillText(done ? "THE WINNER IS:" : "Wer gewinnt?", W / 2, 410);
+
+      hLine(538, 0.18);
+
+      // ── SLOT-MACHINE als dunkle Karte ────────────────────────────
+      // Dunkle gerundete Karte als Hintergrund für den Slot
+      const cardR = 32;
+      const cardPad = 10;
+      const cX = SLOT_X - cardPad, cY = SLOT_Y - cardPad;
+      const cW = SLOT_SIZE + cardPad * 2, cH = SLOT_SIZE + cardPad * 2;
+
+      // Schatten
+      rctx.save();
+      rctx.shadowColor = "rgba(10,26,78,0.18)";
+      rctx.shadowBlur = 40;
+      rctx.shadowOffsetY = 8;
+      rctx.beginPath();
+      rctx.roundRect(cX, cY, cW, cH, cardR);
+      rctx.fillStyle = "#0d1b3e";
+      rctx.fill();
+      rctx.restore();
+
+      // Slot darauf rendern (seamless=true: kein eigener Bg im Slot)
+      drawSlotFrame(tctx, namen, scrollY, done, hl, true);
+      const scale = SLOT_SIZE / SIZE;
+      rctx.save();
+      rctx.beginPath();
+      rctx.roundRect(SLOT_X, SLOT_Y, SLOT_SIZE, SLOT_SIZE, cardR - cardPad);
+      rctx.clip();
+      rctx.translate(SLOT_X, SLOT_Y);
+      rctx.scale(scale, scale);
+      rctx.drawImage(tmp, 0, 0);
+      rctx.restore();
+
+      // Goldener Rand um die Karte
+      rctx.save();
+      rctx.beginPath();
+      rctx.roundRect(cX, cY, cW, cH, cardR);
+      rctx.strokeStyle = "rgba(249,168,37,0.55)";
+      rctx.lineWidth = 3;
+      rctx.stroke();
+      rctx.restore();
+
+      hLine(BOT_Y + cardPad + 22, 0.18);
+
+      // ── BOTTOM: Buch + Autor ─────────────────────────────────────
+      const BOT_MID = BOT_Y + cardPad + (H - BOT_Y - cardPad) / 2;
+
+      rctx.textAlign = "center"; rctx.textBaseline = "middle";
+
+      rctx.font = "bold 46px sans-serif";
+      rctx.fillStyle = "#0a1a4e";
+      const titleLines = wrapText(rctx, info?.buchTitel ?? "", W - 120);
+      const lineH = 58;
+      const totalTitleH = Math.min(titleLines.length, 3) * lineH;
+      const titleStartY = BOT_MID - totalTitleH / 2 - 28;
+      titleLines.slice(0, 3).forEach((line, i) => {
+        rctx.fillText(line, W / 2, titleStartY + i * lineH);
+      });
+
+      rctx.font = "italic 34px sans-serif";
+      rctx.fillStyle = "#f9a825";
+      rctx.fillText(`von ${info?.autorName ?? ""}`, W / 2, titleStartY + totalTitleH + 24);
+
+      // Footer
+      rctx.font = "22px sans-serif";
+      rctx.fillStyle = "rgba(10,26,78,0.35)";
+      rctx.fillText("bucharena.org", W / 2, H - 40);
+    }
+
+    // ── Audio ────────────────────────────────────────────────────
+    const mp3Files = [
+      "/mp3/Asphalt_Crown.mp3",
+      "/mp3/Before_the_Dawn_Breaks.mp3",
+      "/mp3/Blue_Grey_Hush.mp3",
+      "/mp3/Chipped_Paint_Mug.mp3",
+      "/mp3/Clear_Path_Forward.mp3",
+      "/mp3/Crown_from_the_Concrete.mp3",
+      "/mp3/Ghost_of_the_Boulevard.mp3",
+      "/mp3/Pulso_en_la_Vena.mp3",
+      "/mp3/Rain_Against_The_Glass.mp3",
+      "/mp3/Weight_of_the_Tide.mp3",
+      "/mp3/Where_the_World_Begins.mp3",
+    ];
+    const randomMp3 = mp3Files[Math.floor(Math.random() * mp3Files.length)];
+    const audioEl = new Audio(randomMp3);
+    audioEl.loop = true;
+    const audioCtx = new AudioContext();
+    const audioSrc = audioCtx.createMediaElementSource(audioEl);
+    const audioDest = audioCtx.createMediaStreamDestination();
+    audioSrc.connect(audioDest);
+
+    // ── Recording ────────────────────────────────────────────────
+    // Chrome 130+ unterstützt MP4/H.264 in MediaRecorder; vorher auf WebM ausweichen
+    const mimeTypes = [
+      "video/mp4;codecs=avc1,mp4a.40.2",
+      "video/mp4;codecs=avc1",
+      "video/mp4",
+      "video/webm;codecs=vp9,opus",
+      "video/webm",
+    ];
+    const mimeType = mimeTypes.find((t) => MediaRecorder.isTypeSupported(t)) ?? "video/webm";
+    const fileExt = mimeType.startsWith("video/mp4") ? "mp4" : "webm";
+
+    const videoStream = reelCanvas.captureStream(30);
+    const combinedStream = new MediaStream([
+      ...videoStream.getVideoTracks(),
+      ...audioDest.stream.getAudioTracks(),
+    ]);
+    const recorder = new MediaRecorder(combinedStream, { mimeType, videoBitsPerSecond: 8_000_000 });
+    const chunks: Blob[] = [];
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onerror = () => { audioEl.pause(); audioCtx.close(); setExportingReel(false); };
+
+    const spinDelay = 1000;
+    const spinDuration = 11000;
+    const winnerHold = 3000;
+
+    const slotWinnerRelative = (winnerIdx - SLOT_CENTER + n) % n;
+    const exportMinCycles = Math.max(Math.ceil(20 / n), 2);
+    const exportCycles = exportMinCycles + 2 + Math.floor(Math.random() * 3);
+    const targetScrollY = (exportCycles * n + slotWinnerRelative) * SLOT_H;
+
+    drawReelFrame(0, false, null);
+
+    await new Promise<void>((resolve) => {
+      recorder.onstop = () => {
+        audioEl.pause();
+        audioCtx.close();
+        const blob = new Blob(chunks, { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `gewinnspiel-reel-${id}.${fileExt}`;
+        a.click();
+        URL.revokeObjectURL(url);
+        setExportingReel(false);
+        resolve();
+      };
+
+      audioEl.play().catch(() => {});
+      recorder.start();
+      const startTime = performance.now();
+      let frameTimer: ReturnType<typeof setInterval>;
+
+      function renderFrame() {
+        const elapsed = performance.now() - startTime;
+        if (elapsed < spinDelay) {
+          drawReelFrame(0, false, null);
+        } else {
+          const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
+          const scrollY = targetScrollY * reelEaseOut(t);
+          const done = t >= 1;
+          drawReelFrame(scrollY, done, done ? winnerIdx : null);
+          if (done && elapsed >= spinDelay + spinDuration + winnerHold) {
+            clearInterval(frameTimer);
+            drawReelFrame(targetScrollY, true, winnerIdx);
+            recorder.stop();
+            return;
+          }
+        }
+      }
+      // setInterval statt setTimeout: fester Takt, kein Drift, läuft auch im Hintergrund
+      frameTimer = setInterval(renderFrame, 1000 / 30);
+    });
+    } catch (err) {
+      console.error("Reel-Export fehlgeschlagen:", err);
+      setExportingReel(false);
+    }
+  }
+
 
   if (loading) return <main className="site-shell py-10 text-center text-sm opacity-60">Lade…</main>;
 
@@ -349,10 +639,17 @@ export default function ZiehungsradPage() {
         </div>
       )}
 
-      {teilnehmer.length === 0 ? (
+      {teilnehmer.length === 0 && !isAdmin ? (
         <p className="text-sm opacity-60">Keine Teilnehmer vorhanden.</p>
       ) : (
         <>
+          {/* Admin-Hinweis bei Dummy-Daten */}
+          {isAdmin && teilnehmer.length === 0 && (
+            <div className="mb-4 p-3 rounded-lg text-sm font-medium"
+              style={{ background: "#eff6ff", border: "1px solid #93c5fd", color: "#1e40af" }}>
+              🛠 Admin-Testmodus: Es sind noch keine echten Teilnehmer vorhanden. Es werden Dummy-Namen für die Vorschau verwendet.
+            </div>
+          )}
           {/* Canvas */}
           <div className="flex justify-center mb-5">
             <canvas
@@ -389,12 +686,21 @@ export default function ZiehungsradPage() {
               className="px-6 py-3 rounded-xl font-bold text-base border transition-opacity disabled:opacity-50"
               style={{ borderColor: "var(--color-arena-blue)", color: "var(--color-arena-blue)" }}
             >
-              {exporting ? "Video wird erstellt…" : "Video erstellen & herunterladen"}
+              {exporting ? "Video wird erstellt…" : "Video (1:1) herunterladen"}
+            </button>
+
+            <button
+              onClick={exportReel}
+              disabled={exportingReel || spinning}
+              className="px-6 py-3 rounded-xl font-bold text-base transition-opacity disabled:opacity-50"
+              style={{ background: "var(--color-arena-yellow)", color: "var(--color-arena-blue)" }}
+            >
+              {exportingReel ? "Reel wird erstellt…" : "🎬 Reel (9:16) erstellen"}
             </button>
           </div>
 
           <p className="text-xs opacity-50 text-center mt-3">
-            Das exportierte Video ist quadratisch (1080×1080) und für Social Media optimiert.
+            Das 1:1-Video (1080×1080) ist für Feeds optimiert, das 9:16-Reel (1080×1920) für Reels, Stories &amp; TikTok – mit Cover, Autor und BuchArena-Branding.
           </p>
 
           {/* Teilnehmerliste */}

@@ -103,6 +103,7 @@ export type PollDocument = {
   options: string[];
   votes: PollVote[];
   replies: PollReply[];
+  genre?: string;
   createdAt: Date;
 };
 

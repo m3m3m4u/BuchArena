@@ -29,7 +29,7 @@ export default function NewsPage() {
   return (
     <main className="top-centered-main">
       <section className="card gap-[1.5rem]">
-        <h1>News</h1>
+        <h1 className="text-2xl font-bold">News</h1>
 
         {loading && <p className="text-arena-muted text-sm">Wird geladen …</p>}
 
@@ -40,7 +40,7 @@ export default function NewsPage() {
         {posts.map((post, i) => (
           <article key={post._id} className={`grid gap-3 ${i > 0 ? "pt-[1.5rem] border-t border-arena-border" : ""}`}>
             <div>
-              <h2 className="text-[1.1rem] font-bold text-arena-blue">{post.title}</h2>
+              <h2 className="text-lg font-semibold text-arena-blue">{post.title}</h2>
               <p className="text-xs text-gray-400 mt-0.5">
                 {new Date(post.createdAt).toLocaleDateString("de-DE", {
                   day: "2-digit",

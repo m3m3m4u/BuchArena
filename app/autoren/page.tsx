@@ -124,7 +124,7 @@ export default function AutorenPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="m-0">Autoren entdecken</h1>
+          <h1 className="text-2xl font-bold m-0">Autoren entdecken</h1>
           <Link href="/wohnort-karte/autoren" className="btn">Suche nach Wohnort</Link>
         </div>
 
@@ -176,7 +176,7 @@ export default function AutorenPage() {
                         {!author.profileImageUrl && <span>Kein Bild</span>}
                       </div>
                       <div className="min-w-0">
-                        <h2 className="m-0 text-[1.05rem] truncate">{author.displayName}</h2>
+                        <h2 className="m-0 text-base font-semibold truncate">{author.displayName}</h2>
                         <p className="mt-0.5 mb-0 text-sm">
                           {author.books.length === 0
                             ? "Noch keine Bücher"

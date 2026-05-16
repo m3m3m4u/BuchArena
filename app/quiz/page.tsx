@@ -193,7 +193,7 @@ export default function QuizPage() {
     return (
       <main className="top-centered-main">
         <section className="card">
-          <h1 className="text-xl">Quiz</h1>
+          <h1 className="text-2xl font-bold">Quiz</h1>
           {error && <p className="text-red-700">{error}</p>}
           {!data && !error && <p className="text-arena-muted">Lade Quiz-Daten …</p>}
           {data && (
@@ -227,7 +227,7 @@ export default function QuizPage() {
       return (
         <main className="top-centered-main">
           <section className="card">
-            <h1 className="text-xl">Ergebnis</h1>
+            <h1 className="text-2xl font-bold">Ergebnis</h1>
             <div className="rounded-lg bg-arena-bg border border-arena-border-light p-5 text-center mt-2">
               <p className="text-3xl font-bold m-0">
                 {mcScore} Punkte
@@ -314,7 +314,7 @@ export default function QuizPage() {
       <main className="top-centered-main">
         <section className="card">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <h1 className="text-xl m-0">Multiple Choice</h1>
+            <h1 className="text-2xl font-bold m-0">Multiple Choice</h1>
             <span className="text-sm text-arena-muted">
               Frage {mcCount + 1} · Punkte: {mcScore}
             </span>
@@ -378,7 +378,7 @@ export default function QuizPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <h1 className="text-xl m-0">{LABELS[mode]}</h1>
+          <h1 className="text-2xl font-bold m-0">{LABELS[mode]}</h1>
           <button className="btn btn-sm" onClick={() => setMode(null)}>
             ← Zurück
           </button>

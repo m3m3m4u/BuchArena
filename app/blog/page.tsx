@@ -42,7 +42,7 @@ export default function BlogPage() {
     <main className="top-centered-main">
       <section className="card gap-[1.5rem]">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <h1>Blog</h1>
+          <h1 className="text-2xl font-bold">Blog</h1>
           <Link
             href="/blog/einreichen"
             className="btn btn-primary btn-sm"

@@ -69,7 +69,7 @@ export default function GewinnspielUebersichtPage() {
     <main className="site-shell py-8">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: "var(--color-arena-blue)" }}>
+          <h1 className="text-2xl font-bold text-arena-blue">
             Gewinnspiele
           </h1>
           <p className="text-sm opacity-70 mt-1">
@@ -91,7 +91,7 @@ export default function GewinnspielUebersichtPage() {
           <strong>Hinweis:</strong> Für die Durchführung der Gewinnspiele, Verlosungen und den Versand der Gewinne sind ausschließlich die jeweiligen Autoren verantwortlich. BuchArena übernimmt keine Haftung.
         </div>
         <div className="px-4 py-3 text-sm bg-blue-50 text-blue-900">
-          <strong>Teilnahme:</strong> Um an einem Gewinnspiel teilzunehmen, benötigst du ein <Link href="/testleser" className="underline font-medium">Testleser-Profil</Link> auf BuchArena.
+          <strong>Teilnahme:</strong> Um an einem Gewinnspiel teilzunehmen, benötigst du ein Profil auf BuchArena – z.&nbsp;B. als <Link href="/testleser" className="underline font-medium">Testleser</Link>, <Link href="/fuer-autoren" className="underline font-medium">Autor</Link>, <Link href="/sprecher" className="underline font-medium">Sprecher</Link>, <Link href="/blogger" className="underline font-medium">Blogger</Link>, <Link href="/lektoren" className="underline font-medium">Lektor</Link> oder <Link href="/verlage" className="underline font-medium">Verlag</Link>.
         </div>
       </div>
 

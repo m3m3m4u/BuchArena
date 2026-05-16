@@ -146,7 +146,7 @@ function BuecherContent() {
       </Link>
 
       <section className="card mt-3">
-        <h1>Bücher entdecken</h1>
+        <h1 className="text-2xl font-bold">Bücher entdecken</h1>
 
         <label className="grid gap-1 text-[0.95rem]">
           Suche
@@ -192,7 +192,7 @@ function BuecherContent() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="mb-1 mt-0 truncate">{book.title}</h3>
+                      <h3 className="mb-1 mt-0 truncate text-base font-semibold">{book.title}</h3>
                       {(() => {
                         const lines: { label: string; value: string }[] = [];
                         lines.push({ label: "Autor", value: book.authorDisplayName });

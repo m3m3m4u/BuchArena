@@ -356,7 +356,7 @@ export default function BuchempfehlungPage() {
   return (
     <main className="top-centered-main">
       <section className="card">
-        <h1 className="text-xl font-bold text-arena-blue">Persönliche Buchempfehlung</h1>
+        <h1 className="text-2xl font-bold text-arena-blue">Persönliche Buchempfehlung</h1>
 
         {/* ── Chat-Verlauf ── */}
         <div className="flex flex-col gap-3 pr-1">

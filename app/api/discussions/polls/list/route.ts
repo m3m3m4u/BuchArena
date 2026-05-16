@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { getPollsCollection, getUsersCollection } from "@/lib/mongodb";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const genre = searchParams.get("genre") ?? undefined;
+
     const polls = await getPollsCollection();
+    const filter = genre ? { genre } : { genre: { $exists: false } };
     const docs = await polls
-      .find({})
+      .find(filter)
       .sort({ createdAt: -1 })
       .toArray();
 

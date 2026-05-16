@@ -769,7 +769,7 @@ function NachrichtenPageInner() {
               style={{ maxWidth: 400 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-lg m-0 mb-3">Neuer Chat</h2>
+              <h2 className="text-lg font-semibold m-0 mb-3">Neuer Chat</h2>
               <label className="block">
                 <span className="text-sm font-semibold">Empfänger (Benutzername)</span>
                 <div className="relative">
@@ -864,7 +864,7 @@ function NachrichtenPageInner() {
               style={{ maxWidth: 450 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-lg m-0 mb-3">📢 Nachricht senden</h2>
+              <h2 className="text-lg font-semibold m-0 mb-3">Nachricht senden</h2>
               <div className="mb-3">
                 <span className="text-sm font-semibold block mb-1.5">Empfänger</span>
                 <div className="flex flex-wrap gap-1.5">

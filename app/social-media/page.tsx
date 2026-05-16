@@ -161,7 +161,7 @@ export default function SocialMediaPage() {
   return (
     <main className="top-centered-main">
       <section className="card">
-        <h1 className="text-xl font-bold">BuchArena – Social Media</h1>
+        <h1 className="text-2xl font-bold">BuchArena – Social Media</h1>
 
         {wizardStep !== "start" && (
           <button
@@ -507,7 +507,7 @@ export default function SocialMediaPage() {
         {showUploadOverlay && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl grid gap-4">
-              <h2 className="text-lg font-bold">Wichtiger Hinweis</h2>
+              <h2 className="text-lg font-semibold">Wichtiger Hinweis</h2>
               <p className="text-[0.95rem] leading-relaxed">
                 Wichtig: Schreibe in die Notizen jeder Folie der PowerPoint-Datei
                 den jeweiligen Sprechertext. Melde dich via Instagram bei Andrea
@@ -536,7 +536,7 @@ export default function SocialMediaPage() {
         {showDownloadOverlay && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl grid gap-4">
-              <h2 className="text-lg font-bold">Wichtiger Hinweis</h2>
+              <h2 className="text-lg font-semibold">Wichtiger Hinweis</h2>
               <p className="text-[0.95rem] leading-relaxed">
                 Wichtig: Schreibe in die Notizen jeder Folie der PowerPoint-Datei
                 den jeweiligen Sprechertext. Melde dich via Instagram bei Andrea
@@ -565,7 +565,7 @@ export default function SocialMediaPage() {
         {/* ═══ MEINE EINREICHUNGEN (immer sichtbar, wenn eingeloggt) ═══ */}
         {account && (
           <div className="grid gap-3 pt-2 border-t border-arena-border mt-2">
-            <h2 className="text-lg font-bold">Meine Einreichungen</h2>
+            <h2 className="text-lg font-semibold">Meine Einreichungen</h2>
 
             {actionError && (
               <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

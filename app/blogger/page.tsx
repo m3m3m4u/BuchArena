@@ -103,7 +103,7 @@ export default function BloggerPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="m-0">Buchblogger entdecken</h1>
+          <h1 className="text-2xl font-bold m-0">Buchblogger entdecken</h1>
           <Link href="/wohnort-karte/blogger" className="btn">Suche nach Wohnort</Link>
         </div>
         <p className="text-arena-muted text-[0.95rem]">
@@ -154,7 +154,7 @@ export default function BloggerPage() {
                       {!blogger.profileImageUrl && <span>Kein Bild</span>}
                     </div>
                     <div>
-                      <h2 className="m-0 text-[1.05rem]">{blogger.displayName}</h2>
+                      <h2 className="m-0 text-base font-semibold">{blogger.displayName}</h2>
                       {blogger.motto && (
                         <p className="mt-0.5 text-sm italic">„{blogger.motto}"</p>
                       )}

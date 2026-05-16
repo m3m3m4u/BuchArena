@@ -47,7 +47,7 @@ export default function BucharenaReviewsPage() {
       <section className="card gap-[1.2rem]">
         {/* Header */}
         <div className="text-center">
-          <h1>Rezensionen einreichen</h1>
+          <h1 className="text-2xl font-bold">Rezensionen einreichen</h1>
           <p className="mt-2 text-[0.95rem] text-arena-muted leading-relaxed">
             Kopiere einfach alle Rezensionen über dein Buch hier rein – alles, was du hast.
           </p>
