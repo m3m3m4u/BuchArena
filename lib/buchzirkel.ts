@@ -135,10 +135,18 @@ export type VeranstalterBewertung = {
   bewertetAm: Date;
 };
 
+export type BuchzirkelLesePosition = {
+  cfi?: string;      // EPUB Canonical Fragment Identifier
+  pdfPage?: number;  // PDF-Seitenzahl (1-basiert)
+};
+
 export type BuchzirkelTeilnahmeDocument = {
   _id?: ObjectId;
   buchzirkelId: ObjectId;
   teilnehmerUsername: string;
+
+  // Leseposition pro Datei-ID
+  lesePositionen?: Record<string, BuchzirkelLesePosition>;
 
   // Fortschritt
   abgeschlosseneAbschnitte: string[];

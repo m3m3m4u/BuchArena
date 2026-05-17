@@ -10,18 +10,37 @@ export async function GET(request: Request) {
     const status = searchParams.get("status") ?? "bewerbung";
     const genre = searchParams.get("genre");
     const limit = Math.min(parseInt(searchParams.get("limit") ?? "20"), 50);
+    const nurMeine = searchParams.get("meine") === "1";
+    const nurTeilnehmer = searchParams.get("teilnehmer") === "1";
 
     const collection = await getBuchzirkelCollection();
+    const account = await getServerAccount();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filter: Record<string, any> = {};
     if (typ === "testleser" || typ === "betaleser") filter.typ = typ;
-    if (status === "aktiv") {
-      filter.status = { $in: ["bewerbung", "aktiv"] };
+
+    if (nurTeilnehmer) {
+      // Zirkel, an denen der User als Teilnehmer beteiligt ist – alle Status
+      if (!account) return NextResponse.json({ zirkel: [] });
+      const teilnahmen = await (await getBuchzirkelTeilnahmenCollection())
+        .find({ teilnehmerUsername: account.username }, { projection: { buchzirkelId: 1 } })
+        .toArray();
+      const ids = teilnahmen.map((t) => new ObjectId(t.buchzirkelId));
+      if (ids.length === 0) return NextResponse.json({ zirkel: [] });
+      filter._id = { $in: ids };
+    } else if (nurMeine) {
+      // Nur eigene Zirkel als Veranstalter – alle Status, kein Deaktiviert-Filter
+      if (!account) return NextResponse.json({ zirkel: [] });
+      filter.veranstalterUsername = account.username;
     } else {
-      filter.status = status;
+      if (status === "aktiv") {
+        filter.status = { $in: ["bewerbung", "aktiv"] };
+      } else {
+        filter.status = status;
+      }
+      if (genre) filter.genre = genre;
     }
-    if (genre) filter.genre = genre;
 
     const docs = await collection
       .find(filter)
@@ -34,24 +53,26 @@ export async function GET(request: Request) {
       })
       .toArray();
 
-    // Deaktivierte Veranstalter-Profile ausfiltern
-    const veranstalterUsernames = [...new Set(docs.map((d) => d.veranstalterUsername))];
-    const usersCol = await getUsersCollection();
-    const veranstalterUsers = await usersCol
-      .find(
-        { username: { $in: veranstalterUsernames } },
-        { projection: { username: 1, status: 1, "profile.deaktiviert": 1 } }
-      )
-      .toArray();
-    const deaktiviertSet = new Set(
-      veranstalterUsers
-        .filter((u) => u.status === "deactivated" || u.profile?.deaktiviert)
-        .map((u) => u.username)
-    );
-    const filteredDocs = docs.filter((d) => !deaktiviertSet.has(d.veranstalterUsername));
+    // Deaktivierte Veranstalter-Profile ausfiltern (nur bei öffentlicher Liste)
+    let filteredDocs = docs;
+    if (!nurMeine && !nurTeilnehmer) {
+      const veranstalterUsernames = [...new Set(docs.map((d) => d.veranstalterUsername))];
+      const usersCol = await getUsersCollection();
+      const veranstalterUsers = await usersCol
+        .find(
+          { username: { $in: veranstalterUsernames } },
+          { projection: { username: 1, status: 1, "profile.deaktiviert": 1 } }
+        )
+        .toArray();
+      const deaktiviertSet = new Set(
+        veranstalterUsers
+          .filter((u) => u.status === "deactivated" || u.profile?.deaktiviert)
+          .map((u) => u.username)
+      );
+      filteredDocs = docs.filter((d) => !deaktiviertSet.has(d.veranstalterUsername));
+    }
 
     // User-spezifische Flags (isBeworben, isTeilnehmer)
-    const account = await getServerAccount();
     let beworbenIds = new Set<string>();
     let teilnehmerIds = new Set<string>();
     if (account) {

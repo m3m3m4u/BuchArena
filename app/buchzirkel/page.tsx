@@ -23,6 +23,8 @@ type Zirkel = {
 export default function BuchzirkelPage() {
   const [zirkel, setZirkel] = useState<Zirkel[]>([]);
   const [meine, setMeine] = useState<Zirkel[]>([]);
+  const [meineAktive, setMeineAktive] = useState<Zirkel[]>([]);
+  const [meineTeilnahmen, setMeineTeilnahmen] = useState<Zirkel[]>([]);
   const [loading, setLoading] = useState(true);
   const [typFilter, setTypFilter] = useState<"" | "testleser" | "betaleser">("");
   const [account, setAccount] = useState<ReturnType<typeof getStoredAccount>>(null);
@@ -45,7 +47,17 @@ export default function BuchzirkelPage() {
   useEffect(() => {
     const stored = getStoredAccount();
     if (!stored) return;
-    // Abgeschlossene Zirkel laden, an denen der User als Veranstalter oder Teilnehmer beteiligt war
+    // Alle eigenen Zirkel als Veranstalter laden (inkl. Entwürfe)
+    fetch(`/api/buchzirkel/list?meine=1&limit=50`)
+      .then((r) => r.json())
+      .then((d: { zirkel?: Zirkel[] }) => setMeineAktive(d.zirkel ?? []))
+      .catch(() => {});
+    // Zirkel laden, in denen der User Teilnehmer ist
+    fetch(`/api/buchzirkel/list?teilnehmer=1&limit=50`)
+      .then((r) => r.json())
+      .then((d: { zirkel?: Zirkel[] }) => setMeineTeilnahmen(d.zirkel ?? []))
+      .catch(() => {});
+    // Abgeschlossene Zirkel laden, an denen der User als Teilnehmer beteiligt war
     const params = new URLSearchParams({ status: "abgeschlossen", limit: "50" });
     fetch(`/api/buchzirkel/list?${params}`)
       .then((r) => r.json())
@@ -156,6 +168,44 @@ export default function BuchzirkelPage() {
         </div>
       </section>
 
+      {/* Meine eigenen Zirkel (Veranstalter) + Teilnahmen */}
+      {account && (meineAktive.length > 0 || meineTeilnahmen.length > 0) && (
+        <section className="card mt-3">
+          <h2 className="text-lg font-semibold mb-3">Meine Buchzirkel</h2>
+          {meineAktive.length > 0 && (
+            <>
+              {meineTeilnahmen.length > 0 && (
+                <p className="text-xs font-semibold uppercase tracking-wide text-arena-muted mb-2">Als Veranstalter</p>
+              )}
+              <div className="w-full grid grid-cols-1 gap-2">
+                {meineAktive.map((z) => (
+                  <ZirkelKarte
+                    key={z._id}
+                    zirkel={z}
+                    deletable={z.veranstalterUsername === account.username}
+                    onDelete={() => setMeineAktive((prev) => prev.filter((m) => m._id !== z._id))}
+                    showStatus
+                  />
+                ))}
+              </div>
+            </>
+          )}
+          {meineTeilnahmen.length > 0 && (
+            <>
+              {meineAktive.length > 0 && <hr className="border-arena-border-light my-3" />}
+              <p className="text-xs font-semibold uppercase tracking-wide text-arena-muted mb-2">Als Teilnehmer</p>
+              <div className="w-full grid grid-cols-1 gap-2">
+                {meineTeilnahmen
+                  .filter((z) => !meineAktive.some((m) => m._id === z._id))
+                  .map((z) => (
+                    <ZirkelKarte key={z._id} zirkel={z} showStatus />
+                  ))}
+              </div>
+            </>
+          )}
+        </section>
+      )}
+
       {/* Erklär-Karten */}
       <section className="card mt-3 flex flex-col gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-arena-muted m-0">Zirkel-Typen</p>
@@ -225,7 +275,7 @@ export default function BuchzirkelPage() {
   );
 }
 
-function ZirkelKarte({ zirkel, deletable, onDelete }: { zirkel: Zirkel; deletable?: boolean; onDelete?: () => void }) {
+function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirkel; deletable?: boolean; onDelete?: () => void; showStatus?: boolean }) {
   const isBeta = zirkel.typ === "betaleser";
   const frist = new Date(zirkel.bewerbungBis);
   const expired = frist < new Date();
@@ -251,7 +301,11 @@ function ZirkelKarte({ zirkel, deletable, onDelete }: { zirkel: Zirkel; deletabl
   // Status-Badge für Bewerbungsstatus
   let statusBadge = null;
   const bewerbungOffen = zirkel.status === "bewerbung" && !expired;
-  if (bewerbungOffen) {
+  if (showStatus && zirkel.status === "entwurf") {
+    statusBadge = <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">✏️ Entwurf</span>;
+  } else if (showStatus && zirkel.status === "abgeschlossen") {
+    statusBadge = <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">✅ Abgeschlossen</span>;
+  } else if (bewerbungOffen) {
     statusBadge = <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">🟢 Bewerbung möglich</span>;
   } else {
     statusBadge = <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">🔒 Läuft schon</span>;

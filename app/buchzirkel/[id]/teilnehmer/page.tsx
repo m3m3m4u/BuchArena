@@ -45,6 +45,8 @@ type Teilnahme = {
   fragebogenAntworten: { frageId: string; antwort: string }[];
 };
 
+type LesePosition = { cfi?: string; pdfPage?: number };
+
 export default function TeilnehmerBereichPage() {
   const params = useParams<{ id: string }>();
   const account = getStoredAccount();
@@ -61,11 +63,10 @@ export default function TeilnehmerBereichPage() {
   const [epubReaderUrl, setEpubReaderUrl] = useState<string | null>(null);
   const [epubReaderDateiId, setEpubReaderDateiId] = useState<string | null>(null);
 
-  // Leseposition: EPUB-CFI und PDF-Seite pro Datei-ID (localStorage)
-  const lsKeyEpub = (dateiId: string) => `bz-epub-cfi-${params.id}-${dateiId}`;
-  const lsKeyPdf  = (dateiId: string) => `bz-pdf-page-${params.id}-${dateiId}`;
-  const getSavedCfi  = (dateiId: string) => (typeof window !== "undefined" ? localStorage.getItem(lsKeyEpub(dateiId)) ?? undefined : undefined);
-  const getSavedPage = (dateiId: string) => (typeof window !== "undefined" ? Number(localStorage.getItem(lsKeyPdf(dateiId))) || 1 : 1);
+  // Leseposition: EPUB-CFI und PDF-Seite pro Datei-ID (server-seitig)
+  const [lesePositionen, setLesePositionen] = useState<Record<string, LesePosition>>({});
+  const getSavedCfi  = (dateiId: string) => lesePositionen[dateiId]?.cfi;
+  const getSavedPage = (dateiId: string) => lesePositionen[dateiId]?.pdfPage ?? 1;
   const [pdfPageInput, setPdfPageInput] = useState<Record<string, string>>({});
 
   // Rezensions-Links
@@ -74,18 +75,34 @@ export default function TeilnehmerBereichPage() {
   const [rlSaving, setRlSaving] = useState(false);
 
   const load = useCallback(async () => {
-    const [zRes, tRes] = await Promise.all([
+    const [zRes, tRes, lpRes] = await Promise.all([
       fetch(`/api/buchzirkel/${params.id}`),
       fetch(`/api/buchzirkel/${params.id}/meine-teilnahme`),
+      fetch(`/api/buchzirkel/${params.id}/leseposition`),
     ]);
     const zData = await zRes.json() as { zirkel?: Zirkel };
     const tData = await tRes.json() as { teilnahme?: Teilnahme };
+    const lpData = await lpRes.json() as { lesePositionen?: Record<string, LesePosition> };
     setZirkel(zData.zirkel ?? null);
     setTeilnahme(tData.teilnahme ?? null);
+    setLesePositionen(lpData.lesePositionen ?? {});
     if (zData.zirkel?.diskussionsTopics?.[0]) {
       setActiveTopic(zData.zirkel.diskussionsTopics[0].id);
     }
     setLoading(false);
+  }, [params.id]);
+
+  /** Leseposition auf dem Server speichern (fire-and-forget) */
+  const saveLeseposition = useCallback((dateiId: string, update: LesePosition) => {
+    setLesePositionen((prev) => ({
+      ...prev,
+      [dateiId]: { ...prev[dateiId], ...update },
+    }));
+    fetch(`/api/buchzirkel/${params.id}/leseposition`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dateiId, ...update }),
+    }).catch(() => { /* Netzwerkfehler ignorieren */ });
   }, [params.id]);
 
   const loadBeitraege = useCallback(async (topicId: string) => {
@@ -286,7 +303,7 @@ export default function TeilnehmerBereichPage() {
           url={epubReaderUrl}
           initialCfi={epubReaderDateiId ? getSavedCfi(epubReaderDateiId) : undefined}
           onCfiChange={(cfi) => {
-            if (epubReaderDateiId) localStorage.setItem(lsKeyEpub(epubReaderDateiId), cfi);
+            if (epubReaderDateiId) saveLeseposition(epubReaderDateiId, { cfi });
           }}
           onClose={() => { setEpubReaderUrl(null); setEpubReaderDateiId(null); }}
         />
@@ -307,8 +324,7 @@ export default function TeilnehmerBereichPage() {
                 const savedPage = getSavedPage(d.id);
                 const pdfInput = pdfPageInput[d.id] ?? "";
                 const activePdfPage = Number(pdfInput) > 0 ? Number(pdfInput) : savedPage;
-                const savedCfi = getSavedCfi(d.id);
-                return (
+                const savedCfi = getSavedCfi(d.id);                return (
                   <div key={d.id} className="border border-arena-border rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between p-3 bg-gray-50">
                       <div className="flex items-center gap-2">
@@ -341,7 +357,7 @@ export default function TeilnehmerBereichPage() {
                               onChange={(e) => setPdfPageInput((prev) => ({ ...prev, [d.id]: e.target.value }))}
                               onBlur={(e) => {
                                 const n = Number(e.target.value);
-                                if (n > 0) localStorage.setItem(lsKeyPdf(d.id), String(n));
+                                if (n > 0) saveLeseposition(d.id, { pdfPage: n });
                               }}
                               className="input text-sm w-16 py-1"
                             />
