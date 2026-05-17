@@ -277,19 +277,32 @@ function wrapText(
   text: string, x: number, y: number,
   maxW: number, lh: number, maxLines = 30,
 ) {
-  if (!text.trim()) return;
-  const words = text.split(/\s+/).filter(Boolean);
-  let line = "", row = 0;
-  for (const word of words) {
-    const test = line ? `${line} ${word}` : word;
-    if (ctx.measureText(test).width > maxW && line) {
+  if (!text) return;
+  const paragraphs = text.split("\n");
+  let row = 0;
+  for (const para of paragraphs) {
+    if (row >= maxLines) return;
+    if (!para.trim()) {
+      // Leerzeile = Absatz-Abstand
+      row++;
+      continue;
+    }
+    const words = para.split(/[ \t]+/).filter(Boolean);
+    let line = "";
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxW && line) {
+        ctx.fillText(line, x, y + row * lh);
+        row++;
+        line = word;
+        if (row >= maxLines) return;
+      } else { line = test; }
+    }
+    if (row < maxLines && line) {
       ctx.fillText(line, x, y + row * lh);
       row++;
-      line = word;
-      if (row >= maxLines) return;
-    } else { line = test; }
+    }
   }
-  if (row < maxLines && line) ctx.fillText(line, x, y + row * lh);
 }
 
 function handlePts(el: CE): { id: HId; x: number; y: number }[] {
@@ -2287,6 +2300,8 @@ function BeitragToolPage() {
     };
   }
 
+
+
   return (
     <main className={fullscreen ? "fixed inset-0 z-[100] bg-white overflow-hidden p-3 flex flex-col" : "top-centered-main"}>
       <section className={fullscreen ? "w-full flex-1 min-h-0 flex flex-col overflow-hidden" : "card"}>
@@ -3035,7 +3050,7 @@ function BeitragToolPage() {
                     onChange={(e) => setEditText(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Escape") { setEditingId(null); }
-                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); commitEdit(); }
+                      if (e.key === "Enter" && e.ctrlKey) { e.preventDefault(); commitEdit(); }
                     }}
                     onBlur={commitEdit}
                     style={style}
@@ -3135,7 +3150,7 @@ function BeitragToolPage() {
             <div className="flex items-center gap-3 flex-shrink-0">
               <p className="text-xs text-arena-muted">
                 {sz.w}&times;{sz.h}px
-                {editingId ? " \u2014 Enter best\u00e4tigen, Esc abbrechen" : ""}
+                {editingId ? " \u2014 Strg+Enter best\u00e4tigen, Esc abbrechen" : ""}
               </p>
               {format === "9:16" && (
                 <label className="flex items-center gap-1 text-xs text-arena-muted cursor-pointer select-none ml-auto">
@@ -3548,7 +3563,7 @@ function BeitragToolPage() {
                     <ul className="grid gap-1 text-arena-muted">
                       <li><strong>Verschieben:</strong> Element anklicken und ziehen.</li>
                       <li><strong>Gr&ouml;&szlig;e &auml;ndern:</strong> Ecken-Anfasser ziehen. Bilder skalieren proportional.</li>
-                      <li><strong>Text bearbeiten:</strong> Doppelklick auf ein Textelement.</li>
+                      <li><strong>Text bearbeiten:</strong> Doppelklick auf ein Textelement. <strong>Enter</strong> = Zeilenumbruch/Absatz, <strong>Strg+Enter</strong> bestätigen, <strong>Esc</strong> abbrechen.</li>
                       <li><strong>L&ouml;schen:</strong> Element ausw&auml;hlen &rarr; <kbd className="font-mono bg-gray-100 px-1 rounded">Entf</kbd> oder <kbd className="font-mono bg-gray-100 px-1 rounded">Backspace</kbd>.</li>
                       <li><strong>Ebenenreihenfolge:</strong> Pfeile ? ? in der Toolbar.</li>
                       <li><strong>Einf&uuml;gen:</strong> <kbd className="font-mono bg-gray-100 px-1 rounded">Strg+V</kbd> f&uuml;gt Bilder oder Text aus der Zwischenablage ein.</li>
