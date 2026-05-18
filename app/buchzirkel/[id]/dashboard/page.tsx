@@ -523,6 +523,12 @@ export default function BuchzirkelDashboardPage() {
                 >
                   ↓ {label} herunterladen
                 </a>
+                <a
+                  href={`/social-media/beitrag-tool?bgImage=${encodeURIComponent(`/Buchzirkel/${file}`)}`}
+                  className="btn btn-sm text-center text-xs"
+                >
+                  Anpassen
+                </a>
               </div>
             ))}
           </div>
