@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import { ALLOWED_BEITRAG_EMOJIS } from "@/lib/buchzirkel";
+import { CommentToolbar } from "@/app/components/comment-toolbar";
 import dynamic from "next/dynamic";
 
 const EpubReader = dynamic(() => import("@/app/components/EpubReader"), { ssr: false });
@@ -37,6 +38,7 @@ type Zirkel = {
   dateien: Datei[];
   isVeranstalter: boolean;
   isTeilnehmer: boolean;
+  buchformateAngebot?: string[];
 };
 
 type Teilnahme = {
@@ -49,6 +51,7 @@ type LesePosition = { cfi?: string; pdfPage?: number };
 
 export default function TeilnehmerBereichPage() {
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const account = getStoredAccount();
 
   const [zirkel, setZirkel] = useState<Zirkel | null>(null);
@@ -59,7 +62,9 @@ export default function TeilnehmerBereichPage() {
   const [neuerBeitrag, setNeuerBeitrag] = useState("");
   const [neuerBeitragTitel, setNeuerBeitragTitel] = useState("");
   const [posting, setPosting] = useState(false);
-  const [tab, setTab] = useState<"diskussion" | "dateien" | "fortschritt" | "fragebogen" | "rezensionen">("diskussion");
+  const [tab, setTab] = useState<"diskussion" | "dateien" | "fortschritt" | "fragebogen" | "rezensionen" | "chat">(
+    (searchParams.get("tab") as "chat" | null) === "chat" ? "chat" : "diskussion"
+  );
   const [epubReaderUrl, setEpubReaderUrl] = useState<string | null>(null);
   const [epubReaderDateiId, setEpubReaderDateiId] = useState<string | null>(null);
 
@@ -68,6 +73,17 @@ export default function TeilnehmerBereichPage() {
   const getSavedCfi  = (dateiId: string) => lesePositionen[dateiId]?.cfi;
   const getSavedPage = (dateiId: string) => lesePositionen[dateiId]?.pdfPage ?? 1;
   const [pdfPageInput, setPdfPageInput] = useState<Record<string, string>>({});
+
+  // Gruppen-Chat
+  type ChatMsg = { id: string; senderUsername: string; body: string; createdAt: string };
+  const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatSending, setChatSending] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Thema hinzufügen (nur Veranstalter)
+  const [neuesTopicTitel, setNeuesTopicTitel] = useState("");
+  const [addingTopic, setAddingTopic] = useState(false);
 
   // Rezensions-Links
   const [rlPlattform, setRlPlattform] = useState("");
@@ -114,6 +130,23 @@ export default function TeilnehmerBereichPage() {
   useEffect(() => { load(); }, [load]);
   useEffect(() => { if (activeTopic) loadBeitraege(activeTopic); }, [activeTopic, loadBeitraege]);
 
+  const loadChat = useCallback(async () => {
+    const res = await fetch(`/api/buchzirkel/${params.id}/chat`);
+    const data = await res.json() as { messages?: ChatMsg[] };
+    setChatMessages(data.messages ?? []);
+  }, [params.id]);
+
+  useEffect(() => {
+    if (tab === "chat") {
+      void loadChat();
+    }
+  }, [tab, loadChat]);
+
+  // Auto-scroll bei neuen Chat-Nachrichten
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
   async function postBeitrag(e: React.FormEvent) {
     e.preventDefault();
     if (!neuerBeitrag.trim()) return;
@@ -153,11 +186,75 @@ export default function TeilnehmerBereichPage() {
     setRlSaving(false);
   }
 
+  async function addTopic(e: React.FormEvent) {
+    e.preventDefault();
+    if (!neuesTopicTitel.trim() || !zirkel) return;
+    setAddingTopic(true);
+    const newTopic = { id: crypto.randomUUID(), titel: neuesTopicTitel.trim(), typ: "diskussion" };
+    const updatedTopics = [...zirkel.diskussionsTopics, newTopic];
+    await fetch(`/api/buchzirkel/${params.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ diskussionsTopics: updatedTopics }),
+    });
+    setNeuesTopicTitel("");
+    setAddingTopic(false);
+    await load();
+    setActiveTopic(newTopic.id);
+  }
+
+  async function sendChat(e: React.FormEvent) {
+    e.preventDefault();
+    if (!chatInput.trim() || chatSending) return;
+    setChatSending(true);
+    try {
+      const res = await fetch(`/api/buchzirkel/${params.id}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: chatInput.trim() }),
+      });
+      const data = await res.json() as { message?: ChatMsg };
+      if (res.ok && data.message) {
+        setChatMessages((prev) => [...prev, data.message!]);
+        setChatInput("");
+      }
+    } catch { /* ignore */ } finally {
+      setChatSending(false);
+    }
+  }
+
   async function react(beitragId: string, emoji: string) {
     await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ emoji }),
+    });
+    await loadBeitraege(activeTopic);
+  }
+
+  async function reply(beitragId: string, body: string) {
+    await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body }),
+    });
+    await loadBeitraege(activeTopic);
+  }
+
+  async function editBeitrag(beitragId: string, body: string, titel?: string) {
+    await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "edit-beitrag", body, titel }),
+    });
+    await loadBeitraege(activeTopic);
+  }
+
+  async function editReply(beitragId: string, replyId: string, body: string) {
+    await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "edit-reply", replyId, body }),
     });
     await loadBeitraege(activeTopic);
   }
@@ -216,6 +313,7 @@ export default function TeilnehmerBereichPage() {
       <nav className="flex gap-0 mt-3 border-b border-arena-border-light overflow-x-auto">
         {[
           { key: "diskussion" as const, label: "Diskussion" },
+          { key: "chat" as const, label: "💬 Gruppen-Chat" },
           { key: "dateien" as const, label: "📄 Dateien" },
           { key: "fortschritt" as const, label: "Fortschritt" },
           { key: "rezensionen" as const, label: "⭐ Rezensionen" },
@@ -254,6 +352,25 @@ export default function TeilnehmerBereichPage() {
                 </button>
               ))}
             </div>
+            {zirkel.isVeranstalter && (
+              <form onSubmit={addTopic} className="mt-2 flex gap-1">
+                <input
+                  className="input-base flex-1 text-sm"
+                  placeholder="Neues Thema…"
+                  value={neuesTopicTitel}
+                  onChange={(e) => setNeuesTopicTitel(e.target.value)}
+                  maxLength={80}
+                />
+                <button
+                  type="submit"
+                  disabled={addingTopic || !neuesTopicTitel.trim()}
+                  className="btn btn-sm btn-primary !px-2.5"
+                  title="Thema hinzufügen"
+                >
+                  +
+                </button>
+              </form>
+            )}
           </aside>
 
           {/* Beiträge */}
@@ -287,14 +404,89 @@ export default function TeilnehmerBereichPage() {
                   key={b._id}
                   beitrag={b}
                   username={account.username}
+                  veranstalterUsername={zirkel.veranstalterUsername}
                   isVeranstalter={zirkel.isVeranstalter}
                   onReact={(emoji) => react(b._id, emoji)}
                   onTreffpunkt={() => treffpunktTeilen(b._id)}
+                  onReply={(body) => reply(b._id, body)}
+                  onEditBeitrag={(body, titel) => editBeitrag(b._id, body, titel)}
+                  onEditReply={(replyId, body) => editReply(b._id, replyId, body)}
                 />
               ))
             )}
           </div>
         </div>
+      )}
+
+      {/* Gruppen-Chat */}
+      {tab === "chat" && (
+        <section className="mt-3 w-full border border-arena-border rounded-xl overflow-hidden flex flex-col bg-white" style={{ minHeight: 420 }}>
+          {/* Nachrichten-Bereich */}
+          <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-0" style={{ minHeight: 300, maxHeight: "55vh" }}>
+            {chatMessages.length === 0 ? (
+              <p className="text-arena-muted text-sm text-center my-auto py-8">
+                Noch keine Nachrichten. Schreib etwas!
+              </p>
+            ) : (
+              chatMessages.map((msg) => {
+                const isMine = msg.senderUsername === account.username;
+                const isAutor = msg.senderUsername === zirkel.veranstalterUsername;
+                return (
+                  <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"} mb-1.5 group`}>
+                    <div className={`relative max-w-[80%] sm:max-w-[75%] rounded-2xl px-3.5 py-2 text-[0.95rem] ${
+                      isMine
+                        ? "bg-arena-blue text-white rounded-br-md"
+                        : isAutor
+                          ? "bg-amber-50 border border-amber-200 text-gray-900 rounded-bl-md"
+                          : "bg-white border border-gray-200 text-gray-900 rounded-bl-md"
+                    }`}>
+                      {!isMine && (
+                        <p className={`text-[11px] font-semibold m-0 mb-0.5 ${isAutor ? "text-amber-700" : "text-arena-blue"}`}>
+                          {msg.senderUsername}{isAutor ? " ✍️" : ""}
+                        </p>
+                      )}
+                      <p className="whitespace-pre-wrap m-0" style={{ lineHeight: 1.5 }}>{msg.body}</p>
+                      <div className={`flex items-center gap-1 mt-1 ${isMine ? "justify-end" : "justify-start"}`}>
+                        <span className={`text-[10px] ${isMine ? "text-white/50" : "text-arena-muted"}`}>
+                          {timeAgo(msg.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Eingabe */}
+          <div className="border-t border-arena-border px-4 py-3 bg-gray-50">
+            <form onSubmit={sendChat} className="flex gap-2 items-end">
+              <textarea
+                className="input-base flex-1 resize-none"
+                rows={1}
+                placeholder="Nachricht an Gruppe…"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                maxLength={2000}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void sendChat(e as unknown as React.FormEvent);
+                  }
+                }}
+                style={{ minHeight: 40, maxHeight: 120 }}
+              />
+              <button
+                type="submit"
+                disabled={chatSending || !chatInput.trim()}
+                className="btn btn-primary btn-sm !py-2 !px-4"
+              >
+                {chatSending ? "…" : "↑"}
+              </button>
+            </form>
+          </div>
+        </section>
       )}
 
       {/* EPUB Reader Modal */}
@@ -487,77 +679,283 @@ export default function TeilnehmerBereichPage() {
   );
 }
 
+// ── timeAgo ─────────────────────────────────────────────────────────
+
+function timeAgo(dateString: string): string {
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return "gerade eben";
+  if (minutes < 60) return `vor ${minutes} Min.`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `vor ${hours} Std.`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `vor ${days} Tag${days > 1 ? "en" : ""}`;
+  const months = Math.floor(days / 30);
+  return `vor ${months} Monat${months > 1 ? "en" : ""}`;
+}
+
 // ── Beitrag-Karte ─────────────────────────────────────────────────────────
 
 function BeitragKarte({
   beitrag,
   username,
+  veranstalterUsername,
   isVeranstalter,
   onReact,
   onTreffpunkt,
+  onReply,
+  onEditBeitrag,
+  onEditReply,
 }: {
   beitrag: Beitrag;
   username: string;
+  veranstalterUsername: string;
   isVeranstalter: boolean;
   onReact: (emoji: string) => void;
   onTreffpunkt: () => void;
+  onReply: (body: string) => Promise<void>;
+  onEditBeitrag: (body: string, titel?: string) => Promise<void>;
+  onEditReply: (replyId: string, body: string) => Promise<void>;
 }) {
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [postingReply, setPostingReply] = useState(false);
+  const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const [editingBeitrag, setEditingBeitrag] = useState(false);
+  const [editBeitragBody, setEditBeitragBody] = useState("");
+  const [editBeitragTitel, setEditBeitragTitel] = useState("");
+  const [savingBeitrag, setSavingBeitrag] = useState(false);
+  const editBeitragRef = useRef<HTMLTextAreaElement>(null);
+
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [editReplyBody, setEditReplyBody] = useState("");
+  const [savingReply, setSavingReply] = useState(false);
+  const editReplyRef = useRef<HTMLTextAreaElement>(null);
+
+  const isAutor = (u: string) => u === veranstalterUsername;
+
+  async function submitReply() {
+    if (!replyText.trim()) return;
+    setPostingReply(true);
+    await onReply(replyText.trim());
+    setReplyText("");
+    setShowReplyBox(false);
+    setPostingReply(false);
+  }
+
+  async function saveBeitragEdit() {
+    if (!editBeitragBody.trim()) return;
+    setSavingBeitrag(true);
+    await onEditBeitrag(editBeitragBody.trim(), editBeitragTitel.trim() || undefined);
+    setEditingBeitrag(false);
+    setSavingBeitrag(false);
+  }
+
+  async function saveReplyEdit(replyId: string) {
+    if (!editReplyBody.trim()) return;
+    setSavingReply(true);
+    await onEditReply(replyId, editReplyBody.trim());
+    setEditingReplyId(null);
+    setSavingReply(false);
+  }
 
   function emojiCount(emoji: string) {
     return beitrag.reactions.filter((r) => r.emoji === emoji).length;
   }
 
   return (
-    <div className="card mb-3">
-      <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-arena-blue text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
-          {beitrag.autorUsername[0]?.toUpperCase()}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-sm">{beitrag.autorUsername}</span>
-            <span className="text-xs text-arena-muted">{new Date(beitrag.createdAt).toLocaleDateString("de-AT")}</span>
-            {beitrag.imTreffpunktGeteilt && <span className="text-xs bg-arena-yellow/20 text-arena-blue px-1.5 py-0.5 rounded">Im Treffpunkt</span>}
+    <article className="rounded-xl border border-arena-border-light p-4 mb-3">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className={`w-7 h-7 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 ${isAutor(beitrag.autorUsername) ? "bg-amber-500" : "bg-arena-blue"}`}>
+            {beitrag.autorUsername[0]?.toUpperCase()}
           </div>
-          {beitrag.titel && <p className="font-semibold m-0 mt-1">{beitrag.titel}</p>}
-          <p className="text-sm m-0 mt-1 whitespace-pre-wrap">{beitrag.body}</p>
-
-          {/* Reaktionen */}
-          <div className="flex items-center gap-1 mt-2 flex-wrap">
-            {ALLOWED_BEITRAG_EMOJIS.map((emoji) => {
-              const count = emojiCount(emoji);
-              const myReact = beitrag.reactions.some((r) => r.username === username && r.emoji === emoji);
-              return (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => onReact(emoji)}
-                  className={`px-2 py-0.5 rounded-full text-sm transition-colors border ${
-                    myReact ? "bg-arena-yellow border-arena-yellow" : "border-arena-border hover:bg-gray-100"
-                  }`}
-                >
-                  {emoji}{count > 0 && <span className="ml-0.5 text-xs">{count}</span>}
-                </button>
-              );
-            })}
-
-            {/* Teilen (nur Veranstalter) */}
-            {isVeranstalter && !beitrag.imTreffpunktGeteilt && (
-              <button
-                type="button"
-                onClick={onTreffpunkt}
-                className="ml-2 text-xs text-arena-blue hover:underline border border-arena-blue px-2 py-0.5 rounded-full"
-              >
-                Im Treffpunkt teilen
-              </button>
-            )}
-          </div>
+          <strong className="text-sm">{beitrag.autorUsername}</strong>
+          {isAutor(beitrag.autorUsername) && (
+            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">✍️ Autor</span>
+          )}
+          {beitrag.imTreffpunktGeteilt && (
+            <span className="text-xs bg-arena-yellow/20 text-arena-blue px-1.5 py-0.5 rounded">Im Treffpunkt</span>
+          )}
         </div>
+        <span className="text-xs text-arena-muted flex-shrink-0">{timeAgo(beitrag.createdAt)}</span>
       </div>
-    </div>
+
+      {/* Body (oder Edit-Formular) */}
+      {editingBeitrag ? (
+        <div className="mt-1 pl-3 border-l-2 border-arena-blue/30 grid gap-2">
+          <input
+            className="input-base text-sm"
+            placeholder="Titel (optional)"
+            value={editBeitragTitel}
+            onChange={(e) => setEditBeitragTitel(e.target.value)}
+          />
+          <textarea
+            ref={editBeitragRef}
+            className="input-base text-sm"
+            rows={4}
+            value={editBeitragBody}
+            onChange={(e) => setEditBeitragBody(e.target.value)}
+            maxLength={5000}
+            autoFocus
+          />
+          <CommentToolbar textareaRef={editBeitragRef} value={editBeitragBody} onChange={setEditBeitragBody} />
+          <div className="flex gap-2">
+            <button type="button" onClick={saveBeitragEdit} disabled={savingBeitrag || !editBeitragBody.trim()} className="btn btn-sm">
+              {savingBeitrag ? "Wird gespeichert…" : "Speichern"}
+            </button>
+            <button type="button" onClick={() => setEditingBeitrag(false)} className="btn btn-sm">Abbrechen</button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {beitrag.titel && <p className="font-semibold text-sm m-0 mb-1">{beitrag.titel}</p>}
+          <p className="text-[0.95rem] m-0 whitespace-pre-wrap leading-relaxed">{beitrag.body}</p>
+        </>
+      )}
+
+      {/* Reaktionen + Aktionen */}
+      <div className="flex flex-wrap gap-1.5 mt-3 items-center">
+        {ALLOWED_BEITRAG_EMOJIS.map((emoji) => {
+          const count = emojiCount(emoji);
+          const myReact = beitrag.reactions.some((r) => r.username === username && r.emoji === emoji);
+          return (
+            <button
+              key={emoji}
+              type="button"
+              onClick={() => onReact(emoji)}
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm border cursor-pointer transition-colors ${
+                myReact
+                  ? "bg-arena-blue/10 border-arena-blue text-arena-blue"
+                  : "bg-gray-50 border-arena-border-light text-arena-text hover:bg-gray-100"
+              }`}
+            >
+              {emoji}{count > 0 && <span className="text-xs font-medium">{count}</span>}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => { setShowReplyBox((v) => !v); setReplyText(""); }}
+          className="btn btn-sm text-xs"
+        >
+          {showReplyBox ? "Abbrechen" : "Antworten"}
+        </button>
+        {beitrag.autorUsername === username && !editingBeitrag && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditBeitragBody(beitrag.body);
+              setEditBeitragTitel(beitrag.titel ?? "");
+              setEditingBeitrag(true);
+              setShowReplyBox(false);
+            }}
+            className="btn btn-sm text-xs"
+          >
+            Bearbeiten
+          </button>
+        )}
+        {isVeranstalter && !beitrag.imTreffpunktGeteilt && (
+          <button type="button" onClick={onTreffpunkt} className="btn btn-sm text-xs">
+            Im Treffpunkt teilen
+          </button>
+        )}
+      </div>
+
+      {/* Reply-Formular */}
+      {showReplyBox && (
+        <div className="mt-3 pl-3 border-l-2 border-arena-blue/30 grid gap-2">
+          <textarea
+            ref={replyTextareaRef}
+            className="input-base text-sm"
+            rows={3}
+            placeholder="Deine Antwort…"
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            maxLength={2000}
+            autoFocus
+          />
+          <CommentToolbar
+            textareaRef={replyTextareaRef}
+            value={replyText}
+            onChange={setReplyText}
+          />
+          <div className="flex gap-2">
+            <button type="button" onClick={submitReply} disabled={postingReply || !replyText.trim()} className="btn btn-sm">
+              {postingReply ? "Wird gesendet…" : "Absenden"}
+            </button>
+            <button type="button" onClick={() => { setShowReplyBox(false); setReplyText(""); }} className="btn btn-sm">
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Antworten */}
+      {beitrag.replies.length > 0 && (
+        <div className="mt-4 grid gap-2">
+          <p className="text-xs text-arena-muted m-0">
+            {beitrag.replies.length} {beitrag.replies.length === 1 ? "Antwort" : "Antworten"}
+          </p>
+          {beitrag.replies.map((r) => (
+            <div key={r._id}>
+              <article className="rounded-lg border border-arena-border-light p-3 ml-3 sm:ml-6">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className={`w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 ${isAutor(r.autorUsername) ? "bg-amber-500" : "bg-arena-blue"}`}>
+                      {r.autorUsername[0]?.toUpperCase()}
+                    </div>
+                    <strong className="text-sm">{r.autorUsername}</strong>
+                    {isAutor(r.autorUsername) && (
+                      <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">✍️ Autor</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-arena-muted">{timeAgo(r.createdAt)}</span>
+                    {r.autorUsername === username && editingReplyId !== r._id && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingReplyId(r._id);
+                          setEditReplyBody(r.body);
+                        }}
+                        className="btn btn-sm text-xs"
+                      >
+                        Bearbeiten
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {editingReplyId === r._id ? (
+                  <div className="pl-2 border-l-2 border-arena-blue/30 grid gap-2 mt-1">
+                    <textarea
+                      ref={editReplyRef}
+                      className="input-base text-sm"
+                      rows={3}
+                      value={editReplyBody}
+                      onChange={(e) => setEditReplyBody(e.target.value)}
+                      maxLength={2000}
+                      autoFocus
+                    />
+                    <CommentToolbar textareaRef={editReplyRef} value={editReplyBody} onChange={setEditReplyBody} />
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => saveReplyEdit(r._id)} disabled={savingReply || !editReplyBody.trim()} className="btn btn-sm">
+                        {savingReply ? "Wird gespeichert…" : "Speichern"}
+                      </button>
+                      <button type="button" onClick={() => { setEditingReplyId(null); setEditReplyBody(""); }} className="btn btn-sm">Abbrechen</button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[0.95rem] m-0 whitespace-pre-wrap leading-relaxed">{r.body}</p>
+                )}
+              </article>
+            </div>
+          ))}
+        </div>
+      )}
+    </article>
   );
 }
 

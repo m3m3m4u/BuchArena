@@ -29,7 +29,7 @@ export type MessageConversationDocument = {
 };
 import type { KalenderEvent } from "@/lib/kalender";
 import type { KooperationDocument } from "@/lib/kooperationen";
-import type { BuchzirkelDocument, BuchzirkelBewerbungDocument, BuchzirkelTeilnahmeDocument, BuchzirkelBeitragDocument } from "@/lib/buchzirkel";
+import type { BuchzirkelDocument, BuchzirkelBewerbungDocument, BuchzirkelTeilnahmeDocument, BuchzirkelBeitragDocument, BuchzirkelChatNachrichtDocument } from "@/lib/buchzirkel";
 import type { GewinnspielDocument, GewinnspielteilnahmeDocument } from "@/lib/gewinnspiel";
 
 export type SocialMediaDesign = {
@@ -480,6 +480,11 @@ export async function getBuchzirkelTeilnahmenCollection(): Promise<Collection<Bu
 export async function getBuchzirkelBeitraegeCollection(): Promise<Collection<BuchzirkelBeitragDocument>> {
   const db = await getDatabase();
   return db.collection<BuchzirkelBeitragDocument>("buchzirkel_beitraege");
+}
+
+export async function getBuchzirkelChatCollection(): Promise<Collection<BuchzirkelChatNachrichtDocument>> {
+  const db = await getDatabase();
+  return db.collection<BuchzirkelChatNachrichtDocument>("buchzirkel_chat");
 }
 
 export async function getGewinnspieleCollection(): Promise<Collection<GewinnspielDocument>> {

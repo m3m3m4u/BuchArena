@@ -229,3 +229,14 @@ export const STANDARD_TOPICS: BuchzirkelTopic[] = [
 ];
 
 export const ALLOWED_BEITRAG_EMOJIS = ["👍", "❤️", "😂", "🎉", "🤔", "👎"];
+
+// ── Gruppen-Chat ───────────────────────────────────────────────────────────
+
+export type BuchzirkelChatNachrichtDocument = {
+  _id?: ObjectId;
+  buchzirkelId: ObjectId;
+  senderUsername: string;
+  body: string;
+  createdAt: Date;
+  readBy: string[]; // Usernames, die die Nachricht gelesen haben
+};

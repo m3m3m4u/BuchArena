@@ -31,6 +31,14 @@ type ChatMessage = {
   createdAt: string;
 };
 
+type BuchzirkelChatItem = {
+  buchzirkelId: string;
+  titel: string;
+  coverImageUrl: string | null;
+  lastMessage: { id: string; senderUsername: string; body: string; createdAt: string } | null;
+  unreadCount: number;
+};
+
 /* ── Hilfsfunktionen ── */
 function timeAgo(dateString: string): string {
   const now = Date.now();
@@ -71,6 +79,7 @@ function NachrichtenPageInner() {
   const [username, setUsername] = useState("");
   const [accountRole, setAccountRole] = useState<AccountRole>("USER");
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
+  const [buchzirkelChats, setBuchzirkelChats] = useState<BuchzirkelChatItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Aktiver Chat
@@ -109,6 +118,17 @@ function NachrichtenPageInner() {
 
   // Kooperations-Buttons Status
   const [handledKoopIds, setHandledKoopIds] = useState<Record<string, "confirmed" | "rejected">>({});
+
+  // Aktiver Buchzirkel-Gruppen-Chat
+  type BzMsg = { id: string; senderUsername: string; body: string; createdAt: string };
+  const [activeBzId, setActiveBzId] = useState<string | null>(null);
+  const [activeBzTitel, setActiveBzTitel] = useState("");
+  const [activeBzCover, setActiveBzCover] = useState<string | null>(null);
+  const [bzMessages, setBzMessages] = useState<BzMsg[]>([]);
+  const [bzLoading, setBzLoading] = useState(false);
+  const [bzInput, setBzInput] = useState("");
+  const [bzSending, setBzSending] = useState(false);
+  const bzEndRef = useRef<HTMLDivElement>(null);
   const [koopActionLoading, setKoopActionLoading] = useState<string | null>(null);
 
   // Mitautoren-Einladungs-Buttons Status
@@ -140,18 +160,25 @@ function NachrichtenPageInner() {
   const loadConversations = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/messages/list", { method: "GET" });
-      if (res.status === 401) {
+      const [convRes, bzRes] = await Promise.all([
+        fetch("/api/messages/list", { method: "GET" }),
+        fetch("/api/buchzirkel/chat/my-chats"),
+      ]);
+      if (convRes.status === 401) {
         clearStoredAccount();
         router.push("/auth");
         return;
       }
-      const data = (await res.json()) as { conversations?: ConversationItem[] };
+      const data = (await convRes.json()) as { conversations?: ConversationItem[] };
       const raw = data.conversations ?? [];
       // Duplikate nach partner entfernen (nur den ersten Eintrag behalten)
       const seen = new Set<string>();
       const deduped = raw.filter((c) => { if (seen.has(c.partner)) return false; seen.add(c.partner); return true; });
       setConversations(deduped);
+      if (bzRes.ok) {
+        const bzData = (await bzRes.json()) as { chats?: BuchzirkelChatItem[] };
+        setBuchzirkelChats(bzData.chats ?? []);
+      }
     } catch {
       /* ignore */
     } finally {
@@ -167,6 +194,7 @@ function NachrichtenPageInner() {
   const openChat = useCallback(
     async (partner: string, displayName?: string, profileImage?: string) => {
       setActivePartner(partner);
+      setActiveBzId(null);
       setActivePartnerDisplayName(displayName ?? "");
       setActivePartnerImage(profileImage ?? "");
       setMobileShowChat(true);
@@ -210,6 +238,56 @@ function NachrichtenPageInner() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
+
+  useEffect(() => {
+    bzEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [bzMessages]);
+
+  /* ── BZ-Chat öffnen ── */
+  async function openBzChat(item: BuchzirkelChatItem) {
+    setActiveBzId(item.buchzirkelId);
+    setActiveBzTitel(item.titel);
+    setActiveBzCover(item.coverImageUrl);
+    setActivePartner(null);
+    setMobileShowChat(true);
+    setBzLoading(true);
+    setBzInput("");
+    try {
+      const res = await fetch(`/api/buchzirkel/${item.buchzirkelId}/chat`);
+      const data = (await res.json()) as { messages?: BzMsg[] };
+      setBzMessages(data.messages ?? []);
+      // Unread-Zähler zurücksetzen
+      setBuchzirkelChats((prev) =>
+        prev.map((c) => (c.buchzirkelId === item.buchzirkelId ? { ...c, unreadCount: 0 } : c))
+      );
+    } catch {
+      setBzMessages([]);
+    } finally {
+      setBzLoading(false);
+    }
+  }
+
+  /* ── BZ-Nachricht senden ── */
+  async function handleBzSend() {
+    if (!bzInput.trim() || !activeBzId || bzSending) return;
+    setBzSending(true);
+    const text = bzInput.trim();
+    setBzInput("");
+    try {
+      const res = await fetch(`/api/buchzirkel/${activeBzId}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: text }),
+      });
+      const data = (await res.json()) as { message?: BzMsg };
+      if (res.ok && data.message) {
+        setBzMessages((prev) => [...prev, data.message!]);
+        void loadConversations();
+      }
+    } catch { /* ignore */ } finally {
+      setBzSending(false);
+    }
+  }
 
   /* ── Nachricht senden ── */
   async function handleSend() {
@@ -598,12 +676,67 @@ function NachrichtenPageInner() {
             <div className="flex-1 overflow-y-auto">
               {isLoading ? (
                 <p className="text-sm text-arena-muted p-4">Lade …</p>
-              ) : conversations.length === 0 ? (
+              ) : conversations.length === 0 && buchzirkelChats.length === 0 ? (
                 <p className="text-sm text-arena-muted p-4">
                   Noch keine Unterhaltungen.
                 </p>
               ) : (
-                conversations.map((conv, idx) => (
+                <>
+                  {/* Buchzirkel-Gruppen-Chats */}
+                  {buchzirkelChats.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-semibold text-arena-muted uppercase tracking-wide px-4 py-2 bg-gray-50 border-b border-arena-border-light m-0">
+                        📚 Buchzirkel-Chats
+                      </p>
+                      {buchzirkelChats.map((bz) => (
+                        <button
+                          key={bz.buchzirkelId}
+                          type="button"
+                          className={`w-full text-left px-4 py-3 border-b border-arena-border-light cursor-pointer transition-colors flex items-center gap-3 ${
+                            activeBzId === bz.buchzirkelId ? "bg-blue-50" : "bg-white hover:bg-gray-50"
+                          }`}
+                          onClick={() => void openBzChat(bz)}
+                        >
+                          <div className="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center text-base font-bold flex-shrink-0 overflow-hidden">
+                            {bz.coverImageUrl ? (
+                              <img src={bz.coverImageUrl} alt={bz.titel} className="w-full h-full object-cover" />
+                            ) : "📚"}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className={`text-sm truncate ${bz.unreadCount > 0 ? "font-bold" : ""}`}>
+                                {bz.titel}
+                              </span>
+                              {bz.lastMessage && (
+                                <span className="text-[10px] text-arena-muted flex-shrink-0 ml-2">
+                                  {timeAgo(bz.lastMessage.createdAt)}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[0.8rem] text-arena-muted truncate flex-1">
+                                {bz.lastMessage
+                                  ? `${bz.lastMessage.senderUsername}: ${bz.lastMessage.body.slice(0, 35)}${bz.lastMessage.body.length > 35 ? "…" : ""}`
+                                  : "Noch keine Nachrichten"}
+                              </span>
+                              {bz.unreadCount > 0 && (
+                                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-red-600 text-white text-[10px] font-bold px-1">
+                                  {bz.unreadCount}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {/* Private Chats */}
+                  {conversations.length > 0 && buchzirkelChats.length > 0 && (
+                    <p className="text-[10px] font-semibold text-arena-muted uppercase tracking-wide px-4 py-2 bg-gray-50 border-b border-arena-border-light m-0">
+                      💬 Private Chats
+                    </p>
+                  )}
+                  {conversations.map((conv, idx) => (
                   <button
                     key={`${conv.partner}-${idx}`}
                     className={`w-full text-left px-4 py-3 border-b border-arena-border-light cursor-pointer transition-colors flex items-center gap-3 ${
@@ -655,7 +788,8 @@ function NachrichtenPageInner() {
                       </div>
                     </div>
                   </button>
-                ))
+                ))}
+                </>
               )}
             </div>
           </div>
@@ -666,7 +800,96 @@ function NachrichtenPageInner() {
               !mobileShowChat ? "max-sm:hidden" : ""
             }`}
           >
-            {activePartner ? (
+            {activeBzId ? (
+              <>
+                {/* BZ-Chat-Header */}
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-arena-border bg-gray-50">
+                  <button
+                    className="min-[641px]:hidden btn btn-sm !p-1"
+                    onClick={() => setMobileShowChat(false)}
+                  >
+                    ←
+                  </button>
+                  <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center text-base font-bold flex-shrink-0 overflow-hidden">
+                    {activeBzCover ? (
+                      <img src={activeBzCover} alt={activeBzTitel} className="w-full h-full object-cover" />
+                    ) : "📚"}
+                  </div>
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className="font-semibold text-sm truncate">{activeBzTitel}</span>
+                    <span className="text-xs text-arena-muted">Buchzirkel-Gruppen-Chat</span>
+                  </div>
+                  <Link
+                    href={`/buchzirkel/${activeBzId}/teilnehmer`}
+                    className="btn btn-sm !py-1 !px-3 text-[0.8rem] flex-shrink-0"
+                    target="_blank"
+                  >
+                    Zum Buchzirkel
+                  </Link>
+                </div>
+
+                {/* BZ-Nachrichten */}
+                <div className="flex-1 overflow-y-auto px-4 py-3">
+                  {bzLoading ? (
+                    <p className="text-sm text-arena-muted text-center mt-8">Lade …</p>
+                  ) : bzMessages.length === 0 ? (
+                    <p className="text-sm text-arena-muted text-center mt-8">Noch keine Nachrichten.</p>
+                  ) : (
+                    bzMessages.map((msg) => {
+                      const isMine = msg.senderUsername === username;
+                      return (
+                        <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"} mb-1.5 group`}>
+                          <div className={`relative max-w-[80%] sm:max-w-[75%] rounded-2xl px-3.5 py-2 text-[0.95rem] ${
+                            isMine
+                              ? "bg-arena-blue text-white rounded-br-md"
+                              : "bg-white border border-gray-200 text-gray-900 rounded-bl-md"
+                          }`}>
+                            {!isMine && (
+                              <p className="text-[11px] font-semibold text-arena-blue m-0 mb-0.5">{msg.senderUsername}</p>
+                            )}
+                            <p className="whitespace-pre-wrap m-0" style={{ lineHeight: 1.5 }}>{msg.body}</p>
+                            <div className={`flex items-center gap-1.5 mt-1 ${isMine ? "justify-end" : "justify-start"}`}>
+                              <span className={`text-[10px] ${isMine ? "text-white/50" : "text-arena-muted"}`}>
+                                {formatTime(msg.createdAt)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                  <div ref={bzEndRef} />
+                </div>
+
+                {/* BZ-Eingabe */}
+                <div className="border-t border-arena-border px-4 py-3 bg-gray-50">
+                  <div className="flex gap-2 items-end">
+                    <textarea
+                      className="input-base flex-1 resize-none"
+                      rows={1}
+                      value={bzInput}
+                      onChange={(e) => setBzInput(e.target.value)}
+                      placeholder="Nachricht an Gruppe …"
+                      maxLength={2000}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          void handleBzSend();
+                        }
+                      }}
+                      style={{ minHeight: 40, maxHeight: 120 }}
+                    />
+                    <button
+                      className="btn btn-primary btn-sm !py-2 !px-4"
+                      disabled={bzSending || !bzInput.trim()}
+                      onClick={() => void handleBzSend()}
+                    >
+                      {bzSending ? "…" : "↑"}
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : activePartner ? (
               <>
                 {/* Chat-Header */}
                 <div className="flex items-center gap-3 px-4 py-3 border-b border-arena-border bg-gray-50">
