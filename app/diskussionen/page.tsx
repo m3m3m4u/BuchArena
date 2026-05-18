@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
-import { DISCUSSION_TOPICS } from "@/lib/discussions";
+import { DISCUSSION_TOPICS, GENRE_TOPICS } from "@/lib/discussions";
 import { CommentToolbar } from "@/app/components/comment-toolbar";
 
 type DiscussionItem = {
@@ -104,6 +104,12 @@ export default function DiskussionenPage() {
   const [username, setUsername] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
+  /* ── Genre-Filter ── */
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [showGenreOverlay, setShowGenreOverlay] = useState(false);
+  const [genreEditSelection, setGenreEditSelection] = useState<string[]>([]);
+  const [isSavingGenres, setIsSavingGenres] = useState(false);
+
   const newBodyRef = useRef<HTMLTextAreaElement>(null);
 
   /* ── Filter / Suche ── */
@@ -127,8 +133,30 @@ export default function DiskussionenPage() {
     if (account) {
       setUsername(account.username);
       setIsAdmin(account.role === "ADMIN" || account.role === "SUPERADMIN");
+      void fetch("/api/profile/genre-treffpunkt")
+        .then((r) => r.json())
+        .then((data: { genres?: string[] }) => {
+          if (Array.isArray(data.genres)) setSelectedGenres(data.genres);
+        });
     }
   }, []);
+
+  async function saveGenres() {
+    setIsSavingGenres(true);
+    try {
+      const res = await fetch("/api/profile/genre-treffpunkt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ genres: genreEditSelection }),
+      });
+      if (res.ok) {
+        setSelectedGenres(genreEditSelection);
+        setShowGenreOverlay(false);
+      }
+    } finally {
+      setIsSavingGenres(false);
+    }
+  }
 
   const loadDiscussions = useCallback(async () => {
     setIsLoading(true);
@@ -325,6 +353,12 @@ export default function DiskussionenPage() {
         <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-3 sm:gap-4">
           <h1 className="text-2xl font-bold">Treffpunkt</h1>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            <button
+              className="btn text-sm sm:text-base"
+              onClick={() => { setGenreEditSelection(selectedGenres); setShowGenreOverlay(true); }}
+            >
+              Meine Genres
+            </button>
             <Link href="/diskussionen/genre" className="btn text-sm sm:text-base">Genre-Treffpunkt</Link>
             <Link href="/quiz" className="btn text-sm sm:text-base">Quiz</Link>
             <Link href="/tauschboerse" className="btn text-sm sm:text-base">Tauschbörse</Link>
@@ -342,6 +376,31 @@ export default function DiskussionenPage() {
         <p className="text-sm text-arena-muted -mt-1">
           Der Treffpunkt dient dem gegenseitigen Austausch aller BuchArena-Mitglieder. Reine Werbeposts sind nicht vorgesehen. Wir freuen uns aber, wenn du durch kompetente Beiträge auf dich aufmerksam machst und so die Diskussion bereicherst.
         </p>
+
+        {selectedGenres.length > 0 && (
+          <div className="rounded-xl border border-arena-border p-3 flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-semibold">Meine Genre-Treffpunkte</span>
+              <button
+                className="text-xs text-arena-blue hover:underline"
+                onClick={() => { setGenreEditSelection(selectedGenres); setShowGenreOverlay(true); }}
+              >
+                Anpassen
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {selectedGenres.map((genre) => (
+                <Link
+                  key={genre}
+                  href={`/diskussionen/genre/${encodeURIComponent(genre)}`}
+                  className="text-xs bg-arena-blue/10 text-arena-blue px-2.5 py-1 rounded-full hover:bg-arena-blue/20 transition-colors no-underline font-medium"
+                >
+                  {genre}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ═══ Such- und Filterleiste ═══ */}
         <div className="grid gap-2">
@@ -642,6 +701,55 @@ export default function DiskussionenPage() {
           </div>
         );
       })()}
+
+      {showGenreOverlay && (
+        <div className="overlay-backdrop" onClick={() => setShowGenreOverlay(false)}>
+          <div className="w-[min(600px,100%)] bg-white rounded-xl p-4 sm:p-5 box-border grid gap-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold m-0">Genre-Treffpunkte auswählen</h2>
+            <p className="text-sm text-arena-muted -mt-2">
+              Welche Genres möchtest du direkt im Treffpunkt sehen? Standardmäßig keins ausgewählt.
+            </p>
+            <div className="flex justify-end">
+              <button
+                className="text-xs text-arena-blue hover:underline"
+                onClick={() => setGenreEditSelection([...GENRE_TOPICS])}
+              >
+                Alle auswählen
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {GENRE_TOPICS.map((genre) => (
+                <label
+                  key={genre}
+                  className="flex items-center gap-2 cursor-pointer rounded-lg border border-arena-border hover:border-arena-blue hover:bg-arena-blue/5 transition-colors px-3 py-2"
+                >
+                  <input
+                    type="checkbox"
+                    checked={genreEditSelection.includes(genre)}
+                    onChange={() =>
+                      setGenreEditSelection((prev) =>
+                        prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
+                      )
+                    }
+                    className="accent-arena-blue"
+                  />
+                  <span className="text-sm">{genre}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex justify-end gap-2">
+              <button className="btn text-sm" onClick={() => setShowGenreOverlay(false)}>Abbrechen</button>
+              <button
+                className="btn btn-primary text-sm disabled:opacity-50"
+                disabled={isSavingGenres}
+                onClick={() => void saveGenres()}
+              >
+                {isSavingGenres ? "Speichern…" : "Speichern"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showOverlay && (
         <div className="overlay-backdrop" onClick={() => setShowOverlay(false)}>
