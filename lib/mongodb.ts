@@ -144,6 +144,7 @@ export type UserDocument = {
   emailOnUnreadMessages?: boolean;
   lastUnreadNotifiedAt?: Date;
   lastSettingsCheckAt?: Date;
+  genreTreffpunktFilter?: string[];
 };
 
 const dbName = process.env.MONGODB_DB_NAME ?? "bucharena";
