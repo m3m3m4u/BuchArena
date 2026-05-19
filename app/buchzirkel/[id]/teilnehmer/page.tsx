@@ -190,7 +190,7 @@ export default function TeilnehmerBereichPage() {
     e.preventDefault();
     if (!neuesTopicTitel.trim() || !zirkel) return;
     setAddingTopic(true);
-    const newTopic = { id: crypto.randomUUID(), titel: neuesTopicTitel.trim(), typ: "diskussion" };
+    const newTopic = { id: crypto.randomUUID(), titel: neuesTopicTitel.trim(), typ: "allgemein" };
     const updatedTopics = [...zirkel.diskussionsTopics, newTopic];
     await fetch(`/api/buchzirkel/${params.id}`, {
       method: "PATCH",
@@ -313,11 +313,11 @@ export default function TeilnehmerBereichPage() {
       <nav className="flex gap-0 mt-3 border-b border-arena-border-light overflow-x-auto">
         {[
           { key: "diskussion" as const, label: "Diskussion" },
-          { key: "chat" as const, label: "💬 Gruppen-Chat" },
-          { key: "dateien" as const, label: "📄 Dateien" },
+          { key: "chat" as const, label: "Gruppen-Chat" },
+          { key: "dateien" as const, label: "Dateien" },
           { key: "fortschritt" as const, label: "Fortschritt" },
-          { key: "rezensionen" as const, label: "⭐ Rezensionen" },
-          ...(zirkel.fragebogen.length > 0 ? [{ key: "fragebogen" as const, label: "📝 Fragebogen" }] : []),
+          { key: "rezensionen" as const, label: "Rezensionen" },
+          ...(zirkel.fragebogen.length > 0 ? [{ key: "fragebogen" as const, label: "Fragebogen" }] : []),
         ].map((t) => (
           <button
             key={t.key}
@@ -428,7 +428,9 @@ export default function TeilnehmerBereichPage() {
                 Noch keine Nachrichten. Schreib etwas!
               </p>
             ) : (
-              chatMessages.map((msg) => {
+              <>
+                <div className="flex-1" />
+                {chatMessages.map((msg) => {
                 const isMine = msg.senderUsername === account.username;
                 const isAutor = msg.senderUsername === zirkel.veranstalterUsername;
                 return (
@@ -454,7 +456,8 @@ export default function TeilnehmerBereichPage() {
                     </div>
                   </div>
                 );
-              })
+              })}
+              </>
             )}
             <div ref={chatEndRef} />
           </div>

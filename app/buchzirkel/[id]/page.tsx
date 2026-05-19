@@ -200,7 +200,7 @@ export default function BuchzirkelDetailPage() {
 
             {/* Veranstalter-Links */}
             {zirkel.isVeranstalter && (
-              <div className="flex gap-2 mt-3">
+              <div className="flex gap-2 mt-3 flex-wrap">
                 <Link href={`/buchzirkel/${zirkel._id}/dashboard`} className="btn btn-primary btn-sm">
                   Dashboard öffnen →
                 </Link>

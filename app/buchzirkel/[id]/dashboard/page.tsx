@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import GenrePicker from "@/app/components/genre-picker";
-import { STANDARD_AGB_TEXT } from "@/lib/buchzirkel";
+import { STANDARD_AGB_TEXT, ALLOWED_BEITRAG_EMOJIS } from "@/lib/buchzirkel";
+import { CommentToolbar } from "@/app/components/comment-toolbar";
 
 type Bewerber = {
   _id: string;
@@ -43,6 +44,7 @@ type Zirkel = {
   youtubeUrl?: string;
   mediaImageUrl?: string;
   status: string;
+  veranstalterUsername: string;
   bewerbungBis: string;
   maxTeilnehmer: number;
   bewerbungsFragen: string[];
@@ -58,11 +60,13 @@ type Zirkel = {
 
 type Datei = { id: string; originalName: string; abschnittId?: string };
 
+type ChatMsg = { id: string; senderUsername: string; body: string; createdAt: string };
+
 export default function BuchzirkelDashboardPage() {
   const params = useParams<{ id: string }>();
   const account = getStoredAccount();
 
-  const [tab, setTab] = useState<"bewerber" | "teilnehmer" | "dateien" | "werbung" | "einstellungen">("bewerber");
+  const [tab, setTab] = useState<"bewerber" | "teilnehmer" | "beitraege" | "chat" | "dateien" | "werbung" | "einstellungen">("bewerber");
   const [zirkel, setZirkel] = useState<Zirkel | null>(null);
   const [bewerber, setBewerber] = useState<Bewerber[]>([]);
   const [teilnahmen, setTeilnahmen] = useState<Teilnahme[]>([]);
@@ -74,6 +78,20 @@ export default function BuchzirkelDashboardPage() {
   const [bewertungKommentar, setBewertungKommentar] = useState<Record<string, string>>({});
   const [bewertungSaving, setBewertungSaving] = useState<Record<string, boolean>>({});
   const [bewertungMsg, setBewertungMsg] = useState<Record<string, string>>({});
+
+  // Beiträge
+  const [beitraege, setBeitraege] = useState<Beitrag[]>([]);
+  const [activeBeitragTopic, setActiveBeitragTopic] = useState("");
+  const [neuerBeitrag, setNeuerBeitrag] = useState("");
+  const [neuerBeitragTitel, setNeuerBeitragTitel] = useState("");
+  const [posting, setPosting] = useState(false);
+  const neuerBeitragRef = useRef<HTMLTextAreaElement>(null);
+
+  // Chat
+  const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatSending, setChatSending] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Datei-Upload
   const [uploading, setUploading] = useState(false);
@@ -161,7 +179,87 @@ export default function BuchzirkelDashboardPage() {
     setBewertungSaving((p) => ({ ...p, [username]: false }));
   }
 
+  const loadBeitraege = useCallback(async (topicId: string) => {
+    const res = await fetch(`/api/buchzirkel/${params.id}/beitraege?topicId=${topicId}`);
+    const data = await res.json() as { beitraege?: Beitrag[] };
+    setBeitraege(data.beitraege ?? []);
+  }, [params.id]);
+
+  const loadChat = useCallback(async () => {
+    const res = await fetch(`/api/buchzirkel/${params.id}/chat`);
+    const data = await res.json() as { messages?: ChatMsg[] };
+    setChatMessages(data.messages ?? []);
+  }, [params.id]);
+
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (activeBeitragTopic) void loadBeitraege(activeBeitragTopic);
+  }, [activeBeitragTopic, loadBeitraege]);
+
+  useEffect(() => {
+    if (tab === "chat") void loadChat();
+    if (tab === "beitraege" && zirkel?.diskussionsTopics?.[0] && !activeBeitragTopic) {
+      setActiveBeitragTopic(zirkel.diskussionsTopics[0].id);
+    }
+  }, [tab, loadChat, zirkel, activeBeitragTopic]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  async function postBeitrag(e: React.FormEvent) {
+    e.preventDefault();
+    if (!neuerBeitrag.trim()) return;
+    setPosting(true);
+    await fetch(`/api/buchzirkel/${params.id}/beitraege`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topicId: activeBeitragTopic, titel: neuerBeitragTitel.trim() || undefined, body: neuerBeitrag.trim() }),
+    });
+    setNeuerBeitrag("");
+    setNeuerBeitragTitel("");
+    await loadBeitraege(activeBeitragTopic);
+    setPosting(false);
+  }
+
+  async function reactBeitrag(beitragId: string, emoji: string) {
+    await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ emoji }),
+    });
+    await loadBeitraege(activeBeitragTopic);
+  }
+
+  async function replyBeitrag(beitragId: string, body: string) {
+    await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body }),
+    });
+    await loadBeitraege(activeBeitragTopic);
+  }
+
+  async function sendChat(e: React.FormEvent) {
+    e.preventDefault();
+    if (!chatInput.trim() || chatSending) return;
+    setChatSending(true);
+    try {
+      const res = await fetch(`/api/buchzirkel/${params.id}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: chatInput.trim() }),
+      });
+      const data = await res.json() as { message?: ChatMsg };
+      if (res.ok && data.message) {
+        setChatMessages((prev) => [...prev, data.message!]);
+        setChatInput("");
+      }
+    } catch { /* ignore */ } finally {
+      setChatSending(false);
+    }
+  }
 
   async function entscheidung(bewerbungId: string, entscheidung: "angenommen" | "abgelehnt") {
     setStatusMsg("");
@@ -337,6 +435,11 @@ export default function BuchzirkelDashboardPage() {
                 Abschließen
               </button>
             )}
+            {zirkel.status === "abgeschlossen" && (
+              <button type="button" onClick={() => statusAendern("aktiv")} className="btn btn-secondary btn-sm">
+                ← Wieder aktivieren
+              </button>
+            )}
           </div>
         </div>
         {statusMsg && <p className="text-sm text-green-700 mt-2">{statusMsg}</p>}
@@ -347,6 +450,8 @@ export default function BuchzirkelDashboardPage() {
         {[
           { key: "bewerber" as const, label: `Bewerber (${ausstehend.length})` },
           { key: "teilnehmer" as const, label: `Teilnehmer (${angenommen.length})` },
+          { key: "beitraege" as const, label: "Beiträge" },
+          { key: "chat" as const, label: "Gruppen-Chat" },
           { key: "dateien" as const, label: `Dateien (${zirkel.dateien.length})` },
           { key: "werbung" as const, label: "Werbung" },
           { key: "einstellungen" as const, label: "Einstellungen" },
@@ -488,6 +593,136 @@ export default function BuchzirkelDashboardPage() {
               })}
             </div>
           )}
+        </section>
+      )}
+
+      {/* Beiträge */}
+      {tab === "beitraege" && (
+        <div className="w-full flex gap-4 mt-3 max-sm:flex-col">
+          {/* Topic-Sidebar */}
+          <aside className="w-48 max-sm:w-full flex-shrink-0">
+            <p className="text-xs text-arena-muted mb-2 max-sm:hidden">Themenbereich:</p>
+            <div className="flex flex-col gap-1 max-sm:flex-row max-sm:flex-wrap">
+              {zirkel.diskussionsTopics.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setActiveBeitragTopic(t.id)}
+                  className={`text-left px-3 py-2 rounded-lg text-sm transition-colors max-sm:px-2.5 ${
+                    activeBeitragTopic === t.id ? "bg-arena-blue text-white" : "hover:bg-gray-100 text-arena-muted"
+                  }`}
+                >
+                  {t.titel}
+                </button>
+              ))}
+            </div>
+            {zirkel.diskussionsTopics.length === 0 && (
+              <p className="text-xs text-arena-muted">Noch keine Themen. Füge sie in den Einstellungen hinzu.</p>
+            )}
+          </aside>
+
+          {/* Beiträge */}
+          <div className="flex-1 min-w-0">
+            {activeBeitragTopic && (
+              <form onSubmit={postBeitrag} className="card mb-3 flex flex-col gap-2">
+                <input
+                  className="input text-sm"
+                  placeholder="Titel (optional)"
+                  value={neuerBeitragTitel}
+                  onChange={(e) => setNeuerBeitragTitel(e.target.value)}
+                />
+                <textarea
+                  ref={neuerBeitragRef}
+                  className="input text-sm"
+                  rows={3}
+                  placeholder="Schreibe einen Beitrag…"
+                  value={neuerBeitrag}
+                  onChange={(e) => setNeuerBeitrag(e.target.value)}
+                />
+                <CommentToolbar textareaRef={neuerBeitragRef} value={neuerBeitrag} onChange={setNeuerBeitrag} />
+                <button type="submit" disabled={posting || !neuerBeitrag.trim()} className="btn btn-primary btn-sm self-end">
+                  {posting ? "Wird gepostet…" : "Beitrag posten"}
+                </button>
+              </form>
+            )}
+            {!activeBeitragTopic && (
+              <p className="text-arena-muted text-sm text-center py-4">Wähle einen Themenbereich.</p>
+            )}
+            {activeBeitragTopic && beitraege.length === 0 && (
+              <p className="text-arena-muted text-sm text-center py-4">Noch keine Beiträge in diesem Topic.</p>
+            )}
+            {beitraege.map((b) => (
+              <DashboardBeitragKarte
+                key={b._id}
+                beitrag={b}
+                username={account.username}
+                veranstalterUsername={zirkel?.veranstalterUsername ?? ""}
+                onReact={(emoji) => reactBeitrag(b._id, emoji)}
+                onReply={(body) => replyBeitrag(b._id, body)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Chat */}
+      {tab === "chat" && (
+        <section className="mt-3 w-full border border-arena-border rounded-xl overflow-hidden flex flex-col bg-white" style={{ minHeight: 420 }}>
+          <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-0" style={{ minHeight: 300, maxHeight: "55vh" }}>
+            {chatMessages.length === 0 ? (
+              <p className="text-arena-muted text-sm text-center my-auto py-8">Noch keine Nachrichten.</p>
+            ) : (
+              <>
+                <div className="flex-1" />
+                {chatMessages.map((msg) => {
+                  const isMine = msg.senderUsername === account.username;
+                  const isAutorMsg = zirkel && msg.senderUsername === zirkel.veranstalterUsername;
+                  return (
+                    <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"} mb-1.5`}>
+                      <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[0.95rem] ${
+                        isMine ? "bg-arena-blue text-white rounded-br-md"
+                        : isAutorMsg ? "bg-amber-50 border border-amber-200 text-gray-900 rounded-bl-md"
+                        : "bg-white border border-gray-200 text-gray-900 rounded-bl-md"
+                      }`}>
+                        {!isMine && (
+                          <p className={`text-[11px] font-semibold m-0 mb-0.5 ${isAutorMsg ? "text-amber-700" : "text-arena-blue"}`}>
+                            {msg.senderUsername}{isAutorMsg ? " ✍️" : ""}
+                          </p>
+                        )}
+                        <p className="whitespace-pre-wrap m-0" style={{ lineHeight: 1.5 }}>{msg.body}</p>
+                        <span className={`text-[10px] block mt-0.5 ${isMine ? "text-white/50 text-right" : "text-arena-muted"}`}>
+                          {new Date(msg.createdAt).toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+          <div className="border-t border-arena-border px-4 py-3 bg-gray-50">
+            <form onSubmit={sendChat} className="flex gap-2 items-end">
+              <textarea
+                className="input-base flex-1 resize-none"
+                rows={1}
+                placeholder="Nachricht an Gruppe…"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                maxLength={2000}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void sendChat(e as unknown as React.FormEvent);
+                  }
+                }}
+                style={{ minHeight: 40, maxHeight: 120 }}
+              />
+              <button type="submit" disabled={chatSending || !chatInput.trim()} className="btn btn-primary btn-sm !py-2 !px-4">
+                {chatSending ? "…" : "↑"}
+              </button>
+            </form>
+          </div>
         </section>
       )}
 
@@ -845,6 +1080,134 @@ export default function BuchzirkelDashboardPage() {
         </form>
       )}
     </main>
+  );
+}
+
+// ── Dashboard-Beitrag-Karte ────────────────────────────────────────────────
+
+function timeAgo(dateString: string): string {
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return "gerade eben";
+  if (minutes < 60) return `vor ${minutes} Min.`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `vor ${hours} Std.`;
+  const days = Math.floor(hours / 24);
+  return `vor ${days} Tag${days > 1 ? "en" : ""}`;
+}
+
+type Beitrag = {
+  _id: string; topicId: string; autorUsername: string; titel?: string; body: string;
+  reactions: { username: string; emoji: string }[];
+  replies: { _id: string; autorUsername: string; body: string; createdAt: string; reactions: { username: string; emoji: string }[] }[];
+  createdAt: string;
+};
+
+function DashboardBeitragKarte({
+  beitrag,
+  username,
+  veranstalterUsername,
+  onReact,
+  onReply,
+}: {
+  beitrag: Beitrag;
+  username: string;
+  veranstalterUsername: string;
+  onReact: (emoji: string) => void;
+  onReply: (body: string) => Promise<void>;
+}) {
+  const [showReplyBox, setShowReplyBox] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [postingReply, setPostingReply] = useState(false);
+  const replyRef = useRef<HTMLTextAreaElement>(null);
+
+  const isAutor = (u: string) => u === veranstalterUsername;
+
+  async function submitReply() {
+    if (!replyText.trim()) return;
+    setPostingReply(true);
+    await onReply(replyText.trim());
+    setReplyText("");
+    setShowReplyBox(false);
+    setPostingReply(false);
+  }
+
+  return (
+    <article className="rounded-xl border border-arena-border-light p-4 mb-3">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className={`w-7 h-7 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 ${isAutor(beitrag.autorUsername) ? "bg-amber-500" : "bg-arena-blue"}`}>
+            {beitrag.autorUsername[0]?.toUpperCase()}
+          </div>
+          <strong className="text-sm">{beitrag.autorUsername}</strong>
+          {isAutor(beitrag.autorUsername) && (
+            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">✍️ Autor</span>
+          )}
+        </div>
+        <span className="text-xs text-arena-muted">{timeAgo(beitrag.createdAt)}</span>
+      </div>
+      {beitrag.titel && <p className="font-semibold text-sm m-0 mb-1">{beitrag.titel}</p>}
+      <p className="text-[0.95rem] m-0 whitespace-pre-wrap leading-relaxed">{beitrag.body}</p>
+
+      <div className="flex flex-wrap gap-1.5 mt-3 items-center">
+        {ALLOWED_BEITRAG_EMOJIS.map((emoji) => {
+          const count = beitrag.reactions.filter((r) => r.emoji === emoji).length;
+          const myReact = beitrag.reactions.some((r) => r.username === username && r.emoji === emoji);
+          return (
+            <button key={emoji} type="button" onClick={() => onReact(emoji)}
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm border cursor-pointer transition-colors ${
+                myReact ? "bg-arena-blue/10 border-arena-blue text-arena-blue" : "bg-gray-50 border-arena-border-light hover:bg-gray-100"
+              }`}
+            >
+              {emoji}{count > 0 && <span className="text-xs font-medium">{count}</span>}
+            </button>
+          );
+        })}
+        <button type="button" onClick={() => { setShowReplyBox((v) => !v); setReplyText(""); }} className="btn btn-sm text-xs">
+          {showReplyBox ? "Abbrechen" : "Antworten"}
+        </button>
+      </div>
+
+      {showReplyBox && (
+        <div className="mt-3 pl-3 border-l-2 border-arena-blue/30 grid gap-2">
+          <textarea
+            ref={replyRef}
+            className="input-base text-sm"
+            rows={3}
+            placeholder="Deine Antwort…"
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            maxLength={2000}
+            autoFocus
+          />
+          <CommentToolbar textareaRef={replyRef} value={replyText} onChange={setReplyText} />
+          <div className="flex gap-2">
+            <button type="button" onClick={submitReply} disabled={postingReply || !replyText.trim()} className="btn btn-sm">
+              {postingReply ? "Wird gesendet…" : "Absenden"}
+            </button>
+            <button type="button" onClick={() => setShowReplyBox(false)} className="btn btn-sm">Abbrechen</button>
+          </div>
+        </div>
+      )}
+
+      {beitrag.replies.length > 0 && (
+        <div className="mt-3 pl-3 border-l-2 border-gray-100 flex flex-col gap-2">
+          {beitrag.replies.map((r) => (
+            <div key={r._id} className="text-sm">
+              <div className="flex items-center gap-2 mb-0.5">
+                <div className={`w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 ${isAutor(r.autorUsername) ? "bg-amber-500" : "bg-arena-blue"}`}>
+                  {r.autorUsername[0]?.toUpperCase()}
+                </div>
+                <strong>{r.autorUsername}</strong>
+                {isAutor(r.autorUsername) && <span className="text-xs bg-amber-100 text-amber-700 px-1 rounded">✍️</span>}
+                <span className="text-xs text-arena-muted">{timeAgo(r.createdAt)}</span>
+              </div>
+              <p className="whitespace-pre-wrap m-0 pl-7 text-[0.9rem]">{r.body}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </article>
   );
 }
 
