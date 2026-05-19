@@ -34,6 +34,7 @@ export const GENRE_OPTIONS = [
   "LitRPG / GameLit",
   "Liebesroman / Romance",
   "Märchen / Sagen",
+  "Medical Drama",
   "Mystery",
   "Naturführer / Bestimmungsbuch",
   "New Adult",
