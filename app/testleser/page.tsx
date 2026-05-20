@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { parseGenres } from "@/app/components/genre-picker";
+import { GENRE_OPTIONS } from "@/lib/genres";
 
 const PAGE_SIZE = 10;
 
@@ -65,9 +66,7 @@ export default function TestleserPage() {
     void loadTestleser();
   }, []);
 
-  const allGenres = Array.from(
-    new Set(testleser.flatMap((t) => t.genres))
-  ).sort((a, b) => a.localeCompare(b, "de"));
+  const allGenres = GENRE_OPTIONS;
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
