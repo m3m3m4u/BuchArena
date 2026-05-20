@@ -28,6 +28,7 @@ type ChatMessage = {
   threadId: string | null;
   kooperationId: string | null;
   bookCoAuthorId: string | null;
+  buchzirkelEinladungId: string | null;
   createdAt: string;
 };
 
@@ -132,8 +133,12 @@ function NachrichtenPageInner() {
   const [koopActionLoading, setKoopActionLoading] = useState<string | null>(null);
 
   // Mitautoren-Einladungs-Buttons Status
-  const [handledCoAuthorIds, setHandledCoAuthorIds] = useState<Record<string, "confirmed" | "rejected">>({})
+  const [handledCoAuthorIds, setHandledCoAuthorIds] = useState<Record<string, "confirmed" | "rejected">>({});
   const [coAuthorActionLoading, setCoAuthorActionLoading] = useState<string | null>(null);
+
+  // Buchzirkel-Einladungs-Buttons Status
+  const [handledBzEinladungIds, setHandledBzEinladungIds] = useState<Record<string, "confirmed" | "rejected">>({});
+  const [bzEinladungActionLoading, setBzEinladungActionLoading] = useState<string | null>(null);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -519,6 +524,36 @@ function NachrichtenPageInner() {
     setCoAuthorActionLoading(null);
   }
 
+  async function handleBzEinladungAnnehmen(buchzirkelId: string) {
+    setBzEinladungActionLoading(buchzirkelId);
+    try {
+      const res = await fetch("/api/buchzirkel/einladung/annehmen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ buchzirkelId }),
+      });
+      if (res.ok) {
+        setHandledBzEinladungIds((prev) => ({ ...prev, [buchzirkelId]: "confirmed" }));
+      }
+    } catch { /* ignore */ }
+    setBzEinladungActionLoading(null);
+  }
+
+  async function handleBzEinladungAblehnen(buchzirkelId: string) {
+    setBzEinladungActionLoading(buchzirkelId);
+    try {
+      const res = await fetch("/api/buchzirkel/einladung/ablehnen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ buchzirkelId }),
+      });
+      if (res.ok) {
+        setHandledBzEinladungIds((prev) => ({ ...prev, [buchzirkelId]: "rejected" }));
+      }
+    } catch { /* ignore */ }
+    setBzEinladungActionLoading(null);
+  }
+
   /* ── Datums-Trenner berechnen ── */
   function renderMessages() {
     let lastDate = "";
@@ -592,6 +627,30 @@ function NachrichtenPageInner() {
                       className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 border-none cursor-pointer hover:bg-gray-300 disabled:opacity-50"
                       disabled={coAuthorActionLoading === msg.bookCoAuthorId}
                       onClick={() => handleCoAuthorDecline(msg.bookCoAuthorId!)}
+                    >
+                      ✕ Ablehnen
+                    </button>
+                  </div>
+                );
+              })()}
+              {/* Buchzirkel-Einladungs-Buttons direkt in der Nachricht */}
+              {msg.buchzirkelEinladungId && msg.recipientUsername === username && (() => {
+                const status = handledBzEinladungIds[msg.buchzirkelEinladungId!];
+                if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Du nimmst am Buchzirkel teil!</p>;
+                if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Einladung abgelehnt.</p>;
+                return (
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white border-none cursor-pointer hover:bg-green-700 disabled:opacity-50"
+                      disabled={bzEinladungActionLoading === msg.buchzirkelEinladungId}
+                      onClick={() => handleBzEinladungAnnehmen(msg.buchzirkelEinladungId!)}
+                    >
+                      ✓ Teilnehmen
+                    </button>
+                    <button
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 border-none cursor-pointer hover:bg-gray-300 disabled:opacity-50"
+                      disabled={bzEinladungActionLoading === msg.buchzirkelEinladungId}
+                      onClick={() => handleBzEinladungAblehnen(msg.buchzirkelEinladungId!)}
                     >
                       ✕ Ablehnen
                     </button>

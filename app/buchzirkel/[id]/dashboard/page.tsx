@@ -98,6 +98,14 @@ export default function BuchzirkelDashboardPage() {
   const [uploadError, setUploadError] = useState("");
   const [deletingDatei, setDeletingDatei] = useState<string | null>(null);
 
+  // Direkt-Einladen
+  const [einladenUsername, setEinladenUsername] = useState("");
+  const [einladenSending, setEinladenSending] = useState(false);
+  const [einladenMsg, setEinladenMsg] = useState("");
+  const [einladenSuggestions, setEinladenSuggestions] = useState<{ username: string; displayName: string; profileImage: string }[]>([]);
+  const [einladenSuggestionsLoading, setEinladenSuggestionsLoading] = useState(false);
+  const einladenSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Einstellungen-Edit-State
   const [editTitel, setEditTitel] = useState("");
   const [editBeschreibung, setEditBeschreibung] = useState("");
@@ -396,6 +404,49 @@ export default function BuchzirkelDashboardPage() {
     }
   }
 
+  function handleEinladenUsernameChange(value: string) {
+    setEinladenUsername(value);
+    setEinladenMsg("");
+    if (einladenSearchTimeout.current) clearTimeout(einladenSearchTimeout.current);
+    if (value.trim().length < 3) {
+      setEinladenSuggestions([]);
+      return;
+    }
+    setEinladenSuggestionsLoading(true);
+    einladenSearchTimeout.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/messages/search-users?q=${encodeURIComponent(value.trim())}`);
+        const data = await res.json() as { users?: { username: string; displayName: string; profileImage: string }[] };
+        setEinladenSuggestions(data.users ?? []);
+      } catch {
+        setEinladenSuggestions([]);
+      } finally {
+        setEinladenSuggestionsLoading(false);
+      }
+    }, 250);
+  }
+
+  async function handleEinladen(e: React.FormEvent) {
+    e.preventDefault();
+    if (!einladenUsername.trim()) return;
+    setEinladenSending(true);
+    setEinladenMsg("");
+    try {
+      const res = await fetch(`/api/buchzirkel/${params.id}/einladen`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: einladenUsername.trim() }),
+      });
+      const data = await res.json() as { message?: string };
+      setEinladenMsg(data.message ?? (res.ok ? "Einladung gesendet!" : "Fehler."));
+      if (res.ok) setEinladenUsername("");
+    } catch {
+      setEinladenMsg("Unbekannter Fehler.");
+    } finally {
+      setEinladenSending(false);
+    }
+  }
+
   if (loading || !account) return <main className="top-centered-main"><p className="text-arena-muted text-center py-8">Wird geladen…</p></main>;
   if (!zirkel) return <main className="top-centered-main"><p className="text-red-600 text-center py-8">Nicht gefunden.</p></main>;
 
@@ -499,6 +550,67 @@ export default function BuchzirkelDashboardPage() {
                   </Link>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Direkt-Einladen */}
+          {(zirkel.status === "bewerbung" || zirkel.status === "aktiv") && (
+            <div className="mt-4 pt-4 border-t border-arena-border-light">
+              <h3 className="text-sm font-semibold m-0 mb-1">Benutzer direkt einladen</h3>
+              <p className="text-xs text-arena-muted m-0 mb-3">
+                Lade einen Benutzer direkt ein – er erhält eine In-App-Nachricht und kann die Einladung annehmen oder ablehnen.
+              </p>
+              <form onSubmit={handleEinladen} className="flex gap-2 items-center flex-wrap">
+                <div className="relative flex-1 min-w-0">
+                  <input
+                    type="text"
+                    className="input-base w-full"
+                    placeholder="Benutzername (min. 3 Zeichen)"
+                    value={einladenUsername}
+                    onChange={(e) => handleEinladenUsernameChange(e.target.value)}
+                    onBlur={() => setTimeout(() => setEinladenSuggestions([]), 150)}
+                    maxLength={50}
+                    required
+                    autoComplete="off"
+                  />
+                  {(einladenSuggestions.length > 0 || einladenSuggestionsLoading) && einladenUsername.trim().length >= 3 && (
+                    <div className="absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-arena-border rounded-lg shadow-lg overflow-hidden">
+                      {einladenSuggestionsLoading && einladenSuggestions.length === 0 ? (
+                        <p className="text-xs text-arena-muted px-3 py-2">Suche…</p>
+                      ) : (
+                        einladenSuggestions.map((u) => (
+                          <button
+                            key={u.username}
+                            type="button"
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 text-left border-none bg-transparent cursor-pointer"
+                            onMouseDown={() => { setEinladenUsername(u.username); setEinladenSuggestions([]); setEinladenMsg(""); }}
+                          >
+                            {u.profileImage && (
+                              <img src={u.profileImage} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                            )}
+                            <span className="font-medium">{u.username}</span>
+                            {u.displayName && u.displayName !== u.username && (
+                              <span className="text-arena-muted text-xs">{u.displayName}</span>
+                            )}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  disabled={einladenSending || !einladenUsername.trim()}
+                  className="btn btn-primary btn-sm whitespace-nowrap"
+                >
+                  {einladenSending ? "Wird gesendet…" : "Einladung senden"}
+                </button>
+              </form>
+              {einladenMsg && (
+                <p className={`text-xs mt-2 ${einladenMsg.startsWith("Einladung") ? "text-green-700" : "text-red-600"}`}>
+                  {einladenMsg}
+                </p>
+              )}
             </div>
           )}
         </section>

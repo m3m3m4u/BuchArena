@@ -14,6 +14,7 @@ export type MessageDocument = {
   broadcast?: boolean;
   kooperationId?: string;
   bookCoAuthorId?: string;
+  buchzirkelEinladungId?: string;
   createdAt: Date;
 };
 

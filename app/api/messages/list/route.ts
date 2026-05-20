@@ -41,6 +41,7 @@ export async function GET(request: Request) {
         threadId: d.threadId?.toHexString() ?? null,
         kooperationId: d.kooperationId ?? null,
         bookCoAuthorId: d.bookCoAuthorId ?? null,
+        buchzirkelEinladungId: d.buchzirkelEinladungId ?? null,
         createdAt: d.createdAt.toISOString(),
       }));
 
@@ -72,6 +73,7 @@ export async function GET(request: Request) {
         threadId: d.threadId?.toHexString() ?? null,
         kooperationId: d.kooperationId ?? null,
         bookCoAuthorId: d.bookCoAuthorId ?? null,
+        buchzirkelEinladungId: d.buchzirkelEinladungId ?? null,
         createdAt: d.createdAt.toISOString(),
       }));
 
