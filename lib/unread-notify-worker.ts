@@ -7,7 +7,7 @@
  * - Speichert Zeitstempel der letzten Benachrichtigung, um Spam zu vermeiden
  */
 
-import { getMessagesCollection, getUsersCollection } from "@/lib/mongodb";
+import { getMessageConversationsCollection, getUsersCollection } from "@/lib/mongodb";
 import { sendMail } from "@/lib/mail";
 
 const CHECK_INTERVAL_MS = 15 * 60 * 1000; // 15 Minuten
@@ -18,7 +18,7 @@ let workerRunning = false;
 
 async function checkUnreadMessages(): Promise<void> {
   const users = await getUsersCollection();
-  const messages = await getMessagesCollection();
+  const convCol = await getMessageConversationsCollection();
 
   // Alle User mit aktivierter Benachrichtigung
   type EligibleUser = Pick<import("mongodb").WithId<import("@/lib/mongodb").UserDocument>, "_id" | "username" | "email" | "displayName" | "lastUnreadNotifiedAt">;
@@ -40,15 +40,20 @@ async function checkUnreadMessages(): Promise<void> {
       if (gap < MIN_NOTIFY_GAP_MS) continue;
     }
 
-    // Ungelesene Nachrichten älter als 24h zählen
-    // Nur persönliche Nachrichten zählen (keine Broadcasts)
-    const unreadCount = await messages.countDocuments({
-      recipientUsername: user.username,
-      read: false,
-      deletedByRecipient: false,
-      broadcast: { $ne: true },
-      createdAt: { $lt: threshold },
-    });
+    // Ungelesene Nachrichten aus messageConversations – identische Datenquelle wie die UI
+    // Nur Konversationen zählen, deren letzte Nachricht älter als 24h ist (Threshold)
+    const [resA, resB] = await Promise.all([
+      convCol.aggregate<{ total: number }>([
+        { $match: { userA: user.username, unreadForA: { $gt: 0 }, latestCreatedAt: { $lt: threshold } } },
+        { $group: { _id: null, total: { $sum: "$unreadForA" } } },
+      ]).toArray(),
+      convCol.aggregate<{ total: number }>([
+        { $match: { userB: user.username, unreadForB: { $gt: 0 }, latestCreatedAt: { $lt: threshold } } },
+        { $group: { _id: null, total: { $sum: "$unreadForB" } } },
+      ]).toArray(),
+    ]);
+
+    const unreadCount = (resA[0]?.total ?? 0) + (resB[0]?.total ?? 0);
 
     if (unreadCount === 0) continue;
 
