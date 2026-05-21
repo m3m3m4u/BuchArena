@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import {
   getBuchzirkelCollection,
   getBuchzirkelTeilnahmenCollection,
+  getBuchzirkelBewerbungenCollection,
   getMessagesCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
@@ -62,6 +63,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Du nimmst bereits teil." }, { status: 400 });
     }
 
+    const now = new Date();
+
     // Teilnahme erstellen
     await teilnahmenCol.insertOne({
       buchzirkelId: new ObjectId(buchzirkelId),
@@ -71,8 +74,27 @@ export async function POST(request: Request) {
       rezensionsLinks: [],
       fragebogenAntworten: [],
       abgebrochen: false,
-      beigetreten: new Date(),
+      beigetreten: now,
     });
+
+    // Bewerbungs-Dokument anlegen (Status "angenommen"), damit der Benutzer
+    // im Dashboard unter "Teilnehmer" erscheint (direkte Einladung ohne Bewerbung).
+    const bewerbungenCol = await getBuchzirkelBewerbungenCollection();
+    const bereitsBewerbung = await bewerbungenCol.findOne({
+      buchzirkelId: new ObjectId(buchzirkelId),
+      bewerberUsername: account.username,
+    });
+    if (!bereitsBewerbung) {
+      await bewerbungenCol.insertOne({
+        buchzirkelId: new ObjectId(buchzirkelId),
+        bewerberUsername: account.username,
+        status: "angenommen",
+        antworten: [],
+        agbAkzeptiert: false,
+        bewirbtSichAm: now,
+        entschiedenAm: now,
+      });
+    }
 
     return NextResponse.json({ ok: true, message: "Du nimmst jetzt am Buchzirkel teil!" });
   } catch (err) {
