@@ -266,110 +266,108 @@ export default function ZiehungsradPage() {
 
   async function exportVideo() {
     if (!canvasRef.current || aktiveTeilnehmer.length === 0) return;
+
+    if (typeof VideoEncoder === "undefined") {
+      alert("Dein Browser unterstützt keine Videoerstellung (WebCodecs). Bitte Chrome 94+ oder Edge verwenden.");
+      return;
+    }
+
     setExporting(true);
     exportBlobRef.current = null;
 
-    // Export-Canvas in 1080×1080
-    const exportCanvas = document.createElement("canvas");
-    exportCanvas.width = 1080;
-    exportCanvas.height = 1080;
-    const ectx = exportCanvas.getContext("2d")!;
+    try {
+      const W = 1080, H = 1080;
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = W;
+      exportCanvas.height = H;
+      const ectx = exportCanvas.getContext("2d")!;
 
-    const namen = aktiveTeilnehmer.map((t) => t.displayName);
-    const n = namen.length;
+      const namen = aktiveTeilnehmer.map((t) => t.displayName);
+      const n = namen.length;
+      const arr = new Uint32Array(1);
+      crypto.getRandomValues(arr);
+      const winnerIdx = arr[0] % n;
 
-    // Gewinner für das Export-Video
-    const arr = new Uint32Array(1);
-    crypto.getRandomValues(arr);
-    const winnerIdx = arr[0] % n;
+      const FPS = 30;
+      const spinDelay = 500;
+      const spinDuration = 5000;
+      const winnerHold = 800;
+      const TOTAL_MS = spinDelay + spinDuration + winnerHold;
+      const TOTAL_FRAMES = Math.ceil(TOTAL_MS / 1000 * FPS);
 
-    // Chrome MediaRecorder unterstützt nur WebM zuverlässig
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-      ? "video/webm;codecs=vp9"
-      : "video/webm";
-    const fileExt = "webm";
+      const slotWinnerRelative = (winnerIdx - SLOT_CENTER + n) % n;
+      const exportMinCycles = Math.max(Math.ceil(20 / n), 2);
+      const exportCycles = exportMinCycles + 2 + Math.floor(Math.random() * 3);
+      const targetScrollY = (exportCycles * n + slotWinnerRelative) * SLOT_H;
 
-    const stream = exportCanvas.captureStream(30);
-    const recorder = new MediaRecorder(stream, {
-      mimeType,
-      videoBitsPerSecond: 8_000_000,
-    });
+      const tmp = document.createElement("canvas");
+      tmp.width = SIZE; tmp.height = SIZE;
+      const tctx = tmp.getContext("2d")!;
+      const scale = W / SIZE;
 
-    const chunks: Blob[] = [];
-    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      function drawScaled(scrollY: number, hl: number | null) {
+        drawSlotFrame(tctx, namen, scrollY, hl !== null, hl);
+        ectx.save();
+        ectx.scale(scale, scale);
+        ectx.drawImage(tmp, 0, 0);
+        ectx.restore();
+      }
 
-    const scale = 1080 / SIZE;
-    // Tmp-Canvas einmal erstellen (nicht pro Frame neu)
-    const tmp = document.createElement("canvas");
-    tmp.width = SIZE;
-    tmp.height = SIZE;
-    const tctx = tmp.getContext("2d")!;
+      const { Muxer, ArrayBufferTarget } = await import("mp4-muxer");
+      const target = new ArrayBufferTarget();
+      const muxer = new Muxer({
+        target,
+        video: { codec: "avc", width: W, height: H },
+        fastStart: "in-memory",
+      });
 
-    function drawScaled(scrollY: number, hl: number | null) {
-      drawSlotFrame(tctx, namen, scrollY, hl !== null, hl);
-      ectx.clearRect(0, 0, 1080, 1080);
-      ectx.save();
-      ectx.scale(scale, scale);
-      ectx.drawImage(tmp, 0, 0);
-      ectx.restore();
-    }
+      const videoEncoder = new VideoEncoder({
+        output: (chunk, meta) => muxer.addVideoChunk(chunk, meta!),
+        error: (e) => { throw e; },
+      });
+      videoEncoder.configure({
+        codec: "avc1.640028",
+        width: W, height: H,
+        bitrate: 8_000_000,
+        framerate: FPS,
+        avc: { format: "avc" },
+      });
 
-    // Phasen: 0.5s Ruhe → 5s Spin → 0.8s Gewinner-Anzeige
-    const spinDelay = 500;
-    const spinDuration = 5000;
-    const winnerHold = 800;
-
-    const slotWinnerRelative = (winnerIdx - SLOT_CENTER + n) % n;
-    const exportMinCycles = Math.max(Math.ceil(20 / n), 2);
-    const exportCycles = exportMinCycles + 2 + Math.floor(Math.random() * 3);
-    const targetScrollY = (exportCycles * n + slotWinnerRelative) * SLOT_H;
-
-    // Erstes Frame zeichnen bevor Recording startet
-    drawScaled(0, null);
-
-    await new Promise<void>((resolve) => {
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: mimeType });
-        exportBlobRef.current = blob;
-        // Auto-Download
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `gewinnspiel-ziehung-${id}.${fileExt}`;
-        a.click();
-        URL.revokeObjectURL(url);
-        setExporting(false);
-        resolve();
-      };
-
-      recorder.start();
-      const startTime = performance.now();
-
-      function renderFrame() {
-        const elapsed = performance.now() - startTime;
-
+      for (let frameIdx = 0; frameIdx < TOTAL_FRAMES; frameIdx++) {
+        const elapsed = (frameIdx / FPS) * 1000;
         if (elapsed < spinDelay) {
-          // Phase 1: statisch
           drawScaled(0, null);
         } else {
           const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
           const scrollY = targetScrollY * easeOut(t);
           const done = t >= 1;
           drawScaled(scrollY, done ? winnerIdx : null);
-
-          if (done && elapsed >= spinDelay + spinDuration + winnerHold) {
-            // Gewinner-Frame nochmals zeichnen und Recording stoppen
-            drawScaled(targetScrollY, winnerIdx);
-            recorder.stop();
-            return;
-          }
         }
-
-        requestAnimationFrame(renderFrame);
+        const ts = Math.round(frameIdx * 1_000_000 / FPS);
+        const frame = new VideoFrame(exportCanvas, { timestamp: ts, duration: Math.round(1_000_000 / FPS) });
+        videoEncoder.encode(frame, { keyFrame: frameIdx % (FPS * 2) === 0 });
+        frame.close();
+        if (frameIdx % 30 === 0) await new Promise<void>(r => setTimeout(r, 0));
       }
 
-      requestAnimationFrame(renderFrame);
-    });
+      await videoEncoder.flush();
+      muxer.finalize();
+
+      const blob = new Blob([target.buffer], { type: "video/mp4" });
+      exportBlobRef.current = blob;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `gewinnspiel-ziehung-${id}.mp4`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("Video-Export fehlgeschlagen:", err);
+      alert(`Export fehlgeschlagen: ${msg}`);
+    } finally {
+      setExporting(false);
+    }
   }
 
   async function exportReel() {
@@ -745,7 +743,7 @@ export default function ZiehungsradPage() {
               className="px-6 py-3 rounded-xl font-bold text-base border transition-opacity disabled:opacity-50"
               style={{ borderColor: "var(--color-arena-blue)", color: "var(--color-arena-blue)" }}
             >
-              {exporting ? "Video wird erstellt…" : "Video (1:1) herunterladen"}
+              {exporting ? "Video wird erstellt…" : "🎥 Video (1:1) als MP4"}
             </button>
 
             <button
@@ -783,7 +781,7 @@ export default function ZiehungsradPage() {
           )}
 
           <p className="text-xs opacity-50 text-center mt-3">
-            Das 1:1-Video (1080×1080) ist für Feeds optimiert, das 9:16-Reel (1080×1920) für Reels, Stories &amp; TikTok – mit Cover, Autor und BuchArena-Branding.
+            Beide Videos werden als MP4 exportiert. Das 1:1-Video (1080×1080) ist für Feeds optimiert, das 9:16-Reel (1080×1920) für Reels, Stories &amp; TikTok – mit Cover, Autor und BuchArena-Branding.
           </p>
 
           {/* Teilnehmerliste */}
