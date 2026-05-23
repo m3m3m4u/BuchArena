@@ -3,6 +3,7 @@ import { getGewinnspieleCollection, getGewinnspielteilnahmenCollection, getUsers
 import { getServerAccount } from "@/lib/server-auth";
 import { ObjectId } from "mongodb";
 import type { TeilnahmePayload } from "@/lib/gewinnspiel";
+import { getProfileDisplayName } from "@/lib/profile";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -66,7 +67,7 @@ export async function POST(req: Request, { params }: Params) {
     await teilnahmeCol.insertOne({
       gewinnspielId: id,
       username: account.username,
-      displayName: user.displayName ?? account.username,
+      displayName: getProfileDisplayName(user) || account.username,
       email: user.email,
       adresse: body.adresse?.trim(),
       ort: body.ort?.trim(),

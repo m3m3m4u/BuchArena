@@ -12,32 +12,10 @@ export async function GET(request: NextRequest) {
     const q = request.nextUrl.searchParams.get("q")?.trim();
     const genreParam = request.nextUrl.searchParams.get("genre")?.trim();
 
-    const matchConditions: object[] = [];
-    if (q) {
-      matchConditions.push({
-        $or: [
-          { title: { $regex: q, $options: "i" } },
-          { publisher: { $regex: q, $options: "i" } },
-          { isbn: { $regex: q, $options: "i" } },
-          { ownerUsername: { $regex: q, $options: "i" } },
-        ],
-      });
-    }
-    if (genreParam) {
-      // Genre-Feld kann kommagetrennte Liste sein – prüfe ob genreParam darin enthalten ist
-      matchConditions.push({ genre: { $regex: genreParam, $options: "i" } });
-    }
-    const matchStage = matchConditions.length > 0
-      ? { $match: matchConditions.length === 1 ? matchConditions[0] : { $and: matchConditions } }
-      : null;
-
     const hasFilter = !!q || !!genreParam;
 
-    // Bücher laden, deaktivierte User per Lookup ausschließen
+    // Bücher laden – Lookup zuerst, damit Anzeigename für Suche verfügbar ist
     const pipeline: object[] = [
-      ...(matchStage ? [matchStage] : []),
-      { $sort: { createdAt: -1 as const } },
-      ...(hasFilter ? [] : [{ $limit: 500 }]),
       {
         $lookup: {
           from: "users",
@@ -48,8 +26,35 @@ export async function GET(request: NextRequest) {
         },
       },
       { $unwind: { path: "$_owner", preserveNullAndEmptyArrays: true } },
+      // Deaktivierte User ausschließen
       { $match: { "_owner.status": { $ne: "deactivated" }, "_owner.profile.deaktiviert": { $ne: true } } },
     ];
+
+    // Suchfilter nach Lookup anwenden, damit _owner.profile.name.value verfügbar ist
+    const matchConditions: object[] = [];
+    if (q) {
+      matchConditions.push({
+        $or: [
+          { title: { $regex: q, $options: "i" } },
+          { publisher: { $regex: q, $options: "i" } },
+          { isbn: { $regex: q, $options: "i" } },
+          { ownerUsername: { $regex: q, $options: "i" } },
+          { "_owner.profile.name.value": { $regex: q, $options: "i" } },
+        ],
+      });
+    }
+    if (genreParam) {
+      // Genre-Feld kann kommagetrennte Liste sein – prüfe ob genreParam darin enthalten ist
+      matchConditions.push({ genre: { $regex: genreParam, $options: "i" } });
+    }
+    if (matchConditions.length > 0) {
+      pipeline.push({ $match: matchConditions.length === 1 ? matchConditions[0] : { $and: matchConditions } });
+    }
+
+    pipeline.push(
+      { $sort: { createdAt: -1 as const } },
+      ...(hasFilter ? [] : [{ $limit: 500 }]),
+    );
     const raw = await books.aggregate(pipeline).toArray();
 
     // Empfehlungen-Anzahl pro Buch laden

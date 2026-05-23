@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
 import { getKooperationenCollection, getUsersCollection } from "@/lib/mongodb";
 import { ROLLE_LABELS, type KooperationsRolle } from "@/lib/kooperationen";
+import { getProfileDisplayName } from "@/lib/profile";
 
 /** GET /api/kooperationen/list – Alle eigenen Kooperationen (pending + confirmed) */
 export async function GET() {
@@ -33,13 +34,14 @@ export async function GET() {
     const userDocs = await users
       .find(
         { username: { $in: [...usernames] } },
-        { projection: { username: 1, displayName: 1, profile: 1 } },
+        { projection: { username: 1, displayName: 1, "profile.name.value": 1, "lektorenProfile.name.value": 1, "verlageProfile.name.value": 1, "testleserProfile.name.value": 1, "bloggerProfile.name.value": 1, "speakerProfile.name.value": 1, "profile.profileImage.value": 1 } },
       )
       .toArray();
 
     const userMap = new Map<string, { displayName: string; profileImage: string }>();
     for (const u of userDocs) {
-      const dn = u.displayName || (u.profile?.name?.visibility === "public" && u.profile?.name?.value ? u.profile.name.value : u.username);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const dn = getProfileDisplayName(u as any) || (u.username as string);
       userMap.set(u.username, {
         displayName: dn,
         profileImage: u.profile?.profileImage?.value ?? "",

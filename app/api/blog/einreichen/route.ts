@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
 import { getBlogCollection, extractExcerpt } from "@/lib/blog";
 import { getUsersCollection } from "@/lib/mongodb";
+import { getProfileDisplayName } from "@/lib/profile";
 
 export async function POST(request: Request) {
   const account = await getServerAccount();
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
 
   // Anzeigenamen laden
   const users = await getUsersCollection();
-  const user = await users.findOne({ username: account.username }, { projection: { displayName: 1 } });
+  const user = await users.findOne({ username: account.username }, { projection: { displayName: 1, "profile.name.value": 1, "lektorenProfile.name.value": 1, "verlageProfile.name.value": 1, "testleserProfile.name.value": 1, "bloggerProfile.name.value": 1, "speakerProfile.name.value": 1 } });
 
   const col = await getBlogCollection();
   const now = new Date();
@@ -32,7 +33,8 @@ export async function POST(request: Request) {
     excerpt: extractExcerpt(htmlContent),
     status: "pending",
     authorUsername: account.username,
-    authorDisplayName: user?.displayName ?? account.username,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    authorDisplayName: (user ? getProfileDisplayName(user as any) : null) || account.username,
     createdAt: now,
     updatedAt: now,
   });

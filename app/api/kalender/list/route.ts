@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getKalenderCollection, getUsersCollection } from "@/lib/mongodb";
+import { getProfileDisplayName } from "@/lib/profile";
 
 export async function GET(request: Request) {
   try {
@@ -39,14 +40,15 @@ export async function GET(request: Request) {
     const foundUsers = await usersCol
       .find(
         { $or: [{ username: { $in: allLookupIds } }, { email: { $in: allLookupIds } }] },
-        { projection: { username: 1, email: 1, displayName: 1 } }
+        { projection: { username: 1, email: 1, displayName: 1, "profile.name.value": 1, "lektorenProfile.name.value": 1, "verlageProfile.name.value": 1, "testleserProfile.name.value": 1, "bloggerProfile.name.value": 1, "speakerProfile.name.value": 1 } }
       )
       .toArray();
 
     const displayNameMap = new Map<string, string>();
     const usernameMap = new Map<string, string>(); // legacy-id -> real username
     for (const u of foundUsers) {
-      const name = (u.displayName as string | undefined) || (u.username as string);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const name = getProfileDisplayName(u as any) || (u.username as string);
       const realUsername = u.username as string;
       if (allLookupIds.includes(realUsername)) {
         displayNameMap.set(realUsername, name);

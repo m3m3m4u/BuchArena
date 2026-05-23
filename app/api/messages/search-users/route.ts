@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getProfileDisplayName } from "@/lib/profile";
 
 /**
  * GET /api/messages/search-users?q=abc
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest) {
           username: { $regex: `^${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, $options: "i" },
           $or: [{ status: { $exists: false } }, { status: "active" }],
         },
-        { projection: { _id: 0, username: 1, profile: 1, displayName: 1 } },
+        { projection: { _id: 0, username: 1, displayName: 1, "profile.name.value": 1, "lektorenProfile.name.value": 1, "verlageProfile.name.value": 1, "testleserProfile.name.value": 1, "bloggerProfile.name.value": 1, "speakerProfile.name.value": 1, "profile.profileImage.value": 1 } },
       )
       .sort({ username: 1 })
       .limit(15)
@@ -42,14 +43,10 @@ export async function GET(req: NextRequest) {
     const users = list
       .filter((u) => u.username !== user.username)
       .map((u) => {
-        const dn = (u as unknown as { displayName?: string }).displayName;
         return {
           username: u.username,
-          displayName:
-            dn ||
-            (u.profile?.name?.visibility === "public" && u.profile?.name?.value
-              ? u.profile.name.value
-              : u.username),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          displayName: getProfileDisplayName(u as any) || u.username,
           profileImage: u.profile?.profileImage?.value ?? "",
         };
       });

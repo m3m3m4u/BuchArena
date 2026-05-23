@@ -1052,66 +1052,66 @@ function ProfilPageInner() {
         )}
 
         {/* Tab-Auswahl */}
-        <div className="flex gap-1.5 border-b border-arena-border pb-2 max-sm:flex-wrap">
+        <div className="grid grid-cols-3 gap-1.5 border-b border-arena-border pb-2 sm:flex sm:flex-wrap">
           <button
             type="button"
-            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "autor" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            className={`px-2 py-2.5 rounded-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 sm:px-4 sm:rounded-t-lg ${activeTab === "autor" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
             onClick={() => handleTabSwitch("autor")}
           >
             Autor
           </button>
           <button
             type="button"
-            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "sprecher" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            className={`px-2 py-2.5 rounded-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 sm:px-4 sm:rounded-t-lg ${activeTab === "sprecher" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
             onClick={() => handleTabSwitch("sprecher")}
           >
             Sprecher
           </button>
           <button
             type="button"
-            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "blogger" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            className={`px-2 py-2.5 rounded-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 sm:px-4 sm:rounded-t-lg ${activeTab === "blogger" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
             onClick={() => handleTabSwitch("blogger")}
           >
             Blogger
           </button>
           <button
             type="button"
-            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "testleser" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            className={`px-2 py-2.5 rounded-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 sm:px-4 sm:rounded-t-lg ${activeTab === "testleser" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
             onClick={() => handleTabSwitch("testleser")}
           >
             (Test)Leser
           </button>
           <button
             type="button"
-            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "lektoren" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            className={`px-2 py-2.5 rounded-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 sm:px-4 sm:rounded-t-lg ${activeTab === "lektoren" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
             onClick={() => handleTabSwitch("lektoren")}
           >
             Lektoren
           </button>
           <button
             type="button"
-            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "verlage" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            className={`px-2 py-2.5 rounded-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 sm:px-4 sm:rounded-t-lg ${activeTab === "verlage" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
             onClick={() => handleTabSwitch("verlage")}
           >
             Verlage
           </button>
           <button
             type="button"
-            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "kooperationen" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            className={`px-2 py-2.5 rounded-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 sm:px-4 sm:rounded-t-lg ${activeTab === "kooperationen" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
             onClick={() => handleTabSwitch("kooperationen")}
           >
             Partner
           </button>
           <button
             type="button"
-            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "buecher" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            className={`px-2 py-2.5 rounded-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 sm:px-4 sm:rounded-t-lg ${activeTab === "buecher" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
             onClick={() => handleTabSwitch("buecher")}
           >
             Bücher
           </button>
           <button
             type="button"
-            className={`px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 max-sm:flex-1 max-sm:min-w-[calc(50%-0.375rem)] ${activeTab === "konto" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
+            className={`px-2 py-2.5 rounded-lg text-sm font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 sm:px-4 sm:rounded-t-lg col-span-1 ${activeTab === "konto" ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}
             onClick={() => handleTabSwitch("konto")}
           >
             Konto

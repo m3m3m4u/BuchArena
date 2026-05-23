@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPollsCollection, getUsersCollection } from "@/lib/mongodb";
+import { getProfileDisplayName } from "@/lib/profile";
 
 export async function GET(request: Request) {
   try {
@@ -22,11 +23,12 @@ export async function GET(request: Request) {
     const usersCol = await getUsersCollection();
     const authorDocs = await usersCol
       .find({ username: { $in: [...allUsernames] } })
-      .project({ username: 1, displayName: 1 })
+      .project({ username: 1, displayName: 1, "profile.name.value": 1, "lektorenProfile.name.value": 1, "verlageProfile.name.value": 1, "testleserProfile.name.value": 1, "bloggerProfile.name.value": 1, "speakerProfile.name.value": 1 })
       .toArray();
     const dnMap = new Map<string, string>();
     for (const u of authorDocs) {
-      if (u.displayName) dnMap.set(u.username, u.displayName as string);
+      const dn = getProfileDisplayName(u);
+      if (dn) dnMap.set(u.username, dn);
     }
 
     const list = docs.map((d) => ({

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDiscussionsCollection, getUsersCollection, getDiscussionReadsCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { getProfileDisplayName } from "@/lib/profile";
 
 export async function GET() {
   try {
@@ -53,7 +54,7 @@ export async function GET() {
     const users = await getUsersCollection();
     const authorDocs = await users
       .find({ username: { $in: authorNames } })
-      .project({ username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, displayName: 1, role: 1 })
+      .project({ username: 1, displayName: 1, "profile.name.value": 1, "lektorenProfile.name.value": 1, "verlageProfile.name.value": 1, "testleserProfile.name.value": 1, "bloggerProfile.name.value": 1, "speakerProfile.name.value": 1, role: 1 })
       .toArray();
 
     const profileMap = new Map<string, { hasProfile: boolean; hasSpeakerProfile: boolean; hasBloggerProfile: boolean; displayName: string; isAdmin: boolean }>();
@@ -66,7 +67,7 @@ export async function GET() {
         hasProfile: !!(p?.name as { value?: string } | undefined)?.value?.trim(),
         hasSpeakerProfile: !!(sp?.name as { value?: string } | undefined)?.value?.trim(),
         hasBloggerProfile: !!(bp?.name as { value?: string } | undefined)?.value?.trim(),
-        displayName: (u.displayName as string) || "",
+        displayName: getProfileDisplayName(u) || "",
         isAdmin: role === "ADMIN" || role === "SUPERADMIN",
       });
     }

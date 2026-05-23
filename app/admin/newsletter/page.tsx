@@ -831,7 +831,7 @@ export default function NewsletterAdminPage() {
     <main className="w-[min(1100px,100%)] mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Newsletter</h1>
 
-      <div className="flex gap-1 border-b border-gray-200 mb-6">
+      <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -1179,7 +1179,7 @@ function SubscriberManager() {
   return (
     <div>
       {/* Zusammenfassung */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-3 gap-3 mb-5 max-[450px]:grid-cols-1">
         <div className="bg-blue-600 text-white rounded-lg p-3 text-center">
           <div className="text-2xl font-bold leading-tight">{totalAll}</div>
           <div className="text-xs opacity-85">Gesamt aktiv</div>
@@ -1195,7 +1195,7 @@ function SubscriberManager() {
       </div>
 
       {/* Tabs zwischen den zwei Quellen */}
-      <div className="flex gap-1 border-b border-gray-200 mb-4">
+      <div className="flex gap-1 border-b border-gray-200 mb-4 overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveSection("extern")}

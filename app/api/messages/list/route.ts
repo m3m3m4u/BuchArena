@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { getMessagesCollection, getMessageConversationsCollection, getUsersCollection } from "@/lib/mongodb";
+import { getProfileDisplayName } from "@/lib/profile";
 
 export async function GET(request: Request) {
   try {
@@ -105,7 +106,11 @@ export async function GET(request: Request) {
             username: 1,
             displayName: 1,
             "profile.name.value": 1,
-            "profile.name.visibility": 1,
+            "lektorenProfile.name.value": 1,
+            "verlageProfile.name.value": 1,
+            "testleserProfile.name.value": 1,
+            "bloggerProfile.name.value": 1,
+            "speakerProfile.name.value": 1,
             "profile.profileImage.value": 1,
           },
         },
@@ -115,10 +120,8 @@ export async function GET(request: Request) {
     const profileImageMap = new Map<string, string>();
     for (const u of userDocs) {
       const name =
-        u.displayName ||
-        (u.profile?.name?.visibility === "public" && u.profile?.name?.value
-          ? u.profile.name.value
-          : "");
+        getProfileDisplayName(u) ||
+        "";
       displayNameMap.set(u.username, name);
       profileImageMap.set(u.username, u.profile?.profileImage?.value ?? "");
     }

@@ -407,6 +407,32 @@ export type VerlageProfileData = {
   socialEmail: ProfileField;
 };
 
+/**
+ * Gibt den effektiven Anzeigenamen eines Nutzers zurück.
+ * Priorität: displayName → Autorprofil → Lektorenprofil → Verlagsprofil
+ *            → Testleserprofil → Bloggerprofil → Sprecherprofil → "" (Fallback auf username)
+ */
+export function getProfileDisplayName(user: {
+  displayName?: string;
+  profile?: { name?: { value?: string } } | null;
+  lektorenProfile?: { name?: { value?: string } } | null;
+  verlageProfile?: { name?: { value?: string } } | null;
+  testleserProfile?: { name?: { value?: string } } | null;
+  bloggerProfile?: { name?: { value?: string } } | null;
+  speakerProfile?: { name?: { value?: string } } | null;
+}): string {
+  if (user.displayName?.trim()) return user.displayName.trim();
+  const profileName =
+    user.profile?.name?.value?.trim() ||
+    user.lektorenProfile?.name?.value?.trim() ||
+    user.verlageProfile?.name?.value?.trim() ||
+    user.testleserProfile?.name?.value?.trim() ||
+    user.bloggerProfile?.name?.value?.trim() ||
+    user.speakerProfile?.name?.value?.trim() ||
+    "";
+  return profileName;
+}
+
 export function createDefaultVerlageProfile(): VerlageProfileData {
   return {
     profileImage: {

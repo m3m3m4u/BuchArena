@@ -39,7 +39,7 @@ export default function KooperationenAnzeige({ username, isAutor }: { username: 
       </h2>
       <ul className="list-none p-0 m-0 space-y-1.5">
         {partners.map((p) => (
-          <li key={p.username}>
+          <li key={`${p.username}::${p.rolle}`}>
             <Link
               href={p.profilePath}
               className="inline-flex items-center gap-2 text-sm hover:underline"

@@ -68,8 +68,8 @@ export default function TeilnehmerPage() {
       {liste.length === 0 ? (
         <p className="text-sm opacity-60">Noch keine Teilnehmer.</p>
       ) : (
-        <div className="border rounded-lg overflow-hidden" style={{ borderColor: "var(--color-arena-border)" }}>
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-lg border" style={{ borderColor: "var(--color-arena-border)" }}>
+          <table className="w-full text-sm min-w-[520px]">
             <thead>
               <tr style={{ background: "var(--color-arena-blue)", color: "white" }}>
                 <th className="text-left px-3 py-2 font-medium">#</th>
