@@ -232,7 +232,7 @@ function EmojiPicker({
         +
       </button>
       {open && (
-        <div className="absolute bottom-full left-0 mb-1.5 flex gap-1 bg-white border border-arena-border-light rounded-lg p-1.5 shadow-lg z-10">
+        <div className="absolute bottom-full left-0 max-sm:right-0 max-sm:left-auto mb-1.5 flex gap-1 bg-white border border-arena-border-light rounded-lg p-1.5 shadow-lg z-10">
           {emojis.map((emoji) => (
             <button
               key={emoji}
@@ -586,12 +586,12 @@ export default function DiskussionDetailPage() {
             <article className="grid gap-3">
               <div className="grid gap-1">
                 <h1>{discussion.title}</h1>
-                <div className="flex items-center justify-between gap-2 text-sm text-arena-muted">
-                  <span>
+                <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-arena-muted">
+                  <span className="min-w-0">
                     von <strong>{discussion.displayName || discussion.authorUsername}</strong>{" "}
                     <RoleBadges username={discussion.authorUsername} hasProfile={discussion.hasProfile} hasSpeakerProfile={discussion.hasSpeakerProfile} hasBloggerProfile={discussion.hasBloggerProfile} isAdmin={discussion.isAdmin} />
                   </span>
-                  <span className="text-xs text-arena-muted">
+                  <span className="text-xs text-arena-muted flex-shrink-0">
                     {timeAgo(discussion.createdAt)}
                   </span>
                 </div>
@@ -691,8 +691,8 @@ export default function DiskussionDetailPage() {
                     function renderReply(reply: ReplyItem, depth: number) {
                       const children = childrenMap.get(reply.id) ?? [];
                       return (
-                        <div key={reply.id} style={{ marginLeft: depth > 0 ? Math.min(depth * 20, 60) : 0 }}>
-                          <article className="rounded-lg border border-arena-border-light p-3 ml-3 sm:ml-6">
+                        <div key={reply.id} className="max-sm:!ml-0" style={{ marginLeft: depth > 0 ? Math.min(depth * 16, 48) : 0 }}>
+                          <article className="rounded-lg border border-arena-border-light p-3 sm:ml-4">
                             <div className="flex items-center justify-between gap-2 mb-2">
                               <span className="flex items-center gap-1.5 flex-wrap">
                                 <strong>{reply.displayName || reply.authorUsername}</strong>{" "}
@@ -765,7 +765,7 @@ export default function DiskussionDetailPage() {
 
                           {/* Inline Bearbeitungsformular */}
                           {editingReplyId === reply.id && (
-                            <div className="mt-2 ml-3 sm:ml-6 pl-3 border-l-2 border-arena-blue/30 grid gap-2">
+                            <div className="mt-2 sm:ml-6 pl-3 border-l-2 border-arena-blue/30 grid gap-2">
                               <textarea
                                 ref={editReplyTextareaRef}
                                 className="input-base text-sm"
@@ -800,7 +800,7 @@ export default function DiskussionDetailPage() {
 
                           {/* Inline Antwortformular */}
                           {inlineReplyId === reply.id && (
-                            <div className="mt-2 ml-3 sm:ml-6 pl-3 border-l-2 border-arena-blue/30 grid gap-2">
+                            <div className="mt-2 sm:ml-6 pl-3 border-l-2 border-arena-blue/30 grid gap-2">
                               <textarea
                                 ref={inlineReplyTextareaRef}
                                 className="input-base text-sm"

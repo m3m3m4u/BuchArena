@@ -614,7 +614,7 @@ export default function TeilnehmerBereichPage() {
                       done ? "bg-green-50 border-green-200" : fällig ? "bg-red-50 border-red-200" : "border-arena-border-light"
                     }`}
                   >
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="font-medium text-sm m-0">{a.titel}</p>
                       <p className={`text-xs m-0 mt-0.5 ${fällig ? "text-red-600 font-medium" : "text-arena-muted"}`}>
                         {deadline.toLocaleDateString("de-AT")} {fällig ? "– Überfällig!" : ""}
@@ -623,11 +623,11 @@ export default function TeilnehmerBereichPage() {
                     <button
                       type="button"
                       onClick={() => toggleFortschritt(a.id)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                         done ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-100 text-arena-text hover:bg-gray-200"
                       }`}
                     >
-                      {done ? "✅ Gelesen" : "Als gelesen markieren"}
+                      {done ? "✅ Gelesen" : <span><span className="hidden sm:inline">Als gelesen </span>markieren</span>}
                     </button>
                   </div>
                 );
@@ -904,7 +904,7 @@ function BeitragKarte({
           </p>
           {beitrag.replies.map((r) => (
             <div key={r._id}>
-              <article className="rounded-lg border border-arena-border-light p-3 ml-3 sm:ml-6">
+              <article className="rounded-lg border border-arena-border-light p-3 sm:ml-4">
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <div className={`w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 ${isAutor(r.autorUsername) ? "bg-amber-500" : "bg-arena-blue"}`}>

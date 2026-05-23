@@ -347,11 +347,11 @@ function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirk
           </div>
 
           <h2 className="text-base font-semibold m-0 mt-0.5 truncate">{zirkel.titel}</h2>
-          <div className="flex items-center gap-3 text-xs text-arena-muted m-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-arena-muted m-0">
             <span>von {zirkel.veranstalterUsername}</span>
-            <span>·</span>
+            <span aria-hidden>·</span>
             <span>max. {zirkel.maxTeilnehmer} Teilnehmer</span>
-            <span>·</span>
+            <span aria-hidden>·</span>
             {expired ? (
               <span className="text-red-600 font-medium">Bewerbung beendet</span>
             ) : (
