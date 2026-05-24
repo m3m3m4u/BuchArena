@@ -363,17 +363,31 @@ export default function ZiehungsradPage() {
         URL.revokeObjectURL(url);
       } else {
         // MediaRecorder-Fallback (Firefox / Safari) → erzeugt WebM
-        const stream = exportCanvas.captureStream(FPS);
-        const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-          ? "video/webm;codecs=vp9"
-          : "video/webm;codecs=vp8";
+        type CaptureCanvas = HTMLCanvasElement & { mozCaptureStream?: (fps?: number) => MediaStream };
+        const capCanvas = exportCanvas as CaptureCanvas;
+        const captureStreamFn = capCanvas.captureStream?.bind(capCanvas) ?? capCanvas.mozCaptureStream?.bind(capCanvas);
+        if (!captureStreamFn) throw new Error("captureStream wird von diesem Browser nicht unterstützt.");
+
+        // Ersten Frame zeichnen
+        drawScaled(0, null);
+        const stream = captureStreamFn(FPS);
+
+        const mimeType = [
+          'video/webm;codecs="vp9"',
+          "video/webm;codecs=vp9",
+          'video/webm;codecs="vp8"',
+          "video/webm;codecs=vp8",
+          "video/webm",
+        ].find((t) => MediaRecorder.isTypeSupported(t)) ?? "video/webm";
+
         const recorder = new MediaRecorder(stream, { mimeType });
         const chunks: Blob[] = [];
         recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
 
-        await new Promise<void>((resolve) => {
+        await new Promise<void>((resolve, reject) => {
+          recorder.onerror = (e) => reject(new Error(`MediaRecorder-Fehler: ${(e as ErrorEvent).message ?? String(e)}`));
           recorder.onstop = () => resolve();
-          recorder.start();
+          recorder.start(100);
           const startTime = performance.now();
           function animate() {
             const elapsed = performance.now() - startTime;
@@ -705,6 +719,18 @@ export default function ZiehungsradPage() {
       URL.revokeObjectURL(url);
     } else {
       // ── MediaRecorder-Fallback (Firefox/Safari): Echtzeit, WebM ─────────────
+
+      // captureStream-Verfügbarkeit prüfen (inkl. moz-Prefix für ältere FF-Versionen)
+      type CaptureCanvas = HTMLCanvasElement & { mozCaptureStream?: (fps?: number) => MediaStream };
+      const capCanvas = reelCanvas as CaptureCanvas;
+      const captureStreamFn = capCanvas.captureStream?.bind(capCanvas) ?? capCanvas.mozCaptureStream?.bind(capCanvas);
+      if (!captureStreamFn) throw new Error("captureStream wird von diesem Browser nicht unterstützt.");
+
+      // Ersten Frame zeichnen, damit der Stream sofort ein Bild hat
+      drawReelFrame(0, false, null);
+
+      const videoStream = captureStreamFn(FPS);
+
       const playCtx = new AudioContext();
       const decodedAudio = await playCtx.decodeAudioData(audioBuffer);
 
@@ -726,22 +752,29 @@ export default function ZiehungsradPage() {
       source.buffer = loopedBuffer;
       source.connect(dest);
 
-      const videoStream = reelCanvas.captureStream(FPS);
       const combinedStream = new MediaStream([
         ...videoStream.getVideoTracks(),
         ...dest.stream.getAudioTracks(),
       ]);
 
-      const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
-        ? "video/webm;codecs=vp9,opus"
-        : "video/webm;codecs=vp8,opus";
+      // MIME-Type: mehrere Optionen testen, letztes Fallback ohne Codec-Angabe
+      const mimeType = [
+        'video/webm;codecs="vp9,opus"',
+        "video/webm;codecs=vp9,opus",
+        'video/webm;codecs="vp8,opus"',
+        "video/webm;codecs=vp8,opus",
+        "video/webm",
+      ].find((t) => MediaRecorder.isTypeSupported(t)) ?? "video/webm";
+
       const recorder = new MediaRecorder(combinedStream, { mimeType });
       const chunks: Blob[] = [];
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
 
-      await new Promise<void>((resolve) => {
+      await new Promise<void>((resolve, reject) => {
+        recorder.onerror = (e) => reject(new Error(`MediaRecorder-Fehler: ${(e as ErrorEvent).message ?? String(e)}`));
         recorder.onstop = () => resolve();
-        recorder.start();
+        // timeslice=100ms: alle 100ms Daten sichern (robuster als nur on-stop)
+        recorder.start(100);
         source.start(0);
         const startTime = performance.now();
         function animate() {
