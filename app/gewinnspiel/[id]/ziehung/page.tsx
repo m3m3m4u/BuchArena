@@ -269,13 +269,20 @@ export default function ZiehungsradPage() {
   async function exportVideo() {
     if (!canvasRef.current || aktiveTeilnehmer.length === 0) return;
 
-    const useWebCodecs = typeof VideoEncoder !== "undefined";
-
     setExporting(true);
     exportBlobRef.current = null;
 
     try {
       const W = 1080, H = 1080;
+
+      // H.264-Support explizit prüfen (Firefox hat VideoEncoder, aber kein H.264)
+      let useWebCodecs = false;
+      if (typeof VideoEncoder !== "undefined") {
+        try {
+          const s = await VideoEncoder.isConfigSupported({ codec: "avc1.640028", width: W, height: H });
+          useWebCodecs = s.supported === true;
+        } catch { useWebCodecs = false; }
+      }
       const exportCanvas = document.createElement("canvas");
       exportCanvas.width = W;
       exportCanvas.height = H;
@@ -430,12 +437,19 @@ export default function ZiehungsradPage() {
     if (aktiveTeilnehmer.length === 0) return;
     setReelError(null);
 
-    const useWebCodecs = typeof VideoEncoder !== "undefined";
-
     setExportingReel(true);
     try {
 
     const W = 1080, H = 1920;
+
+    // H.264-Support explizit prüfen (Firefox hat VideoEncoder, aber kein H.264)
+    let useWebCodecs = false;
+    if (typeof VideoEncoder !== "undefined") {
+      try {
+        const s = await VideoEncoder.isConfigSupported({ codec: "avc1.640028", width: W, height: H });
+        useWebCodecs = s.supported === true;
+      } catch { useWebCodecs = false; }
+    }
     const reelCanvas = document.createElement("canvas");
     reelCanvas.width = W; reelCanvas.height = H;
     const rctx = reelCanvas.getContext("2d")!;
