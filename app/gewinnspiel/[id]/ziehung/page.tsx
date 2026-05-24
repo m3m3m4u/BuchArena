@@ -275,12 +275,15 @@ export default function ZiehungsradPage() {
     try {
       const W = 1080, H = 1080;
 
-      // H.264-Support explizit prüfen (Firefox hat VideoEncoder, aber kein H.264)
+      // H.264 + AAC prüfen: AAC als Proxy für vollständigen WebCodecs-Stack (Firefox hat kein AAC)
       let useWebCodecs = false;
-      if (typeof VideoEncoder !== "undefined") {
+      if (typeof VideoEncoder !== "undefined" && typeof AudioEncoder !== "undefined") {
         try {
-          const s = await VideoEncoder.isConfigSupported({ codec: "avc1.640028", width: W, height: H });
-          useWebCodecs = s.supported === true;
+          const [vSupport, aSupport] = await Promise.all([
+            VideoEncoder.isConfigSupported({ codec: "avc1.640028", width: W, height: H }),
+            AudioEncoder.isConfigSupported({ codec: "mp4a.40.2", sampleRate: 44100, numberOfChannels: 2 }),
+          ]);
+          useWebCodecs = vSupport.supported === true && aSupport.supported === true;
         } catch { useWebCodecs = false; }
       }
       const exportCanvas = document.createElement("canvas");
