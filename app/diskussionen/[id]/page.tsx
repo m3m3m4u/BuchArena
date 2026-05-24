@@ -680,7 +680,9 @@ export default function DiskussionDetailPage() {
                     // Build tree: top-level + children
                     const topLevel = discussion.replies.filter((r) => !r.parentReplyId);
                     const childrenMap = new Map<string, ReplyItem[]>();
+                    const replyMap = new Map<string, ReplyItem>();
                     for (const r of discussion.replies) {
+                      replyMap.set(r.id, r);
                       if (r.parentReplyId) {
                         const list = childrenMap.get(r.parentReplyId) ?? [];
                         list.push(r);
@@ -690,9 +692,16 @@ export default function DiskussionDetailPage() {
 
                     function renderReply(reply: ReplyItem, depth: number) {
                       const children = childrenMap.get(reply.id) ?? [];
+                      const parentReply = reply.parentReplyId ? (replyMap.get(reply.parentReplyId) ?? null) : null;
                       return (
-                        <div key={reply.id} className="max-sm:!ml-0" style={{ marginLeft: depth > 0 ? Math.min(depth * 16, 48) : 0 }}>
-                          <article className="rounded-lg border border-arena-border-light p-3 sm:ml-4">
+                        <div key={reply.id} style={{ marginLeft: depth > 0 ? Math.min(depth * 16, 40) : 0 }}>
+                          <article className="rounded-lg border border-arena-border-light p-3">
+                            {parentReply && (
+                              <div className="flex items-start gap-1.5 mb-2 pl-2 border-l-2 border-arena-border text-xs text-arena-muted rounded-sm">
+                                <span className="font-semibold whitespace-nowrap">{parentReply.displayName || parentReply.authorUsername}:</span>
+                                <span className="line-clamp-1 italic min-w-0">{parentReply.body.replace(/\*\*/g, "").replace(/\*/g, "").slice(0, 100)}{parentReply.body.length > 100 ? "…" : ""}</span>
+                              </div>
+                            )}
                             <div className="flex items-center justify-between gap-2 mb-2">
                               <span className="flex items-center gap-1.5 flex-wrap">
                                 <strong>{reply.displayName || reply.authorUsername}</strong>{" "}

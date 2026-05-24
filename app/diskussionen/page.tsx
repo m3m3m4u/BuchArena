@@ -423,7 +423,7 @@ export default function DiskussionenPage() {
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-arena-muted text-xs">Sortieren:</span>
             <div className="flex gap-1 border border-arena-border-light rounded-lg p-0.5">
               <button
