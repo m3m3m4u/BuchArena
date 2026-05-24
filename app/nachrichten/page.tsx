@@ -57,10 +57,15 @@ function timeAgo(dateString: string): string {
 }
 
 function formatTime(dateString: string): string {
-  return new Date(dateString).toLocaleString("de-AT", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const d = new Date(dateString);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const timeStr = d.toLocaleString("de-AT", { hour: "2-digit", minute: "2-digit" });
+  if (d.toDateString() === today.toDateString()) return `Heute, ${timeStr}`;
+  if (d.toDateString() === yesterday.toDateString()) return `Gestern, ${timeStr}`;
+  const dateStr = d.toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return `${dateStr}, ${timeStr}`;
 }
 
 function formatDateSeparator(dateString: string): string {
