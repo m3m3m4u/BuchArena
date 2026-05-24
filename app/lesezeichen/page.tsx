@@ -120,16 +120,16 @@ export default function LesezeichenPage() {
             {LESEZEICHEN_RULES.map((rule) => (
               <div
                 key={rule.reason}
-                className="flex items-start gap-2 sm:gap-3 rounded-lg border border-arena-border-light bg-white px-3 py-2 sm:px-4 sm:py-3 min-w-0"
+                className="grid max-sm:grid-cols-[auto_1fr] sm:flex sm:items-start gap-2 sm:gap-3 rounded-lg border border-arena-border-light bg-white px-3 py-2 sm:px-4 sm:py-3"
               >
-                <span className="text-xl sm:text-2xl flex-shrink-0 mt-0.5">
+                <span className="text-xl sm:text-2xl max-sm:row-span-2 sm:flex-shrink-0 mt-0.5">
                   {REASON_ICONS[rule.reason] ?? "🔖"}
                 </span>
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 sm:flex-1">
                   <p className="font-semibold text-sm sm:text-base m-0">{rule.label}</p>
                   <p className="text-arena-muted text-xs sm:text-sm m-0">{rule.description}</p>
                 </div>
-                <span className="badge bg-yellow-100 text-yellow-800 flex-shrink-0 whitespace-nowrap text-xs">
+                <span className="badge bg-yellow-100 text-yellow-800 whitespace-nowrap text-xs max-sm:justify-self-end sm:flex-shrink-0">
                   {rule.amount}
                 </span>
               </div>

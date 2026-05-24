@@ -91,7 +91,7 @@ export default function HomePage() {
         </section>
 
         {/* Quick Stats */}
-        <section className="w-full max-w-[1100px] grid grid-cols-3 gap-3 mt-3 max-sm:grid-cols-1">
+        <section className="w-full max-w-[1100px] grid grid-cols-3 gap-3 mt-3 max-sm:grid-cols-1 overflow-x-clip">
           <Link href="/lesezeichen" className="no-underline text-inherit">
             <div className="rounded-xl border border-arena-border-light bg-white p-4 text-center hover:border-arena-blue transition-colors">
               <p className="text-3xl font-bold m-0 text-arena-blue">🔖 {lesezeichen?.total ?? "–"}</p>
