@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getGewinnspielteilnahmenCollection } from "@/lib/mongodb";
-import { requireAdmin } from "@/lib/server-auth";
+import { getServerAccount } from "@/lib/server-auth";
 import { ObjectId } from "mongodb";
 
 type Params = { params: Promise<{ id: string }> };
@@ -8,8 +8,8 @@ type Params = { params: Promise<{ id: string }> };
 // GET /api/gewinnspiele/[id]/teilnehmer – Admin/Autor lädt die Teilnehmerliste
 export async function GET(req: Request, { params }: Params) {
   const { id } = await params;
-  const account = await requireAdmin();
-  if (!account) return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
+  const account = await getServerAccount();
+  if (!account) return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
 
   const { getGewinnspieleCollection } = await import("@/lib/mongodb");
   let oid;
@@ -21,9 +21,8 @@ export async function GET(req: Request, { params }: Params) {
   const doc = await col.findOne({ _id: oid });
   if (!doc) return NextResponse.json({ message: "Nicht gefunden." }, { status: 404 });
 
-  // Autor darf auch lesen
-  const isAutor = account.username === doc.autorUsername;
   const isAdmin = account.role === "ADMIN" || account.role === "SUPERADMIN";
+  const isAutor = account.username === doc.autorUsername;
   if (!isAdmin && !isAutor) return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
 
   const teilnahmeCol = await getGewinnspielteilnahmenCollection();

@@ -179,6 +179,7 @@ export default function ZiehungsradPage() {
   const [musikTracks, setMusikTracks] = useState<{ _id: string; title: string; style: string; fileUrl: string }[]>([]);
   const [selectedTrackId, setSelectedTrackId] = useState<string>("random");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAutor, setIsAutor] = useState(false);
   const exportBlobRef = useRef<Blob | null>(null);
 
   const rotRef = useRef(0);
@@ -196,6 +197,7 @@ export default function ZiehungsradPage() {
       const isAutor = acc.username === (gInfo as GewinnspielInfo).autorUsername;
       if (!adminFlag && !isAutor) { router.replace("/gewinnspiel"); return; }
       if (adminFlag) setIsAdmin(true);
+      if (isAutor) setIsAutor(true);
       setInfo(gInfo as GewinnspielInfo);
       setTeilnehmer(tList as Teilnehmer[]);
       setLoading(false);
@@ -214,7 +216,7 @@ export default function ZiehungsradPage() {
     { username: "test4", displayName: "David Bücherwurm", angemeldetAt: "" },
     { username: "test5", displayName: "Eva Romanliebhaberin", angemeldetAt: "" },
   ];
-  const aktiveTeilnehmer = teilnehmer.length > 0 ? teilnehmer : (isAdmin ? DUMMY_TEILNEHMER : []);
+  const aktiveTeilnehmer = teilnehmer.length > 0 ? teilnehmer : (isAdmin || isAutor ? DUMMY_TEILNEHMER : []);
 
   // Initial zeichnen
   useEffect(() => {
@@ -224,7 +226,7 @@ export default function ZiehungsradPage() {
     rotRef.current = 0;
     drawSlotFrame(ctx, aktiveTeilnehmer.map((t) => t.displayName), 0, false, null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teilnehmer, isAdmin]);
+  }, [teilnehmer, isAdmin, isAutor]);
 
   function spin() {
     if (spinning || aktiveTeilnehmer.length === 0) return;
@@ -696,15 +698,15 @@ export default function ZiehungsradPage() {
         </div>
       )}
 
-      {teilnehmer.length === 0 && !isAdmin ? (
+      {teilnehmer.length === 0 && !isAdmin && !isAutor ? (
         <p className="text-sm opacity-60">Keine Teilnehmer vorhanden.</p>
       ) : (
         <>
-          {/* Admin-Hinweis bei Dummy-Daten */}
-          {isAdmin && teilnehmer.length === 0 && (
+          {/* Hinweis bei Dummy-Daten */}
+          {(isAdmin || isAutor) && teilnehmer.length === 0 && (
             <div className="mb-4 p-3 rounded-lg text-sm font-medium"
               style={{ background: "#eff6ff", border: "1px solid #93c5fd", color: "#1e40af" }}>
-              🛠 Admin-Testmodus: Es sind noch keine echten Teilnehmer vorhanden. Es werden Dummy-Namen für die Vorschau verwendet.
+              🛠 Testmodus: Es sind noch keine echten Teilnehmer vorhanden. Es werden Dummy-Namen für die Vorschau verwendet.
             </div>
           )}
           {/* Canvas */}
