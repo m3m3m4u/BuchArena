@@ -269,10 +269,7 @@ export default function ZiehungsradPage() {
   async function exportVideo() {
     if (!canvasRef.current || aktiveTeilnehmer.length === 0) return;
 
-    if (typeof VideoEncoder === "undefined") {
-      alert("Dein Browser unterstützt keine Videoerstellung (WebCodecs). Bitte Chrome 94+ oder Edge verwenden.");
-      return;
-    }
+    const useWebCodecs = typeof VideoEncoder !== "undefined";
 
     setExporting(true);
     exportBlobRef.current = null;
@@ -315,54 +312,97 @@ export default function ZiehungsradPage() {
         ectx.restore();
       }
 
-      const { Muxer, ArrayBufferTarget } = await import("mp4-muxer");
-      const target = new ArrayBufferTarget();
-      const muxer = new Muxer({
-        target,
-        video: { codec: "avc", width: W, height: H },
-        fastStart: "in-memory",
-      });
+      if (useWebCodecs) {
+        const { Muxer, ArrayBufferTarget } = await import("mp4-muxer");
+        const target = new ArrayBufferTarget();
+        const muxer = new Muxer({
+          target,
+          video: { codec: "avc", width: W, height: H },
+          fastStart: "in-memory",
+        });
 
-      const videoEncoder = new VideoEncoder({
-        output: (chunk, meta) => muxer.addVideoChunk(chunk, meta!),
-        error: (e) => { throw e; },
-      });
-      videoEncoder.configure({
-        codec: "avc1.640028",
-        width: W, height: H,
-        bitrate: 8_000_000,
-        framerate: FPS,
-        avc: { format: "avc" },
-      });
+        const videoEncoder = new VideoEncoder({
+          output: (chunk, meta) => muxer.addVideoChunk(chunk, meta!),
+          error: (e) => { throw e; },
+        });
+        videoEncoder.configure({
+          codec: "avc1.640028",
+          width: W, height: H,
+          bitrate: 8_000_000,
+          framerate: FPS,
+          avc: { format: "avc" },
+        });
 
-      for (let frameIdx = 0; frameIdx < TOTAL_FRAMES; frameIdx++) {
-        const elapsed = (frameIdx / FPS) * 1000;
-        if (elapsed < spinDelay) {
-          drawScaled(0, null);
-        } else {
-          const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
-          const scrollY = targetScrollY * easeOut(t);
-          const done = t >= 1;
-          drawScaled(scrollY, done ? winnerIdx : null);
+        for (let frameIdx = 0; frameIdx < TOTAL_FRAMES; frameIdx++) {
+          const elapsed = (frameIdx / FPS) * 1000;
+          if (elapsed < spinDelay) {
+            drawScaled(0, null);
+          } else {
+            const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
+            const scrollY = targetScrollY * easeOut(t);
+            const done = t >= 1;
+            drawScaled(scrollY, done ? winnerIdx : null);
+          }
+          const ts = Math.round(frameIdx * 1_000_000 / FPS);
+          const frame = new VideoFrame(exportCanvas, { timestamp: ts, duration: Math.round(1_000_000 / FPS) });
+          videoEncoder.encode(frame, { keyFrame: frameIdx % (FPS * 2) === 0 });
+          frame.close();
+          if (frameIdx % 30 === 0) await new Promise<void>(r => setTimeout(r, 0));
         }
-        const ts = Math.round(frameIdx * 1_000_000 / FPS);
-        const frame = new VideoFrame(exportCanvas, { timestamp: ts, duration: Math.round(1_000_000 / FPS) });
-        videoEncoder.encode(frame, { keyFrame: frameIdx % (FPS * 2) === 0 });
-        frame.close();
-        if (frameIdx % 30 === 0) await new Promise<void>(r => setTimeout(r, 0));
+
+        await videoEncoder.flush();
+        muxer.finalize();
+
+        const blob = new Blob([target.buffer], { type: "video/mp4" });
+        exportBlobRef.current = blob;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `gewinnspiel-ziehung-${id}.mp4`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        // MediaRecorder-Fallback (Firefox / Safari) → erzeugt WebM
+        const stream = exportCanvas.captureStream(FPS);
+        const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+          ? "video/webm;codecs=vp9"
+          : "video/webm;codecs=vp8";
+        const recorder = new MediaRecorder(stream, { mimeType });
+        const chunks: Blob[] = [];
+        recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+        await new Promise<void>((resolve) => {
+          recorder.onstop = () => resolve();
+          recorder.start();
+          const startTime = performance.now();
+          function animate() {
+            const elapsed = performance.now() - startTime;
+            if (elapsed < spinDelay) {
+              drawScaled(0, null);
+            } else {
+              const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
+              const sv = targetScrollY * easeOut(t);
+              const done = t >= 1;
+              drawScaled(sv, done ? winnerIdx : null);
+            }
+            if (elapsed < TOTAL_MS) {
+              requestAnimationFrame(animate);
+            } else {
+              recorder.stop();
+            }
+          }
+          requestAnimationFrame(animate);
+        });
+
+        const blob = new Blob(chunks, { type: "video/webm" });
+        exportBlobRef.current = blob;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `gewinnspiel-ziehung-${id}.webm`;
+        a.click();
+        URL.revokeObjectURL(url);
       }
-
-      await videoEncoder.flush();
-      muxer.finalize();
-
-      const blob = new Blob([target.buffer], { type: "video/mp4" });
-      exportBlobRef.current = blob;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `gewinnspiel-ziehung-${id}.mp4`;
-      a.click();
-      URL.revokeObjectURL(url);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error("Video-Export fehlgeschlagen:", err);
@@ -376,11 +416,7 @@ export default function ZiehungsradPage() {
     if (aktiveTeilnehmer.length === 0) return;
     setReelError(null);
 
-    // WebCodecs-Support prüfen
-    if (typeof VideoEncoder === "undefined") {
-      setReelError("Dein Browser unterstützt keine Videoerstellung (WebCodecs). Bitte Chrome 94+ oder Edge verwenden.");
-      return;
-    }
+    const useWebCodecs = typeof VideoEncoder !== "undefined";
 
     setExportingReel(true);
     try {
@@ -572,101 +608,172 @@ export default function ZiehungsradPage() {
     }
     const audioResp = await fetch(chosenTrack.fileUrl);
     if (!audioResp.ok) throw new Error(`Audio konnte nicht geladen werden (${audioResp.status}): ${chosenTrack.fileUrl}`);
-    const decodeCtx = new AudioContext();
-    const decodedAudio = await decodeCtx.decodeAudioData(await audioResp.arrayBuffer());
-    await decodeCtx.close();
+    const audioBuffer = await audioResp.arrayBuffer();
 
-    const SAMPLE_RATE = 44100;
-    const totalAudioSamples = Math.ceil(TOTAL_MS / 1000 * SAMPLE_RATE);
-    const left  = new Float32Array(totalAudioSamples);
-    const right = new Float32Array(totalAudioSamples);
-    const srcL = decodedAudio.getChannelData(0);
-    const srcR = decodedAudio.numberOfChannels > 1 ? decodedAudio.getChannelData(1) : srcL;
-    for (let s = 0; s < totalAudioSamples; s++) {
-      left[s]  = srcL[s % decodedAudio.length];
-      right[s] = srcR[s % decodedAudio.length];
-    }
+    if (useWebCodecs) {
+      // ── WebCodecs + mp4-muxer (Chrome/Edge): schneller als Echtzeit, MP4 ───
+      const decodeCtx = new AudioContext();
+      const decodedAudio = await decodeCtx.decodeAudioData(audioBuffer.slice(0));
+      await decodeCtx.close();
 
-    // ── WebCodecs + mp4-muxer: perfektes CFR-Video ohne Jitter ───────────────
-    const { Muxer, ArrayBufferTarget } = await import("mp4-muxer");
-    const target = new ArrayBufferTarget();
-    const muxer = new Muxer({
-      target,
-      video: { codec: "avc", width: W, height: H },
-      audio: { codec: "aac", sampleRate: SAMPLE_RATE, numberOfChannels: 2 },
-      fastStart: "in-memory",
-    });
-
-    const videoEncoder = new VideoEncoder({
-      output: (chunk, meta) => muxer.addVideoChunk(chunk, meta!),
-      error: (e) => { throw e; },
-    });
-    videoEncoder.configure({
-      codec: "avc1.640028",   // H.264 High Profile Level 4.0
-      width: W, height: H,
-      bitrate: 4_000_000,
-      framerate: FPS,
-      avc: { format: "avc" },
-    });
-
-    const audioEncoder = new AudioEncoder({
-      output: (chunk, meta) => muxer.addAudioChunk(chunk, meta!),
-      error: (e) => console.error("Audio-Encoder:", e),
-    });
-    audioEncoder.configure({
-      codec: "mp4a.40.2",   // AAC-LC
-      sampleRate: SAMPLE_RATE,
-      numberOfChannels: 2,
-      bitrate: 128_000,
-    });
-
-    // Audio in 10ms-Blöcken encodieren
-    const AUDIO_CHUNK = Math.floor(SAMPLE_RATE / 100); // 441 samples = 10ms
-    for (let i = 0; i < totalAudioSamples; i += AUDIO_CHUNK) {
-      const frames = Math.min(AUDIO_CHUNK, totalAudioSamples - i);
-      const plane = new Float32Array(frames * 2);
-      plane.set(left.subarray(i, i + frames), 0);
-      plane.set(right.subarray(i, i + frames), frames);
-      const ad = new AudioData({
-        format: "f32-planar", sampleRate: SAMPLE_RATE,
-        numberOfFrames: frames, numberOfChannels: 2,
-        timestamp: Math.floor(i * 1_000_000 / SAMPLE_RATE),
-        data: plane,
-      });
-      audioEncoder.encode(ad);
-      ad.close();
-    }
-
-    // Video-Frames schneller-als-Echtzeit rendern → exakte Timestamps, kein Ruckeln
-    for (let frameIdx = 0; frameIdx < TOTAL_FRAMES; frameIdx++) {
-      const elapsed = (frameIdx / FPS) * 1000;
-      if (elapsed < spinDelay) {
-        drawReelFrame(0, false, null);
-      } else {
-        const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
-        const scrollY = targetScrollY * reelEaseOut(t);
-        const done = t >= 1;
-        drawReelFrame(scrollY, done, done ? winnerIdx : null);
+      const SAMPLE_RATE = 44100;
+      const totalAudioSamples = Math.ceil(TOTAL_MS / 1000 * SAMPLE_RATE);
+      const left  = new Float32Array(totalAudioSamples);
+      const right = new Float32Array(totalAudioSamples);
+      const srcL = decodedAudio.getChannelData(0);
+      const srcR = decodedAudio.numberOfChannels > 1 ? decodedAudio.getChannelData(1) : srcL;
+      for (let s = 0; s < totalAudioSamples; s++) {
+        left[s]  = srcL[s % decodedAudio.length];
+        right[s] = srcR[s % decodedAudio.length];
       }
-      const ts = Math.round(frameIdx * 1_000_000 / FPS);
-      const frame = new VideoFrame(reelCanvas, { timestamp: ts, duration: Math.round(1_000_000 / FPS) });
-      videoEncoder.encode(frame, { keyFrame: frameIdx % (FPS * 2) === 0 });
-      frame.close();
-      // Alle 30 Frames kurz yielden damit die Seite nicht einfriert
-      if (frameIdx % 30 === 0) await new Promise<void>(r => setTimeout(r, 0));
+
+      const { Muxer, ArrayBufferTarget } = await import("mp4-muxer");
+      const target = new ArrayBufferTarget();
+      const muxer = new Muxer({
+        target,
+        video: { codec: "avc", width: W, height: H },
+        audio: { codec: "aac", sampleRate: SAMPLE_RATE, numberOfChannels: 2 },
+        fastStart: "in-memory",
+      });
+
+      const videoEncoder = new VideoEncoder({
+        output: (chunk, meta) => muxer.addVideoChunk(chunk, meta!),
+        error: (e) => { throw e; },
+      });
+      videoEncoder.configure({
+        codec: "avc1.640028",   // H.264 High Profile Level 4.0
+        width: W, height: H,
+        bitrate: 4_000_000,
+        framerate: FPS,
+        avc: { format: "avc" },
+      });
+
+      const audioEncoder = new AudioEncoder({
+        output: (chunk, meta) => muxer.addAudioChunk(chunk, meta!),
+        error: (e) => console.error("Audio-Encoder:", e),
+      });
+      audioEncoder.configure({
+        codec: "mp4a.40.2",   // AAC-LC
+        sampleRate: SAMPLE_RATE,
+        numberOfChannels: 2,
+        bitrate: 128_000,
+      });
+
+      const AUDIO_CHUNK = Math.floor(SAMPLE_RATE / 100); // 441 samples = 10ms
+      for (let i = 0; i < totalAudioSamples; i += AUDIO_CHUNK) {
+        const frames = Math.min(AUDIO_CHUNK, totalAudioSamples - i);
+        const plane = new Float32Array(frames * 2);
+        plane.set(left.subarray(i, i + frames), 0);
+        plane.set(right.subarray(i, i + frames), frames);
+        const ad = new AudioData({
+          format: "f32-planar", sampleRate: SAMPLE_RATE,
+          numberOfFrames: frames, numberOfChannels: 2,
+          timestamp: Math.floor(i * 1_000_000 / SAMPLE_RATE),
+          data: plane,
+        });
+        audioEncoder.encode(ad);
+        ad.close();
+      }
+
+      for (let frameIdx = 0; frameIdx < TOTAL_FRAMES; frameIdx++) {
+        const elapsed = (frameIdx / FPS) * 1000;
+        if (elapsed < spinDelay) {
+          drawReelFrame(0, false, null);
+        } else {
+          const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
+          const scrollY = targetScrollY * reelEaseOut(t);
+          const done = t >= 1;
+          drawReelFrame(scrollY, done, done ? winnerIdx : null);
+        }
+        const ts = Math.round(frameIdx * 1_000_000 / FPS);
+        const frame = new VideoFrame(reelCanvas, { timestamp: ts, duration: Math.round(1_000_000 / FPS) });
+        videoEncoder.encode(frame, { keyFrame: frameIdx % (FPS * 2) === 0 });
+        frame.close();
+        if (frameIdx % 30 === 0) await new Promise<void>(r => setTimeout(r, 0));
+      }
+
+      await videoEncoder.flush();
+      await audioEncoder.flush();
+      muxer.finalize();
+
+      const blob = new Blob([target.buffer], { type: "video/mp4" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `gewinnspiel-reel-${id}.mp4`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } else {
+      // ── MediaRecorder-Fallback (Firefox/Safari): Echtzeit, WebM ─────────────
+      const playCtx = new AudioContext();
+      const decodedAudio = await playCtx.decodeAudioData(audioBuffer);
+
+      // AudioBuffer mit Loop füllen damit die Musik die gesamte Dauer abdeckt
+      const SAMPLE_RATE = playCtx.sampleRate;
+      const totalSamples = Math.ceil(TOTAL_MS / 1000 * SAMPLE_RATE);
+      const loopedBuffer = playCtx.createBuffer(2, totalSamples, SAMPLE_RATE);
+      const srcL = decodedAudio.getChannelData(0);
+      const srcR = decodedAudio.numberOfChannels > 1 ? decodedAudio.getChannelData(1) : srcL;
+      const outL = loopedBuffer.getChannelData(0);
+      const outR = loopedBuffer.getChannelData(1);
+      for (let s = 0; s < totalSamples; s++) {
+        outL[s] = srcL[s % decodedAudio.length];
+        outR[s] = srcR[s % decodedAudio.length];
+      }
+
+      const dest = playCtx.createMediaStreamDestination();
+      const source = playCtx.createBufferSource();
+      source.buffer = loopedBuffer;
+      source.connect(dest);
+
+      const videoStream = reelCanvas.captureStream(FPS);
+      const combinedStream = new MediaStream([
+        ...videoStream.getVideoTracks(),
+        ...dest.stream.getAudioTracks(),
+      ]);
+
+      const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
+        ? "video/webm;codecs=vp9,opus"
+        : "video/webm;codecs=vp8,opus";
+      const recorder = new MediaRecorder(combinedStream, { mimeType });
+      const chunks: Blob[] = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+      await new Promise<void>((resolve) => {
+        recorder.onstop = () => resolve();
+        recorder.start();
+        source.start(0);
+        const startTime = performance.now();
+        function animate() {
+          const elapsed = performance.now() - startTime;
+          if (elapsed < spinDelay) {
+            drawReelFrame(0, false, null);
+          } else {
+            const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
+            const sv = targetScrollY * reelEaseOut(t);
+            const done = t >= 1;
+            drawReelFrame(sv, done, done ? winnerIdx : null);
+          }
+          if (elapsed < TOTAL_MS) {
+            requestAnimationFrame(animate);
+          } else {
+            source.stop();
+            recorder.stop();
+          }
+        }
+        requestAnimationFrame(animate);
+      });
+
+      await playCtx.close();
+      const blob = new Blob(chunks, { type: "video/webm" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `gewinnspiel-reel-${id}.webm`;
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
-    await videoEncoder.flush();
-    await audioEncoder.flush();
-    muxer.finalize();
-
-    const blob = new Blob([target.buffer], { type: "video/mp4" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `gewinnspiel-reel-${id}.mp4`;
-    a.click();
-    URL.revokeObjectURL(url);
     setExportingReel(false);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
