@@ -694,11 +694,11 @@ export default function DiskussionDetailPage() {
                       const children = childrenMap.get(reply.id) ?? [];
                       const parentReply = reply.parentReplyId ? (replyMap.get(reply.parentReplyId) ?? null) : null;
                       return (
-                        <div key={reply.id} style={{ marginLeft: depth > 0 ? Math.min(depth * 16, 40) : 0 }}>
+                        <div key={reply.id} style={{ paddingLeft: depth > 0 ? Math.min(depth * 16, 40) : 0 }}>
                           <article className="rounded-lg border border-arena-border-light p-3">
                             {parentReply && (
-                              <div className="flex items-start gap-1.5 mb-2 pl-2 border-l-2 border-arena-border text-xs text-arena-muted rounded-sm">
-                                <span className="font-semibold whitespace-nowrap">{parentReply.displayName || parentReply.authorUsername}:</span>
+                              <div className="flex items-start gap-1.5 mb-2 pl-2 border-l-2 border-arena-border text-xs text-arena-muted rounded-sm min-w-0">
+                                <span className="font-semibold shrink-0 max-w-[50%] truncate">{parentReply.displayName || parentReply.authorUsername}:</span>
                                 <span className="line-clamp-1 italic min-w-0">{parentReply.body.replace(/\*\*/g, "").replace(/\*/g, "").slice(0, 100)}{parentReply.body.length > 100 ? "…" : ""}</span>
                               </div>
                             )}
