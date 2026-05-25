@@ -197,6 +197,7 @@ export default function ZiehungsradPage() {
 
   const rotRef = useRef(0);
   const rafRef = useRef<number | null>(null);
+  const winnerIdxRef = useRef<number | null>(null);
 
   useEffect(() => {
     const acc = getStoredAccount();
@@ -272,6 +273,7 @@ export default function ZiehungsradPage() {
       if (t < 1) {
         rafRef.current = requestAnimationFrame(animateSlot);
       } else {
+        winnerIdxRef.current = winnerIdx;
         setSpinning(false);
         setWinner(aktiveTeilnehmer[winnerIdx]);
       }
@@ -281,9 +283,16 @@ export default function ZiehungsradPage() {
 
   async function saveWinnerToDb() {
     if (winnerSaving || winnerSaved) return;
+    if (winnerIdxRef.current === null) return;
+    const gewinnerUsername = aktiveTeilnehmer[winnerIdxRef.current]?.username;
+    if (!gewinnerUsername) return;
     setWinnerSaving(true);
     try {
-      const res = await fetch(`/api/gewinnspiele/${id}/verlosen`, { method: "POST" });
+      const res = await fetch(`/api/gewinnspiele/${id}/verlosen`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gewinnerUsername }),
+      });
       const data = await res.json() as { ok?: boolean; gewinnerName?: string; message?: string };
       if (!res.ok) {
         alert(data.message ?? "Fehler beim Speichern des Gewinners.");
@@ -326,9 +335,9 @@ export default function ZiehungsradPage() {
 
       const namen = aktiveTeilnehmer.map((t) => t.displayName);
       const n = namen.length;
-      const arr = new Uint32Array(1);
-      crypto.getRandomValues(arr);
-      const winnerIdx = arr[0] % n;
+      const winnerIdx = winnerIdxRef.current !== null
+        ? winnerIdxRef.current
+        : (() => { const arr = new Uint32Array(1); crypto.getRandomValues(arr); return arr[0] % n; })();
 
       const FPS = 30;
       const spinDelay = 500;
@@ -406,61 +415,8 @@ export default function ZiehungsradPage() {
         a.click();
         URL.revokeObjectURL(url);
       } else {
-        // MediaRecorder-Fallback (Firefox / Safari) → erzeugt WebM
-        type CaptureCanvas = HTMLCanvasElement & { mozCaptureStream?: (fps?: number) => MediaStream };
-        const capCanvas = exportCanvas as CaptureCanvas;
-        const captureStreamFn = capCanvas.captureStream?.bind(capCanvas) ?? capCanvas.mozCaptureStream?.bind(capCanvas);
-        if (!captureStreamFn) throw new Error("captureStream wird von diesem Browser nicht unterstützt.");
-
-        // Ersten Frame zeichnen
-        drawScaled(0, null);
-        const stream = captureStreamFn(FPS);
-
-        const mimeType = [
-          'video/webm;codecs="vp9"',
-          "video/webm;codecs=vp9",
-          'video/webm;codecs="vp8"',
-          "video/webm;codecs=vp8",
-          "video/webm",
-        ].find((t) => MediaRecorder.isTypeSupported(t)) ?? "video/webm";
-
-        const recorder = new MediaRecorder(stream, { mimeType });
-        const chunks: Blob[] = [];
-        recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-
-        await new Promise<void>((resolve, reject) => {
-          recorder.onerror = (e) => reject(new Error(`MediaRecorder-Fehler: ${(e as ErrorEvent).message ?? String(e)}`));
-          recorder.onstop = () => resolve();
-          recorder.start(100);
-          const startTime = performance.now();
-          function animate() {
-            const elapsed = performance.now() - startTime;
-            if (elapsed < spinDelay) {
-              drawScaled(0, null);
-            } else {
-              const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
-              const sv = targetScrollY * easeOut(t);
-              const done = t >= 1;
-              drawScaled(sv, done ? winnerIdx : null);
-            }
-            if (elapsed < TOTAL_MS) {
-              requestAnimationFrame(animate);
-            } else {
-              recorder.stop();
-            }
-          }
-          requestAnimationFrame(animate);
-        });
-
-        const blob = new Blob(chunks, { type: "video/webm" });
-        exportBlobRef.current = blob;
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        const base1zu1 = `gewinnspiel-${sanitizeFilename(info?.buchTitel ?? id)}-${sanitizeFilename(info?.autorName ?? "")}-1zu1`;
-        a.download = `${base1zu1}.webm`;
-        a.click();
-        URL.revokeObjectURL(url);
+        // Kein MP4-Export möglich (Firefox/Safari unterstützen kein H.264+AAC via WebCodecs)
+        throw new Error("Dein Browser unterstützt keinen MP4-Export. Bitte Chrome oder Edge verwenden.");
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -497,9 +453,9 @@ export default function ZiehungsradPage() {
 
     const namen = aktiveTeilnehmer.map((t) => t.displayName);
     const n = namen.length;
-    const arr = new Uint32Array(1);
-    crypto.getRandomValues(arr);
-    const winnerIdx = arr[0] % n;
+    const winnerIdx = winnerIdxRef.current !== null
+      ? winnerIdxRef.current
+      : (() => { const arr = new Uint32Array(1); crypto.getRandomValues(arr); return arr[0] % n; })();
 
     // Buchcover laden (nicht mehr direkt verwendet, aber vorhanden für spätere Nutzung)
     let coverImg: HTMLImageElement | null = null;
@@ -774,94 +730,8 @@ export default function ZiehungsradPage() {
       a.click();
       URL.revokeObjectURL(url);
     } else {
-      // ── MediaRecorder-Fallback (Firefox/Safari): Echtzeit, WebM ─────────────
-
-      // captureStream-Verfügbarkeit prüfen (inkl. moz-Prefix für ältere FF-Versionen)
-      type CaptureCanvas = HTMLCanvasElement & { mozCaptureStream?: (fps?: number) => MediaStream };
-      const capCanvas = reelCanvas as CaptureCanvas;
-      const captureStreamFn = capCanvas.captureStream?.bind(capCanvas) ?? capCanvas.mozCaptureStream?.bind(capCanvas);
-      if (!captureStreamFn) throw new Error("captureStream wird von diesem Browser nicht unterstützt.");
-
-      // Ersten Frame zeichnen, damit der Stream sofort ein Bild hat
-      drawReelFrame(0, false, null);
-
-      const videoStream = captureStreamFn(FPS);
-
-      const playCtx = new AudioContext();
-      const decodedAudio = await playCtx.decodeAudioData(audioBuffer);
-
-      // AudioBuffer mit Loop füllen damit die Musik die gesamte Dauer abdeckt
-      const SAMPLE_RATE = playCtx.sampleRate;
-      const totalSamples = Math.ceil(TOTAL_MS / 1000 * SAMPLE_RATE);
-      const loopedBuffer = playCtx.createBuffer(2, totalSamples, SAMPLE_RATE);
-      const srcL = decodedAudio.getChannelData(0);
-      const srcR = decodedAudio.numberOfChannels > 1 ? decodedAudio.getChannelData(1) : srcL;
-      const outL = loopedBuffer.getChannelData(0);
-      const outR = loopedBuffer.getChannelData(1);
-      for (let s = 0; s < totalSamples; s++) {
-        outL[s] = srcL[s % decodedAudio.length];
-        outR[s] = srcR[s % decodedAudio.length];
-      }
-
-      const dest = playCtx.createMediaStreamDestination();
-      const source = playCtx.createBufferSource();
-      source.buffer = loopedBuffer;
-      source.connect(dest);
-
-      const combinedStream = new MediaStream([
-        ...videoStream.getVideoTracks(),
-        ...dest.stream.getAudioTracks(),
-      ]);
-
-      // MIME-Type: mehrere Optionen testen, letztes Fallback ohne Codec-Angabe
-      const mimeType = [
-        'video/webm;codecs="vp9,opus"',
-        "video/webm;codecs=vp9,opus",
-        'video/webm;codecs="vp8,opus"',
-        "video/webm;codecs=vp8,opus",
-        "video/webm",
-      ].find((t) => MediaRecorder.isTypeSupported(t)) ?? "video/webm";
-
-      const recorder = new MediaRecorder(combinedStream, { mimeType });
-      const chunks: Blob[] = [];
-      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-
-      await new Promise<void>((resolve, reject) => {
-        recorder.onerror = (e) => reject(new Error(`MediaRecorder-Fehler: ${(e as ErrorEvent).message ?? String(e)}`));
-        recorder.onstop = () => resolve();
-        // timeslice=100ms: alle 100ms Daten sichern (robuster als nur on-stop)
-        recorder.start(100);
-        source.start(0);
-        const startTime = performance.now();
-        function animate() {
-          const elapsed = performance.now() - startTime;
-          if (elapsed < spinDelay) {
-            drawReelFrame(0, false, null);
-          } else {
-            const t = Math.min((elapsed - spinDelay) / spinDuration, 1);
-            const sv = targetScrollY * reelEaseOut(t);
-            const done = t >= 1;
-            drawReelFrame(sv, done, done ? winnerIdx : null);
-          }
-          if (elapsed < TOTAL_MS) {
-            requestAnimationFrame(animate);
-          } else {
-            source.stop();
-            recorder.stop();
-          }
-        }
-        requestAnimationFrame(animate);
-      });
-
-      await playCtx.close();
-      const blob = new Blob(chunks, { type: "video/webm" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      const baseReel = `gewinnspiel-${sanitizeFilename(info?.buchTitel ?? id)}-${sanitizeFilename(info?.autorName ?? "")}-reel`;
-      a.download = `${baseReel}.webm`;
-      a.click();
-      URL.revokeObjectURL(url);
+      // Kein MP4-Export möglich (Firefox/Safari unterstützen kein H.264+AAC via WebCodecs)
+      throw new Error("Dein Browser unterstützt keinen MP4-Export. Bitte Chrome oder Edge verwenden.");
     }
 
     setExportingReel(false);

@@ -49,11 +49,23 @@ export async function POST(req: Request, { params }: Params) {
     return NextResponse.json({ message: "Keine Teilnehmer vorhanden." }, { status: 400 });
   }
 
-  // Zufälligen Gewinner ziehen (kryptografisch sicher mit crypto.getRandomValues)
-  const arr = new Uint32Array(1);
-  crypto.getRandomValues(arr);
-  const idx = arr[0] % teilnehmer.length;
-  const gewinner = teilnehmer[idx];
+  // Vom Client übermittelten Gewinner verwenden (falls vorhanden und valide),
+  // sonst kryptografisch zufällig ziehen
+  let gewinner: typeof teilnehmer[number];
+  let body: { gewinnerUsername?: string } = {};
+  try { body = await req.json(); } catch { /* kein Body */ }
+
+  if (body.gewinnerUsername) {
+    const found = teilnehmer.find((t) => t.username === body.gewinnerUsername);
+    if (!found) {
+      return NextResponse.json({ message: "Der angegebene Gewinner ist kein Teilnehmer dieses Gewinnspiels." }, { status: 400 });
+    }
+    gewinner = found;
+  } else {
+    const arr = new Uint32Array(1);
+    crypto.getRandomValues(arr);
+    gewinner = teilnehmer[arr[0] % teilnehmer.length];
+  }
 
   const now = new Date();
   await col.updateOne(
