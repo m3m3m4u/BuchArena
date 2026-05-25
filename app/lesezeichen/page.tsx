@@ -138,7 +138,7 @@ export default function LesezeichenPage() {
         </section>
 
         {/* Highscores */}
-        <section className="card flex flex-col">
+        <section className="card" style={{ display: "flex", flexDirection: "column" }}>
           <h2 className="text-lg font-semibold flex items-center gap-2 flex-shrink-0">
             Rangliste
           </h2>

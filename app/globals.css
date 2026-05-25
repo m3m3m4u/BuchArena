@@ -162,6 +162,7 @@ h1 { margin: 0; }
 @utility centered-main {
   flex: 1;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   justify-items: center;
   width: min(1100px, 100%);
@@ -178,6 +179,7 @@ h1 { margin: 0; }
 @utility auth-centered-main {
   flex: 1;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   width: min(1100px, 100%);
   margin: 0 auto;
@@ -193,6 +195,7 @@ h1 { margin: 0; }
 @utility top-centered-main {
   flex: 1;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   justify-items: center;
   width: min(1100px, 100%);
