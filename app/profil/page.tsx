@@ -1495,7 +1495,7 @@ function ProfilPageInner() {
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
-          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/autor/{profileSlug || "dein-name"}</strong>
           </p>
           <div className="flex gap-2 items-end">
@@ -1840,7 +1840,7 @@ function ProfilPageInner() {
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
-          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/sprecher/{profileSlug || "dein-name"}</strong>
           </p>
           <div className="flex gap-2 items-end">
@@ -2165,7 +2165,7 @@ function ProfilPageInner() {
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
-          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/blogger/{profileSlug || "dein-name"}</strong>
           </p>
           <div className="flex gap-2 items-end">
@@ -2332,7 +2332,7 @@ function ProfilPageInner() {
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
-          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/testleser/{profileSlug || "dein-name"}</strong>
           </p>
           <div className="flex gap-2 items-end">
@@ -2480,7 +2480,7 @@ function ProfilPageInner() {
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
-          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/lektoren/{profileSlug || "dein-name"}</strong>
           </p>
           <div className="flex gap-2 items-end">
@@ -2647,7 +2647,7 @@ function ProfilPageInner() {
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
-          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/verlage/{profileSlug || "dein-name"}</strong>
           </p>
           <div className="flex gap-2 items-end">
@@ -2796,7 +2796,7 @@ function ProfilPageInner() {
           {/* ── Angezeigter Name ── */}
           <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem" }}>
             <span className="text-sm font-semibold">📝 Angezeigter Name</span>
-            <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem" }}>
+            <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
               Dieser Name wird bei Nachrichten, Lesezeichen, im Treffpunkt und im Kalender angezeigt.
             </p>
             <div className="flex gap-2 items-end">
