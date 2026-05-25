@@ -162,6 +162,34 @@ export async function POST(request: Request) {
         { authorUsername: oldUsername },
         { $set: { authorUsername: updatedUsername } }
       );
+      await database.collection("discussions").updateMany(
+        { "replies.authorUsername": oldUsername },
+        { $set: { "replies.$[reply].authorUsername": updatedUsername } },
+        { arrayFilters: [{ "reply.authorUsername": oldUsername }] }
+      );
+      await database.collection("discussions").updateMany(
+        { "reactions.username": oldUsername },
+        { $set: { "reactions.$[r].username": updatedUsername } },
+        { arrayFilters: [{ "r.username": oldUsername }] }
+      );
+      await database.collection("polls").updateMany(
+        { authorUsername: oldUsername },
+        { $set: { authorUsername: updatedUsername } }
+      );
+      await database.collection("polls").updateMany(
+        { "votes.username": oldUsername },
+        { $set: { "votes.$[v].username": updatedUsername } },
+        { arrayFilters: [{ "v.username": oldUsername }] }
+      );
+      await database.collection("polls").updateMany(
+        { "replies.authorUsername": oldUsername },
+        { $set: { "replies.$[r].authorUsername": updatedUsername } },
+        { arrayFilters: [{ "r.authorUsername": oldUsername }] }
+      );
+      await database.collection("tausch").updateMany(
+        { authorUsername: oldUsername },
+        { $set: { authorUsername: updatedUsername } }
+      );
       await database.collection("messages").updateMany(
         { senderUsername: oldUsername },
         { $set: { senderUsername: updatedUsername } }
@@ -178,13 +206,48 @@ export async function POST(request: Request) {
         { username: oldUsername },
         { $set: { username: updatedUsername } }
       );
-      await database.collection("kalender").updateMany(
+      await database.collection("kalender_events").updateMany(
         { createdBy: oldUsername },
         { $set: { createdBy: updatedUsername } }
       );
-      await database.collection("kalender").updateMany(
+      await database.collection("kalender_events").updateMany(
         { participants: oldUsername },
         { $set: { "participants.$": updatedUsername } }
+      );
+      await database.collection("buchzirkel").updateMany(
+        { veranstalterUsername: oldUsername },
+        { $set: { veranstalterUsername: updatedUsername } }
+      );
+      await database.collection("buchzirkel_bewerbungen").updateMany(
+        { bewerberUsername: oldUsername },
+        { $set: { bewerberUsername: updatedUsername } }
+      );
+      await database.collection("buchzirkel_teilnahmen").updateMany(
+        { teilnehmerUsername: oldUsername },
+        { $set: { teilnehmerUsername: updatedUsername } }
+      );
+      await database.collection("buchzirkel_beitraege").updateMany(
+        { autorUsername: oldUsername },
+        { $set: { autorUsername: updatedUsername } }
+      );
+      await database.collection("buchzirkel_beitraege").updateMany(
+        { "replies.autorUsername": oldUsername },
+        { $set: { "replies.$[r].autorUsername": updatedUsername } },
+        { arrayFilters: [{ "r.autorUsername": oldUsername }] }
+      );
+      await database.collection("buchzirkel_beitraege").updateMany(
+        { "reactions.username": oldUsername },
+        { $set: { "reactions.$[r].username": updatedUsername } },
+        { arrayFilters: [{ "r.username": oldUsername }] }
+      );
+      await database.collection("buchzirkel_chat").updateMany(
+        { senderUsername: oldUsername },
+        { $set: { senderUsername: updatedUsername } }
+      );
+      await database.collection("buchzirkel_chat").updateMany(
+        { readBy: oldUsername },
+        { $set: { "readBy.$[elem]": updatedUsername } },
+        { arrayFilters: [{ elem: oldUsername }] }
       );
     }
 
