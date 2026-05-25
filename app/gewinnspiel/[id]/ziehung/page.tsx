@@ -26,6 +26,16 @@ type GewinnspielInfo = {
 
 const SIZE = 700; // Canvas-Größe (wird auf 1080 skaliert für Export)
 
+/** Bereinigt einen String für Dateinamen (Umlaute → ASCII, Sonderzeichen entfernen) */
+function sanitizeFilename(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 50);
+}
+
 function easeOut(t: number): number {
   return 1 - Math.pow(1 - t, 4);
 }
@@ -181,6 +191,9 @@ export default function ZiehungsradPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAutor, setIsAutor] = useState(false);
   const exportBlobRef = useRef<Blob | null>(null);
+  const [winnerSaving, setWinnerSaving] = useState(false);
+  const [winnerSaved, setWinnerSaved] = useState(false);
+  const [officialWinner, setOfficialWinner] = useState<string | null>(null);
 
   const rotRef = useRef(0);
   const rafRef = useRef<number | null>(null);
@@ -264,6 +277,26 @@ export default function ZiehungsradPage() {
       }
     }
     rafRef.current = requestAnimationFrame(animateSlot);
+  }
+
+  async function saveWinnerToDb() {
+    if (winnerSaving || winnerSaved) return;
+    setWinnerSaving(true);
+    try {
+      const res = await fetch(`/api/gewinnspiele/${id}/verlosen`, { method: "POST" });
+      const data = await res.json() as { ok?: boolean; gewinnerName?: string; message?: string };
+      if (!res.ok) {
+        alert(data.message ?? "Fehler beim Speichern des Gewinners.");
+        return;
+      }
+      setOfficialWinner(data.gewinnerName ?? null);
+      setWinnerSaved(true);
+      setInfo((prev) => prev ? { ...prev, status: "verlost", gewinnerName: data.gewinnerName } : prev);
+    } catch {
+      alert("Fehler beim Speichern des Gewinners.");
+    } finally {
+      setWinnerSaving(false);
+    }
   }
 
   async function exportVideo() {
@@ -368,7 +401,8 @@ export default function ZiehungsradPage() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `gewinnspiel-ziehung-${id}.mp4`;
+        const base1zu1 = `gewinnspiel-${sanitizeFilename(info?.buchTitel ?? id)}-${sanitizeFilename(info?.autorName ?? "")}-1zu1`;
+        a.download = `${base1zu1}.mp4`;
         a.click();
         URL.revokeObjectURL(url);
       } else {
@@ -423,7 +457,8 @@ export default function ZiehungsradPage() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `gewinnspiel-ziehung-${id}.webm`;
+        const base1zu1 = `gewinnspiel-${sanitizeFilename(info?.buchTitel ?? id)}-${sanitizeFilename(info?.autorName ?? "")}-1zu1`;
+        a.download = `${base1zu1}.webm`;
         a.click();
         URL.revokeObjectURL(url);
       }
@@ -734,7 +769,8 @@ export default function ZiehungsradPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `gewinnspiel-reel-${id}.mp4`;
+      const baseReel = `gewinnspiel-${sanitizeFilename(info?.buchTitel ?? id)}-${sanitizeFilename(info?.autorName ?? "")}-reel`;
+      a.download = `${baseReel}.mp4`;
       a.click();
       URL.revokeObjectURL(url);
     } else {
@@ -822,7 +858,8 @@ export default function ZiehungsradPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `gewinnspiel-reel-${id}.webm`;
+      const baseReel = `gewinnspiel-${sanitizeFilename(info?.buchTitel ?? id)}-${sanitizeFilename(info?.autorName ?? "")}-reel`;
+      a.download = `${baseReel}.webm`;
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -882,9 +919,31 @@ export default function ZiehungsradPage() {
 
           {/* Gewinner-Anzeige */}
           {winner && (
-            <div className="mb-4 p-4 rounded-xl text-center font-bold text-xl"
+            <div className="mb-3 p-4 rounded-xl text-center font-bold text-xl"
               style={{ background: "var(--color-arena-yellow)", color: "var(--color-arena-blue)" }}>
               Gewinner: {winner.displayName}
+            </div>
+          )}
+
+          {/* Offiziell speichern */}
+          {winner && !winnerSaved && info?.status !== "verlost" && info?.status !== "versendet" && info?.status !== "archiv" && (
+            <div className="mb-4 flex justify-center">
+              <button
+                onClick={saveWinnerToDb}
+                disabled={winnerSaving}
+                className="px-6 py-3 rounded-xl font-bold text-base transition-opacity disabled:opacity-50"
+                style={{ background: "#16a34a", color: "white" }}
+              >
+                {winnerSaving ? "Wird gespeichert…" : "Gewinner festhalten & Gewinnspiel abschliessen"}
+              </button>
+            </div>
+          )}
+
+          {/* Bestätigung nach Speicherung */}
+          {winnerSaved && officialWinner && (
+            <div className="mb-4 p-4 rounded-xl text-center text-sm font-medium"
+              style={{ background: "#f0fdf4", border: "1px solid #86efac", color: "#166534" }}>
+              Gewinnspiel abgeschlossen. Offizieller Gewinner: <strong>{officialWinner}</strong>. Der Gewinner und der Autor wurden per E-Mail benachrichtigt.
             </div>
           )}
 
