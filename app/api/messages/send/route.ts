@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { getUsersCollection, getMessagesCollection, getMessageConversationsCollection } from "@/lib/mongodb";
 import type { SendMessagePayload } from "@/lib/messages";
+import { invalidateUnreadCountCacheMany } from "@/lib/messages-unread-cache";
 
 export async function POST(request: Request) {
   try {
@@ -101,6 +102,8 @@ export async function POST(request: Request) {
       },
       { upsert: true },
     );
+
+    invalidateUnreadCountCacheMany([account.username, recipientUsername]);
 
     return NextResponse.json({ message: "Nachricht gesendet." });
   } catch (err) {

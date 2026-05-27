@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { getMessagesCollection, getMessageConversationsCollection } from "@/lib/mongodb";
+import { invalidateUnreadCountCache } from "@/lib/messages-unread-cache";
 
 export async function POST(request: Request) {
   try {
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
       const isA = account.username === userA;
       const convCol = await getMessageConversationsCollection();
       await convCol.updateOne({ userA, userB }, { $set: { [isA ? "unreadForA" : "unreadForB"]: 0 } });
+      invalidateUnreadCountCache(account.username);
       return NextResponse.json({ message: "Als gelesen markiert." });
     }
 
@@ -41,6 +43,8 @@ export async function POST(request: Request) {
     if (result.matchedCount === 0) {
       return NextResponse.json({ message: "Nachricht nicht gefunden." }, { status: 404 });
     }
+
+    invalidateUnreadCountCache(account.username);
 
     return NextResponse.json({ message: "Als gelesen markiert." });
   } catch (err) {

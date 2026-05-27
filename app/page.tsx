@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT, type LoggedInAccount } from "@/lib/client-account";
 import { extractYouTubeId } from "@/lib/bucharena-types";
+import { fetchUnreadCountShared } from "@/lib/client-unread-count";
 
 type BuchDerWoche = { title: string; author: string; speaker?: string; youtubeUrl: string; buyUrl: string; active?: boolean; bookId?: string; authorUsername?: string; speakerUsername?: string };
 type Stats = { bookCount: number; authorCount: number; bloggerCount: number; speakerCount: number; testleserCount: number; lektorenCount: number; verlageCount: number };
@@ -44,7 +45,7 @@ export default function HomePage() {
   useEffect(() => {
     if (!account) return;
     fetch("/api/lesezeichen").then(r => r.json()).then(d => setLesezeichen(d)).catch(() => {});
-    fetch("/api/messages/unread-count").then(r => r.json()).then(d => setUnreadMessages(d.count ?? 0)).catch(() => {});
+    fetchUnreadCountShared(false).then((count) => setUnreadMessages(count)).catch(() => {});
     fetch("/api/profile/get", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
       .then(r => r.json()).then(d => setNewsletterOptIn(!!d.newsletterOptIn)).catch(() => {});
   }, [account]);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   ACCOUNT_CHANGED_EVENT,
   clearStoredAccount,
@@ -12,7 +12,6 @@ import { openCookieSettings } from "@/lib/cookie-consent";
 
 export default function SiteFooter() {
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -45,19 +44,10 @@ export default function SiteFooter() {
     }
   }
 
-  const fetchUnread = useCallback(async () => {
-    try {
-      const res = await fetch("/api/messages/unread-count", { method: "GET" });
-      const data = (await res.json()) as { count?: number };
-      setUnreadCount(data.count ?? 0);
-    } catch { /* ignore */ }
-  }, []);
-
   useEffect(() => {
     function updateFromStorage() {
       const acc = getStoredAccount();
       setAccount(acc);
-      if (!acc) setUnreadCount(0);
     }
     updateFromStorage();
     window.addEventListener("storage", updateFromStorage);
@@ -67,13 +57,6 @@ export default function SiteFooter() {
       window.removeEventListener(ACCOUNT_CHANGED_EVENT, updateFromStorage);
     };
   }, []);
-
-  useEffect(() => {
-    if (!account) return;
-    void fetchUnread();
-    const interval = setInterval(() => void fetchUnread(), 30_000);
-    return () => clearInterval(interval);
-  }, [account, fetchUnread]);
 
   /* Close menu on outside click */
   useEffect(() => {

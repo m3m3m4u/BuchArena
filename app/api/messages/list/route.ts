@@ -26,6 +26,20 @@ export async function GET(request: Request) {
             { senderUsername: account.username, recipientUsername: partner, deletedBySender: { $ne: true } },
             { senderUsername: partner, recipientUsername: account.username, deletedByRecipient: { $ne: true } },
           ],
+        }, {
+          projection: {
+            senderUsername: 1,
+            recipientUsername: 1,
+            subject: 1,
+            body: 1,
+            read: 1,
+            readAt: 1,
+            threadId: 1,
+            kooperationId: 1,
+            bookCoAuthorId: 1,
+            buchzirkelEinladungId: 1,
+            createdAt: 1,
+          },
         })
         .sort({ createdAt: 1 })
         .limit(500)
@@ -58,6 +72,20 @@ export async function GET(request: Request) {
             { senderUsername: account.username, deletedBySender: { $ne: true } },
             { recipientUsername: account.username, deletedByRecipient: { $ne: true } },
           ],
+        }, {
+          projection: {
+            senderUsername: 1,
+            recipientUsername: 1,
+            subject: 1,
+            body: 1,
+            read: 1,
+            readAt: 1,
+            threadId: 1,
+            kooperationId: 1,
+            bookCoAuthorId: 1,
+            buchzirkelEinladungId: 1,
+            createdAt: 1,
+          },
         })
         .sort({ createdAt: 1 })
         .limit(500)
@@ -96,26 +124,28 @@ export async function GET(request: Request) {
       (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
     ).slice(0, 200);
 
-    const partnerUsernames = convDocs.map((c) => (c.userA === me ? c.userB : c.userA));
+    const partnerUsernames = Array.from(new Set(convDocs.map((c) => (c.userA === me ? c.userB : c.userA))));
     const usersCol = await getUsersCollection();
-    const userDocs = await usersCol
-      .find(
-        { username: { $in: partnerUsernames } },
-        {
-          projection: {
-            username: 1,
-            displayName: 1,
-            "profile.name.value": 1,
-            "lektorenProfile.name.value": 1,
-            "verlageProfile.name.value": 1,
-            "testleserProfile.name.value": 1,
-            "bloggerProfile.name.value": 1,
-            "speakerProfile.name.value": 1,
-            "profile.profileImage.value": 1,
-          },
-        },
-      )
-      .toArray();
+    const userDocs = partnerUsernames.length
+      ? await usersCol
+          .find(
+            { username: { $in: partnerUsernames } },
+            {
+              projection: {
+                username: 1,
+                displayName: 1,
+                "profile.name.value": 1,
+                "lektorenProfile.name.value": 1,
+                "verlageProfile.name.value": 1,
+                "testleserProfile.name.value": 1,
+                "bloggerProfile.name.value": 1,
+                "speakerProfile.name.value": 1,
+                "profile.profileImage.value": 1,
+              },
+            },
+          )
+          .toArray()
+      : [];
     const displayNameMap = new Map<string, string>();
     const profileImageMap = new Map<string, string>();
     for (const u of userDocs) {

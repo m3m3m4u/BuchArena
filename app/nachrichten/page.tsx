@@ -170,10 +170,7 @@ function NachrichtenPageInner() {
   const loadConversations = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [convRes, bzRes] = await Promise.all([
-        fetch("/api/messages/list", { method: "GET" }),
-        fetch("/api/buchzirkel/chat/my-chats"),
-      ]);
+      const convRes = await fetch("/api/messages/list", { method: "GET" });
       if (convRes.status === 401) {
         clearStoredAccount();
         router.push("/auth");
@@ -185,10 +182,15 @@ function NachrichtenPageInner() {
       const seen = new Set<string>();
       const deduped = raw.filter((c) => { if (seen.has(c.partner)) return false; seen.add(c.partner); return true; });
       setConversations(deduped);
-      if (bzRes.ok) {
-        const bzData = (await bzRes.json()) as { chats?: BuchzirkelChatItem[] };
-        setBuchzirkelChats(bzData.chats ?? []);
-      }
+
+      // Buchzirkel-Chats asynchron nachladen, damit private Chats nicht blockiert werden.
+      void fetch("/api/buchzirkel/chat/my-chats")
+        .then(async (bzRes) => {
+          if (!bzRes.ok) return;
+          const bzData = (await bzRes.json()) as { chats?: BuchzirkelChatItem[] };
+          setBuchzirkelChats(bzData.chats ?? []);
+        })
+        .catch(() => {});
     } catch {
       /* ignore */
     } finally {

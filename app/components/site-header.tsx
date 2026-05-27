@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
+import { fetchUnreadCountShared } from "@/lib/client-unread-count";
 
 export default function SiteHeader() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -40,13 +41,12 @@ export default function SiteHeader() {
   // Unread count polling
   useEffect(() => {
     if (!loggedIn) { setUnreadCount(0); return; }
-    const fetchCount = () =>
-      fetch("/api/messages/unread-count")
-        .then((r) => r.json())
-        .then((d: { count: number }) => setUnreadCount(d.count))
+    const fetchCount = (force = false) =>
+      fetchUnreadCountShared(force)
+        .then((count) => setUnreadCount(count))
         .catch(() => {});
-    fetchCount();
-    const interval = setInterval(fetchCount, 30_000);
+    fetchCount(false);
+    const interval = setInterval(() => fetchCount(true), 30_000);
     return () => clearInterval(interval);
   }, [loggedIn]);
 

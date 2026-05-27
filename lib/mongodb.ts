@@ -307,6 +307,10 @@ async function initializeDatabase(db: Db) {
   await buchzirkelBeitraege.createIndex({ buchzirkelId: 1, topicId: 1, lastActivityAt: -1 });
   await buchzirkelBeitraege.createIndex({ autorUsername: 1 });
 
+  const buchzirkelChat = db.collection("buchzirkel_chat");
+  await buchzirkelChat.createIndex({ buchzirkelId: 1, _id: -1 });
+  await buchzirkelChat.createIndex({ buchzirkelId: 1, createdAt: -1 });
+
   const gewinnspiele = db.collection("gewinnspiele");
   await gewinnspiele.createIndex({ status: 1, anmeldungBis: -1 });
   await gewinnspiele.createIndex({ autorUsername: 1, createdAt: -1 });
