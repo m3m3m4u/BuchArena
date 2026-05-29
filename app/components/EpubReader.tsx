@@ -18,6 +18,7 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [fontSize, setFontSize] = useState(100); // Prozent
 
   const [portalTarget] = useState<HTMLElement>(() =>
     document.getElementById("modal-root") ?? document.body
@@ -51,6 +52,24 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
 
         await rendition.display(initialCfi ?? undefined);
         if (!destroyed) setLoading(false);
+
+        // Schriftgröße initial setzen (falls vom State schon geändert)
+        rendition.themes.fontSize(`${fontSize}%`);
+
+        // Touch-Swipe innerhalb des epub.js-Iframes (Events propagieren nicht nach außen)
+        let swipeStartX = 0;
+        let swipeStartY = 0;
+        rendition.on("touchstart", (e: TouchEvent) => {
+          swipeStartX = e.changedTouches[0].clientX;
+          swipeStartY = e.changedTouches[0].clientY;
+        });
+        rendition.on("touchend", (e: TouchEvent) => {
+          const dx = e.changedTouches[0].clientX - swipeStartX;
+          const dy = e.changedTouches[0].clientY - swipeStartY;
+          if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+          if (dx < 0) rendition.next();
+          else rendition.prev();
+        });
 
         book.locations.generate(1024).then(() => {
           if (destroyed) return;
@@ -110,6 +129,11 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
 
+  // Schriftgröße dynamisch anpassen
+  useEffect(() => {
+    renditionRef.current?.themes?.fontSize?.(`${fontSize}%`);
+  }, [fontSize]);
+
   // Tastatur-Navigation
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -151,27 +175,46 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
     <div className="fixed inset-0 z-[9999] bg-black/75 flex items-end sm:items-center justify-center">
       <div
         className="bg-white w-full sm:max-w-3xl sm:rounded-xl flex flex-col shadow-2xl"
-        style={{ height: "calc(100dvh - 2rem)", maxHeight: "95dvh" }}
+        style={{ height: "100dvh", maxHeight: "100dvh" }}
       >
         {/* Header mit Navigation */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-arena-border bg-[#1a1a2e] shrink-0 rounded-t-xl">
+        <div className="flex items-center justify-between px-2 sm:px-4 py-2 sm:py-3 border-b border-arena-border bg-[#1a1a2e] shrink-0 sm:rounded-t-xl">
           <button
             onClick={() => renditionRef.current?.prev?.()}
             disabled={loading || !!error}
-            className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-3 py-1 rounded hover:bg-white/10 min-w-[70px]"
-          >← Zurück</button>
-          <span className="text-white font-semibold text-sm">EPUB-Reader</span>
+            className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-4 py-2 rounded hover:bg-white/10 min-w-[72px] touch-manipulation"
+          >&#8592; Zur&#252;ck</button>
+
+          {/* Mitte: Titel + Schriftgröße */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFontSize(s => Math.max(70, s - 10))}
+              disabled={loading || !!error || fontSize <= 70}
+              className="text-white/70 hover:text-white disabled:opacity-30 text-base font-bold w-9 h-9 flex items-center justify-center rounded hover:bg-white/10 touch-manipulation"
+              aria-label="Schrift kleiner"
+              title="Schrift kleiner"
+            >A&#8722;</button>
+            <span className="text-white font-semibold text-xs sm:text-sm hidden sm:inline">EPUB</span>
+            <button
+              onClick={() => setFontSize(s => Math.min(180, s + 10))}
+              disabled={loading || !!error || fontSize >= 180}
+              className="text-white/70 hover:text-white disabled:opacity-30 text-base font-bold w-9 h-9 flex items-center justify-center rounded hover:bg-white/10 touch-manipulation"
+              aria-label="Schrift gr&#246;&#223;er"
+              title="Schrift gr&#246;&#223;er"
+            >A+</button>
+          </div>
+
+          <div className="flex items-center gap-1">
             <button
               onClick={() => renditionRef.current?.next?.()}
               disabled={loading || !!error}
-              className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-3 py-1 rounded hover:bg-white/10 min-w-[70px]"
-            >Weiter →</button>
+              className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-4 py-2 rounded hover:bg-white/10 min-w-[72px] touch-manipulation"
+            >Weiter &#8594;</button>
             <button
               onClick={onClose}
-              className="text-white/70 hover:text-white text-xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-white/10"
-              aria-label="Schließen"
-            >✕</button>
+              className="text-white/70 hover:text-white text-xl leading-none w-10 h-10 flex items-center justify-center rounded hover:bg-white/10 touch-manipulation"
+              aria-label="Schlie&#223;en"
+            >&#x2715;</button>
           </div>
         </div>
 

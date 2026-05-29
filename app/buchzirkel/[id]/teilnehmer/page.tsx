@@ -521,22 +521,26 @@ export default function TeilnehmerBereichPage() {
                 const activePdfPage = Number(pdfInput) > 0 ? Number(pdfInput) : savedPage;
                 const savedCfi = getSavedCfi(d.id);                return (
                   <div key={d.id} className="border border-arena-border rounded-xl overflow-hidden">
-                    <div className="flex items-center justify-between p-3 bg-gray-50">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{isEpub ? "📖" : "📄"}</span>
-                        <span className="font-medium text-sm">{d.originalName}</span>
-                        {isEpub && savedCfi && (
-                          <span className="text-xs text-arena-muted">(letzte Position gespeichert)</span>
-                        )}
-                        {isPdf && savedPage > 1 && (
-                          <span className="text-xs text-arena-muted">(zuletzt: Seite {savedPage})</span>
-                        )}
+                    <div className="flex flex-col gap-2 p-3 bg-gray-50">
+                      {/* Dateiname */}
+                      <div className="flex items-start gap-2 min-w-0">
+                        <span className="text-lg shrink-0">{isEpub ? "📖" : "📄"}</span>
+                        <div className="min-w-0">
+                          <span className="font-medium text-sm break-all">{d.originalName}</span>
+                          {isEpub && savedCfi && (
+                            <p className="text-xs text-arena-muted m-0 mt-0.5">letzte Position gespeichert</p>
+                          )}
+                          {isPdf && savedPage > 1 && (
+                            <p className="text-xs text-arena-muted m-0 mt-0.5">zuletzt: Seite {savedPage}</p>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      {/* Buttons */}
+                      <div className="flex flex-wrap items-center gap-2">
                         {isEpub && (
                           <button
                             onClick={() => { setEpubReaderUrl(dateiUrl); setEpubReaderDateiId(d.id); }}
-                            className="btn btn-primary btn-sm"
+                            className="btn btn-primary btn-sm flex-1 sm:flex-none justify-center"
                           >
                             {savedCfi ? "Weiterlesen" : "Im Browser lesen"}
                           </button>
@@ -565,15 +569,15 @@ export default function TeilnehmerBereichPage() {
                             rel="noopener noreferrer"
                             className="btn btn-secondary btn-sm"
                           >
-                            Im Viewer öffnen ↗
+                            Im Viewer öffnen
                           </a>
                         )}
                         <a
                           href={dateiUrl}
                           download={d.originalName}
-                          className="btn btn-secondary btn-sm"
+                          className="btn btn-secondary btn-sm flex-1 sm:flex-none justify-center"
                         >
-                          ⬇ Herunterladen
+                          Herunterladen
                         </a>
                       </div>
                     </div>
