@@ -21,12 +21,12 @@ async function checkUnreadMessages(): Promise<void> {
   const convCol = await getMessageConversationsCollection();
 
   // Alle User mit aktivierter Benachrichtigung
-  type EligibleUser = Pick<import("mongodb").WithId<import("@/lib/mongodb").UserDocument>, "_id" | "username" | "email" | "displayName" | "lastUnreadNotifiedAt">;
+  type EligibleUser = Pick<import("mongodb").WithId<import("@/lib/mongodb").UserDocument>, "_id" | "username" | "email" | "displayName" | "lastUnreadNotifiedAt" | "emailNotifyFailCount">;
 
   const eligibleUsers: EligibleUser[] = await users
     .find(
       { emailOnUnreadMessages: true, status: { $ne: "deactivated" } },
-      { projection: { username: 1, email: 1, lastUnreadNotifiedAt: 1, displayName: 1 } },
+      { projection: { username: 1, email: 1, lastUnreadNotifiedAt: 1, displayName: 1, emailNotifyFailCount: 1 } },
     )
     .toArray();
 
@@ -60,6 +60,10 @@ async function checkUnreadMessages(): Promise<void> {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://bucharena.org";
     const name = user.displayName || user.username;
 
+    // Nicht benachrichtigen, wenn E-Mail-Zustellung dauerhaft fehlgeschlagen
+    const MAX_FAIL_COUNT = 3;
+    if ((user.emailNotifyFailCount ?? 0) >= MAX_FAIL_COUNT) continue;
+
     try {
       await sendMail(
         user.email,
@@ -75,14 +79,38 @@ async function checkUnreadMessages(): Promise<void> {
         `,
       );
 
+      // Erfolg: Fehlerzähler zurücksetzen
       await users.updateOne(
         { username: user.username },
-        { $set: { lastUnreadNotifiedAt: now } },
+        { $set: { lastUnreadNotifiedAt: now }, $unset: { emailNotifyFailCount: "" } },
       );
 
       console.log(`[UnreadNotify] Benachrichtigung an ${user.username} (${unreadCount} ungelesen)`);
     } catch (err) {
-      console.error(`[UnreadNotify] Fehler beim Senden an ${user.username}:`, err);
+      const newFailCount = (user.emailNotifyFailCount ?? 0) + 1;
+      const autoDisable = newFailCount >= MAX_FAIL_COUNT;
+
+      // lastUnreadNotifiedAt setzen, um sofortigen Retry zu verhindern
+      const updateFields: Record<string, unknown> = {
+        lastUnreadNotifiedAt: now,
+        emailNotifyFailCount: newFailCount,
+      };
+      if (autoDisable) {
+        updateFields.emailOnUnreadMessages = false;
+      }
+
+      await users.updateOne(
+        { username: user.username },
+        { $set: updateFields },
+      );
+
+      if (autoDisable) {
+        console.warn(
+          `[UnreadNotify] E-Mail-Benachrichtigung fuer ${user.username} nach ${newFailCount} Fehlern automatisch deaktiviert.`,
+        );
+      } else {
+        console.error(`[UnreadNotify] Fehler beim Senden an ${user.username} (${newFailCount}/${MAX_FAIL_COUNT}):`, err);
+      }
     }
   }
 }

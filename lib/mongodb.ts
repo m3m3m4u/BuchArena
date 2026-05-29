@@ -143,6 +143,7 @@ export type UserDocument = {
   newsletterOptIn?: boolean;
   emailOnUnreadMessages?: boolean;
   lastUnreadNotifiedAt?: Date;
+  emailNotifyFailCount?: number;
   lastSettingsCheckAt?: Date;
   genreTreffpunktFilter?: string[];
 };

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import { getMessagesCollection } from "@/lib/mongodb";
+import { getMessagesCollection, getMessageConversationsCollection } from "@/lib/mongodb";
+import { invalidateUnreadCountCache } from "@/lib/messages-unread-cache";
 
 export async function POST(request: Request) {
   try {
@@ -21,15 +22,29 @@ export async function POST(request: Request) {
     // Prüfe ob der User Sender oder Empfänger ist
     const doc = await messages.findOne(
       { _id: oid, $or: [{ senderUsername: account.username }, { recipientUsername: account.username }] },
-      { projection: { senderUsername: 1, recipientUsername: 1 } }
+      { projection: { senderUsername: 1, recipientUsername: 1, read: 1, deletedBySender: 1 } }
     );
 
     if (!doc) {
       return NextResponse.json({ message: "Nachricht nicht gefunden." }, { status: 404 });
     }
 
-    if (doc.senderUsername === account.username) {
+    const isSender = doc.senderUsername === account.username;
+
+    if (isSender) {
       await messages.updateOne({ _id: oid }, { $set: { deletedBySender: true } });
+
+      // Wenn die Nachricht noch ungelesen ist, Unread-Count für Empfänger dekrementieren
+      if (!doc.read && !doc.deletedBySender) {
+        const [userA, userB] = [doc.senderUsername, doc.recipientUsername].sort();
+        const recipientIsA = doc.recipientUsername === userA;
+        const convCol = await getMessageConversationsCollection();
+        await convCol.updateOne(
+          { userA, userB, [recipientIsA ? "unreadForA" : "unreadForB"]: { $gt: 0 } },
+          { $inc: { [recipientIsA ? "unreadForA" : "unreadForB"]: -1 } },
+        );
+        invalidateUnreadCountCache(doc.recipientUsername);
+      }
     }
     if (doc.recipientUsername === account.username) {
       await messages.updateOne({ _id: oid }, { $set: { deletedByRecipient: true } });
