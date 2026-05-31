@@ -35,10 +35,10 @@ export async function GET() {
       if (vp.deaktiviert) continue;
 
       const displayName =
-        user.displayName
-          ? user.displayName
-          : vp.name.visibility === "public" && vp.name.value
-            ? vp.name.value
+        vp.name.visibility === "public" && vp.name.value
+          ? vp.name.value
+          : user.displayName
+            ? user.displayName
             : user.username;
 
       let profileImageUrl = "";

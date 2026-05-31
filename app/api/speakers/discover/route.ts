@@ -40,10 +40,10 @@ export async function GET() {
       if (sp.deaktiviert) continue;
 
       const displayName =
-        user.displayName
-          ? user.displayName
-          : sp.name.visibility === "public" && sp.name.value
-            ? sp.name.value
+        sp.name.visibility === "public" && sp.name.value
+          ? sp.name.value
+          : user.displayName
+            ? user.displayName
             : user.username;
 
       // Prefer speaker-specific image; fall back to general profile image

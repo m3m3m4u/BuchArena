@@ -39,10 +39,10 @@ export async function GET() {
       if (tp.deaktiviert) continue;
 
       const displayName =
-        user.displayName
-          ? user.displayName
-          : tp.name.visibility === "public" && tp.name.value
-            ? tp.name.value
+        tp.name.visibility === "public" && tp.name.value
+          ? tp.name.value
+          : user.displayName
+            ? user.displayName
             : user.username;
 
       let profileImageUrl = "";

@@ -42,10 +42,10 @@ export async function GET() {
       if (bp.deaktiviert) continue;
 
       const displayName =
-        user.displayName
-          ? user.displayName
-          : bp.name.visibility === "public" && bp.name.value
-            ? bp.name.value
+        bp.name.visibility === "public" && bp.name.value
+          ? bp.name.value
+          : user.displayName
+            ? user.displayName
             : user.username;
 
       // Prefer blogger-specific image; fall back to general profile image

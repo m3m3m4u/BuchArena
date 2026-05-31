@@ -54,10 +54,10 @@ export async function GET() {
       if (user.profile?.deaktiviert) continue;
 
       const displayName =
-        user.displayName
-          ? user.displayName
-          : user.profile.name.visibility === "public" && user.profile.name.value
-            ? user.profile.name.value
+        user.profile.name.visibility === "public" && user.profile.name.value
+          ? user.profile.name.value
+          : user.displayName
+            ? user.displayName
             : user.username;
 
       const imgData = profileByUser.get(user.username);

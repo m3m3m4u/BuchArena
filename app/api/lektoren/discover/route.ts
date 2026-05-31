@@ -45,10 +45,10 @@ export async function GET(request: Request) {
       if (lp.deaktiviert) continue;
 
       const displayName =
-        user.displayName
-          ? user.displayName
-          : lp.name.visibility === "public" && lp.name.value
-            ? lp.name.value
+        lp.name.visibility === "public" && lp.name.value
+          ? lp.name.value
+          : user.displayName
+            ? user.displayName
             : user.username;
 
       let profileImageUrl = "";
