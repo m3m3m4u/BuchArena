@@ -101,7 +101,12 @@ export async function initNewsletterIndexes(): Promise<void> {
 import crypto from "crypto";
 
 function getNewsletterSecret(): string {
-  const secret = process.env.NEWSLETTER_HMAC_SECRET ?? process.env.JWT_SECRET ?? "newsletter-fallback-secret";
+  const secret = process.env.NEWSLETTER_HMAC_SECRET ?? process.env.JWT_SECRET;
+  if (!secret || secret.length < 16) {
+    throw new Error(
+      "NEWSLETTER_HMAC_SECRET (oder JWT_SECRET als Fallback) ist nicht gesetzt oder zu kurz (mind. 16 Zeichen).",
+    );
+  }
   return secret;
 }
 

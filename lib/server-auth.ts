@@ -26,7 +26,14 @@ const JWT_ISSUER = "bucharena";
 const JWT_EXPIRY = "7d";
 
 function getJwtSecret(): Uint8Array {
-  return new TextEncoder().encode(process.env.JWT_SECRET ?? "12345");
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret.length < 16) {
+    throw new Error(
+      "JWT_SECRET ist nicht gesetzt oder zu kurz (mindestens 16 Zeichen). " +
+        "Bitte eine starke, zufällige Umgebungsvariable konfigurieren.",
+    );
+  }
+  return new TextEncoder().encode(secret);
 }
 
 interface AuthTokenPayload extends JWTPayload {

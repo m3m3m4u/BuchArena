@@ -26,7 +26,7 @@ async function getMusikCollection() {
 /** GET /api/musik – alle Tracks auflisten (öffentlich) */
 export async function GET() {
   const col = await getMusikCollection();
-  const tracks = await col.find({}).sort({ createdAt: -1 }).toArray();
+  const tracks = await col.find({}).sort({ createdAt: -1 }).limit(500).toArray();
   return NextResponse.json({
     tracks: tracks.map((t) => ({
       id: t._id!.toString(),

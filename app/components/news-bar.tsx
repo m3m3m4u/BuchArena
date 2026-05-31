@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 
 type NewsLayout = "text-only" | "image-left" | "image-right";
 
@@ -93,7 +94,7 @@ export default function NewsBar() {
             {post.layout === "text-only" && (
               <div
                 className="ProseMirror text-[0.93rem] leading-relaxed text-gray-700"
-                dangerouslySetInnerHTML={{ __html: post.htmlContent }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.htmlContent) }}
               />
             )}
 
@@ -107,7 +108,7 @@ export default function NewsBar() {
                 </div>
                 <div
                   className="flex-1 min-w-0 ProseMirror text-[0.93rem] leading-relaxed text-gray-700"
-                  dangerouslySetInnerHTML={{ __html: post.htmlContent }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.htmlContent) }}
                 />
               </div>
             )}
@@ -116,7 +117,7 @@ export default function NewsBar() {
               <div className="flex gap-5 items-start flex-wrap sm:flex-nowrap">
                 <div
                   className="flex-1 min-w-0 ProseMirror text-[0.93rem] leading-relaxed text-gray-700"
-                  dangerouslySetInnerHTML={{ __html: post.htmlContent }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.htmlContent) }}
                 />
                 <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="max-sm:flex-none max-sm:w-full max-sm:max-w-full min-w-0">
                   {post.imageUrl && (

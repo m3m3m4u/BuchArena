@@ -184,163 +184,141 @@ function getClientPromise(): Promise<MongoClient> {
 async function initializeDatabase(db: Db) {
   const users = db.collection<UserDocument>("users");
   const books = db.collection<BookDocument>("books");
-
-  await users.createIndex({ username: 1 }, { unique: true });
-  await users.createIndex({ email: 1 }, { unique: true });
-  await users.createIndex({ profileSlug: 1 }, { unique: true, sparse: true });
-  await books.createIndex({ ownerUsername: 1, createdAt: -1 });
-  await books.createIndex({ "coAuthors.username": 1, "coAuthors.status": 1 });
-
   const support = db.collection<SupportPost>("support");
-  await support.createIndex({ createdAt: -1 });
-
   const discussions = db.collection<DiscussionDocument>("discussions");
-  await discussions.createIndex({ lastActivityAt: -1 });
-  await discussions.createIndex({ authorUsername: 1 });
-
   const discussionReads = db.collection("discussionReads");
-  await discussionReads.createIndex({ username: 1, discussionId: 1 }, { unique: true });
-
   const messages = db.collection<MessageDocument>("messages");
-  await messages.createIndex({ recipientUsername: 1, createdAt: -1 });
-  await messages.createIndex({ senderUsername: 1, createdAt: -1 });
-  await messages.createIndex({ senderUsername: 1, deletedBySender: 1, createdAt: -1 });
-  await messages.createIndex({ recipientUsername: 1, deletedByRecipient: 1, createdAt: -1 });
-  // Partner-Chat-Query: beide Richtungen abdecken
-  await messages.createIndex({ senderUsername: 1, recipientUsername: 1, deletedBySender: 1, createdAt: 1 });
-  await messages.createIndex({ recipientUsername: 1, senderUsername: 1, deletedByRecipient: 1, createdAt: 1 });
-  // Optimierte Chat-Indizes für sort({ createdAt: -1 }).limit(N) ohne In-Memory-Sort
-  await messages.createIndex({ senderUsername: 1, recipientUsername: 1, createdAt: -1 });
-  await messages.createIndex({ recipientUsername: 1, senderUsername: 1, createdAt: -1 });
-  // Unread-Count-Query
-  await messages.createIndex({ recipientUsername: 1, read: 1, deletedByRecipient: 1 });
-  // Batch-Read by partner
-  await messages.createIndex({ senderUsername: 1, recipientUsername: 1, read: 1 });
-
   const messageConversations = db.collection<MessageConversationDocument>("messageConversations");
-  await messageConversations.createIndex({ userA: 1, userB: 1 }, { unique: true });
-  await messageConversations.createIndex({ userA: 1, updatedAt: -1 });
-  await messageConversations.createIndex({ userB: 1, updatedAt: -1 });
-
   const analytics = db.collection("analytics");
-  await analytics.createIndex({ timestamp: -1 });
-  await analytics.createIndex({ page: 1, timestamp: -1 });
-  await analytics.createIndex({ visitorId: 1, timestamp: -1 });
-
   const socialMediaDesigns = db.collection("social_media_designs");
-  await socialMediaDesigns.createIndex({ username: 1, name: 1 }, { unique: true });
-  await socialMediaDesigns.createIndex({ username: 1, updatedAt: -1 });
-
   const socialMediaGallery = db.collection("social_media_gallery");
-  await socialMediaGallery.createIndex({ order: 1, createdAt: 1 });
-
   const socialMediaPromoContent = db.collection("social_media_promo_content");
-  await socialMediaPromoContent.createIndex({ createdAt: -1 });
-  await socialMediaPromoContent.createIndex({ mediaType: 1, createdAt: -1 });
-
   const pixabayBlacklist = db.collection("social_media_pixabay_blacklist");
-  await pixabayBlacklist.createIndex({ userId: 1 }, { unique: true });
-  await pixabayBlacklist.createIndex({ createdAt: -1 });
-
   const pixabayFlagged = db.collection("social_media_pixabay_flagged_images");
-  await pixabayFlagged.createIndex({ imageId: 1 }, { unique: true });
-  await pixabayFlagged.createIndex({ createdAt: -1 });
-
   const pixabayLicenseSafes = db.collection("social_media_pixabay_license_safes");
-  await pixabayLicenseSafes.createIndex({ username: 1, createdAt: -1 });
-  await pixabayLicenseSafes.createIndex({ imageId: 1, createdAt: -1 });
-  await pixabayLicenseSafes.createIndex({ uploaderUserId: 1, createdAt: -1 });
-
   const lesezeichen = db.collection("lesezeichen");
-  await lesezeichen.createIndex({ username: 1 }, { unique: true });
-  await lesezeichen.createIndex({ total: -1 });
-
   const buchempfehlungen = db.collection("buchempfehlungen");
-  await buchempfehlungen.createIndex({ bookId: 1, createdAt: -1 });
-  await buchempfehlungen.createIndex({ bookId: 1, username: 1 }, { unique: true });
-
   const profilempfehlungen = db.collection("profilempfehlungen");
-  await profilempfehlungen.createIndex({ profileType: 1, profileUsername: 1, createdAt: -1 });
-  await profilempfehlungen.createIndex({ profileType: 1, profileUsername: 1, username: 1 }, { unique: true });
-
   const vorlagen = db.collection("bucharenavorlagen");
-  await vorlagen.createIndex({ username: 1, updatedAt: -1 });
-
   const submissions = db.collection("bucharenasubmissions");
-  await submissions.createIndex({ submittedBy: 1, createdAt: -1 });
-
   const nlSubscribers = db.collection("newsletter_subscribers");
-  await nlSubscribers.createIndex({ email: 1 }, { unique: true });
-  await nlSubscribers.createIndex({ status: 1 });
-
   const nlQueue = db.collection("newsletter_queue");
-  await nlQueue.createIndex({ status: 1, createdAt: 1 });
-  await nlQueue.createIndex({ subscriberId: 1 });
-
   const newsPosts = db.collection("news_posts");
-  await newsPosts.createIndex({ active: 1, createdAt: -1 });
-
   const blogPosts = db.collection("blog_posts");
-  await blogPosts.createIndex({ status: 1, createdAt: -1 });
-  await blogPosts.createIndex({ authorUsername: 1 });
-
   const kalender = db.collection("kalender_events");
-  await kalender.createIndex({ date: 1 });
-  await kalender.createIndex({ createdBy: 1 });
-
   const kooperationen = db.collection("kooperationen");
-  await kooperationen.createIndex({ requesterUsername: 1, partnerUsername: 1, requesterRole: 1, partnerRole: 1 }, { unique: true });
-  await kooperationen.createIndex({ partnerUsername: 1, status: 1 });
-  await kooperationen.createIndex({ requesterUsername: 1, status: 1 });
-
   const buchzirkel = db.collection("buchzirkel");
-  await buchzirkel.createIndex({ veranstalterUsername: 1, createdAt: -1 });
-  await buchzirkel.createIndex({ status: 1, bewerbungBis: 1 });
-  await buchzirkel.createIndex({ typ: 1, status: 1 });
-
   const buchzirkelBewerbungen = db.collection("buchzirkel_bewerbungen");
-  await buchzirkelBewerbungen.createIndex({ buchzirkelId: 1, bewerberUsername: 1 }, { unique: true });
-  await buchzirkelBewerbungen.createIndex({ buchzirkelId: 1, status: 1 });
-  await buchzirkelBewerbungen.createIndex({ bewerberUsername: 1 });
-
   const buchzirkelTeilnahmen = db.collection("buchzirkel_teilnahmen");
-  await buchzirkelTeilnahmen.createIndex({ buchzirkelId: 1, teilnehmerUsername: 1 }, { unique: true });
-  await buchzirkelTeilnahmen.createIndex({ teilnehmerUsername: 1 });
-
   const buchzirkelBeitraege = db.collection("buchzirkel_beitraege");
-  await buchzirkelBeitraege.createIndex({ buchzirkelId: 1, topicId: 1, lastActivityAt: -1 });
-  await buchzirkelBeitraege.createIndex({ autorUsername: 1 });
-
   const buchzirkelChat = db.collection("buchzirkel_chat");
-  await buchzirkelChat.createIndex({ buchzirkelId: 1, _id: -1 });
-  await buchzirkelChat.createIndex({ buchzirkelId: 1, createdAt: -1 });
-
   const gewinnspiele = db.collection("gewinnspiele");
-  await gewinnspiele.createIndex({ status: 1, anmeldungBis: -1 });
-  await gewinnspiele.createIndex({ autorUsername: 1, createdAt: -1 });
-  await gewinnspiele.createIndex({ ziehungAm: 1, status: 1 });
-
   const gewinnspielteilnahmen = db.collection("gewinnspielteilnahmen");
-  await gewinnspielteilnahmen.createIndex({ gewinnspielId: 1, username: 1 }, { unique: true });
-  await gewinnspielteilnahmen.createIndex({ username: 1, angemeldetAt: -1 });
+
+  // Alle Indizes parallel anlegen — MongoDB legt vorhandene Indizes idempotent als No-op an.
+  // Das ist ~10-20x schneller als serielle await-Calls beim Cold-Start.
+  await Promise.all([
+    users.createIndex({ username: 1 }, { unique: true }),
+    users.createIndex({ email: 1 }, { unique: true }),
+    users.createIndex({ profileSlug: 1 }, { unique: true, sparse: true }),
+    books.createIndex({ ownerUsername: 1, createdAt: -1 }),
+    books.createIndex({ "coAuthors.username": 1, "coAuthors.status": 1 }),
+    support.createIndex({ createdAt: -1 }),
+    discussions.createIndex({ lastActivityAt: -1 }),
+    discussions.createIndex({ authorUsername: 1 }),
+    discussionReads.createIndex({ username: 1, discussionId: 1 }, { unique: true }),
+    messages.createIndex({ recipientUsername: 1, createdAt: -1 }),
+    messages.createIndex({ senderUsername: 1, createdAt: -1 }),
+    messages.createIndex({ senderUsername: 1, deletedBySender: 1, createdAt: -1 }),
+    messages.createIndex({ recipientUsername: 1, deletedByRecipient: 1, createdAt: -1 }),
+    messages.createIndex({ senderUsername: 1, recipientUsername: 1, deletedBySender: 1, createdAt: 1 }),
+    messages.createIndex({ recipientUsername: 1, senderUsername: 1, deletedByRecipient: 1, createdAt: 1 }),
+    messages.createIndex({ senderUsername: 1, recipientUsername: 1, createdAt: -1 }),
+    messages.createIndex({ recipientUsername: 1, senderUsername: 1, createdAt: -1 }),
+    messages.createIndex({ recipientUsername: 1, read: 1, deletedByRecipient: 1 }),
+    messages.createIndex({ senderUsername: 1, recipientUsername: 1, read: 1 }),
+    messageConversations.createIndex({ userA: 1, userB: 1 }, { unique: true }),
+    messageConversations.createIndex({ userA: 1, updatedAt: -1 }),
+    messageConversations.createIndex({ userB: 1, updatedAt: -1 }),
+    analytics.createIndex({ timestamp: -1 }),
+    analytics.createIndex({ page: 1, timestamp: -1 }),
+    analytics.createIndex({ visitorId: 1, timestamp: -1 }),
+    socialMediaDesigns.createIndex({ username: 1, name: 1 }, { unique: true }),
+    socialMediaDesigns.createIndex({ username: 1, updatedAt: -1 }),
+    socialMediaGallery.createIndex({ order: 1, createdAt: 1 }),
+    socialMediaPromoContent.createIndex({ createdAt: -1 }),
+    socialMediaPromoContent.createIndex({ mediaType: 1, createdAt: -1 }),
+    pixabayBlacklist.createIndex({ userId: 1 }, { unique: true }),
+    pixabayBlacklist.createIndex({ createdAt: -1 }),
+    pixabayFlagged.createIndex({ imageId: 1 }, { unique: true }),
+    pixabayFlagged.createIndex({ createdAt: -1 }),
+    pixabayLicenseSafes.createIndex({ username: 1, createdAt: -1 }),
+    pixabayLicenseSafes.createIndex({ imageId: 1, createdAt: -1 }),
+    pixabayLicenseSafes.createIndex({ uploaderUserId: 1, createdAt: -1 }),
+    lesezeichen.createIndex({ username: 1 }, { unique: true }),
+    lesezeichen.createIndex({ total: -1 }),
+    buchempfehlungen.createIndex({ bookId: 1, createdAt: -1 }),
+    buchempfehlungen.createIndex({ bookId: 1, username: 1 }, { unique: true }),
+    profilempfehlungen.createIndex({ profileType: 1, profileUsername: 1, createdAt: -1 }),
+    profilempfehlungen.createIndex({ profileType: 1, profileUsername: 1, username: 1 }, { unique: true }),
+    vorlagen.createIndex({ username: 1, updatedAt: -1 }),
+    submissions.createIndex({ submittedBy: 1, createdAt: -1 }),
+    nlSubscribers.createIndex({ email: 1 }, { unique: true }),
+    nlSubscribers.createIndex({ status: 1 }),
+    nlQueue.createIndex({ status: 1, createdAt: 1 }),
+    nlQueue.createIndex({ subscriberId: 1 }),
+    newsPosts.createIndex({ active: 1, createdAt: -1 }),
+    blogPosts.createIndex({ status: 1, createdAt: -1 }),
+    blogPosts.createIndex({ authorUsername: 1 }),
+    kalender.createIndex({ date: 1 }),
+    kalender.createIndex({ createdBy: 1 }),
+    kooperationen.createIndex({ requesterUsername: 1, partnerUsername: 1, requesterRole: 1, partnerRole: 1 }, { unique: true }),
+    kooperationen.createIndex({ partnerUsername: 1, status: 1 }),
+    kooperationen.createIndex({ requesterUsername: 1, status: 1 }),
+    buchzirkel.createIndex({ veranstalterUsername: 1, createdAt: -1 }),
+    buchzirkel.createIndex({ status: 1, bewerbungBis: 1 }),
+    buchzirkel.createIndex({ typ: 1, status: 1 }),
+    buchzirkelBewerbungen.createIndex({ buchzirkelId: 1, bewerberUsername: 1 }, { unique: true }),
+    buchzirkelBewerbungen.createIndex({ buchzirkelId: 1, status: 1 }),
+    buchzirkelBewerbungen.createIndex({ bewerberUsername: 1 }),
+    buchzirkelTeilnahmen.createIndex({ buchzirkelId: 1, teilnehmerUsername: 1 }, { unique: true }),
+    buchzirkelTeilnahmen.createIndex({ teilnehmerUsername: 1 }),
+    buchzirkelBeitraege.createIndex({ buchzirkelId: 1, topicId: 1, lastActivityAt: -1 }),
+    buchzirkelBeitraege.createIndex({ autorUsername: 1 }),
+    buchzirkelChat.createIndex({ buchzirkelId: 1, _id: -1 }),
+    buchzirkelChat.createIndex({ buchzirkelId: 1, createdAt: -1 }),
+    gewinnspiele.createIndex({ status: 1, anmeldungBis: -1 }),
+    gewinnspiele.createIndex({ autorUsername: 1, createdAt: -1 }),
+    gewinnspiele.createIndex({ ziehungAm: 1, status: 1 }),
+    gewinnspielteilnahmen.createIndex({ gewinnspielId: 1, username: 1 }, { unique: true }),
+    gewinnspielteilnahmen.createIndex({ username: 1, angemeldetAt: -1 }),
+  ]);
 
   // Superadmin beim Serverstart anlegen / Passwort synchronisieren
-  const defaultPassword = process.env.SUPERADMIN_PASSWORD ?? "12345";
+  const defaultPassword = process.env.SUPERADMIN_PASSWORD;
   const existingSuperAdmin = await users.findOne(
     { username: "Kopernikus" },
     { projection: { _id: 1, passwordHash: 1, role: 1 } }
   );
 
   if (!existingSuperAdmin) {
-    const passwordHash = await bcrypt.hash(defaultPassword, 12);
-    await users.insertOne({
-      username: "Kopernikus",
-      email: "kopernikus@bucharena.local",
-      passwordHash,
-      role: "SUPERADMIN",
-      createdAt: new Date(),
-    });
-  } else {
+    if (!defaultPassword || defaultPassword.length < 8) {
+      console.warn(
+        "[mongodb] Kein Superadmin gefunden und SUPERADMIN_PASSWORD nicht gesetzt — Account wird nicht angelegt.",
+      );
+    } else {
+      const passwordHash = await bcrypt.hash(defaultPassword, 12);
+      await users.insertOne({
+        username: "Kopernikus",
+        email: "kopernikus@bucharena.local",
+        passwordHash,
+        role: "SUPERADMIN",
+        createdAt: new Date(),
+      });
+    }
+  } else if (defaultPassword && defaultPassword.length >= 8) {
+    // Nur synchronisieren, wenn die Env-Variable explizit gesetzt ist —
+    // sonst riskieren wir, ein produktives Passwort versehentlich zu überschreiben.
     const isValid = await bcrypt.compare(defaultPassword, existingSuperAdmin.passwordHash ?? "");
     const updates: Record<string, unknown> = {};
     if (!isValid) {
@@ -352,6 +330,9 @@ async function initializeDatabase(db: Db) {
     if (Object.keys(updates).length > 0) {
       await users.updateOne({ username: "Kopernikus" }, { $set: updates });
     }
+  } else if (existingSuperAdmin.role !== "SUPERADMIN") {
+    // Mindestens Rolle korrigieren, auch ohne Env-Variable
+    await users.updateOne({ username: "Kopernikus" }, { $set: { role: "SUPERADMIN" } });
   }
 }
 

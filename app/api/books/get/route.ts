@@ -46,16 +46,26 @@ export async function GET(request: Request) {
     const authorName =
       profile.name?.visibility === "public" ? profile.name.value : "";
 
-    // Mitautoren (nur confirmed) mit öffentlichen Profilinfos laden
+    // Mitautoren (nur confirmed) mit öffentlichen Profilinfos laden — Bulk-Query statt N+1
     const confirmedCoAuthors = (book.coAuthors ?? []).filter((c) => c.status === "confirmed");
-    const coAuthorInfos: { username: string; name: string; imageUrl: string }[] = [];
-    for (const ca of confirmedCoAuthors) {
-      const caUser = await users.findOne({ username: ca.username }, { projection: { profile: 1, displayName: 1 } });
-      const caProfile = caUser?.profile ?? createDefaultProfile();
-      coAuthorInfos.push({
-        username: ca.username,
-        name: caProfile.name?.visibility === "public" ? (caProfile.name.value ?? "") : "",
-        imageUrl: caProfile.profileImage?.visibility === "public" ? (caProfile.profileImage.value ?? "") : "",
+    let coAuthorInfos: { username: string; name: string; imageUrl: string }[] = [];
+    if (confirmedCoAuthors.length > 0) {
+      const caUsernames = confirmedCoAuthors.map((c) => c.username);
+      const caUsers = await users
+        .find(
+          { username: { $in: caUsernames } },
+          { projection: { username: 1, profile: 1, displayName: 1 } },
+        )
+        .toArray();
+      const caMap = new Map(caUsers.map((u) => [u.username, u]));
+      coAuthorInfos = confirmedCoAuthors.map((ca) => {
+        const caUser = caMap.get(ca.username);
+        const caProfile = caUser?.profile ?? createDefaultProfile();
+        return {
+          username: ca.username,
+          name: caProfile.name?.visibility === "public" ? (caProfile.name.value ?? "") : "",
+          imageUrl: caProfile.profileImage?.visibility === "public" ? (caProfile.profileImage.value ?? "") : "",
+        };
       });
     }
 

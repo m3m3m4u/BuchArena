@@ -91,7 +91,7 @@ function toPublicPromoContentUrl(fileUrl: string) {
 
 export async function GET() {
   const col = await getSocialMediaPromoContentCollection();
-  const items = await col.find({}).sort({ createdAt: -1 }).toArray();
+  const items = await col.find({}).sort({ createdAt: -1 }).limit(500).toArray();
 
   return NextResponse.json({
     items: items.map((item) => ({

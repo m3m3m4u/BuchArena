@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 
 type BlogPost = {
   _id: string;
@@ -67,7 +68,7 @@ export default function BlogDetailPage() {
             </p>
             <div
               className="ProseMirror text-[0.93rem] leading-relaxed text-gray-700 mt-2"
-              dangerouslySetInnerHTML={{ __html: post.htmlContent }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.htmlContent) }}
             />
           </>
         )}

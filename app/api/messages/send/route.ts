@@ -4,12 +4,21 @@ import { getServerAccount } from "@/lib/server-auth";
 import { getUsersCollection, getMessagesCollection, getMessageConversationsCollection } from "@/lib/mongodb";
 import type { SendMessagePayload } from "@/lib/messages";
 import { invalidateUnreadCountCacheMany } from "@/lib/messages-unread-cache";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
     const account = await getServerAccount();
     if (!account) {
       return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
+    // Rate-Limit: max 30 Nachrichten pro Minute pro Account.
+    if (!checkRateLimit(`messages:send:${account.username}`, 30, 60_000)) {
+      return NextResponse.json(
+        { message: "Zu viele Nachrichten in kurzer Zeit. Bitte kurz warten." },
+        { status: 429 },
+      );
     }
 
     const payload = (await request.json()) as SendMessagePayload;

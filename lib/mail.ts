@@ -19,10 +19,14 @@ export async function sendMail(
   html: string,
   attachments?: MailAttachment[]
 ) {
+  // Defense-in-depth: CR/LF aus subject und to entfernen (Header-Injection-Schutz).
+  const safeSubject = subject.replace(/[\r\n]+/g, " ").slice(0, 998);
+  const safeTo = to.replace(/[\r\n]+/g, "").trim();
+
   const { error } = await getResend().emails.send({
     from: process.env.MAIL_FROM ?? "BuchArena <noreply@bucharena.org>",
-    to,
-    subject,
+    to: safeTo,
+    subject: safeSubject,
     html,
     attachments,
   });
