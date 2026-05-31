@@ -18,34 +18,63 @@ export async function GET(request: Request) {
 
     const messages = await getMessagesCollection();
 
-    // ── Chat-Modus: alle Nachrichten mit einem bestimmten Partner ──
+    // ── Chat-Modus: Nachrichten mit einem bestimmten Partner (paginiert) ──
     if (partner) {
-      const docs = await messages
-        .find({
-          $or: [
-            { senderUsername: account.username, recipientUsername: partner, deletedBySender: { $ne: true } },
-            { senderUsername: partner, recipientUsername: account.username, deletedByRecipient: { $ne: true } },
-          ],
-        }, {
-          projection: {
-            senderUsername: 1,
-            recipientUsername: 1,
-            subject: 1,
-            body: 1,
-            read: 1,
-            readAt: 1,
-            threadId: 1,
-            kooperationId: 1,
-            bookCoAuthorId: 1,
-            buchzirkelEinladungId: 1,
-            createdAt: 1,
-          },
-        })
-        .sort({ createdAt: 1 })
-        .limit(500)
-        .toArray();
+      const limitParam = parseInt(searchParams.get("limit") ?? "20", 10);
+      const limit = Math.min(Math.max(isNaN(limitParam) ? 20 : limitParam, 1), 100);
+      const beforeParam = searchParams.get("before");
+      const beforeDate = beforeParam ? new Date(beforeParam) : null;
+      const hasBefore = beforeDate && !isNaN(beforeDate.getTime());
 
-      const items = docs.map((d) => ({
+      const projection = {
+        senderUsername: 1,
+        recipientUsername: 1,
+        subject: 1,
+        body: 1,
+        read: 1,
+        readAt: 1,
+        threadId: 1,
+        kooperationId: 1,
+        bookCoAuthorId: 1,
+        buchzirkelEinladungId: 1,
+        createdAt: 1,
+      } as const;
+
+      const dateFilter = hasBefore ? { createdAt: { $lt: beforeDate } } : {};
+
+      // Zwei separate Queries statt $or → jede nutzt ihren Compound-Index direkt
+      // und stoppt mit sort({ createdAt: -1 }).limit(N) früh (kein In-Memory-Sort).
+      // Pro Richtung `limit` laden, dann mergen und `limit` neueste behalten.
+      const [sentDocs, receivedDocs] = await Promise.all([
+        messages
+          .find(
+            { senderUsername: account.username, recipientUsername: partner, deletedBySender: { $ne: true }, ...dateFilter },
+            { projection },
+          )
+          .sort({ createdAt: -1 })
+          .limit(limit)
+          .toArray(),
+        messages
+          .find(
+            { senderUsername: partner, recipientUsername: account.username, deletedByRecipient: { $ne: true }, ...dateFilter },
+            { projection },
+          )
+          .sort({ createdAt: -1 })
+          .limit(limit)
+          .toArray(),
+      ]);
+
+      // Mergen, neueste zuerst, auf `limit` begrenzen, dann für UI älteste zuerst
+      const mergedDesc = [...sentDocs, ...receivedDocs]
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, limit);
+
+      // hasMore: wenn beide Richtungen `limit` zurückgaben, gibt es potenziell ältere
+      const hasMore = sentDocs.length === limit || receivedDocs.length === limit;
+
+      const merged = mergedDesc.slice().reverse();
+
+      const items = merged.map((d) => ({
         id: d._id!.toHexString(),
         senderUsername: d.senderUsername,
         recipientUsername: d.recipientUsername,
@@ -60,7 +89,7 @@ export async function GET(request: Request) {
         createdAt: d.createdAt.toISOString(),
       }));
 
-      return NextResponse.json({ messages: items });
+      return NextResponse.json({ messages: items, hasMore });
     }
 
     // ── Thread-Modus (legacy): alle Nachrichten eines Threads laden ──

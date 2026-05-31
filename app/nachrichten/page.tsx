@@ -94,6 +94,9 @@ function NachrichtenPageInner() {
   const [activePartnerImage, setActivePartnerImage] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const MESSAGES_PAGE_SIZE = 20;
 
   // Eingabe
   const [inputText, setInputText] = useState("");
@@ -146,6 +149,7 @@ function NachrichtenPageInner() {
   const [bzEinladungActionLoading, setBzEinladungActionLoading] = useState<string | null>(null);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -213,10 +217,11 @@ function NachrichtenPageInner() {
       setChatLoading(true);
       setInputText("");
       try {
-        const res = await fetch(`/api/messages/list?partner=${encodeURIComponent(partner)}`);
-        const data = (await res.json()) as { messages?: ChatMessage[] };
+        const res = await fetch(`/api/messages/list?partner=${encodeURIComponent(partner)}&limit=${MESSAGES_PAGE_SIZE}`);
+        const data = (await res.json()) as { messages?: ChatMessage[]; hasMore?: boolean };
         const msgs = data.messages ?? [];
         setChatMessages(msgs);
+        setHasMoreMessages(Boolean(data.hasMore));
 
         // Ungelesene als gelesen markieren (ein Batch-Request statt N einzelner)
         const hasUnread = msgs.some((m) => !m.read && m.recipientUsername === username);
@@ -246,10 +251,51 @@ function NachrichtenPageInner() {
     [username],
   );
 
-  /* Scroll zum Ende wenn neue Nachrichten */
+  /* ── Ältere Nachrichten nachladen beim Hochscrollen ── */
+  const loadOlderMessages = useCallback(async () => {
+    if (!activePartner || loadingOlder || !hasMoreMessages || chatMessages.length === 0) return;
+    const container = chatScrollRef.current;
+    const prevScrollHeight = container?.scrollHeight ?? 0;
+    const prevScrollTop = container?.scrollTop ?? 0;
+    const oldest = chatMessages[0];
+    setLoadingOlder(true);
+    try {
+      const res = await fetch(
+        `/api/messages/list?partner=${encodeURIComponent(activePartner)}&limit=${MESSAGES_PAGE_SIZE}&before=${encodeURIComponent(oldest.createdAt)}`,
+      );
+      const data = (await res.json()) as { messages?: ChatMessage[]; hasMore?: boolean };
+      const older = data.messages ?? [];
+      if (older.length > 0) {
+        setChatMessages((prev) => [...older, ...prev]);
+        // Scroll-Position nach Prepend beibehalten
+        requestAnimationFrame(() => {
+          const c = chatScrollRef.current;
+          if (c) c.scrollTop = prevScrollTop + (c.scrollHeight - prevScrollHeight);
+        });
+      }
+      setHasMoreMessages(Boolean(data.hasMore));
+    } catch {
+      /* ignore */
+    } finally {
+      setLoadingOlder(false);
+    }
+  }, [activePartner, loadingOlder, hasMoreMessages, chatMessages]);
+
+  /* Scroll zum Ende nur wenn nicht beim Nachladen älterer Nachrichten */
+  const prevMessageCountRef = useRef(0);
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
+    const prevCount = prevMessageCountRef.current;
+    prevMessageCountRef.current = chatMessages.length;
+    // Nur scrollen, wenn neue Nachricht am Ende oder erste Ladung — nicht beim Prepend
+    if (loadingOlder) return;
+    if (chatMessages.length > prevCount && prevCount > 0) {
+      // Neue Nachricht am Ende
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    } else if (prevCount === 0 && chatMessages.length > 0) {
+      // Initiales Laden — instant zum Ende
+      chatEndRef.current?.scrollIntoView({ behavior: "auto" });
+    }
+  }, [chatMessages, loadingOlder]);
 
   useEffect(() => {
     bzEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -998,7 +1044,18 @@ function NachrichtenPageInner() {
                 </div>
 
                 {/* Nachrichten-Bereich */}
-                <div className="flex-1 overflow-y-auto px-4 py-3">
+                <div
+                  ref={chatScrollRef}
+                  className="flex-1 overflow-y-auto px-4 py-3"
+                  onScroll={(e) => {
+                    if (e.currentTarget.scrollTop < 80 && hasMoreMessages && !loadingOlder && !chatLoading) {
+                      void loadOlderMessages();
+                    }
+                  }}
+                >
+                  {loadingOlder && (
+                    <p className="text-xs text-arena-muted text-center mb-2">Lade ältere Nachrichten …</p>
+                  )}
                   {chatLoading ? (
                     <p className="text-sm text-arena-muted text-center mt-8">
                       Lade Nachrichten …

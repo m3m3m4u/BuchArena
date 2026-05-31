@@ -209,6 +209,9 @@ async function initializeDatabase(db: Db) {
   // Partner-Chat-Query: beide Richtungen abdecken
   await messages.createIndex({ senderUsername: 1, recipientUsername: 1, deletedBySender: 1, createdAt: 1 });
   await messages.createIndex({ recipientUsername: 1, senderUsername: 1, deletedByRecipient: 1, createdAt: 1 });
+  // Optimierte Chat-Indizes für sort({ createdAt: -1 }).limit(N) ohne In-Memory-Sort
+  await messages.createIndex({ senderUsername: 1, recipientUsername: 1, createdAt: -1 });
+  await messages.createIndex({ recipientUsername: 1, senderUsername: 1, createdAt: -1 });
   // Unread-Count-Query
   await messages.createIndex({ recipientUsername: 1, read: 1, deletedByRecipient: 1 });
   // Batch-Read by partner
