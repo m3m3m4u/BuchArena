@@ -32,9 +32,8 @@ export async function POST(request: Request) {
     const isSender = doc.senderUsername === account.username;
 
     if (isSender) {
-      await messages.updateOne({ _id: oid }, { $set: { deletedBySender: true } });
-
-      // Wenn die Nachricht noch ungelesen ist, Unread-Count für Empfänger dekrementieren
+      // Absender löscht → für beide Seiten entfernen (sofort physisch löschen)
+      // Wenn die Nachricht noch ungelesen war, Unread-Count für Empfänger dekrementieren
       if (!doc.read && !doc.deletedBySender) {
         const [userA, userB] = [doc.senderUsername, doc.recipientUsername].sort();
         const recipientIsA = doc.recipientUsername === userA;
@@ -45,15 +44,10 @@ export async function POST(request: Request) {
         );
         invalidateUnreadCountCache(doc.recipientUsername);
       }
-    }
-    if (doc.recipientUsername === account.username) {
-      await messages.updateOne({ _id: oid }, { $set: { deletedByRecipient: true } });
-    }
-
-    // Wenn beide gelöscht haben, komplett entfernen
-    const updated = await messages.findOne({ _id: oid }, { projection: { deletedBySender: 1, deletedByRecipient: 1 } });
-    if (updated && updated.deletedBySender && updated.deletedByRecipient) {
       await messages.deleteOne({ _id: oid });
+    } else if (doc.recipientUsername === account.username) {
+      // Empfänger löscht → nur für Empfänger unsichtbar, Absender sieht sie weiterhin
+      await messages.updateOne({ _id: oid }, { $set: { deletedByRecipient: true } });
     }
 
     return NextResponse.json({ message: "Nachricht gelöscht." });
