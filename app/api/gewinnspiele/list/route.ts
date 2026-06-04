@@ -19,9 +19,9 @@ export async function GET(req: Request) {
 
   const filter: Record<string, unknown> = {};
   if (statusFilter === "aktiv") {
-    filter.status = { $in: ["anmeldung", "verlost", "versendet"] };
+    filter.status = "anmeldung";
   } else if (statusFilter === "archiv") {
-    filter.status = "archiv";
+    filter.status = { $in: ["verlost", "versendet", "archiv"] };
   } else if (statusFilter === "vorschlag") {
     filter.status = "vorschlag";
   }
