@@ -287,7 +287,7 @@ export default function HomePage() {
               Ein Projekt von{" "}
               <a href="https://lernarena.org" target="_blank" rel="noopener noreferrer" className="text-arena-yellow hover:underline font-semibold">lernarena.org</a>
               {" "}und{" "}
-              <a href="https://meridianbooks.at" target="_blank" rel="noopener noreferrer" className="text-arena-yellow hover:underline font-semibold">meridianbooks.at</a>
+              <a href="https://www.martinamedia.at/" target="_blank" rel="noopener noreferrer" className="text-arena-yellow hover:underline font-semibold">martinamedia.at</a>
             </p>
             <div className="flex items-center justify-center gap-10 flex-wrap">
               <a href="https://lernarena.org" target="_blank" rel="noopener noreferrer">
