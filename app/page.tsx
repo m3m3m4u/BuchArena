@@ -293,8 +293,8 @@ export default function HomePage() {
               <a href="https://lernarena.org" target="_blank" rel="noopener noreferrer">
                 <img src="/logolang.png" alt="LernArena" width={240} height={75} />
               </a>
-              <a href="https://meridianbooks.at" target="_blank" rel="noopener noreferrer">
-                <img src="/logoweiss.png" alt="meridianbooks" width={192} height={60} />
+              <a href="https://www.martinamedia.at/" target="_blank" rel="noopener noreferrer">
+                <img src="/logoohnebgweiss.png" alt="martinamedia" width={192} height={60} />
               </a>
             </div>
           </div>
