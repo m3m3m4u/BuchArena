@@ -518,6 +518,7 @@ export default function ReelErstellenPage() {
         ["Erscheinungsjahr: 2025", "Erscheinungsjahr: " + form.erscheinungsjahr],
         ["Genre: Fantasy, Spiritualität", form.genre?.trim() ? "Genre: " + form.genre : ""],
         ["Hintergrund: basiert auf einer wahren Begebenheit", form.hintergrund?.trim() ? "Hintergrund: " + form.hintergrund : ""],
+        ["Titel", form.buchtitel],
         ["Hüter - Die Ausbildung beginnt", form.buchtitel],
         ["Autorin & Coverdesign: Martina Zöchinger", coverDesignText],
         ["Verlag: Independently published", form.verlag?.trim() ? "Verlag: " + form.verlag : ""],

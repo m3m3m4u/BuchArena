@@ -388,6 +388,7 @@ export async function buildKurzVideoPptx(vorlage: BucharenaReelVorlageDoc): Prom
     ["Erscheinungsjahr: 2025", "Erscheinungsjahr: " + vorlage.erscheinungsjahr],
     ["Genre: Fantasy, Spiritualität", vorlage.genre?.trim() ? "Genre: " + vorlage.genre : ""],
     ["Hintergrund: basiert auf einer wahren Begebenheit", vorlage.hintergrund?.trim() ? "Hintergrund: " + vorlage.hintergrund : ""],
+    ["Titel", vorlage.buchtitel],
     ["Hüter - Die Ausbildung beginnt", vorlage.buchtitel],
     ["Autorin & Coverdesign: Martina Zöchinger", coverDesignText],
     ["Verlag: Independently published", vorlage.verlag?.trim() ? "Verlag: " + vorlage.verlag : ""],
