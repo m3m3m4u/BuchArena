@@ -79,6 +79,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       files: [{ fileName: generatedName, fileSize: pptxBuffer.length, filePath }],
       notes: vorlage.notiz || "Erstellt mit dem Reel-Editor",
       beschreibung: vorlage.beschreibung || "",
+      geschlecht: vorlage.geschlecht || "Autorin",
       submittedBy: account.username,
       status: "pending",
       type: "reel",

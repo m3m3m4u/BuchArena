@@ -169,6 +169,7 @@ export type BucharenaSubmissionDoc = {
   files?: { fileName: string; fileSize: number; filePath: string }[];
   notes?: string;
   beschreibung?: string;
+  geschlecht?: string;
   contact?: string;
   contactType?: "email" | "instagram";
   instagram?: string;

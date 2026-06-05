@@ -22,6 +22,7 @@ interface ReelSubmission {
   bookTitle: string;
   author: string;
   genre?: string;
+  geschlecht?: string;
   fileName: string;
   fileSize: number;
   filePath: string;
@@ -127,13 +128,19 @@ export default function ReelEinreichungenAdminPage() {
     if (toExport.length === 0) return;
 
     const { utils, writeFile } = await import("xlsx");
-    const rows = toExport.map((s) => ({
-      Dateiname: s.fileName,
-      Buchtitel: s.bookTitle,
-      Autor: s.author,
-      Instagram: s.instagram || s.authorInstagram || "",
-      Beschreibung: s.beschreibung || "",
-    }));
+    const rows = toExport.map((s) => {
+      const autorLabel = s.geschlecht === "Autor" ? "Autor" : "Autorin";
+      const beschreibung = (s.beschreibung || "")
+        .replace(/\bTitel\b/g, s.bookTitle)
+        .replace(/\bAutorin\b/g, autorLabel);
+      return {
+        Dateiname: s.fileName,
+        Buchtitel: s.bookTitle,
+        [autorLabel]: s.author,
+        Instagram: s.instagram || s.authorInstagram || "",
+        Beschreibung: beschreibung,
+      };
+    });
     const ws = utils.json_to_sheet(rows);
     ws["!cols"] = [
       { wch: 60 },
