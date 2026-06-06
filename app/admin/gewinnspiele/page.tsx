@@ -9,6 +9,7 @@ type Gewinnspiel = {
   buchTitel: string;
   autorName: string;
   autorUsername: string;
+  autorInstagram?: string;
   format: string;
   anmeldungVon?: string;
   anmeldungBis?: string;
@@ -40,6 +41,13 @@ function formatDt(iso: string | undefined): string {
     day: "2-digit", month: "2-digit", year: "numeric",
     hour: "2-digit", minute: "2-digit",
   });
+}
+
+function cleanInstaHandle(raw: string): string {
+  let h = raw.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i, "");
+  h = h.replace(/^@/, "");
+  h = h.split(/[/?#]/)[0];
+  return h.trim();
 }
 
 export default function AdminGewinnspielePage() {
@@ -234,37 +242,49 @@ export default function AdminGewinnspielePage() {
             <p style={{ fontSize: "0.8rem", color: "var(--color-arena-muted)", marginBottom: "0.75rem" }}>
               Die {newest8.length} aktuellsten Gewinnspiele mit offener Anmeldephase:
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
-              {newest8.map((g) => (
-                <a
-                  key={g._id}
-                  href={`/gewinnspiel/${g._id}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start", border: "1px solid var(--color-arena-border)", borderRadius: 10, padding: "0.75rem", textDecoration: "none", color: "inherit" }}
-                >
-                  {g.coverImageUrl ? (
-                    <img
-                      src={g.coverImageUrl}
-                      alt={g.buchTitel}
-                      style={{ width: 64, height: 96, objectFit: "cover", borderRadius: 6, flexShrink: 0, border: "1px solid var(--color-arena-border-light)" }}
-                    />
-                  ) : (
-                    <div style={{ width: 64, height: 96, borderRadius: 6, flexShrink: 0, background: "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem" }}>🎁</div>
-                  )}
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: "0.88rem", lineHeight: 1.3, marginBottom: "0.25rem" }}>
-                      {g.buchTitel} <span style={{ fontWeight: 400, color: "var(--color-arena-muted)", fontSize: "0.82rem" }}>von {g.autorName}</span>
+            <div style={{ background: "#ffffff", padding: "1.5rem", borderRadius: 12, border: "1px solid #e5e7eb" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                {newest8.map((g) => (
+                  <a
+                    key={g._id}
+                    href={`/gewinnspiel/${g._id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "flex",
+                      gap: "0.75rem",
+                      alignItems: "flex-start",
+                      background: "#f9fafb",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: 10,
+                      padding: "0.75rem",
+                      textDecoration: "none",
+                      color: "#111827"
+                    }}
+                  >
+                    {g.coverImageUrl ? (
+                      <img
+                        src={g.coverImageUrl}
+                        alt={g.buchTitel}
+                        style={{ width: 64, height: 96, objectFit: "cover", borderRadius: 6, flexShrink: 0, border: "1px solid #e5e7eb" }}
+                      />
+                    ) : (
+                      <div style={{ width: 64, height: 96, borderRadius: 6, flexShrink: 0, background: "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem" }}>🎁</div>
+                    )}
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: "0.88rem", lineHeight: 1.3, marginBottom: "0.25rem", color: "#111827" }}>
+                        {g.buchTitel} <span style={{ fontWeight: 400, color: "#4b5563", fontSize: "0.82rem" }}>von {g.autorName}</span>
+                      </div>
+                      <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap", marginTop: "0.3rem" }}>
+                        <span style={{ fontSize: "0.68rem", background: "#f3f4f6", color: "#374151", borderRadius: 999, padding: "1px 7px", border: "1px solid #e5e7eb" }}>{FORMAT_LABEL[g.format] ?? g.format}</span>
+                        {g.anmeldungBis && (
+                          <span style={{ fontSize: "0.68rem", background: "#fef3c7", color: "#92400e", borderRadius: 999, padding: "1px 7px", border: "1px solid #fde68a" }}>bis {new Date(g.anmeldungBis).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}</span>
+                        )}
+                      </div>
                     </div>
-                    <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap", marginTop: "0.3rem" }}>
-                      <span style={{ fontSize: "0.68rem", background: "#f3f4f6", color: "#374151", borderRadius: 999, padding: "1px 7px", border: "1px solid #e5e7eb" }}>{FORMAT_LABEL[g.format] ?? g.format}</span>
-                      {g.anmeldungBis && (
-                        <span style={{ fontSize: "0.68rem", background: "#fef3c7", color: "#92400e", borderRadius: 999, padding: "1px 7px", border: "1px solid #fde68a" }}>bis {new Date(g.anmeldungBis).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}</span>
-                      )}
-                    </div>
-                  </div>
-                </a>
-              ))}
+                  </a>
+                ))}
+              </div>
             </div>
 
             {/* Caption */}
@@ -279,10 +299,13 @@ export default function AdminGewinnspielePage() {
                 "",
                 ...newest8.map((g) => {
                   const fmtLabel = FORMAT_LABEL[g.format] ?? g.format;
-                  return `📖 ${g.buchTitel} von ${g.autorName} (${fmtLabel})`;
+                  const insta = g.autorInstagram ? ` (@${cleanInstaHandle(g.autorInstagram)})` : "";
+                  return `📖 ${g.buchTitel} von ${g.autorName}${insta} (${fmtLabel})`;
                 }),
                 "",
                 "Jetzt mitmachen auf bucharena.org/gewinnspiel 🍀",
+                "",
+                "Rechtlicher Hinweis: Dieses Gewinnspiel steht in keinem Zusammenhang mit Instagram. Die jeweiligen Autoren sind für die Verlosung und den Versand der Gewinne zuständig. Es wird keine Haftung übernommen.",
               ].join("\n");
               return (
                 <div style={{ marginTop: "1.25rem" }}>

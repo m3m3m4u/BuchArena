@@ -37,12 +37,30 @@ export async function GET(req: Request) {
     .sort({ createdAt: -1 })
     .toArray();
 
+  const usernames = [...new Set(docs.map((d) => d.autorUsername).filter(Boolean))];
+  const usersCol = await getUsersCollection();
+  const usersRaw = await usersCol
+    .find(
+      { username: { $in: usernames } },
+      { projection: { username: 1, "profile.socialInstagram": 1 } }
+    )
+    .toArray();
+
+  const instaMap = new Map<string, string>();
+  for (const u of usersRaw) {
+    const handle = (u as { profile?: { socialInstagram?: { value?: string } } }).profile?.socialInstagram?.value ?? "";
+    if (handle) {
+      instaMap.set(u.username, handle);
+    }
+  }
+
   // Normalize stored fields that may be ProfileField objects in older documents
   const normalized = docs.map((d) => ({
     ...d,
     _id: d._id?.toString(),
     autorName: str(d.autorName, d.autorUsername ?? ""),
     gewinnerName: d.gewinnerName ? str(d.gewinnerName) : undefined,
+    autorInstagram: d.autorUsername ? (instaMap.get(d.autorUsername) ?? "") : "",
   }));
 
   return NextResponse.json(normalized);
