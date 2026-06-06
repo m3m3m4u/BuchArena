@@ -55,6 +55,7 @@ export default function AdminGewinnspielePage() {
 
   // Filter
   const [statusFilter, setStatusFilter] = useState("vorschlag");
+  const [socialView, setSocialView] = useState(false);
 
   // Inline-Edit (Zeiträume ändern für aktive Gewinnspiele)
   const [editId, setEditId] = useState<string | null>(null);
@@ -201,7 +202,7 @@ export default function AdminGewinnspielePage() {
       </div>
 
       {/* Filter */}
-      <div className="flex gap-2 mb-4 flex-wrap">
+      <div className="flex gap-2 mb-4 flex-wrap items-center">
         {["all", "vorschlag", "anmeldung", "verlost", "versendet", "archiv"].map((s) => (
           <button
             key={s}
@@ -216,7 +217,93 @@ export default function AdminGewinnspielePage() {
             )}
           </button>
         ))}
+        <button
+          className={`px-3 py-1 rounded text-sm font-medium border transition-colors ${socialView ? "bg-[var(--color-arena-blue)] text-white border-[var(--color-arena-blue)]" : "bg-white text-[var(--color-arena-blue)] border-[var(--color-arena-blue)]"}`}
+          onClick={() => setSocialView((v) => !v)}
+          title="Zeigt die 8 neuesten Gewinnspiele als Social-Media-Kachelraster"
+        >
+          📸 Social Media
+        </button>
       </div>
+
+      {/* Social-Media-Ansicht */}
+      {socialView && (() => {
+        const newest8 = [...list].filter((g) => g.status === "anmeldung").slice(0, 8);
+        return (
+          <div className="mb-6">
+            <p style={{ fontSize: "0.8rem", color: "var(--color-arena-muted)", marginBottom: "0.75rem" }}>
+              Die {newest8.length} aktuellsten Gewinnspiele mit offener Anmeldephase:
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+              {newest8.map((g) => (
+                <a
+                  key={g._id}
+                  href={`/gewinnspiel/${g._id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start", border: "1px solid var(--color-arena-border)", borderRadius: 10, padding: "0.75rem", textDecoration: "none", color: "inherit" }}
+                >
+                  {g.coverImageUrl ? (
+                    <img
+                      src={g.coverImageUrl}
+                      alt={g.buchTitel}
+                      style={{ width: 64, height: 96, objectFit: "cover", borderRadius: 6, flexShrink: 0, border: "1px solid var(--color-arena-border-light)" }}
+                    />
+                  ) : (
+                    <div style={{ width: 64, height: 96, borderRadius: 6, flexShrink: 0, background: "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem" }}>🎁</div>
+                  )}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: "0.88rem", lineHeight: 1.3, marginBottom: "0.25rem" }}>
+                      {g.buchTitel} <span style={{ fontWeight: 400, color: "var(--color-arena-muted)", fontSize: "0.82rem" }}>von {g.autorName}</span>
+                    </div>
+                    <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap", marginTop: "0.3rem" }}>
+                      <span style={{ fontSize: "0.68rem", background: "#f3f4f6", color: "#374151", borderRadius: 999, padding: "1px 7px", border: "1px solid #e5e7eb" }}>{FORMAT_LABEL[g.format] ?? g.format}</span>
+                      {g.anmeldungBis && (
+                        <span style={{ fontSize: "0.68rem", background: "#fef3c7", color: "#92400e", borderRadius: 999, padding: "1px 7px", border: "1px solid #fde68a" }}>bis {new Date(g.anmeldungBis).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}</span>
+                      )}
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+
+            {/* Caption */}
+            {newest8.length > 0 && (() => {
+              const captionLines = [
+                "🎁 Buch-Gewinnspiel auf BuchArena! 📚",
+                "",
+                "Wir verlosen tolle Bücher – und du kannst mit dabei sein!",
+                "Einfach auf bucharena.org anmelden und kostenlos teilnehmen.",
+                "",
+                `Das sind die ${newest8.length} aktuellen Verlosungen:`,
+                "",
+                ...newest8.map((g) => {
+                  const fmtLabel = FORMAT_LABEL[g.format] ?? g.format;
+                  return `📖 ${g.buchTitel} von ${g.autorName} (${fmtLabel})`;
+                }),
+                "",
+                "Jetzt mitmachen auf bucharena.org/gewinnspiel 🍀",
+              ].join("\n");
+              return (
+                <div style={{ marginTop: "1.25rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                    <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>Caption</span>
+                    <button
+                      className="px-3 py-1 rounded text-xs font-medium border border-gray-300 hover:bg-gray-50"
+                      onClick={() => void navigator.clipboard.writeText(captionLines)}
+                    >
+                      📋 Kopieren
+                    </button>
+                  </div>
+                  <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: "0.82rem", lineHeight: 1.6, background: "#f9fafb", border: "1px solid var(--color-arena-border)", borderRadius: 8, padding: "0.9rem 1rem", margin: 0, color: "var(--color-arena-text)" }}>
+                    {captionLines}
+                  </pre>
+                </div>
+              );
+            })()}
+          </div>
+        );
+      })()}
 
       {loading ? (
         <p className="text-sm opacity-60">Lade…</p>
