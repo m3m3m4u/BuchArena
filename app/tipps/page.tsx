@@ -608,7 +608,7 @@ export default function TippsPage() {
                 Mit dem Gutscheincode <strong>BUCHARENA</strong> kannst du Metricool 30 Tage kostenlos testen. Wenn du dich über unseren Link registrierst, erhält die BuchArena eine Affiliate-Provision – für dich bleibt der Preis natürlich gleich.
               </p>
               <a
-                href="https://f.mtr.cool/OLJOUB"
+                href="https://f.mtr.cool/bucharena"
                 target="_blank"
                 rel="noopener noreferrer sponsored"
                 className="inline-flex items-center gap-2 rounded-lg bg-arena-blue text-white px-5 py-3 text-[0.93rem] font-semibold no-underline hover:bg-arena-blue-light transition-colors"
