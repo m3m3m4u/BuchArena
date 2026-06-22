@@ -170,10 +170,27 @@ function replaceNotesText(xml, newNotes) {
   return new XMLSerializer().serializeToString(doc);
 }
 
-function dataUrlToUint8Array(dataUrl) {
-  const parts = dataUrl.split(",");
-  const raw = Buffer.from(parts[1], "base64");
-  return new Uint8Array(raw);
+async function fetchImageBytes(src) {
+  if (!src) return null;
+  if (src.startsWith("data:")) {
+    const parts = src.split(",");
+    const raw = Buffer.from(parts[1], "base64");
+    return new Uint8Array(raw);
+  }
+  // WebDAV-interne URL: /api/profile/image?path=...
+  const urlObj = new URL(src, "http://localhost");
+  const remotePath = urlObj.searchParams.get("path") ?? "";
+  if (!remotePath) throw new Error("Ungültige Bild-URL: " + src);
+
+  const cleanPath = remotePath.replace(/^\/+/, "");
+  const target = `${WEBDAV_URL}/${encodeURIComponent(cleanPath).replace(/%2F/g, "/")}`;
+
+  const res = await fetch(target, {
+    headers: { Authorization: WEBDAV_AUTH },
+  });
+  if (!res.ok) throw new Error(`WebDAV GET failed: ${res.status} for ${remotePath}`);
+  const arrayBuffer = await res.arrayBuffer();
+  return new Uint8Array(arrayBuffer);
 }
 
 /* ═══════════════ PPTX Generators ═══════════════ */
@@ -234,8 +251,8 @@ async function buildQuerformat(form, autorFull, coverImg, autorImg) {
   zip.file("ppt/slides/slide5.xml", s5);
 
   /* Images */
-  if (coverImg) zip.file("ppt/media/image3.jpeg", dataUrlToUint8Array(coverImg));
-  if (autorImg) zip.file("ppt/media/image6.jpeg", dataUrlToUint8Array(autorImg));
+  if (coverImg) zip.file("ppt/media/image3.jpeg", coverImg);
+  if (autorImg) zip.file("ppt/media/image6.jpeg", autorImg);
 
   /* Notes */
   const notesMap = [
@@ -351,8 +368,8 @@ async function buildHochformat(form, autorFull, coverImg, autorImg) {
   zip.file("ppt/slides/slide5.xml", s5);
 
   /* Images */
-  if (coverImg) zip.file("ppt/media/image3.jpeg", dataUrlToUint8Array(coverImg));
-  if (autorImg) zip.file("ppt/media/image5.jpeg", dataUrlToUint8Array(autorImg));
+  if (coverImg) zip.file("ppt/media/image3.jpeg", coverImg);
+  if (autorImg) zip.file("ppt/media/image5.jpeg", autorImg);
 
   /* Notes */
   const notesMap = [
@@ -456,8 +473,11 @@ async function main() {
       }
 
       // Generiere beide Formate
-      const pptxQuer = await buildQuerformat(vorlage, autorFull, vorlage.coverImg, vorlage.autorImg);
-      const pptxHoch = await buildHochformat(vorlage, autorFull, vorlage.coverImg, vorlage.autorImg);
+      const coverBytes = vorlage.coverImg ? await fetchImageBytes(vorlage.coverImg) : null;
+      const autorBytes = vorlage.autorImg ? await fetchImageBytes(vorlage.autorImg) : null;
+
+      const pptxQuer = await buildQuerformat(vorlage, autorFull, coverBytes, autorBytes);
+      const pptxHoch = await buildHochformat(vorlage, autorFull, coverBytes, autorBytes);
 
       // Upload
       const timestamp = Date.now();

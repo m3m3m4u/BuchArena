@@ -205,6 +205,7 @@ export const GENRE_OPTIONS = [
   "Märchen / Sagen",
   "Gedichte / Lyrik",
   "Kurzgeschichten",
+  "Spirituelles",
   "Sonstiges",
 ];
 

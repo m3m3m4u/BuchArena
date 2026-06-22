@@ -57,10 +57,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, error: "Vorlage nicht gefunden" }, { status: 404 });
     }
 
+    const autorVorname = typeof body.autorVorname === "string" ? body.autorVorname.slice(0, 100) : existing.autorVorname;
+    const autorNachname = typeof body.autorNachname === "string" ? body.autorNachname.slice(0, 100) : existing.autorNachname;
+    const autorName = (body.autorName ?? "").slice(0, 200) || [autorVorname, autorNachname].filter(Boolean).join(" ");
+
     const update = {
       buchtitel: (body.buchtitel ?? "").slice(0, 200),
       untertitel: (body.untertitel ?? "").slice(0, 300),
-      autorName: (body.autorName ?? "").slice(0, 200),
+      autorName,
+      autorVorname,
+      autorNachname,
       geschlecht: (body.geschlecht ?? "Autorin").slice(0, 50),
       erscheinungsjahr: (body.erscheinungsjahr ?? "").slice(0, 10),
       genre: (body.genre ?? "").slice(0, 100),

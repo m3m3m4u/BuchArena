@@ -63,6 +63,7 @@ const GENRE_CHOICES = [
   "Dystopie",
   "Mystery",
   "Drama",
+  "Spirituelles",
 ];
 
 const AGE_CHOICES = [

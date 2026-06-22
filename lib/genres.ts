@@ -55,6 +55,7 @@ export const GENRE_OPTIONS = [
   "Science-Fiction – Cyberpunk",
   "Science-Fiction – Space Opera",
   "Spionageroman",
+  "Spirituelles",
   "Steampunk",
   "Thriller",
   "True Crime",

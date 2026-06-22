@@ -56,11 +56,17 @@ export async function POST(request: Request) {
     }
 
     const now = new Date();
+    const autorVorname = typeof body.autorVorname === "string" ? body.autorVorname.slice(0, 100) : undefined;
+    const autorNachname = typeof body.autorNachname === "string" ? body.autorNachname.slice(0, 100) : undefined;
+    const autorName = (body.autorName ?? "").slice(0, 200) || [autorVorname, autorNachname].filter(Boolean).join(" ");
+
     const doc = {
       username: account.username,
       buchtitel: (body.buchtitel ?? "").slice(0, 200),
       untertitel: (body.untertitel ?? "").slice(0, 300),
-      autorName: (body.autorName ?? "").slice(0, 200),
+      autorName,
+      autorVorname,
+      autorNachname,
       geschlecht: (body.geschlecht ?? "Autorin").slice(0, 50),
       erscheinungsjahr: (body.erscheinungsjahr ?? "").slice(0, 10),
       genre: (body.genre ?? "").slice(0, 100),
