@@ -16,7 +16,9 @@ function formatBody(text: string) {
   const escaped = text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
 
   const formatted = escaped
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")

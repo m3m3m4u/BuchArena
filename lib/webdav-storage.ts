@@ -39,5 +39,5 @@ export function toInternalImageUrl(remotePath: string, width?: number) {
 export function isAllowedRemotePath(remotePath: string) {
   const normalized = remotePath.replace(/\\/g, "/");
   const prefix = `/${getWebdavUploadDir()}/`;
-  return normalized.startsWith(prefix);
+  return normalized.startsWith(prefix) && !normalized.includes("..");
 }

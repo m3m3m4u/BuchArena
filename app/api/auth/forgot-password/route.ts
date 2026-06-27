@@ -14,9 +14,9 @@ function hashToken(token: string): string {
 export async function POST(request: Request) {
   try {
     const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    if (!checkRateLimit(`forgot:${ip}`, 3, 15 * 60 * 1000)) {
+    if (!checkRateLimit(`forgot:ip:${ip}`, 3, 15 * 60 * 1000)) {
       return NextResponse.json(
-        { message: "Zu viele Anfragen. Bitte warte 15 Minuten." },
+        { message: "Zu viele Anfragen von dieser IP. Bitte warte 15 Minuten." },
         { status: 429 }
       );
     }
@@ -28,6 +28,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { message: "Bitte eine E-Mail-Adresse eingeben." },
         { status: 400 },
+      );
+    }
+
+    if (!checkRateLimit(`forgot:email:${email}`, 3, 15 * 60 * 1000)) {
+      return NextResponse.json(
+        { message: "Zu viele Passwort-Reset-Anfragen für diese E-Mail. Bitte warte 15 Minuten." },
+        { status: 429 }
       );
     }
 

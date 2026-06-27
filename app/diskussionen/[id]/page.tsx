@@ -92,7 +92,9 @@ function formatBody(text: string) {
   const escaped = processed
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
 
   const linkStyle = 'color:#2563eb;text-decoration:underline;overflow-wrap:break-word;word-break:break-word;';
 

@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const downloadName = searchParams.get("name") ?? "";
 
     // Nur Dateien aus dem Sprecher-Verzeichnis erlauben
-    if (!path || !path.startsWith("bucharena-sprecher/")) {
+    if (!path || !path.startsWith("bucharena-sprecher/") || path.includes("..")) {
       return NextResponse.json(
         { success: false, error: "Ungültiger Dateipfad" },
         { status: 400 },

@@ -39,6 +39,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Dateigröße begrenzen (max 20 MB)
+    if (file.size > 20 * 1024 * 1024) {
+      return NextResponse.json(
+        { success: false, error: "Die Datei darf maximal 20 MB groß sein." },
+        { status: 400 },
+      );
+    }
+
     const timestamp = Date.now();
     const sanitized = bookTitle
       .replace(/[<>:"/\\|?*]/g, "_")

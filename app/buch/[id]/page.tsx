@@ -262,7 +262,7 @@ export default function BookDetailPage({ params }: PageProps) {
                   ...(book.coverImageUrl && { image: book.coverImageUrl }),
                   ...(book.genre && { genre: book.genre }),
                   url: `https://bucharena.org/buch/${bookId}`,
-                }),
+                }).replace(/</g, "\\u003c").replace(/>/g, "\\u003e"),
               }}
             />
             <div className="mb-6 grid grid-cols-[200px_1fr] items-start gap-6 max-[600px]:grid-cols-1 max-[600px]:gap-4">

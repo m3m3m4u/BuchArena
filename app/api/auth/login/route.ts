@@ -23,9 +23,9 @@ type UserRow = {
 export async function POST(request: Request) {
   try {
     const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    if (!checkRateLimit(`login:${ip}`, 10, 15 * 60 * 1000)) {
+    if (!checkRateLimit(`login:ip:${ip}`, 10, 15 * 60 * 1000)) {
       return NextResponse.json(
-        { message: "Zu viele Anmeldeversuche. Bitte warte 15 Minuten." },
+        { message: "Zu viele Anmeldeversuche von diesem Gerät. Bitte warte 15 Minuten." },
         { status: 429 }
       );
     }
@@ -39,6 +39,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { message: "Bitte E-Mail/Benutzername und Passwort eingeben." },
         { status: 400 }
+      );
+    }
+
+    if (!checkRateLimit(`login:user:${normalizedEmail}`, 5, 15 * 60 * 1000)) {
+      return NextResponse.json(
+        { message: "Dieses Konto wurde aufgrund zu vieler Fehlversuche vorübergehend gesperrt. Bitte warte 15 Minuten." },
+        { status: 429 }
       );
     }
 
