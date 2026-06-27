@@ -153,7 +153,23 @@ export async function GET(request: Request) {
       (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
     ).slice(0, 200);
 
-    const partnerUsernames = Array.from(new Set(convDocs.map((c) => (c.userA === me ? c.userB : c.userA))));
+    // Filter out conversations that do not have at least one message visible to `me`
+    const visibleConvDocs = (
+      await Promise.all(
+        convDocs.map(async (c) => {
+          const partner = c.userA === me ? c.userB : c.userA;
+          const hasVisible = await messages.findOne({
+            $or: [
+              { senderUsername: me, recipientUsername: partner, deletedBySender: { $ne: true } },
+              { recipientUsername: me, senderUsername: partner, deletedByRecipient: { $ne: true } },
+            ],
+          }, { projection: { _id: 1 } });
+          return hasVisible ? c : null;
+        })
+      )
+    ).filter((c): c is NonNullable<typeof c> => c !== null);
+
+    const partnerUsernames = Array.from(new Set(visibleConvDocs.map((c) => (c.userA === me ? c.userB : c.userA))));
     const usersCol = await getUsersCollection();
     const userDocs = partnerUsernames.length
       ? await usersCol
@@ -185,7 +201,7 @@ export async function GET(request: Request) {
       profileImageMap.set(u.username, u.profile?.profileImage?.value ?? "");
     }
 
-    const items = convDocs.map((c) => {
+    const items = visibleConvDocs.map((c) => {
       const partner = c.userA === me ? c.userB : c.userA;
       const unreadCount = c.userA === me ? c.unreadForA : c.unreadForB;
       return {
