@@ -14,6 +14,7 @@ type UserListEntry = {
   email: string;
   role: string;
   status?: string;
+  profileName?: string;
   hasProfile?: boolean;
   hasSpeakerProfile?: boolean;
   hasBloggerProfile?: boolean;
@@ -1163,7 +1164,7 @@ export default function AdminPage() {
         ) : (() => {
           const searchLower = userSearch.toLowerCase();
           const filteredUsers = searchLower
-            ? users.filter((u) => u.username.toLowerCase().includes(searchLower) || u.email.toLowerCase().includes(searchLower))
+            ? users.filter((u) => u.username.toLowerCase().includes(searchLower) || u.email.toLowerCase().includes(searchLower) || (u.profileName ?? "").toLowerCase().includes(searchLower))
             : users;
           const totalPages = Math.max(1, Math.ceil(filteredUsers.length / usersPerPage));
           const clampedPage = Math.min(userPage, totalPages);
@@ -1207,6 +1208,7 @@ export default function AdminPage() {
                     <tr key={user.username} className={`hover:bg-[#f5f5f5] ${isDeactivated ? "opacity-50" : ""}`}>
                       <td className="p-2 border-b border-arena-border-light">
                         <div className="font-medium">{user.username}</div>
+                        {user.profileName && <div className="text-xs text-arena-muted">{user.profileName}</div>}
                         <div className="text-xs text-arena-muted break-all">{user.email}</div>
                       </td>
                       <td className="p-2 border-b border-arena-border-light whitespace-nowrap">

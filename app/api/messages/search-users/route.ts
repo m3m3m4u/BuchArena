@@ -28,11 +28,25 @@ export async function GET(req: NextRequest) {
 
     const usersCol = await getUsersCollection();
 
+    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const list = await usersCol
       .find(
         {
-          username: { $regex: `^${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, $options: "i" },
-          $or: [{ status: { $exists: false } }, { status: "active" }],
+          $and: [
+            { $or: [{ status: { $exists: false } }, { status: "active" }] },
+            {
+              $or: [
+                { username: { $regex: escaped, $options: "i" } },
+                { "profile.name.value": { $regex: escaped, $options: "i" } },
+                { "speakerProfile.name.value": { $regex: escaped, $options: "i" } },
+                { "bloggerProfile.name.value": { $regex: escaped, $options: "i" } },
+                { "testleserProfile.name.value": { $regex: escaped, $options: "i" } },
+                { "lektorenProfile.name.value": { $regex: escaped, $options: "i" } },
+                { "verlageProfile.name.value": { $regex: escaped, $options: "i" } },
+                { displayName: { $regex: escaped, $options: "i" } },
+              ],
+            },
+          ],
         },
         { projection: { _id: 0, username: 1, displayName: 1, "profile.name.value": 1, "lektorenProfile.name.value": 1, "verlageProfile.name.value": 1, "testleserProfile.name.value": 1, "bloggerProfile.name.value": 1, "speakerProfile.name.value": 1, "profile.profileImage.value": 1 } },
       )

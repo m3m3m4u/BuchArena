@@ -66,6 +66,7 @@ function toSocialUrl(platform: string, raw: string): string {
 
 export default function AuthorProfilePage({ params }: PageProps) {
   const [username, setUsername] = useState("");
+  const [actualUsername, setActualUsername] = useState("");
   const [profile, setProfile] = useState<ProfileData>(createDefaultProfile());
   const [books, setBooks] = useState<AuthorBook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -95,6 +96,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
         const res = await fetch(`/api/authors/profile?username=${encodeURIComponent(username)}`, { method: "GET" });
         const data = (await res.json()) as AuthorProfilePayload & { message?: string };
         if (!res.ok) throw new Error(data.message ?? "Autorprofil konnte nicht geladen werden.");
+        setActualUsername(data.author.username);
         setProfile({ ...createDefaultProfile(), ...data.author.profile });
         setBooks(data.author.books ?? []);
       } catch {
@@ -144,7 +146,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
       const res = await fetch("/api/messages/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientUsername: username, subject: msgSubject, body: msgBody }),
+        body: JSON.stringify({ recipientUsername: actualUsername || username, subject: msgSubject, body: msgBody }),
       });
       const data = (await res.json()) as { message?: string };
       if (!res.ok) throw new Error(data.message ?? "Senden fehlgeschlagen.");

@@ -54,6 +54,7 @@ type PageProps = { params: Promise<{ username: string }> };
 
 export default function VerlageProfilePage({ params }: PageProps) {
   const [username, setUsername] = useState("");
+  const [actualUsername, setActualUsername] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [profileImageCrop, setProfileImageCrop] = useState<{ x: number; y: number; zoom: number } | undefined>();
   const [verlageProfile, setVerlageProfile] = useState<VerlageProfileData>(createDefaultVerlageProfile());
@@ -83,6 +84,7 @@ export default function VerlageProfilePage({ params }: PageProps) {
         const res = await fetch(`/api/verlage/profile?username=${encodeURIComponent(username)}`, { method: "GET" });
         const data = (await res.json()) as VerlageProfilePayload & { message?: string };
         if (!res.ok) throw new Error(data.message ?? "Verlagsprofil konnte nicht geladen werden.");
+        setActualUsername(data.verlag.username);
         setProfileImageUrl(data.verlag.profileImageUrl ?? "");
         setProfileImageCrop(data.verlag.profileImageCrop);
         setVerlageProfile({ ...createDefaultVerlageProfile(), ...data.verlag.verlageProfile });
@@ -129,7 +131,7 @@ export default function VerlageProfilePage({ params }: PageProps) {
       const res = await fetch("/api/messages/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientUsername: username, subject: msgSubject, body: msgBody }),
+        body: JSON.stringify({ recipientUsername: actualUsername || username, subject: msgSubject, body: msgBody }),
       });
       const data = (await res.json()) as { message?: string };
       if (!res.ok) throw new Error(data.message ?? "Senden fehlgeschlagen.");

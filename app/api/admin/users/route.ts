@@ -57,21 +57,28 @@ export async function POST() {
     ]).toArray();
     const bookCountMap = new Map(bookCounts.map((b) => [b._id, b.count]));
 
-    const result = list.map((u) => ({
-      username: u.username,
-      email: u.email,
-      role: u.role,
-      status: u.status,
-      createdAt: u.createdAt ?? null,
-      lastOnline: u.lastOnline ?? null,
-      hasProfile: hasFilledProfile(u.profile as Record<string, unknown> | undefined),
-      hasSpeakerProfile: hasFilledSpeakerProfile(u.speakerProfile as Record<string, unknown> | undefined),
-      hasBloggerProfile: hasFilledBloggerProfile(u.bloggerProfile as Record<string, unknown> | undefined),
-      hasTestleserProfile: hasFilledTestleserProfile(u.testleserProfile as Record<string, unknown> | undefined),
-      hasLektorenProfile: hasFilledLektorenProfile(u.lektorenProfile as Record<string, unknown> | undefined),
-      bookCount: bookCountMap.get(u.username) ?? 0,
-      newsletterOptIn: !!(u as Record<string, unknown>).newsletterOptIn,
-    }));
+    const result = list.map((u) => {
+      const profile = u.profile as Record<string, unknown> | undefined;
+      const profileName = (profile?.name as { value?: string } | undefined)?.value?.trim() ?? "";
+      const speakerProfile = u.speakerProfile as Record<string, unknown> | undefined;
+      const speakerName = (speakerProfile?.name as { value?: string } | undefined)?.value?.trim() ?? "";
+      return {
+        username: u.username,
+        email: u.email,
+        role: u.role,
+        status: u.status,
+        createdAt: u.createdAt ?? null,
+        lastOnline: u.lastOnline ?? null,
+        profileName: profileName || speakerName || "",
+        hasProfile: hasFilledProfile(profile),
+        hasSpeakerProfile: hasFilledSpeakerProfile(speakerProfile),
+        hasBloggerProfile: hasFilledBloggerProfile(u.bloggerProfile as Record<string, unknown> | undefined),
+        hasTestleserProfile: hasFilledTestleserProfile(u.testleserProfile as Record<string, unknown> | undefined),
+        hasLektorenProfile: hasFilledLektorenProfile(u.lektorenProfile as Record<string, unknown> | undefined),
+        bookCount: bookCountMap.get(u.username) ?? 0,
+        newsletterOptIn: !!(u as Record<string, unknown>).newsletterOptIn,
+      };
+    });
 
     return NextResponse.json({ users: result });
   } catch {
