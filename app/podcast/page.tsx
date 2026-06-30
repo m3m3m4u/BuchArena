@@ -22,10 +22,13 @@ function formatDate(iso: string) {
   });
 }
 
+const PAGE_SIZE = 3;
+
 export default function PodcastPage() {
   const [htmlContent, setHtmlContent] = useState("");
   const [folgen, setFolgen] = useState<Folge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
     Promise.all([
@@ -39,6 +42,9 @@ export default function PodcastPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  const totalPages = Math.ceil(folgen.length / PAGE_SIZE);
+  const pageFolgen = folgen.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   return (
     <main className="top-centered-main">
@@ -57,39 +63,71 @@ export default function PodcastPage() {
         {!loading && folgen.length > 0 && (
           <div className="flex flex-col gap-6 mt-2">
             <h2 className="text-xl font-semibold text-arena-blue">Alle Folgen</h2>
-            {folgen.map((folge, i) => {
-              const ytId = extractYoutubeId(folge.youtubeUrl);
-              return (
-                <article
-                  key={folge._id}
-                  className={`flex flex-col gap-3 ${i > 0 ? "pt-6 border-t border-arena-border" : ""}`}
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {pageFolgen.map((folge) => {
+                const ytId = extractYoutubeId(folge.youtubeUrl);
+                return (
+                  <article key={folge._id} className="flex flex-col gap-3">
+                    <Link
+                      href={`/podcast/${folge._id}`}
+                      className="text-[1.05rem] font-bold text-arena-blue hover:underline"
+                    >
+                      {folge.title}
+                    </Link>
+                    <p className="text-xs text-gray-400">
+                      {formatDate(folge.createdAt)} · {folge.views} Aufruf{folge.views !== 1 ? "e" : ""}
+                    </p>
+                    {folge.text && (
+                      <p className="text-[0.88rem] text-gray-600 leading-relaxed line-clamp-3">{folge.text}</p>
+                    )}
+                    {ytId && (
+                      <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                        <iframe
+                          className="absolute inset-0 w-full h-full rounded-lg"
+                          src={`https://www.youtube-nocookie.com/embed/${ytId}`}
+                          title={folge.title}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="px-3 py-1 rounded border border-arena-border text-sm disabled:opacity-40 hover:bg-gray-100 transition"
                 >
-                  <Link
-                    href={`/podcast/${folge._id}`}
-                    className="text-[1.1rem] font-bold text-arena-blue hover:underline"
+                  Zuruck
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i)}
+                    className={`px-3 py-1 rounded border text-sm transition ${
+                      i === page
+                        ? "bg-arena-blue text-white border-arena-blue"
+                        : "border-arena-border hover:bg-gray-100"
+                    }`}
                   >
-                    {folge.title}
-                  </Link>
-                  <p className="text-xs text-gray-400">
-                    {formatDate(folge.createdAt)} · {folge.views} Aufruf{folge.views !== 1 ? "e" : ""}
-                  </p>
-                  {folge.text && (
-                    <p className="text-[0.93rem] text-gray-600 leading-relaxed">{folge.text}</p>
-                  )}
-                  {ytId && (
-                    <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                      <iframe
-                        className="absolute inset-0 w-full h-full rounded-lg"
-                        src={`https://www.youtube-nocookie.com/embed/${ytId}`}
-                        title={folge.title}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    </div>
-                  )}
-                </article>
-              );
-            })}
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page === totalPages - 1}
+                  className="px-3 py-1 rounded border border-arena-border text-sm disabled:opacity-40 hover:bg-gray-100 transition"
+                >
+                  Weiter
+                </button>
+              </div>
+            )}
           </div>
         )}
 
