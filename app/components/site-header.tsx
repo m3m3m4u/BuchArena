@@ -85,6 +85,7 @@ export default function SiteHeader() {
       {verlageCount > 0 && <Link href="/verlage" className="header-link-public w-full sm:w-auto">Verlage</Link>}
         <Link href="/news" className="header-link-public w-full sm:w-auto">News</Link>
         <Link href="/blog" className="header-link-public w-full sm:w-auto">Blog</Link>
+        <Link href="/podcast" className="header-link-public w-full sm:w-auto">Podcast</Link>
       <Link href="/kalender" className="header-link-public w-full sm:w-auto">Kalender</Link>
       {!loggedIn && <Link href="/auth" className="header-link-public w-full sm:w-auto font-bold">Anmelden</Link>}
     </>

@@ -603,6 +603,12 @@ export default function AdminPage() {
           </button>
           <button
             className="btn btn-sm"
+            onClick={() => router.push("/admin/podcast")}
+          >
+            Podcast
+          </button>
+          <button
+            className="btn btn-sm"
             onClick={() => router.push("/admin/newsletter")}
           >
             Newsletter
