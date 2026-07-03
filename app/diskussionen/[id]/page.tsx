@@ -304,7 +304,7 @@ export default function DiskussionDetailPage() {
       });
 
       if (response.ok) {
-        await loadDiscussion();
+        await loadDiscussion(true);
       }
     } catch { /* ignore */ }
   }
@@ -317,8 +317,10 @@ export default function DiskussionDetailPage() {
     }
   }, []);
 
-  const loadDiscussion = useCallback(async () => {
-    setIsLoading(true);
+  const loadDiscussion = useCallback(async (silent = false) => {
+    if (!silent) {
+      setIsLoading(true);
+    }
     setMessage("");
 
     // Letzten Lesezeitpunkt aus localStorage holen, bevor wir als gelesen markieren
@@ -357,7 +359,9 @@ export default function DiskussionDetailPage() {
     } catch {
       setMessage("Diskussion konnte nicht geladen werden.");
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
   }, [discussionId]);
 
@@ -393,7 +397,7 @@ export default function DiskussionDetailPage() {
       if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
       setReplyBody("");
       setReplyingTo(null);
-      await loadDiscussion();
+      await loadDiscussion(true);
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "Antwort konnte nicht gesendet werden."
@@ -422,7 +426,7 @@ export default function DiskussionDetailPage() {
       if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
       setInlineReplyBody("");
       setInlineReplyId(null);
-      await loadDiscussion();
+      await loadDiscussion(true);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Antwort konnte nicht gesendet werden.");
     } finally {
@@ -448,7 +452,7 @@ export default function DiskussionDetailPage() {
         throw new Error(data.message ?? "Fehler beim Löschen.");
       }
 
-      await loadDiscussion();
+      await loadDiscussion(true);
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "Antwort konnte nicht gelöscht werden."
@@ -505,7 +509,7 @@ export default function DiskussionDetailPage() {
       if (!response.ok) throw new Error(data.message ?? "Fehler beim Aktualisieren.");
       setEditingReplyId(null);
       setEditingReplyBody("");
-      await loadDiscussion();
+      await loadDiscussion(true);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Antwort konnte nicht aktualisiert werden.");
     } finally {
@@ -543,7 +547,7 @@ export default function DiskussionDetailPage() {
       }
 
       setIsEditingDiscussion(false);
-      await loadDiscussion();
+      await loadDiscussion(true);
     } catch (error) {
       setMessage(
         error instanceof Error
