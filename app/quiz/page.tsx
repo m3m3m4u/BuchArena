@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount } from "@/lib/client-account";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
+import { TrophyIcon, LightBulbIcon, BookOpenIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { TrophyIcon as TrophyOutlineIcon } from "@heroicons/react/24/outline";
 
 /* ---------- Typen ---------- */
 type WelchesBuch = { hints: string[]; book: string; author: string };
@@ -237,12 +239,12 @@ export default function QuizPage() {
               </p>
               <p className="text-arena-muted text-sm mt-1 m-0">
                 {mcScore >= 20
-                  ? "Unglaublich! 🎉"
+                  ? "Unglaublich!"
                   : mcScore >= 10
-                    ? "Sehr gut! 👏"
+                    ? "Sehr gut!"
                     : mcScore >= 0
                       ? "Nicht schlecht!"
-                      : "Übung macht den Meister! 📚"}
+                      : "Übung macht den Meister!"}
               </p>
             </div>
 
@@ -262,7 +264,10 @@ export default function QuizPage() {
                 className="btn btn-sm"
                 onClick={() => { setShowHighscores((v) => !v); if (!showHighscores) loadHighscores(); }}
               >
-                {showHighscores ? "Highscores ausblenden" : "🏆 Highscores anzeigen"}
+                <span className="flex items-center gap-1.5 justify-center">
+                  <TrophyOutlineIcon className="h-4 w-4" />
+                  <span>{showHighscores ? "Highscores ausblenden" : "Highscores anzeigen"}</span>
+                </span>
               </button>
 
               {showHighscores && (
@@ -279,7 +284,7 @@ export default function QuizPage() {
                           }`}
                         >
                           <span className="font-bold text-lg w-8 text-center flex-shrink-0">
-                            {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`}
+                            {i === 0 ? <TrophyIcon className="h-5 w-5 text-amber-500 mx-auto" /> : i === 1 ? <TrophyIcon className="h-5 w-5 text-slate-400 mx-auto" /> : i === 2 ? <TrophyIcon className="h-5 w-5 text-amber-700 mx-auto" /> : `${i + 1}.`}
                           </span>
                           <span className="flex-1 font-medium truncate">{hs.username}</span>
                           <span className="font-bold text-arena-blue">{hs.score} Pkt.</span>
@@ -346,7 +351,10 @@ export default function QuizPage() {
 
           {mcRevealed && q.explanation && (
             <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 mt-3 text-sm text-blue-900">
-              💡 {q.explanation}
+              <div className="flex items-start gap-1.5">
+                <LightBulbIcon className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <span>{q.explanation}</span>
+              </div>
             </div>
           )}
 
@@ -446,9 +454,10 @@ export default function QuizPage() {
                   </div>
                 )}
                 <div className="rounded-lg bg-green-50 border border-green-300 p-4">
-                  <p className="font-bold text-green-800 text-lg m-0">
-                    📖 {currentWB.book}
-                  </p>
+                  <div className="flex items-start gap-2">
+                    <BookOpenIcon className="h-6 w-6 text-green-700 flex-shrink-0 mt-0.5" />
+                    <span className="font-bold text-green-800 text-lg m-0">{currentWB.book}</span>
+                  </div>
                   <p className="text-green-700 text-sm m-0">von {currentWB.author}</p>
                 </div>
               </div>
@@ -510,9 +519,10 @@ export default function QuizPage() {
                   </div>
                 )}
                 <div className="rounded-lg bg-green-50 border border-green-300 p-4">
-                  <p className="font-bold text-green-800 m-0">
-                    🔍 Gemeinsamkeit: {currentWPN.commonality}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <MagnifyingGlassIcon className="h-5 w-5 text-green-700 flex-shrink-0" />
+                    <span className="font-bold text-green-800 m-0">Gemeinsamkeit: {currentWPN.commonality}</span>
+                  </div>
                   <p className="text-green-700 text-sm m-0 mt-1">
                     Passt nicht: {currentWPN.oddOneOut}
                   </p>
@@ -566,9 +576,10 @@ export default function QuizPage() {
                   </div>
                 )}
                 <div className="rounded-lg bg-green-50 border border-green-300 p-4">
-                  <p className="font-bold text-green-800 text-lg m-0">
-                    📖 {currentBS.title}
-                  </p>
+                  <div className="flex items-start gap-2">
+                    <BookOpenIcon className="h-6 w-6 text-green-700 flex-shrink-0 mt-0.5" />
+                    <span className="font-bold text-green-800 text-lg m-0">{currentBS.title}</span>
+                  </div>
                 </div>
               </div>
             )}

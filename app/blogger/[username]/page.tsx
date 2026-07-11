@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { HeartIcon } from "@heroicons/react/24/solid";
 import { getStoredAccount } from "@/lib/client-account";
 import { createDefaultBloggerProfile, type BloggerProfileData } from "@/lib/profile";
 import { LinkifyText } from "@/app/components/linkify-text";
@@ -212,7 +213,10 @@ export default function BloggerProfilePage({ params }: PageProps) {
             {visibleLieblingsbuch && (
               <div className="my-2">
                 <h2 className="text-lg">Lieblingsbuch</h2>
-                <p>❤️ {visibleLieblingsbuch}</p>
+                <p className="flex items-center gap-1.5 text-arena-text">
+                  <HeartIcon className="h-5 w-5 text-red-500 flex-shrink-0" />
+                  <span>{visibleLieblingsbuch}</span>
+                </p>
               </div>
             )}
 

@@ -27,7 +27,7 @@ export type DiscussionDocument = {
   reactions?: Reaction[];
 };
 
-export const ALLOWED_EMOJIS = ["👍", "❤️", "😂", "🎉", "🤔", "👎"];
+export const ALLOWED_EMOJIS = ["👍", "😊", "❤️", "😂", "🎉", "🤔", "👎"];
 
 /* ── Diskussions-Themen ── */
 

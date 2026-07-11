@@ -29,6 +29,7 @@ type ChatMessage = {
   kooperationId: string | null;
   bookCoAuthorId: string | null;
   buchzirkelEinladungId: string | null;
+  reactions: { username: string; emoji: string }[];
   createdAt: string;
 };
 
@@ -505,6 +506,41 @@ function NachrichtenPageInner() {
     }
   }
 
+  const MESSAGE_EMOJIS = ["👍", "😊", "❤️", "😂", "🎉", "🤔", "👎"];
+
+  /* ── Emoji-Reaktion auf Nachricht ── */
+  async function handleMessageReact(messageId: string, emoji: string) {
+    if (!username) return;
+
+    // Optimistic update
+    setChatMessages((prev) =>
+      prev.map((m) => {
+        if (m.id !== messageId) return m;
+        const existing = m.reactions.find(
+          (r) => r.username === username && r.emoji === emoji
+        );
+        const reactions = existing
+          ? m.reactions.filter((r) => !(r.username === username && r.emoji === emoji))
+          : [...m.reactions, { username, emoji }];
+        return { ...m, reactions };
+      })
+    );
+
+    try {
+      const res = await fetch("/api/messages/react", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId, emoji }),
+      });
+      if (!res.ok) {
+        // Revert on error – reload chat
+        if (activePartner) void openChat(activePartner, activePartnerDisplayName, activePartnerImage);
+      }
+    } catch {
+      if (activePartner) void openChat(activePartner, activePartnerDisplayName, activePartnerImage);
+    }
+  }
+
   const isAdmin = accountRole === "ADMIN" || accountRole === "SUPERADMIN" || username === "Kopernikus";
 
   /* ── Kein Login ── */
@@ -627,116 +663,126 @@ function NachrichtenPageInner() {
       return (
         <div key={msg.id}>
           {separator}
-          <div className={`flex ${isMine ? "justify-end" : "justify-start"} mb-1.5 group`}>
-            <div
-              className={`relative max-w-[80%] sm:max-w-[75%] rounded-2xl px-3.5 py-2 text-[0.95rem] ${
-                isMine
-                  ? "bg-arena-blue text-white rounded-br-md"
-                  : "bg-white border border-gray-200 text-gray-900 rounded-bl-md"
-              }`}
-            >
-              <p className="whitespace-pre-wrap m-0" style={{ lineHeight: 1.5 }}>
-                {msg.body}
-              </p>
-              {/* Kooperations-Buttons direkt in der Nachricht */}
-              {msg.kooperationId && msg.recipientUsername === username && (() => {
-                const status = handledKoopIds[msg.kooperationId!];
-                if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Kooperation bestätigt!</p>;
-                if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Kooperation abgelehnt.</p>;
-                return (
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white border-none cursor-pointer hover:bg-green-700 disabled:opacity-50"
-                      disabled={koopActionLoading === msg.kooperationId}
-                      onClick={() => handleKoopConfirm(msg.kooperationId!)}
-                    >
-                      ✓ Bestätigen
-                    </button>
-                    <button
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 border-none cursor-pointer hover:bg-gray-300 disabled:opacity-50"
-                      disabled={koopActionLoading === msg.kooperationId}
-                      onClick={() => handleKoopReject(msg.kooperationId!)}
-                    >
-                      ✕ Ablehnen
-                    </button>
-                  </div>
-                );
-              })()}
-              {/* Mitautoren-Einladungs-Buttons direkt in der Nachricht */}
-              {msg.bookCoAuthorId && msg.recipientUsername === username && (() => {
-                const status = handledCoAuthorIds[msg.bookCoAuthorId!];
-                if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Mitautorenschaft bestätigt!</p>;
-                if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Einladung abgelehnt.</p>;
-                return (
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white border-none cursor-pointer hover:bg-green-700 disabled:opacity-50"
-                      disabled={coAuthorActionLoading === msg.bookCoAuthorId}
-                      onClick={() => handleCoAuthorConfirm(msg.bookCoAuthorId!)}
-                    >
-                      ✓ Bestätigen
-                    </button>
-                    <button
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 border-none cursor-pointer hover:bg-gray-300 disabled:opacity-50"
-                      disabled={coAuthorActionLoading === msg.bookCoAuthorId}
-                      onClick={() => handleCoAuthorDecline(msg.bookCoAuthorId!)}
-                    >
-                      ✕ Ablehnen
-                    </button>
-                  </div>
-                );
-              })()}
-              {/* Buchzirkel-Einladungs-Buttons direkt in der Nachricht */}
-              {msg.buchzirkelEinladungId && msg.recipientUsername === username && (() => {
-                const status = handledBzEinladungIds[msg.buchzirkelEinladungId!];
-                if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Du nimmst am Buchzirkel teil!</p>;
-                if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Einladung abgelehnt.</p>;
-                return (
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white border-none cursor-pointer hover:bg-green-700 disabled:opacity-50"
-                      disabled={bzEinladungActionLoading === msg.buchzirkelEinladungId}
-                      onClick={() => handleBzEinladungAnnehmen(msg.buchzirkelEinladungId!)}
-                    >
-                      ✓ Teilnehmen
-                    </button>
-                    <button
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 border-none cursor-pointer hover:bg-gray-300 disabled:opacity-50"
-                      disabled={bzEinladungActionLoading === msg.buchzirkelEinladungId}
-                      onClick={() => handleBzEinladungAblehnen(msg.buchzirkelEinladungId!)}
-                    >
-                      ✕ Ablehnen
-                    </button>
-                  </div>
-                );
-              })()}
+          <div className="flex flex-col mb-2.5 group">
+            <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
               <div
-                className={`flex items-center gap-1.5 mt-1 ${
-                  isMine ? "justify-end" : "justify-start"
+                className={`relative max-w-[80%] sm:max-w-[75%] rounded-2xl px-3.5 py-2 text-[0.95rem] ${
+                  isMine
+                    ? "bg-arena-blue text-white rounded-br-md"
+                    : "bg-white border border-gray-200 text-gray-900 rounded-bl-md"
                 }`}
               >
-                <span
-                  className={`text-[10px] ${
-                    isMine ? "text-white/50" : "text-arena-muted"
+                <p className="whitespace-pre-wrap m-0" style={{ lineHeight: 1.5 }}>
+                  {msg.body}
+                </p>
+                {/* Kooperations-Buttons direkt in der Nachricht */}
+                {msg.kooperationId && msg.recipientUsername === username && (() => {
+                  const status = handledKoopIds[msg.kooperationId!];
+                  if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Kooperation bestätigt!</p>;
+                  if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Kooperation abgelehnt.</p>;
+                  return (
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white border-none cursor-pointer hover:bg-green-700 disabled:opacity-50"
+                        disabled={koopActionLoading === msg.kooperationId}
+                        onClick={() => handleKoopConfirm(msg.kooperationId!)}
+                      >
+                        ✓ Bestätigen
+                      </button>
+                      <button
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 border-none cursor-pointer hover:bg-gray-300 disabled:opacity-50"
+                        disabled={koopActionLoading === msg.kooperationId}
+                        onClick={() => handleKoopReject(msg.kooperationId!)}
+                      >
+                        ✕ Ablehnen
+                      </button>
+                    </div>
+                  );
+                })()}
+                {/* Mitautoren-Einladungs-Buttons direkt in der Nachricht */}
+                {msg.bookCoAuthorId && msg.recipientUsername === username && (() => {
+                  const status = handledCoAuthorIds[msg.bookCoAuthorId!];
+                  if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Mitautorenschaft bestätigt!</p>;
+                  if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Einladung abgelehnt.</p>;
+                  return (
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white border-none cursor-pointer hover:bg-green-700 disabled:opacity-50"
+                        disabled={coAuthorActionLoading === msg.bookCoAuthorId}
+                        onClick={() => handleCoAuthorConfirm(msg.bookCoAuthorId!)}
+                      >
+                        ✓ Bestätigen
+                      </button>
+                      <button
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 border-none cursor-pointer hover:bg-gray-300 disabled:opacity-50"
+                        disabled={coAuthorActionLoading === msg.bookCoAuthorId}
+                        onClick={() => handleCoAuthorDecline(msg.bookCoAuthorId!)}
+                      >
+                        ✕ Ablehnen
+                      </button>
+                    </div>
+                  );
+                })()}
+                {/* Buchzirkel-Einladungs-Buttons direkt in der Nachricht */}
+                {msg.buchzirkelEinladungId && msg.recipientUsername === username && (() => {
+                  const status = handledBzEinladungIds[msg.buchzirkelEinladungId!];
+                  if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Du nimmst am Buchzirkel teil!</p>;
+                  if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Einladung abgelehnt.</p>;
+                  return (
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white border-none cursor-pointer hover:bg-green-700 disabled:opacity-50"
+                        disabled={bzEinladungActionLoading === msg.buchzirkelEinladungId}
+                        onClick={() => handleBzEinladungAnnehmen(msg.buchzirkelEinladungId!)}
+                      >
+                        ✓ Teilnehmen
+                      </button>
+                      <button
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 border-none cursor-pointer hover:bg-gray-300 disabled:opacity-50"
+                        disabled={bzEinladungActionLoading === msg.buchzirkelEinladungId}
+                        onClick={() => handleBzEinladungAblehnen(msg.buchzirkelEinladungId!)}
+                      >
+                        ✕ Ablehnen
+                      </button>
+                    </div>
+                  );
+                })()}
+                <div
+                  className={`flex items-center gap-1.5 mt-1 ${
+                    isMine ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {formatTime(msg.createdAt)}
-                </span>
-                {isMine && (
-                  <span className="text-[10px] text-white/50">
-                    {msg.read ? "✓✓" : "✓"}
+                  <span
+                    className={`text-[10px] ${
+                      isMine ? "text-white/50" : "text-arena-muted"
+                    }`}
+                  >
+                    {formatTime(msg.createdAt)}
                   </span>
-                )}
+                  {isMine && (
+                    <span className="text-[10px] text-white/50">
+                      {msg.read ? "✓✓" : "✓"}
+                    </span>
+                  )}
+                </div>
+                {/* Löschen bei Hover */}
+                <button
+                  className={`absolute top-1 ${isMine ? "-left-7" : "-right-7"} sm:opacity-0 sm:group-hover:opacity-100 opacity-60 transition-opacity text-[11px] border-none bg-transparent cursor-pointer text-arena-muted hover:text-arena-danger p-1.5 -m-1`}
+                  onClick={() => handleDelete(msg.id)}
+                  title="Löschen"
+                >
+                  ✕
+                </button>
               </div>
-              {/* Löschen bei Hover */}
-              <button
-                className={`absolute top-1 ${isMine ? "-left-7" : "-right-7"} sm:opacity-0 sm:group-hover:opacity-100 opacity-60 transition-opacity text-[11px] border-none bg-transparent cursor-pointer text-arena-muted hover:text-arena-danger p-1.5 -m-1`}
-                onClick={() => handleDelete(msg.id)}
-                title="Löschen"
-              >
-                ✕
-              </button>
             </div>
+            {/* Emoji-Reaktionen */}
+            <MessageReactions
+              reactions={msg.reactions}
+              emojis={MESSAGE_EMOJIS}
+              username={username}
+              isMine={isMine}
+              onReact={(emoji) => handleMessageReact(msg.id, emoji)}
+            />
           </div>
         </div>
       );
@@ -798,7 +844,7 @@ function NachrichtenPageInner() {
                   {buchzirkelChats.length > 0 && (
                     <div>
                       <p className="text-[10px] font-semibold text-arena-muted uppercase tracking-wide px-4 py-2 bg-gray-50 border-b border-arena-border-light m-0">
-                        📚 Buchzirkel-Chats
+                        Buchzirkel-Chats
                       </p>
                       {buchzirkelChats.map((bz) => (
                         <button
@@ -812,7 +858,7 @@ function NachrichtenPageInner() {
                           <div className="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center text-base font-bold flex-shrink-0 overflow-hidden">
                             {bz.coverImageUrl ? (
                               <img src={bz.coverImageUrl} alt={bz.titel} className="w-full h-full object-cover" />
-                            ) : "📚"}
+                            ) : bz.titel.charAt(0).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
@@ -925,7 +971,7 @@ function NachrichtenPageInner() {
                   <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center text-base font-bold flex-shrink-0 overflow-hidden">
                     {activeBzCover ? (
                       <img src={activeBzCover} alt={activeBzTitel} className="w-full h-full object-cover" />
-                    ) : "📚"}
+                    ) : activeBzTitel.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex flex-col flex-1 min-w-0">
                     <span className="font-semibold text-sm truncate">{activeBzTitel}</span>
@@ -1274,6 +1320,91 @@ function NachrichtenPageInner() {
         )}
       </section>
     </main>
+  );
+}
+
+function MessageReactions({
+  reactions = [],
+  emojis,
+  username,
+  isMine,
+  onReact,
+}: {
+  reactions?: { username: string; emoji: string }[];
+  emojis: string[];
+  username: string;
+  isMine: boolean;
+  onReact: (emoji: string) => void;
+}) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  // Group reactions by emoji
+  const grouped = new Map<string, string[]>();
+  for (const r of reactions || []) {
+    const list = grouped.get(r.emoji) ?? [];
+    list.push(r.username);
+    grouped.set(r.emoji, list);
+  }
+
+  return (
+    <div className={`flex items-center gap-1 mt-1 px-1 flex-wrap ${isMine ? "justify-end" : "justify-start"}`}>
+      {/* Existing reactions */}
+      {[...grouped.entries()].map(([emoji, users]) => {
+        const active = users.includes(username);
+        return (
+          <button
+            key={emoji}
+            onClick={() => onReact(emoji)}
+            title={users.join(", ")}
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border cursor-pointer transition-colors ${
+              active
+                ? "bg-arena-blue/10 border-arena-blue text-arena-blue"
+                : "bg-gray-50 border-arena-border-light text-arena-text hover:bg-gray-100"
+            }`}
+          >
+            <span>{emoji}</span>
+            <span className="text-[10px] font-medium">{users.length}</span>
+          </button>
+        );
+      })}
+
+      {/* Add reaction trigger button */}
+      <div className="relative">
+        <button
+          onClick={() => setPickerOpen(!pickerOpen)}
+          className={`inline-flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-arena-border-light bg-transparent cursor-pointer text-arena-muted hover:bg-gray-100 hover:text-arena-text transition-colors text-xs opacity-0 group-hover:opacity-100 ${
+            pickerOpen ? "opacity-100" : ""
+          }`}
+          title="Reaktion hinzufügen"
+        >
+          +
+        </button>
+
+        {pickerOpen && (
+          <>
+            <div className="fixed inset-0 z-10" onClick={() => setPickerOpen(false)} />
+            <div className={`absolute bottom-full mb-1.5 flex gap-1 bg-white border border-arena-border-light rounded-lg p-1.5 shadow-lg z-20 ${
+              isMine ? "right-0" : "left-0"
+            }`}>
+              {emojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => {
+                    onReact(emoji);
+                    setPickerOpen(false);
+                  }}
+                  className={`w-8 h-8 flex items-center justify-center rounded-md cursor-pointer border-none text-base transition-colors ${
+                    grouped.has(emoji) ? "bg-arena-blue/10" : "bg-transparent hover:bg-gray-100"
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 

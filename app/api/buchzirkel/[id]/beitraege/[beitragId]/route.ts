@@ -130,9 +130,10 @@ export async function POST(
     if (!hasAccess) return NextResponse.json({ message: "Kein Zugang." }, { status: 403 });
 
     const body = (await request.json()) as { emoji?: string };
-    const emoji = body.emoji;
+    // Normalize emoji to NFC to handle variation selector differences (e.g. ❤️)
+    const emoji = body.emoji?.normalize("NFC");
 
-    if (!emoji || !ALLOWED_BEITRAG_EMOJIS.includes(emoji)) {
+    if (!emoji || !ALLOWED_BEITRAG_EMOJIS.map(e => e.normalize("NFC")).includes(emoji)) {
       return NextResponse.json({ message: "Ungültiges Emoji." }, { status: 400 });
     }
 

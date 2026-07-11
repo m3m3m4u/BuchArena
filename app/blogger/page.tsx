@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { parseGenres } from "@/app/components/genre-picker";
+import { HeartIcon } from "@heroicons/react/24/outline";
+import { normalizeGenre } from "@/lib/genres";
 
 const PAGE_SIZE = 10;
 
@@ -103,27 +104,29 @@ export default function BloggerPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="text-2xl font-bold m-0">Buchblogger entdecken</h1>
+          <h1 className="text-2xl font-bold m-0 text-arena-blue">Buchblogger entdecken</h1>
           <Link href="/wohnort-karte/blogger" className="btn">Suche nach Wohnort</Link>
         </div>
-        <p className="text-arena-muted text-[0.95rem]">
+        <p className="text-arena-muted text-sm mt-1">
           Hier findest du Buchblogger und ihre Lieblingsgenres.
         </p>
 
-        <label className="grid gap-1 text-[0.95rem]">
-          Suche
-          <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name …" />
-        </label>
-
-        {allGenres.length > 0 && (
-          <label className="grid gap-1 text-[0.95rem]">
-            Genre
-            <select className="input-base" value={filterGenre} onChange={(e) => setFilterGenre(e.target.value)}>
-              <option value="">Alle</option>
-              {allGenres.map((g) => <option key={g} value={g}>{g}</option>)}
-            </select>
+        <div className="grid gap-3 w-full">
+          <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+            Suche
+            <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name …" />
           </label>
-        )}
+
+          {allGenres.length > 0 && (
+            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+              Genre
+              <select className="input-base" value={filterGenre} onChange={(e) => setFilterGenre(e.target.value)}>
+                <option value="">Alle Genres</option>
+                {allGenres.map((g) => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </label>
+          )}
+        </div>
 
         {message && <p className="text-red-700">{message}</p>}
 
@@ -133,14 +136,14 @@ export default function BloggerPage() {
           <p>Noch keine Blogger vorhanden.</p>
         ) : (
           <>
-          <div className="grid gap-3 min-[700px]:grid-cols-2">
+          <div className="grid gap-3 min-[700px]:grid-cols-2 mt-4">
             {paged.map((blogger) => (
               <Link
                 key={blogger.username}
                 href={`/blogger/${encodeURIComponent(blogger.profileSlug || blogger.username)}`}
-                className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md h-full"
+                className="block no-underline text-inherit h-full"
               >
-                <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">
+                <article className="member-card">
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
                     <div
                       className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
@@ -154,27 +157,28 @@ export default function BloggerPage() {
                       {!blogger.profileImageUrl && <span>Kein Bild</span>}
                     </div>
                     <div>
-                      <h2 className="m-0 text-base font-semibold">{blogger.displayName}</h2>
+                      <h2 className="m-0 text-base font-bold text-arena-blue truncate">{blogger.displayName}</h2>
                       {blogger.motto && (
-                        <p className="mt-0.5 text-sm italic">„{blogger.motto}"</p>
+                        <p className="mt-1 text-sm italic text-arena-muted">„{blogger.motto}"</p>
                       )}
                       {blogger.lieblingsbuch && (
-                        <p className="mt-0.5 text-xs text-arena-muted">
-                          ❤️ {blogger.lieblingsbuch}
+                        <p className="mt-1.5 text-xs text-arena-muted flex items-center gap-1">
+                          <HeartIcon className="h-3.5 w-3.5 text-red-500 flex-shrink-0" /> 
+                          <span>{blogger.lieblingsbuch}</span>
                         </p>
                       )}
                       {blogger.genres.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
+                        <div className="flex flex-wrap gap-1 mt-2">
                           {blogger.genres.slice(0, 4).map((g) => (
                             <span
                               key={g}
-                              className="inline-block rounded-full bg-arena-blue/10 text-arena-blue text-[11px] font-medium px-2.5 py-1"
+                              className="inline-block rounded-full bg-arena-blue/5 text-arena-blue text-[11px] font-medium px-2 py-0.5 border border-arena-blue/10"
                             >
                               {g}
                             </span>
                           ))}
                           {blogger.genres.length > 4 && (
-                            <span className="text-[11px] text-arena-muted">
+                            <span className="text-[11px] text-arena-muted flex items-center font-medium">
                               +{blogger.genres.length - 4}
                             </span>
                           )}

@@ -1,5 +1,10 @@
 import type { ObjectId } from "mongodb";
 
+export type MessageReaction = {
+  username: string;
+  emoji: string;
+};
+
 export type MessageDocument = {
   _id?: ObjectId;
   senderUsername: string;
@@ -15,6 +20,7 @@ export type MessageDocument = {
   kooperationId?: string;
   bookCoAuthorId?: string;
   buchzirkelEinladungId?: string;
+  reactions?: MessageReaction[];
   createdAt: Date;
 };
 

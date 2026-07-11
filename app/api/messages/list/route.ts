@@ -37,6 +37,7 @@ export async function GET(request: Request) {
         kooperationId: 1,
         bookCoAuthorId: 1,
         buchzirkelEinladungId: 1,
+        reactions: 1,
         createdAt: 1,
       } as const;
 
@@ -86,6 +87,7 @@ export async function GET(request: Request) {
         kooperationId: d.kooperationId ?? null,
         bookCoAuthorId: d.bookCoAuthorId ?? null,
         buchzirkelEinladungId: d.buchzirkelEinladungId ?? null,
+        reactions: d.reactions ?? [],
         createdAt: d.createdAt.toISOString(),
       }));
 
@@ -113,6 +115,7 @@ export async function GET(request: Request) {
             kooperationId: 1,
             bookCoAuthorId: 1,
             buchzirkelEinladungId: 1,
+            reactions: 1,
             createdAt: 1,
           },
         })
@@ -132,6 +135,7 @@ export async function GET(request: Request) {
         kooperationId: d.kooperationId ?? null,
         bookCoAuthorId: d.bookCoAuthorId ?? null,
         buchzirkelEinladungId: d.buchzirkelEinladungId ?? null,
+        reactions: d.reactions ?? [],
         createdAt: d.createdAt.toISOString(),
       }));
 

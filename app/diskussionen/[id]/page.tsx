@@ -287,9 +287,36 @@ export default function DiskussionDetailPage() {
   const inlineReplyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const editReplyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const EMOJIS = ["👍", "❤️", "😂", "🎉", "🤔", "👎"];
+  const EMOJIS = ["👍", "😊", "❤️", "😂", "🎉", "🤔", "👎"];
 
   async function handleReact(emoji: string, replyId?: string) {
+    if (!username || !discussion) return;
+
+    // Optimistic update: toggle the reaction in local state immediately
+    setDiscussion((prev) => {
+      if (!prev) return prev;
+      const toggle = (reactions: ReactionItem[]) => {
+        const existing = reactions.find(
+          (r) => r.username === username && r.emoji === emoji
+        );
+        if (existing) {
+          return reactions.filter((r) => !(r.username === username && r.emoji === emoji));
+        }
+        return [...reactions, { username, emoji }];
+      };
+
+      if (replyId) {
+        return {
+          ...prev,
+          replies: prev.replies.map((r) =>
+            r.id === replyId ? { ...r, reactions: toggle(r.reactions) } : r
+          ),
+        };
+      }
+      return { ...prev, reactions: toggle(prev.reactions) };
+    });
+
+    // Sync with server in background
     try {
       const payload: { discussionId: string; emoji: string; replyId?: string } = {
         discussionId,
@@ -303,10 +330,14 @@ export default function DiskussionDetailPage() {
         body: JSON.stringify(payload),
       });
 
-      if (response.ok) {
+      if (!response.ok) {
+        // Revert optimistic update on error
         await loadDiscussion(true);
       }
-    } catch { /* ignore */ }
+    } catch {
+      // Revert optimistic update on network error
+      await loadDiscussion(true);
+    }
   }
 
   useEffect(() => {

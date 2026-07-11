@@ -2,6 +2,18 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { InformationCircleIcon, LightBulbIcon } from "@heroicons/react/24/solid";
+
+const socialIcons: Record<string, React.ReactNode> = {
+  intro: (<InformationCircleIcon className="h-5 w-5" />),
+  instagram: (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5A4.25 4.25 0 0 0 20.5 16.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm5.25-2a.88.88 0 1 1 0 1.75.88.88 0 0 1 0-1.75Z"/></svg>),
+  facebook: (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99h-2.54V12h2.54V9.8c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12Z"/></svg>),
+  linkedin: (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.95v5.66H9.36V9h3.41v1.56h.05a3.74 3.74 0 0 1 3.37-1.85c3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45Z"/></svg>),
+  tiktok: (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6a2.6 2.6 0 0 1 2.6-2.6c.27 0 .53.04.78.12V9.6a5.82 5.82 0 0 0-.78-.05 5.73 5.73 0 0 0-5.73 5.73 5.73 5.73 0 0 0 5.73 5.72c3.16 0 5.73-2.56 5.73-5.72V9.4a7.33 7.33 0 0 0 4.28 1.37V7.68a4.28 4.28 0 0 1-3.27-1.86Z"/></svg>),
+  youtube: (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.38.55A3.02 3.02 0 0 0 .5 6.19 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.81 3.02 3.02 0 0 0 2.12 2.14c1.87.55 9.38.55 9.38.55s7.5 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.81ZM9.75 15.02V8.98L15.5 12l-5.75 3.02Z"/></svg>),
+  pinterest: (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.64 19.32c-.1-.87-.18-2.2.04-3.15l1.6-6.76s-.4-.82-.4-2.03c0-1.9 1.1-3.32 2.48-3.32 1.17 0 1.73.88 1.73 1.93 0 1.17-.75 2.93-1.13 4.56-.32 1.36.68 2.47 2.02 2.47 2.42 0 4.28-2.55 4.28-6.24 0-3.26-2.35-5.54-5.7-5.54-3.88 0-6.16 2.91-6.16 5.92 0 1.17.45 2.43 1.02 3.12.11.14.13.26.09.4l-.38 1.55c-.06.25-.2.3-.46.18-1.72-.8-2.8-3.32-2.8-5.34C4.57 5.9 7.66 3 12.36 3c4.95 0 8.8 3.53 8.8 8.24 0 4.91-3.1 8.87-7.4 8.87-1.44 0-2.8-.75-3.27-1.64l-.89 3.39c-.32 1.24-1.19 2.79-1.78 3.74A10 10 0 1 0 12 2Z"/></svg>),
+  reddit: (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M14.24 15.6c.16.16.16.42 0 .58a4.78 4.78 0 0 1-2.72.76 4.78 4.78 0 0 1-2.72-.76.41.41 0 0 1 0-.58.41.41 0 0 1 .58 0c.5.37 1.3.6 2.14.6s1.64-.23 2.14-.6a.41.41 0 0 1 .58 0ZM9.5 12.8a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm5.91 11.37c.03.17.04.34.04.52 0 2.67-3.1 4.83-6.93 4.83S4.1 16.56 4.1 13.89c0-.18.01-.35.04-.52a1.75 1.75 0 0 1-.68-1.37 1.75 1.75 0 0 1 2.93-1.29 8.58 8.58 0 0 1 4.67-1.5l.88-4.14a.3.3 0 0 1 .36-.24l2.93.62a1.23 1.23 0 0 1 2.28.6 1.23 1.23 0 0 1-1.23 1.23 1.23 1.23 0 0 1-1.21-1.05l-2.6-.55-.79 3.72a8.55 8.55 0 0 1 4.6 1.5 1.75 1.75 0 0 1 2.93 1.29 1.75 1.75 0 0 1-.68 1.37Z"/></svg>)
+};
 
 type Platform = "intro" | "instagram" | "youtube" | "reddit" | "tiktok" | "facebook" | "pinterest" | "linkedin";
 type MainTab = "social" | "musik" | "glossar" | "beitrag-tool" | "social-media-planer";
@@ -10,15 +22,15 @@ type GlossarEntry = { begriff: string; erklaerung: string; bereich: string };
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-const TABS: { key: Platform; label: string; icon: string }[] = [
-  { key: "intro", label: "Überblick", icon: "🚀" },
-  { key: "instagram", label: "Instagram", icon: "📸" },
-  { key: "youtube", label: "YouTube", icon: "▶️" },
-  { key: "reddit", label: "Reddit", icon: "🧠" },
-  { key: "tiktok", label: "TikTok", icon: "🎵" },
-  { key: "facebook", label: "Facebook", icon: "👥" },
-  { key: "pinterest", label: "Pinterest", icon: "📌" },
-  { key: "linkedin", label: "LinkedIn", icon: "💼" },
+const TABS: { key: Platform; label: string }[] = [
+  { key: "intro", label: "Überblick" },
+  { key: "instagram", label: "Instagram" },
+  { key: "youtube", label: "YouTube" },
+  { key: "reddit", label: "Reddit" },
+  { key: "tiktok", label: "TikTok" },
+  { key: "facebook", label: "Facebook" },
+  { key: "pinterest", label: "Pinterest" },
+  { key: "linkedin", label: "LinkedIn" },
 ];
 
 function ChecklistItem({ title, children }: { title: string; children: React.ReactNode }) {
@@ -30,23 +42,23 @@ function ChecklistItem({ title, children }: { title: string; children: React.Rea
   );
 }
 
-function SectionIntro({ icon, text }: { icon: string; text: React.ReactNode }) {
+function SectionIntro({ icon, text }: { icon: React.ReactNode; text: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-arena-blue/20 bg-arena-blue/5 p-5 flex gap-4 items-start">
-      <span className="text-3xl flex-shrink-0">{icon}</span>
+      <span className="text-arena-blue flex-shrink-0 mt-0.5 [&>svg]:h-7 [&>svg]:w-7">{icon}</span>
       <div className="text-[0.93rem] leading-relaxed">{text}</div>
     </div>
   );
 }
 
-const PLATFORM_LINKS: Record<string, { url: string; label: string; icon: string }> = {
-  instagram: { url: "https://www.instagram.com/bucharena/", label: "Hier kommst du zu unserer Instagram-Seite", icon: "📸" },
-  youtube:   { url: "https://www.youtube.com/@BuchArena", label: "Hier kommst du zu unserem YouTube-Kanal", icon: "▶️" },
-  reddit:    { url: "https://www.reddit.com/user/BuchArena/", label: "Hier kommst du zu unserer Reddit-Seite", icon: "🧠" },
-  tiktok:    { url: "https://www.tiktok.com/@bucharena", label: "Hier kommst du zu unserem TikTok-Account", icon: "🎵" },
-  facebook:  { url: "https://www.facebook.com/BuchArena", label: "Hier kommst du zu unserer Facebook-Seite", icon: "👥" },
-  pinterest: { url: "https://at.pinterest.com/bucharena365/", label: "Hier kommst du zu unserer Pinterest-Seite", icon: "📌" },
-  linkedin:  { url: "https://www.linkedin.com/company/bucharena/", label: "Hier kommst du zu unserer LinkedIn-Seite", icon: "💼" },
+const PLATFORM_LINKS: Record<string, { url: string; label: string }> = {
+  instagram: { url: "https://www.instagram.com/bucharena/", label: "Hier kommst du zu unserer Instagram-Seite" },
+  youtube:   { url: "https://www.youtube.com/@BuchArena", label: "Hier kommst du zu unserem YouTube-Kanal" },
+  reddit:    { url: "https://www.reddit.com/user/BuchArena/", label: "Hier kommst du zu unserer Reddit-Seite" },
+  tiktok:    { url: "https://www.tiktok.com/@bucharena", label: "Hier kommst du zu unserem TikTok-Account" },
+  facebook:  { url: "https://www.facebook.com/BuchArena", label: "Hier kommst du zu unserer Facebook-Seite" },
+  pinterest: { url: "https://at.pinterest.com/bucharena365/", label: "Hier kommst du zu unserer Pinterest-Seite" },
+  linkedin:  { url: "https://www.linkedin.com/company/bucharena/", label: "Hier kommst du zu unserer LinkedIn-Seite" },
 };
 
 function PlatformLink({ platform }: { platform: string }) {
@@ -54,7 +66,7 @@ function PlatformLink({ platform }: { platform: string }) {
   if (!link) return null;
   return (
     <a href={link.url} target="_blank" rel="noopener noreferrer" className="mt-2 flex items-center gap-3 rounded-xl border border-arena-blue/20 bg-arena-blue/5 px-5 py-4 no-underline text-arena-blue font-semibold hover:bg-arena-blue/10 transition-colors">
-      <span className="text-xl">{link.icon}</span>
+      <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons[platform]}</span>
       <span>{link.label} →</span>
     </a>
   );
@@ -205,7 +217,10 @@ export default function TippsPage() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer border-none transition-colors ${tab === t.key ? "bg-arena-blue text-white" : "bg-arena-blue/10 text-arena-text hover:bg-arena-blue/20"}`}
                 onClick={() => setTab(t.key)}
               >
-                {t.icon} {t.label}
+                <span className="flex items-center gap-2 justify-center">
+                  <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{socialIcons[t.key]}</span>
+                  <span>{t.label}</span>
+                </span>
               </button>
             ))}
           </div>
@@ -248,35 +263,35 @@ export default function TippsPage() {
               <h2 className="text-lg font-semibold m-0 mb-4">Wichtige Links</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <a href="https://www.youtube.com/@BuchArena" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-                  <span className="text-xl">▶️</span>
+                  <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.youtube}</span>
                   <span className="font-medium text-[0.95rem]">YouTube-Kanal</span>
                 </a>
                 <a href="https://www.youtube.com/@BuchArena/playlists" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-                  <span className="text-xl">▶️</span>
+                  <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.youtube}</span>
                   <span className="font-medium text-[0.95rem]">YouTube Playlist</span>
                 </a>
                 <a href="https://www.reddit.com/user/BuchArena/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-                  <span className="text-xl">🧠</span>
+                  <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.reddit}</span>
                   <span className="font-medium text-[0.95rem]">Eure Bücher auf Reddit</span>
                 </a>
                 <a href="https://www.tiktok.com/@bucharena" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-                  <span className="text-xl">🎵</span>
+                  <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.tiktok}</span>
                   <span className="font-medium text-[0.95rem]">TikTok-Account</span>
                 </a>
                 <a href="https://www.facebook.com/BuchArena" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-                  <span className="text-xl">👥</span>
+                  <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.facebook}</span>
                   <span className="font-medium text-[0.95rem]">Facebook-Account</span>
                 </a>
                 <a href="https://www.instagram.com/bucharena/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-                  <span className="text-xl">📸</span>
+                  <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.instagram}</span>
                   <span className="font-medium text-[0.95rem]">Instagram-Account</span>
                 </a>
                 <a href="https://at.pinterest.com/bucharena365/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-                  <span className="text-xl">📌</span>
+                  <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.pinterest}</span>
                   <span className="font-medium text-[0.95rem]">Pinterest-Account</span>
                 </a>
                 <a href="https://www.linkedin.com/company/bucharena/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-                  <span className="text-xl">💼</span>
+                  <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.linkedin}</span>
                   <span className="font-medium text-[0.95rem]">LinkedIn-Seite</span>
                 </a>
               </div>
@@ -288,7 +303,7 @@ export default function TippsPage() {
         {mainTab === "social" && tab === "instagram" && (
           <div className="space-y-4">
             <SectionIntro
-              icon="📸"
+              icon={socialIcons.instagram}
               text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> Instagram bewertet Interaktionen nach einer strengen Hierarchie. Ein einfaches „Gefällt mir" ist nett, aber für den Algorithmus fast wertlos. Ein „Speichern" oder „Teilen" hingegen signalisiert: „Dieser Inhalt ist so gut, ich will ihn behalten oder meinen Freunden zeigen."</p>}
             />
             <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
@@ -313,7 +328,7 @@ export default function TippsPage() {
         {mainTab === "social" && tab === "youtube" && (
           <div className="space-y-4">
             <SectionIntro
-              icon="▶️"
+              icon={socialIcons.youtube}
               text={<p className="m-0"><strong>Warum das hier ein „Game Changer" ist (SEO &amp; KI):</strong> YouTube gehört Google. Videos veralten nicht nach 24 Stunden, sie bleiben jahrelang suchbar. Noch wichtiger: Künstliche Intelligenzen (wie ChatGPT, Google Gemini) nutzen YouTube-Transkripte und Kommentare, um Wissen zu sammeln. Wenn jemand eine KI fragt „Welche neuen Fantasy-Bücher von kleinen Autoren sind gut?", durchsucht die KI YouTube-Daten. Wenn wir dort nicht stattfinden, existiert dein Buch für die KI nicht.</p>}
             />
             <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
@@ -337,7 +352,7 @@ export default function TippsPage() {
         {mainTab === "social" && tab === "reddit" && (
           <div className="space-y-4">
             <SectionIntro
-              icon="🧠"
+              icon={socialIcons.reddit}
               text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> Reddit ist keine Social-Media-Plattform wie Instagram, sondern ein Wissensarchiv. Extrem wichtig: Reddit ist die Hauptdatenquelle für das Training von LLMs (Large Language Models). Wenn du willst, dass ChatGPT dein Buch kennt und empfiehlt, muss es auf Reddit „validiert" sein. Ein Reddit-Thread mit guter Diskussion ist für die KI ein Qualitätssiegel.</p>}
             />
             <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
@@ -362,7 +377,7 @@ export default function TippsPage() {
         {mainTab === "social" && tab === "tiktok" && (
           <div className="space-y-4">
             <SectionIntro
-              icon="🎵"
+              icon={socialIcons.tiktok}
               text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> TikTok interessiert sich nicht dafür, wer dir folgt. Es interessiert sich nur dafür: „Hält dieses Video die Leute in der App?".</p>}
             />
             <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
@@ -384,7 +399,7 @@ export default function TippsPage() {
         {mainTab === "social" && tab === "facebook" && (
           <div className="space-y-4">
             <SectionIntro
-              icon="👥"
+              icon={socialIcons.facebook}
               text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> Facebook priorisiert Inhalte, die „bedeutungsvolle Interaktionen" zwischen Menschen auslösen. Stilles Liken bringt fast nichts mehr.</p>}
             />
             <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
@@ -404,7 +419,7 @@ export default function TippsPage() {
         {mainTab === "social" && tab === "pinterest" && (
           <div className="space-y-4">
             <SectionIntro
-              icon="📌"
+              icon={socialIcons.pinterest}
               text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> Pinterest ist keine klassische Social-Media-Plattform, sondern eine visuelle Suchmaschine. Pins bleiben jahrelang auffindbar und bringen langfristig Traffic. Pinterest-Nutzer suchen aktiv nach Inspiration – perfekt für Buchcover, Zitate und Leseempfehlungen.</p>}
             />
             <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
@@ -432,7 +447,7 @@ export default function TippsPage() {
         {mainTab === "social" && tab === "linkedin" && (
           <div className="space-y-4">
             <SectionIntro
-              icon="💼"
+              icon={socialIcons.linkedin}
               text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> LinkedIn belohnt Fachwissen und echte Gespräche. Im Gegensatz zu anderen Plattformen geht es hier nicht um Unterhaltung, sondern um Expertise. Für Autoren ist LinkedIn Gold wert: Verlage, Buchhändler, Literaturagenten und Journalisten sind hier aktiv.</p>}
             />
             <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
@@ -596,7 +611,10 @@ export default function TippsPage() {
             </div>
 
             <div className="rounded-xl border border-arena-yellow/40 bg-arena-yellow/10 p-5">
-              <p className="font-semibold text-[0.95rem] m-0 mb-2">💡 Geheimtipp</p>
+              <p className="font-semibold text-[0.95rem] m-0 mb-2 flex items-center gap-1.5">
+                <LightBulbIcon className="h-5 w-5 text-yellow-600 flex-shrink-0" />
+                <span>Geheimtipp</span>
+              </p>
               <p className="text-[0.93rem] leading-relaxed m-0">
                 Man kann bis zu fünf „Marken" verwalten. Wenn du andere Autorinnen oder Autoren kennst, denen du vertraust, könnt ihr euch einen Account teilen. Jede Marke kann dann verschiedene Plattformen enthalten.
               </p>

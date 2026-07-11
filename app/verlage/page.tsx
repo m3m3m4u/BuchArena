@@ -42,10 +42,10 @@ export default function VerlagePage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="m-0">Verlage entdecken</h1>
+          <h1 className="text-2xl font-bold m-0 text-arena-blue">Verlage entdecken</h1>
           <Link href="/wohnort-karte/verlage" className="btn">Suche nach Wohnort</Link>
         </div>
-        <p className="text-arena-muted text-[0.95rem]">
+        <p className="text-arena-muted text-sm mt-1">
           Hier findest du Verlage und ihre Verfügbarkeit.
         </p>
 
@@ -56,14 +56,14 @@ export default function VerlagePage() {
         ) : verlage.length === 0 ? (
           <p>Noch keine Verlage vorhanden.</p>
         ) : (
-          <div className="grid gap-3 min-[700px]:grid-cols-2">
+          <div className="grid gap-3 min-[700px]:grid-cols-2 mt-4">
             {verlage.map((vl) => (
               <Link
                 key={vl.username}
                 href={`/verlage/${encodeURIComponent(vl.profileSlug || vl.username)}`}
-                className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md h-full"
+                className="block no-underline text-inherit h-full"
               >
-                <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">
+                <article className="member-card">
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
                     <div
                       className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
@@ -77,16 +77,16 @@ export default function VerlagePage() {
                       {!vl.profileImageUrl && <span>Kein Bild</span>}
                     </div>
                     <div>
-                      <h2 className="m-0 text-[1.05rem]">{vl.displayName}</h2>
+                      <h2 className="m-0 text-base font-bold text-arena-blue truncate">{vl.displayName}</h2>
                       {vl.motto && (
-                        <p className="mt-0.5 text-sm italic">„{vl.motto}“</p>
+                        <p className="mt-1 text-sm italic text-arena-muted">„{vl.motto}“</p>
                       )}
                       {vl.kapazitaeten.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
+                        <div className="flex flex-wrap gap-1 mt-2">
                           {vl.kapazitaeten.map((m) => (
                             <span
                               key={m}
-                              className="inline-block rounded-full bg-green-100 text-green-700 text-[11px] font-medium px-2 py-0.5"
+                              className="inline-block rounded-full bg-green-50 text-green-700 text-[11px] font-medium px-2 py-0.5 border border-green-200"
                             >
                               {monthLabels[m - 1]}
                             </span>

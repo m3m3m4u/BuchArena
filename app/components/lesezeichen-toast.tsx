@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BookmarkIcon } from "@heroicons/react/24/solid";
 
 export const LESEZEICHEN_EVENT = "bucharena:lesezeichen";
 
@@ -42,7 +43,8 @@ export default function LesezeichenToast() {
           key={t.id}
           className="pointer-events-auto animate-[slideIn_0.3s_ease-out] rounded-xl bg-yellow-400 text-yellow-900 px-5 py-3 shadow-lg font-bold text-lg flex items-center gap-2"
         >
-          🔖 +{t.amount} Lesezeichen
+          <BookmarkIcon className="h-5 w-5 text-yellow-900 flex-shrink-0" />
+          <span>+{t.amount} Lesezeichen</span>
         </div>
       ))}
     </div>

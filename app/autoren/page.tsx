@@ -128,23 +128,25 @@ export default function AutorenPage() {
           <Link href="/wohnort-karte/autoren" className="btn">Suche nach Wohnort</Link>
         </div>
 
-        <label className="grid gap-1 text-[0.95rem]">
-          Suche
-          <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name oder Buchtitel …" />
-        </label>
+        <div className="grid gap-3 w-full">
+          <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+            Suche
+            <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name oder Buchtitel …" />
+          </label>
 
-        <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
-          <label className="grid gap-1 text-[0.95rem]">
-            Genre
-            <select className="input-base" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}>
-              <option value="">Alle</option>
-              {genres.map((g) => <option key={g} value={g}>{g}</option>)}
-            </select>
-          </label>
-          <label className="grid gap-1 text-[0.95rem]">
-            Alter
-            <input className="input-base" type="number" min={0} value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)} placeholder="z. B. 10" />
-          </label>
+          <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
+            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+              Genre
+              <select className="input-base" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}>
+                <option value="">Alle Genres</option>
+                {genres.map((g) => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+              Alter
+              <input className="input-base" type="number" min={0} value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)} placeholder="z. B. 10" />
+            </label>
+          </div>
         </div>
 
         {message && <p className="text-red-700">{message}</p>}
@@ -160,9 +162,9 @@ export default function AutorenPage() {
                 <Link
                   key={author.username}
                   href={`/autor/${encodeURIComponent(author.profileSlug || author.username)}`}
-                  className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md"
+                  className="block no-underline text-inherit h-full"
                 >
-                  <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">
+                  <article className="member-card">
                     <div className="grid grid-cols-[72px_1fr] items-start gap-3">
                       <div
                         className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
@@ -176,8 +178,8 @@ export default function AutorenPage() {
                         {!author.profileImageUrl && <span>Kein Bild</span>}
                       </div>
                       <div className="min-w-0">
-                        <h2 className="m-0 text-base font-semibold truncate">{author.displayName}</h2>
-                        <p className="mt-0.5 mb-0 text-sm">
+                        <h2 className="m-0 text-base font-bold text-arena-blue truncate">{author.displayName}</h2>
+                        <p className="mt-0.5 mb-0 text-sm text-arena-text">
                           {author.books.length === 0
                             ? "Noch keine Bücher"
                             : hasActiveFilter
@@ -189,7 +191,7 @@ export default function AutorenPage() {
                             author.books.flatMap((b) => (b.genre ?? "").split(",").map((g) => g.trim()).filter(Boolean))
                           );
                           return allGenres.size > 0 ? (
-                            <p className="mt-1 mb-0 text-xs text-arena-muted truncate">{[...allGenres].join(", ")}</p>
+                            <p className="mt-1.5 mb-0 text-xs text-arena-muted truncate">{[...allGenres].join(", ")}</p>
                           ) : null;
                         })()}
                       </div>

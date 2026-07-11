@@ -331,11 +331,11 @@ export default function SocialMediaPage() {
                   <strong className="text-[0.95rem]">Reel-Tool – Kurzvideo</strong>
                   <span className="ml-auto text-xs rounded-full bg-green-100 text-green-800 px-2 py-0.5 font-medium">Schnell</span>
                 </div>
-                <ul className="text-sm text-arena-muted grid gap-1 pl-1">
-                  <li>📄 <strong>3 Seiten</strong> mit Buchinformationen ausfüllen</li>
-                  <li>🎵 Musik im Hintergrund</li>
-                  <li>📐 Format: 9:16 (Instagram Reels, YouTube Shorts, TikTok)</li>
-                  <li>⏱ Bearbeitung dauert aktuell <strong>wenige Tage</strong></li>
+                <ul className="text-sm text-arena-muted list-disc list-inside space-y-1 mt-1 pl-1">
+                  <li><strong>3 Seiten</strong> mit Buchinformationen ausfüllen</li>
+                  <li>Musik im Hintergrund</li>
+                  <li>Format: 9:16 (Instagram Reels, YouTube Shorts, TikTok)</li>
+                  <li>Bearbeitung dauert aktuell <strong>wenige Tage</strong></li>
                 </ul>
               </Link>
 
@@ -351,11 +351,11 @@ export default function SocialMediaPage() {
                   <strong className="text-[0.95rem]">Reel- und Video-Tool – Kurzvideo + längere Version</strong>
                   <span className="ml-auto text-xs rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 font-medium">Aufwendig</span>
                 </div>
-                <ul className="text-sm text-arena-muted grid gap-1 pl-1">
-                  <li>📄 <strong>5 Seiten</strong> mit Buchinformationen und Sprechertext</li>
-                  <li>🎙 Professioneller Sprecher liest den Text vor</li>
-                  <li>🎬 Kurzvideo (Reel) <strong>und</strong> längere Version</li>
-                  <li>⏱ Bearbeitung dauert aktuell <strong>einige Wochen</strong></li>
+                <ul className="text-sm text-arena-muted list-disc list-inside space-y-1 mt-1 pl-1">
+                  <li><strong>5 Seiten</strong> mit Buchinformationen und Sprechertext</li>
+                  <li>Professioneller Sprecher liest den Text vor</li>
+                  <li>Kurzvideo (Reel) <strong>und</strong> längere Version</li>
+                  <li>Bearbeitung dauert aktuell <strong>einige Wochen</strong></li>
                 </ul>
               </Link>
 

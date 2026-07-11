@@ -91,14 +91,14 @@ export default function SprecherPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="m-0">Hörbuchsprecher entdecken</h1>
+          <h1 className="text-2xl font-bold m-0 text-arena-blue">Hörbuchsprecher entdecken</h1>
           <Link href="/wohnort-karte/sprecher" className="btn">Suche nach Wohnort</Link>
         </div>
-        <p className="text-arena-muted text-[0.95rem]">
+        <p className="text-arena-muted text-sm mt-1">
           Hier findest du Hörbuchsprecher und ihre Sprechproben.
         </p>
 
-        <label className="grid gap-1 text-[0.95rem]">
+        <label className="grid gap-1 text-sm font-semibold text-arena-blue mt-4 w-full">
           Suche
           <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name oder Ort …" />
         </label>
@@ -111,14 +111,14 @@ export default function SprecherPage() {
           <p>Noch keine Sprecher vorhanden.</p>
         ) : (
           <>
-          <div className="grid gap-3 min-[700px]:grid-cols-2">
+          <div className="grid gap-3 min-[700px]:grid-cols-2 mt-4">
             {paged.map((speaker) => (
               <Link
                 key={speaker.username}
                 href={`/sprecher/${encodeURIComponent(speaker.profileSlug || speaker.username)}`}
-                className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md h-full"
+                className="block no-underline text-inherit h-full"
               >
-                <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">
+                <article className="member-card">
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
                     <div
                       className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
@@ -132,14 +132,14 @@ export default function SprecherPage() {
                       {!speaker.profileImageUrl && <span>Kein Bild</span>}
                     </div>
                     <div>
-                      <h2 className="m-0 text-[1.05rem]">{speaker.displayName}</h2>
+                      <h2 className="m-0 text-base font-bold text-arena-blue truncate">{speaker.displayName}</h2>
                       {speaker.ort && (
-                        <p className="mt-0.5 text-sm text-arena-muted">{speaker.ort}</p>
+                        <p className="mt-0.5 text-sm text-arena-text">{speaker.ort}</p>
                       )}
                       {speaker.motto && (
-                        <p className="mt-0.5 text-sm italic">„{speaker.motto}"</p>
+                        <p className="mt-1 text-sm italic text-arena-muted">„{speaker.motto}"</p>
                       )}
-                      <p className="mt-1 text-xs text-arena-muted">
+                      <p className="mt-1.5 text-xs text-arena-muted font-medium">
                         {speaker.sprechprobenCount}{" "}
                         {speaker.sprechprobenCount === 1 ? "Sprechprobe" : "Sprechproben"}
                       </p>

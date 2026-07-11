@@ -19,7 +19,8 @@ export async function POST(request: Request) {
 
     const discussionId = body.discussionId?.trim();
     const replyId = body.replyId?.trim();
-    const emoji = body.emoji;
+    // Normalize emoji to NFC to handle variation selector differences (e.g. ❤️)
+    const emoji = body.emoji?.normalize("NFC");
 
     if (!discussionId || !ObjectId.isValid(discussionId)) {
       return NextResponse.json(
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!emoji || !ALLOWED_EMOJIS.includes(emoji)) {
+    if (!emoji || !ALLOWED_EMOJIS.map(e => e.normalize("NFC")).includes(emoji)) {
       return NextResponse.json(
         { message: "Ungültiges Emoji." },
         { status: 400 }

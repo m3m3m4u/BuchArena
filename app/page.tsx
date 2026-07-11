@@ -5,6 +5,21 @@ import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT, type LoggedInAccount } from "@/lib/client-account";
 import { extractYouTubeId } from "@/lib/bucharena-types";
 import { fetchUnreadCountShared } from "@/lib/client-unread-count";
+import { 
+  BookmarkIcon, 
+  EnvelopeIcon, 
+  CalendarIcon, 
+  BookOpenIcon, 
+  ChatBubbleLeftRightIcon, 
+  AcademicCapIcon, 
+  UserIcon, 
+  HeartIcon, 
+  EnvelopeOpenIcon, 
+  SparklesIcon,
+  UserGroupIcon,
+  ArrowPathIcon,
+  ShareIcon
+} from "@heroicons/react/24/outline";
 
 type BuchDerWoche = { title: string; author: string; speaker?: string; youtubeUrl: string; buyUrl: string; active?: boolean; bookId?: string; authorUsername?: string; speakerUsername?: string };
 type Stats = { bookCount: number; authorCount: number; bloggerCount: number; speakerCount: number; testleserCount: number; lektorenCount: number; verlageCount: number };
@@ -93,26 +108,27 @@ export default function HomePage() {
 
         {/* Quick Stats */}
         <section className="w-full max-w-[1100px] grid grid-cols-3 gap-3 mt-3 max-sm:grid-cols-1 overflow-x-clip">
-          <Link href="/lesezeichen" className="no-underline text-inherit">
-            <div className="rounded-xl border border-arena-border-light bg-white p-4 text-center hover:border-arena-blue transition-colors">
-              <p className="text-3xl font-bold m-0 text-arena-blue">🔖 {lesezeichen?.total ?? "–"}</p>
-              <p className="text-arena-muted text-sm m-0 mt-1">Lesezeichen</p>
+          <Link href="/lesezeichen" className="no-underline text-inherit group">
+            <div className="rounded-xl border border-arena-border-light bg-white p-5 flex flex-col items-center dashboard-stat-card hover:border-arena-blue">
+              <BookmarkIcon className="h-6 w-6 text-arena-blue mb-2 transition-transform group-hover:scale-110" />
+              <p className="text-2xl font-bold m-0 text-arena-blue">{lesezeichen?.total ?? "–"}</p>
+              <p className="text-arena-muted text-xs font-semibold uppercase tracking-wider mt-1 m-0">Lesezeichen</p>
             </div>
           </Link>
-          <Link href="/nachrichten" className="no-underline text-inherit">
-            <div className="rounded-xl border border-arena-border-light bg-white p-4 text-center hover:border-arena-blue transition-colors">
-              <p className="text-3xl font-bold m-0 text-arena-blue">
-                ✉️ {unreadMessages}
-              </p>
-              <p className="text-arena-muted text-sm m-0 mt-1">
+          <Link href="/nachrichten" className="no-underline text-inherit group">
+            <div className="rounded-xl border border-arena-border-light bg-white p-5 flex flex-col items-center dashboard-stat-card hover:border-arena-blue">
+              <EnvelopeIcon className="h-6 w-6 text-arena-blue mb-2 transition-transform group-hover:scale-110" />
+              <p className="text-2xl font-bold m-0 text-arena-blue">{unreadMessages}</p>
+              <p className="text-arena-muted text-xs font-semibold uppercase tracking-wider mt-1 m-0">
                 {unreadMessages === 1 ? "Neue Nachricht" : "Neue Nachrichten"}
               </p>
             </div>
           </Link>
-          <Link href="/lesezeichen" className="no-underline text-inherit">
-            <div className="rounded-xl border border-arena-border-light bg-white p-4 text-center hover:border-arena-blue transition-colors">
-              <p className="text-3xl font-bold m-0 text-arena-blue">📅 {lesezeichen?.loginDays ?? "–"}</p>
-              <p className="text-arena-muted text-sm m-0 mt-1">Login-Tage</p>
+          <Link href="/lesezeichen" className="no-underline text-inherit group">
+            <div className="rounded-xl border border-arena-border-light bg-white p-5 flex flex-col items-center dashboard-stat-card hover:border-arena-blue">
+              <CalendarIcon className="h-6 w-6 text-arena-blue mb-2 transition-transform group-hover:scale-110" />
+              <p className="text-2xl font-bold m-0 text-arena-blue">{lesezeichen?.loginDays ?? "–"}</p>
+              <p className="text-arena-muted text-xs font-semibold uppercase tracking-wider mt-1 m-0">Login-Tage</p>
             </div>
           </Link>
         </section>
@@ -124,7 +140,10 @@ export default function HomePage() {
         <section className="card mt-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg m-0 flex items-center gap-2">📬 Newsletter</h2>
+              <h2 className="text-lg m-0 flex items-center gap-2">
+                <EnvelopeOpenIcon className="h-5 w-5 text-arena-blue flex-shrink-0" />
+                Newsletter
+              </h2>
               <p className="text-arena-muted text-sm m-0 mt-1">Erhalte Neuigkeiten und Updates per E-Mail.</p>
             </div>
             <button
@@ -164,45 +183,48 @@ export default function HomePage() {
 
         {/* Quick Links */}
         <section className="card mt-3">
-          <h2 className="text-lg m-0 flex items-center gap-2">🚀 Schnellzugriff</h2>
+          <h2 className="text-lg m-0 flex items-center gap-2">
+            <SparklesIcon className="h-5 w-5 text-arena-blue flex-shrink-0" />
+            Schnellzugriff
+          </h2>
           <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-            <Link href="/buecher" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-              <span className="text-2xl">📚</span>
+            <Link href="/buecher" className="flex items-center gap-3 rounded-xl border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200">
+              <BookOpenIcon className="h-6 w-6 text-arena-blue flex-shrink-0" />
               <div>
                 <p className="font-semibold m-0 text-[0.95rem]">Bücher entdecken</p>
                 <p className="text-arena-muted text-xs m-0">Stöbere durch alle Bücher</p>
               </div>
             </Link>
-            <Link href="/diskussionen" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-              <span className="text-2xl">💬</span>
+            <Link href="/diskussionen" className="flex items-center gap-3 rounded-xl border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200">
+              <ChatBubbleLeftRightIcon className="h-6 w-6 text-arena-blue flex-shrink-0" />
               <div>
                 <p className="font-semibold m-0 text-[0.95rem]">Treffpunkt</p>
                 <p className="text-arena-muted text-xs m-0">Diskutiere mit der Community</p>
               </div>
             </Link>
-            <Link href="/quiz" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-              <span className="text-2xl">🧠</span>
+            <Link href="/quiz" className="flex items-center gap-3 rounded-xl border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200">
+              <AcademicCapIcon className="h-6 w-6 text-arena-blue flex-shrink-0" />
               <div>
                 <p className="font-semibold m-0 text-[0.95rem]">Quiz spielen</p>
                 <p className="text-arena-muted text-xs m-0">Teste dein Buchwissen</p>
               </div>
             </Link>
-            <Link href="/profil" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-              <span className="text-2xl">👤</span>
+            <Link href="/profil" className="flex items-center gap-3 rounded-xl border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200">
+              <UserIcon className="h-6 w-6 text-arena-blue flex-shrink-0" />
               <div>
                 <p className="font-semibold m-0 text-[0.95rem]">Mein Profil</p>
                 <p className="text-arena-muted text-xs m-0">Profil bearbeiten</p>
               </div>
             </Link>
-            <Link href="/buchempfehlung" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-              <span className="text-2xl">❤️</span>
+            <Link href="/buchempfehlung" className="flex items-center gap-3 rounded-xl border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200">
+              <HeartIcon className="h-6 w-6 text-arena-blue flex-shrink-0" />
               <div>
                 <p className="font-semibold m-0 text-[0.95rem]">Buchempfehlung</p>
                 <p className="text-arena-muted text-xs m-0">Empfiehl dein Lieblingsbuch</p>
               </div>
             </Link>
-            <Link href="/nachrichten" className="flex items-center gap-3 rounded-lg border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
-              <span className="text-2xl">✉️</span>
+            <Link href="/nachrichten" className="flex items-center gap-3 rounded-xl border border-arena-border-light bg-white px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200">
+              <EnvelopeIcon className="h-6 w-6 text-arena-blue flex-shrink-0" />
               <div>
                 <p className="font-semibold m-0 text-[0.95rem]">Nachrichten</p>
                 <p className="text-arena-muted text-xs m-0">Deine Unterhaltungen</p>
@@ -303,42 +325,72 @@ export default function HomePage() {
 
       {/* Features */}
       <section className="mx-auto max-w-[1100px] px-4 py-12 text-center">
-        <div className="grid grid-cols-2 gap-5 max-sm:grid-cols-1">
-          <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
-            <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
-              <strong>B&uuml;cher &amp; Autoren</strong> &ndash; Pr&auml;sentiere dein Buch mit Cover, Beschreibung und Leseprobe.
-              St&ouml;bere durch B&uuml;cher aller Genres und lerne die Autorinnen und Autoren dahinter&nbsp;kennen.
-            </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="rounded-xl border border-arena-border-light bg-white p-6 text-left hover:border-arena-blue hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex gap-4 items-start">
+            <div className="p-3 bg-arena-blue/5 rounded-xl text-arena-blue flex-shrink-0">
+              <BookOpenIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-arena-blue mb-1">Bücher &amp; Autoren</h3>
+              <p className="m-0 text-sm leading-relaxed text-arena-muted">
+                Präsentiere dein Buch mit Cover, Beschreibung und Leseprobe. Stöbere durch Bücher aller Genres und lerne die Autorinnen und Autoren dahinter kennen.
+              </p>
+            </div>
           </div>
-          <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
-            <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
-              <strong>Treffpunkt &amp; Nachrichten</strong> &ndash; Diskutiere mit der Community &uuml;ber B&uuml;cher,
-              Schreibtipps und mehr. Schreibe anderen Mitgliedern direkte&nbsp;Nachrichten.
-            </p>
+          <div className="rounded-xl border border-arena-border-light bg-white p-6 text-left hover:border-arena-blue hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex gap-4 items-start">
+            <div className="p-3 bg-arena-blue/5 rounded-xl text-arena-blue flex-shrink-0">
+              <ChatBubbleLeftRightIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-arena-blue mb-1">Treffpunkt &amp; Nachrichten</h3>
+              <p className="m-0 text-sm leading-relaxed text-arena-muted">
+                Diskutiere mit der Community über Bücher, Schreibtipps und mehr. Schreibe anderen Mitgliedern direkte Nachrichten.
+              </p>
+            </div>
           </div>
-          <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
-            <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
-              <strong>Social-Media-Tools</strong> &ndash; Erstelle professionelle Beitr&auml;ge und Reels f&uuml;r Instagram,
-              TikTok &amp; Co. &ndash; mit Vorlagen, Musik und Video-Export direkt im&nbsp;Browser.
-            </p>
+          <div className="rounded-xl border border-arena-border-light bg-white p-6 text-left hover:border-arena-blue hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex gap-4 items-start">
+            <div className="p-3 bg-arena-blue/5 rounded-xl text-arena-blue flex-shrink-0">
+              <ShareIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-arena-blue mb-1">Social-Media-Tools</h3>
+              <p className="m-0 text-sm leading-relaxed text-arena-muted">
+                Erstelle professionelle Beiträge und Reels für Instagram, TikTok &amp; Co. – mit Vorlagen, Musik und Video-Export direkt im Browser.
+              </p>
+            </div>
           </div>
-          <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
-            <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
-              <strong>Quiz &amp; Buchempfehlung</strong> &ndash; Teste dein Buchwissen in verschiedenen Spielmodi
-              oder lass dir anhand deiner Vorlieben das perfekte Buch&nbsp;empfehlen.
-            </p>
+          <div className="rounded-xl border border-arena-border-light bg-white p-6 text-left hover:border-arena-blue hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex gap-4 items-start">
+            <div className="p-3 bg-arena-blue/5 rounded-xl text-arena-blue flex-shrink-0">
+              <AcademicCapIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-arena-blue mb-1">Quiz &amp; Buchempfehlung</h3>
+              <p className="m-0 text-sm leading-relaxed text-arena-muted">
+                Teste dein Buchwissen in verschiedenen Spielmodi oder lass dir anhand deiner Vorlieben das perfekte Buch empfehlen.
+              </p>
+            </div>
           </div>
-          <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
-            <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
-              <strong>Sprecher, Testleser &amp; Lektoren</strong> &ndash; Finde Sprecherinnen und Sprecher f&uuml;r dein H&ouml;rbuch,
-              Testleser f&uuml;r fr&uuml;hes Feedback oder professionelle Lektoren f&uuml;r den&nbsp;Feinschliff.
-            </p>
+          <div className="rounded-xl border border-arena-border-light bg-white p-6 text-left hover:border-arena-blue hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex gap-4 items-start">
+            <div className="p-3 bg-arena-blue/5 rounded-xl text-arena-blue flex-shrink-0">
+              <UserGroupIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-arena-blue mb-1">Sprecher, Testleser &amp; Lektoren</h3>
+              <p className="m-0 text-sm leading-relaxed text-arena-muted">
+                Finde Sprecherinnen und Sprecher für dein Hörbuch, Testleser für frühes Feedback oder professionelle Lektoren für den Feinschliff.
+              </p>
+            </div>
           </div>
-          <div className="rounded-xl border border-arena-border-light bg-white px-7 py-5 text-left">
-            <p className="m-0 text-[0.95rem] leading-relaxed text-arena-text">
-              <strong>Tauschb&ouml;rse &amp; Rezensionen</strong> &ndash; Tausche B&uuml;cher mit anderen Mitgliedern
-              und teile Rezensionen, Schnipsel und Leseeindr&uuml;cke mit der&nbsp;Community.
-            </p>
+          <div className="rounded-xl border border-arena-border-light bg-white p-6 text-left hover:border-arena-blue hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex gap-4 items-start">
+            <div className="p-3 bg-arena-blue/5 rounded-xl text-arena-blue flex-shrink-0">
+              <ArrowPathIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-arena-blue mb-1">Tauschbörse &amp; Rezensionen</h3>
+              <p className="m-0 text-sm leading-relaxed text-arena-muted">
+                Tausche Bücher mit anderen Mitgliedern und teile Rezensionen, Schnipsel und Leseeindrücke mit der Community.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -474,7 +526,7 @@ function BuchzirkelBanner() {
           className="flex items-center gap-3"
           style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease" }}
         >
-          <span className="text-2xl flex-shrink-0">📚</span>
+          <BookOpenIcon className="h-6 w-6 text-arena-blue flex-shrink-0" />
           <div className="min-w-0">
             <p className="text-sm font-semibold m-0 text-arena-text truncate">
               {z.veranstalterUsername} lädt ein: {z.titel}

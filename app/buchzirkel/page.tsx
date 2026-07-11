@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
+import { BookOpenIcon } from "@heroicons/react/24/outline";
 
 type Zirkel = {
   _id: string;
@@ -72,10 +73,7 @@ export default function BuchzirkelPage() {
 
   return (
     <main className="top-centered-main">
-      {/* Beta-Hinweis */}
-      <div className="rounded-lg bg-arena-yellow/15 border border-arena-yellow px-4 py-3 text-sm text-arena-blue font-medium mb-3">
-        Dieses Tool wird aktuell noch getestet! Du kannst es gerne schon verwenden und uns rückmelden, was wir noch verbessern sollten!
-      </div>
+
 
       {/* Header */}
       <section className="card">
@@ -322,7 +320,7 @@ function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirk
           {zirkel.coverImageUrl ? (
             <img src={zirkel.coverImageUrl} alt={zirkel.titel} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-2xl">📚</span>
+            <BookOpenIcon className="h-8 w-8 text-arena-muted" />
           )}
         </div>
 

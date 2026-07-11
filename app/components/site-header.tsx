@@ -149,9 +149,9 @@ export default function SiteHeader() {
         </div>
       </div>
 
-      {/* Untere Zeile – nur für eingeloggte (gelb) */}
+      {/* Untere Zeile – nur für eingeloggte (weich/weiß) */}
       {loggedIn && (
-        <div className="border-b border-[var(--color-arena-yellow)]" style={{ background: "var(--color-arena-yellow)", color: "var(--color-arena-blue)" }}>
+        <div className="border-b border-arena-border-light" style={{ background: "#ffffff", color: "var(--color-arena-blue)" }}>
           <div className="site-shell">
             <nav className="hidden sm:flex gap-1.5 items-center py-0.5">
               {loggedInLinks}
@@ -166,12 +166,12 @@ export default function SiteHeader() {
       {menuOpen && (
         <>
           <div className="sm:hidden fixed inset-0 top-[53px] bg-black/30 z-40" onClick={toggle} />
-          <nav className="sm:hidden fixed top-[53px] right-0 bottom-0 w-[280px] max-w-[85vw] z-50 border-l border-arena-border overflow-y-auto flex flex-col gap-0 p-0">
+          <nav className="sm:hidden fixed top-[53px] right-0 bottom-0 w-[280px] max-w-[85vw] z-50 border-l border-arena-border overflow-y-auto flex flex-col gap-0 p-0 bg-white">
             <div className="flex flex-col gap-1.5 p-4" style={{ background: "var(--color-arena-blue)", color: "#fff" }}>
               {publicLinks}
             </div>
             {loggedIn && (
-              <div className="flex flex-col gap-1.5 p-4" style={{ background: "var(--color-arena-yellow)", color: "var(--color-arena-blue)" }}>
+              <div className="flex flex-col gap-1.5 p-4 border-t border-arena-border-light" style={{ background: "#ffffff", color: "var(--color-arena-blue)" }}>
                 {loggedInLinks}
                 {socialMediaLink}
               </div>

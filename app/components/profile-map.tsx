@@ -199,7 +199,7 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
           const location = [user.postalCode, user.city, user.country].filter(Boolean).join(", ");
 
           marker.bindPopup(
-            `<div style="max-width:200px; font-family: sans-serif">
+            `<div style="max-width:200px; font-family: inherit">
               <strong style="font-size:0.95rem">${user.displayName}</strong><br>
               <span style="font-size:0.8rem; color:#666">${location}</span><br>
               <a href="${user.profilePath}" style="font-size:0.85rem; color:#7c3aed">Profil ansehen →</a>

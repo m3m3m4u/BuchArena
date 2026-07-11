@@ -1128,7 +1128,7 @@ function ProfilPageInner() {
         {/* Profil deaktivieren */}
         <div style={{ background: profile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
           <div>
-            <span className="text-sm font-semibold">{profile.deaktiviert ? "🚫 Autorenprofil ist deaktiviert" : "✅ Autorenprofil wird angezeigt"}</span>
+            <span className="text-sm font-semibold">{profile.deaktiviert ? "Autorenprofil ist deaktiviert" : "Autorenprofil wird angezeigt"}</span>
             <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: profile.deaktiviert ? "#dc2626" : "#16a34a" }}>
               {profile.deaktiviert ? "Dein Autorenprofil ist momentan nicht sichtbar." : "Dein Autorenprofil ist in der Übersicht sichtbar."}
             </p>
@@ -1494,7 +1494,7 @@ function ProfilPageInner() {
 
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
-          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <span className="text-sm font-semibold">Eigene Profil-URL</span>
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/autor/{profileSlug || "dein-name"}</strong>
           </p>
@@ -1527,7 +1527,7 @@ function ProfilPageInner() {
         {/* Profil deaktivieren */}
         <div style={{ background: speakerProfile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
           <div>
-            <span className="text-sm font-semibold">{speakerProfile.deaktiviert ? "🚫 Sprecherprofil ist deaktiviert" : "✅ Sprecherprofil wird angezeigt"}</span>
+            <span className="text-sm font-semibold">{speakerProfile.deaktiviert ? "Sprecherprofil ist deaktiviert" : "Sprecherprofil wird angezeigt"}</span>
             <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: speakerProfile.deaktiviert ? "#dc2626" : "#16a34a" }}>
               {speakerProfile.deaktiviert ? "Dein Sprecherprofil ist momentan nicht sichtbar." : "Dein Sprecherprofil ist in der Übersicht sichtbar."}
             </p>
@@ -1839,7 +1839,7 @@ function ProfilPageInner() {
 
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
-          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <span className="text-sm font-semibold">Eigene Profil-URL</span>
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/sprecher/{profileSlug || "dein-name"}</strong>
           </p>
@@ -1872,7 +1872,7 @@ function ProfilPageInner() {
         {/* Profil deaktivieren */}
         <div style={{ background: bloggerProfile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
           <div>
-            <span className="text-sm font-semibold">{bloggerProfile.deaktiviert ? "🚫 Bloggerprofil ist deaktiviert" : "✅ Bloggerprofil wird angezeigt"}</span>
+            <span className="text-sm font-semibold">{bloggerProfile.deaktiviert ? "Bloggerprofil ist deaktiviert" : "Bloggerprofil wird angezeigt"}</span>
             <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: bloggerProfile.deaktiviert ? "#dc2626" : "#16a34a" }}>
               {bloggerProfile.deaktiviert ? "Dein Bloggerprofil ist momentan nicht sichtbar." : "Dein Bloggerprofil ist in der Übersicht sichtbar."}
             </p>
@@ -2164,7 +2164,7 @@ function ProfilPageInner() {
 
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
-          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <span className="text-sm font-semibold">Eigene Profil-URL</span>
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/blogger/{profileSlug || "dein-name"}</strong>
           </p>
@@ -2197,7 +2197,7 @@ function ProfilPageInner() {
         {/* Profil deaktivieren */}
         <div style={{ background: testleserProfile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
           <div>
-            <span className="text-sm font-semibold">{testleserProfile.deaktiviert ? "🚫 (Test)Leser-Profil ist deaktiviert" : "✅ (Test)Leser-Profil wird angezeigt"}</span>
+            <span className="text-sm font-semibold">{testleserProfile.deaktiviert ? "(Test)Leser-Profil ist deaktiviert" : "(Test)Leser-Profil wird angezeigt"}</span>
             <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: testleserProfile.deaktiviert ? "#dc2626" : "#16a34a" }}>
               {testleserProfile.deaktiviert ? "Dein (Test)Leser-Profil ist momentan nicht sichtbar." : "Dein (Test)Leser-Profil ist in der Übersicht sichtbar."}
             </p>
@@ -2269,7 +2269,7 @@ function ProfilPageInner() {
         {/* Verfügbarkeits-Schalter */}
         <div style={{ background: testleserProfile.verfuegbar ? "#f0fdf4" : "#fef2f2", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
           <div>
-            <span className="text-sm font-semibold">{testleserProfile.verfuegbar ? "✅ Freie Kapazitäten: Verfügbar" : "🚫 Freie Kapazitäten: Nicht verfügbar"}</span>
+            <span className="text-sm font-semibold">{testleserProfile.verfuegbar ? "Freie Kapazitäten: Verfügbar" : "Freie Kapazitäten: Nicht verfügbar"}</span>
             <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: testleserProfile.verfuegbar ? "#16a34a" : "#dc2626" }}>
               {testleserProfile.verfuegbar 
                 ? "Du bist aktuell als Testleser verfügbar." 
@@ -2331,7 +2331,7 @@ function ProfilPageInner() {
 
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
-          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <span className="text-sm font-semibold">Eigene Profil-URL</span>
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/testleser/{profileSlug || "dein-name"}</strong>
           </p>
@@ -2364,7 +2364,7 @@ function ProfilPageInner() {
         {/* Profil deaktivieren */}
         <div style={{ background: lektorenProfile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
           <div>
-            <span className="text-sm font-semibold">{lektorenProfile.deaktiviert ? "🚫 Lektorenprofil ist deaktiviert" : "✅ Lektorenprofil wird angezeigt"}</span>
+            <span className="text-sm font-semibold">{lektorenProfile.deaktiviert ? "Lektorenprofil ist deaktiviert" : "Lektorenprofil wird angezeigt"}</span>
             <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: lektorenProfile.deaktiviert ? "#dc2626" : "#16a34a" }}>
               {lektorenProfile.deaktiviert ? "Dein Lektorenprofil ist momentan nicht sichtbar." : "Dein Lektorenprofil ist in der Übersicht sichtbar."}
             </p>
@@ -2479,7 +2479,7 @@ function ProfilPageInner() {
 
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
-          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <span className="text-sm font-semibold">Eigene Profil-URL</span>
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/lektoren/{profileSlug || "dein-name"}</strong>
           </p>
@@ -2512,7 +2512,7 @@ function ProfilPageInner() {
         {/* Profil deaktivieren */}
         <div style={{ background: verlageProfile.deaktiviert ? "#fef2f2" : "#f0fdf4", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
           <div>
-            <span className="text-sm font-semibold">{verlageProfile.deaktiviert ? "🚫 Verlagsprofil ist deaktiviert" : "✅ Verlagsprofil wird angezeigt"}</span>
+            <span className="text-sm font-semibold">{verlageProfile.deaktiviert ? "Verlagsprofil ist deaktiviert" : "Verlagsprofil wird angezeigt"}</span>
             <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: verlageProfile.deaktiviert ? "#dc2626" : "#16a34a" }}>
               {verlageProfile.deaktiviert ? "Dein Verlagsprofil ist momentan nicht sichtbar." : "Dein Verlagsprofil ist in der Übersicht sichtbar."}
             </p>
@@ -2646,7 +2646,7 @@ function ProfilPageInner() {
 
         {/* ── Eigene Profil-URL ── */}
         <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
-          <span className="text-sm font-semibold">🔗 Eigene Profil-URL</span>
+          <span className="text-sm font-semibold">Eigene Profil-URL</span>
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/verlage/{profileSlug || "dein-name"}</strong>
           </p>

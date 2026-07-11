@@ -367,10 +367,10 @@ export default function InfoPage() {
           Meridian Books. Klicke auf eine Frage, um die Antwort aufzuklappen.
         </p>
 
-        <FaqSection title="🏟️ Die BuchArena" items={bucharenaFaq} />
-        <FaqSection title="🎓 LernArena (lernarena.org)" items={lernarenaFaq} />
-        <FaqSection title="📚 Meridian Books (meridianbooks.at)" items={meridianFaq} />
-        <FaqSection title="💬 Allgemeines" items={allgemeinFaq} />
+        <FaqSection title="Die BuchArena" items={bucharenaFaq} />
+        <FaqSection title="LernArena (lernarena.org)" items={lernarenaFaq} />
+        <FaqSection title="Meridian Books (meridianbooks.at)" items={meridianFaq} />
+        <FaqSection title="Allgemeines" items={allgemeinFaq} />
 
         <div className="mt-10 border-t border-gray-200 pt-6">
           <Link href="/" className="font-medium text-arena-link no-underline hover:underline">

@@ -224,12 +224,33 @@ export default function TeilnehmerBereichPage() {
   }
 
   async function react(beitragId: string, emoji: string) {
-    await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ emoji }),
-    });
-    await loadBeitraege(activeTopic);
+    if (!account) return;
+    const myUsername = account.username;
+
+    // Optimistic update
+    setBeitraege((prev) =>
+      prev.map((b) => {
+        if (b._id !== beitragId) return b;
+        const existing = b.reactions.find(
+          (r) => r.username === myUsername && r.emoji === emoji
+        );
+        const reactions = existing
+          ? b.reactions.filter((r) => !(r.username === myUsername && r.emoji === emoji))
+          : [...b.reactions, { username: myUsername, emoji }];
+        return { ...b, reactions };
+      })
+    );
+
+    try {
+      const res = await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emoji }),
+      });
+      if (!res.ok) await loadBeitraege(activeTopic);
+    } catch {
+      await loadBeitraege(activeTopic);
+    }
   }
 
   async function reply(beitragId: string, body: string) {

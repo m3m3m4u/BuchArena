@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { normalizeGenre, GENRE_OPTIONS } from "@/lib/genres";
+import { SparklesIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 
 function mulberry32(seed: number) {
   return () => {
@@ -135,36 +136,39 @@ function BuecherContent() {
   return (
     <main className="top-centered-main">
       {/* Buchtipp-Banner */}
-      <Link href="/buchempfehlung" className="card no-underline text-inherit hover:shadow-md transition-shadow" style={{ background: "linear-gradient(135deg, #e2b714 0%, #d4a90e 100%)", color: "#1a1a2e" }}>
-        <div className="flex items-center gap-4 py-2">
-          <div>
-            <p className="text-lg font-bold m-0">Buchtipp – intelligent nach deinen Vorlieben</p>
-            <p className="text-sm opacity-75 m-0 mt-1">Beantworte ein paar kurze Fragen und erhalte eine persönliche Buchempfehlung aus unserer Bibliothek.</p>
-          </div>
-          <span className="text-2xl ml-auto flex-shrink-0 opacity-60">→</span>
+      <Link href="/buchempfehlung" className="card no-underline text-inherit hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 flex gap-4 items-center bg-gradient-to-br from-[var(--color-arena-yellow)] to-[#ca9a09] border-none text-[var(--color-arena-blue)] p-5">
+        <div className="p-3 bg-white/20 rounded-xl flex-shrink-0">
+          <SparklesIcon className="h-6 w-6 text-arena-blue" />
         </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-lg font-bold m-0">Buchtipp – intelligent nach deinen Vorlieben</p>
+          <p className="text-sm opacity-90 m-0 mt-1">Beantworte ein paar kurze Fragen und erhalte eine persönliche Buchempfehlung aus unserer Bibliothek.</p>
+        </div>
+        <ArrowRightIcon className="h-6 w-6 ml-auto flex-shrink-0 opacity-75 hidden sm:block" />
       </Link>
 
       <section className="card mt-3">
         <h1 className="text-2xl font-bold">Bücher entdecken</h1>
 
-        <label className="grid gap-1 text-[0.95rem]">
-          Suche
-          <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Titel, Autor, Verlag oder ISBN …" />
-        </label>
+        <div className="grid gap-3 w-full">
+          <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+            Suche
+            <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Titel, Autor, Verlag oder ISBN …" />
+          </label>
 
-        <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
-          <label className="grid gap-1 text-[0.95rem]">
-            Genre
-            <select className="input-base" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}>
-              <option value="">Alle</option>
-              {genres.map((g) => <option key={g} value={g}>{g}</option>)}
-            </select>
-          </label>
-          <label className="grid gap-1 text-[0.95rem]">
-            Alter
-            <input className="input-base" type="number" min={0} value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)} placeholder="z. B. 10" />
-          </label>
+          <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
+            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+              Genre
+              <select className="input-base" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}>
+                <option value="">Alle Genres</option>
+                {genres.map((g) => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+              Alter
+              <input className="input-base" type="number" min={0} value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)} placeholder="z. B. 10" />
+            </label>
+          </div>
         </div>
 
         {message && <p className="text-red-700">{message}</p>}
@@ -179,33 +183,35 @@ function BuecherContent() {
             {pagedBooks.map((book, index) => (
               <Link
                 href={`/buch/${book.id}`}
-                className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md h-full"
+                className="block rounded-xl no-underline text-inherit transition-shadow h-full"
                 key={`${book.title}-${book.ownerUsername}-${book.createdAt}-${index}`}
               >
-                <article className="h-full rounded-lg border border-arena-border p-3 hover:border-gray-500">
-                  <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[400px]:grid-cols-1">
-                    <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px]">
+                <article className="h-full rounded-xl border border-arena-border-light bg-white p-4 hover:border-arena-blue hover:shadow-xs transition-all duration-200">
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4 max-[400px]:grid-cols-1">
+                    <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border-light bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px]">
                       {book.coverImageUrl ? (
-                        <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" />
+                        <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded-lg p-1" sizes="100px" />
                       ) : (
                         <span className="px-6 py-10">Kein Cover</span>
                       )}
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="mb-1 mt-0 truncate text-base font-semibold">{book.title}</h3>
-                      {(() => {
-                        const lines: { label: string; value: string }[] = [];
-                        lines.push({ label: "Autor", value: book.authorDisplayName });
-                        if (book.genre) lines.push({ label: "Genre", value: book.genre });
-                        if (book.ageFrom > 0 || book.ageTo > 0) lines.push({ label: "Alter", value: `${book.ageFrom} bis ${book.ageTo}` });
-                        if (book.publicationYear) lines.push({ label: "Erscheinungsjahr", value: String(book.publicationYear) });
-                        if (book.publisher) lines.push({ label: "Verlag", value: book.publisher });
-                        if (book.isbn) lines.push({ label: "ISBN", value: book.isbn });
-                        if (book.pageCount > 0) lines.push({ label: "Seitenanzahl", value: String(book.pageCount) });
-                        return lines.slice(0, 5).map((l) => (
-                          <p key={l.label} className="my-0.5 truncate">{l.label}: {l.value}</p>
-                        ));
-                      })()}
+                    <div className="min-w-0 flex flex-col justify-between h-full">
+                      <h3 className="mb-2 mt-0 truncate text-base font-bold text-arena-blue">{book.title}</h3>
+                      <div className="grid gap-0.5">
+                        {(() => {
+                          const lines: { label: string; value: string }[] = [];
+                          lines.push({ label: "Autor", value: book.authorDisplayName });
+                          if (book.genre) lines.push({ label: "Genre", value: book.genre });
+                          if (book.ageFrom > 0 || book.ageTo > 0) lines.push({ label: "Alter", value: `${book.ageFrom} bis ${book.ageTo} Jahre` });
+                          if (book.publicationYear) lines.push({ label: "Erscheinungsjahr", value: String(book.publicationYear) });
+                          if (book.publisher) lines.push({ label: "Verlag", value: book.publisher });
+                          return lines.slice(0, 4).map((l) => (
+                            <p key={l.label} className="my-0.5 truncate text-xs sm:text-sm text-arena-muted">
+                              <span className="font-semibold text-arena-text">{l.label}:</span> {l.value}
+                            </p>
+                          ));
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </article>

@@ -232,12 +232,37 @@ export default function BuchzirkelDashboardPage() {
   }
 
   async function reactBeitrag(beitragId: string, emoji: string) {
-    await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ emoji }),
-    });
-    await loadBeitraege(activeBeitragTopic);
+    if (!account) return;
+    const myUsername = account.username;
+
+    // Optimistic update: toggle the reaction in local state immediately
+    setBeitraege((prev) =>
+      prev.map((b) => {
+        if (b._id !== beitragId) return b;
+        const existing = b.reactions.find(
+          (r) => r.username === myUsername && r.emoji === emoji
+        );
+        const reactions = existing
+          ? b.reactions.filter((r) => !(r.username === myUsername && r.emoji === emoji))
+          : [...b.reactions, { username: myUsername, emoji }];
+        return { ...b, reactions };
+      })
+    );
+
+    // Sync with server in background
+    try {
+      const res = await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emoji }),
+      });
+      if (!res.ok) {
+        // Revert on error
+        await loadBeitraege(activeBeitragTopic);
+      }
+    } catch {
+      await loadBeitraege(activeBeitragTopic);
+    }
   }
 
   async function replyBeitrag(beitragId: string, body: string) {

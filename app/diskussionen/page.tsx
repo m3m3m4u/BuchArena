@@ -7,6 +7,12 @@ import { getStoredAccount } from "@/lib/client-account";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 import { DISCUSSION_TOPICS, GENRE_TOPICS } from "@/lib/discussions";
 import { CommentToolbar } from "@/app/components/comment-toolbar";
+import {
+  ChatBubbleLeftRightIcon,
+  ChartBarIcon,
+  PlusIcon,
+  DocumentTextIcon
+} from "@heroicons/react/24/outline";
 
 type DiscussionItem = {
   id: string;
@@ -365,7 +371,8 @@ export default function DiskussionenPage() {
             <button className="btn text-sm sm:text-base" onClick={() => setShowPollOverlay(true)}>
               Neue Abstimmung
             </button>
-            <button className="btn text-sm sm:text-base" onClick={() => setShowOverlay(true)}>
+            <button className="btn btn-primary text-sm sm:text-base" onClick={() => setShowOverlay(true)}>
+              <PlusIcon className="h-4 w-4 mr-1.5" />
               Neues Thema
             </button>
           </div>
@@ -498,44 +505,49 @@ export default function DiskussionenPage() {
                     <div
                       key={`d-${d.id}`}
                       onClick={() => router.push(`/diskussionen/${d.id}`)}
-                      className={`rounded-lg border p-3 sm:p-3.5 cursor-pointer transition-colors no-underline text-inherit ${d.unread ? "border-arena-yellow bg-arena-yellow/5 hover:bg-arena-yellow/10" : "border-arena-border hover:border-gray-500"}`}
+                      className={`rounded-xl border p-4 cursor-pointer hover:shadow-xs transition-all duration-200 no-underline text-inherit flex gap-3 items-start ${d.unread ? "border-arena-yellow bg-arena-yellow/5 hover:bg-arena-yellow/10" : "border-arena-border-light bg-white hover:border-gray-500"}`}
                     >
-                      <div className="flex items-start justify-between gap-2 sm:gap-3">
-                        <span className={`text-sm sm:text-base line-clamp-2 min-w-0 flex-1 ${d.unread ? "font-bold" : "font-semibold"}`}>
-                          {d.title}
-                        </span>
-                        <span className="text-xs text-arena-muted whitespace-nowrap flex-shrink-0">
-                          {d.replyCount} {d.replyCount === 1 ? "Antwort" : "Antworten"}
-                        </span>
+                      <div className={`p-2.5 rounded-xl flex-shrink-0 mt-0.5 ${d.unread ? "bg-arena-yellow/20 text-arena-blue" : "bg-arena-blue/5 text-arena-blue"}`}>
+                        <DocumentTextIcon className="h-5 w-5" />
                       </div>
-                      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs sm:text-sm text-arena-muted mt-1">
-                        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                          {d.unread && (
-                            <span className="inline-flex items-center gap-1 text-xs bg-arena-yellow text-arena-blue px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">
-                              <span className="inline-block w-1.5 h-1.5 rounded-full bg-arena-blue/60" />
-                              Neu
-                            </span>
-                          )}
-                          {d.topic && d.topic !== "Allgemein" && (
-                            <span className="text-xs bg-arena-blue/10 text-arena-blue px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">{d.topic}</span>
-                          )}
-                          <span className="truncate">
-                            von {d.displayName || d.authorUsername}{" "}
-                            <RoleBadges username={d.authorUsername} hasProfile={d.hasProfile} hasSpeakerProfile={d.hasSpeakerProfile} hasBloggerProfile={d.hasBloggerProfile} isAdmin={d.isAdmin} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2 sm:gap-3">
+                          <span className={`text-sm sm:text-base line-clamp-2 min-w-0 flex-1 ${d.unread ? "font-bold" : "font-semibold"}`}>
+                            {d.title}
+                          </span>
+                          <span className="text-xs text-arena-muted whitespace-nowrap flex-shrink-0">
+                            {d.replyCount} {d.replyCount === 1 ? "Antwort" : "Antworten"}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="text-xs text-arena-muted">
-                            zuletzt aktiv {timeAgo(d.lastActivityAt)}
-                          </span>
-                          {isAdmin && (
-                            <button
-                              className="text-xs text-red-500 hover:text-red-700 px-1.5 py-0.5 rounded hover:bg-red-50 transition-colors"
-                              onClick={(e) => { e.stopPropagation(); void handleAdminDelete(d.id); }}
-                            >
-                              Löschen
-                            </button>
-                          )}
+                        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs sm:text-sm text-arena-muted mt-1.5">
+                          <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                            {d.unread && (
+                              <span className="inline-flex items-center gap-1 text-xs bg-arena-yellow text-arena-blue px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-arena-blue/60" />
+                                Neu
+                              </span>
+                            )}
+                            {d.topic && d.topic !== "Allgemein" && (
+                              <span className="text-xs bg-arena-blue/10 text-arena-blue px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">{d.topic}</span>
+                            )}
+                            <span className="truncate">
+                              von {d.displayName || d.authorUsername}{" "}
+                              <RoleBadges username={d.authorUsername} hasProfile={d.hasProfile} hasSpeakerProfile={d.hasSpeakerProfile} hasBloggerProfile={d.hasBloggerProfile} isAdmin={d.isAdmin} />
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-xs text-arena-muted">
+                              zuletzt aktiv {timeAgo(d.lastActivityAt)}
+                            </span>
+                            {isAdmin && (
+                              <button
+                                className="text-xs text-red-500 hover:text-red-700 px-1.5 py-0.5 rounded hover:bg-red-50 transition-colors"
+                                onClick={(e) => { e.stopPropagation(); void handleAdminDelete(d.id); }}
+                              >
+                                Löschen
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -547,32 +559,37 @@ export default function DiskussionenPage() {
                   <div
                     key={`p-${poll.id}`}
                     onClick={() => setOpenPollId(poll.id)}
-                    className="rounded-lg border border-arena-border p-3.5 cursor-pointer hover:border-gray-500 transition-colors no-underline text-inherit"
+                    className="rounded-xl border border-arena-border-light bg-white p-4 cursor-pointer hover:border-gray-500 hover:shadow-xs transition-all duration-200 no-underline text-inherit flex gap-3 items-start"
                   >
-                    <div className="flex items-start justify-between gap-3 min-w-0">
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <span className="text-sm sm:text-base font-semibold line-clamp-2 min-w-0">
-                          {poll.question}
-                        </span>
-                        <p className="text-xs text-arena-muted mt-1 m-0">
-                          {poll.options.length} Optionen
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <span className="text-xs text-arena-muted whitespace-nowrap">
-                          {poll.totalVotes} {poll.totalVotes === 1 ? "Stimme" : "Stimmen"}
-                        </span>
-                        <span className="text-xs text-arena-muted whitespace-nowrap">
-                          {poll.replies.length} {poll.replies.length === 1 ? "Kommentar" : "Kommentare"}
-                        </span>
-                      </div>
+                    <div className="p-2.5 bg-blue-50 text-blue-700 rounded-xl flex-shrink-0 mt-0.5">
+                      <ChartBarIcon className="h-5 w-5" />
                     </div>
-                    <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-sm text-arena-muted mt-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">Abstimmung</span>
-                        <span>von {poll.displayName || poll.authorUsername}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3 min-w-0">
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="text-sm sm:text-base font-semibold line-clamp-2 min-w-0">
+                            {poll.question}
+                          </span>
+                          <p className="text-xs text-arena-muted mt-1 m-0">
+                            {poll.options.length} Optionen
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <span className="text-xs text-arena-muted whitespace-nowrap">
+                            {poll.totalVotes} {poll.totalVotes === 1 ? "Stimme" : "Stimmen"}
+                          </span>
+                          <span className="text-xs text-arena-muted whitespace-nowrap">
+                            {poll.replies.length} {poll.replies.length === 1 ? "Kommentar" : "Kommentare"}
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-xs text-arena-muted">{timeAgo(poll.createdAt)}</span>
+                      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-sm text-arena-muted mt-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">Abstimmung</span>
+                          <span>von {poll.displayName || poll.authorUsername}</span>
+                        </div>
+                        <span className="text-xs text-arena-muted">{timeAgo(poll.createdAt)}</span>
+                      </div>
                     </div>
                   </div>
                 );

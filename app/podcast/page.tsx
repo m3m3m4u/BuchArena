@@ -68,23 +68,23 @@ export default function PodcastPage() {
               {pageFolgen.map((folge) => {
                 const ytId = extractYoutubeId(folge.youtubeUrl);
                 return (
-                  <article key={folge._id} className="flex flex-col gap-3">
+                  <article key={folge._id} className="flex flex-col gap-3 rounded-xl border border-arena-border-light bg-white p-4 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200">
                     <Link
                       href={`/podcast/${folge._id}`}
-                      className="text-[1.05rem] font-bold text-arena-blue hover:underline"
+                      className="text-base font-bold text-arena-blue hover:text-arena-blue-light no-underline"
                     >
                       {folge.title}
                     </Link>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-arena-muted m-0">
                       {formatDate(folge.createdAt)} · {folge.views} Aufruf{folge.views !== 1 ? "e" : ""}
                     </p>
                     {folge.text && (
-                      <p className="text-[0.88rem] text-gray-600 leading-relaxed line-clamp-3">{folge.text}</p>
+                      <p className="text-sm text-arena-text leading-relaxed line-clamp-3 m-0">{folge.text}</p>
                     )}
                     {ytId && (
-                      <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                      <div className="relative w-full mt-auto rounded-lg overflow-hidden border border-arena-border-light" style={{ paddingBottom: "56.25%" }}>
                         <iframe
-                          className="absolute inset-0 w-full h-full rounded-lg"
+                          className="absolute inset-0 w-full h-full"
                           src={`https://www.youtube-nocookie.com/embed/${ytId}`}
                           title={folge.title}
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -98,23 +98,19 @@ export default function PodcastPage() {
             </div>
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-2">
+              <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
                 <button
                   onClick={() => setPage((p) => Math.max(0, p - 1))}
                   disabled={page === 0}
-                  className="px-3 py-1 rounded border border-arena-border text-sm disabled:opacity-40 hover:bg-gray-100 transition"
+                  className="btn btn-sm text-sm"
                 >
-                  Zuruck
+                  ← Zurück
                 </button>
                 {Array.from({ length: totalPages }, (_, i) => (
                   <button
                     key={i}
                     onClick={() => setPage(i)}
-                    className={`px-3 py-1 rounded border text-sm transition ${
-                      i === page
-                        ? "bg-arena-blue text-white border-arena-blue"
-                        : "border-arena-border hover:bg-gray-100"
-                    }`}
+                    className={`btn btn-sm text-sm ${i === page ? "btn-primary" : ""}`}
                   >
                     {i + 1}
                   </button>
@@ -122,9 +118,9 @@ export default function PodcastPage() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                   disabled={page === totalPages - 1}
-                  className="px-3 py-1 rounded border border-arena-border text-sm disabled:opacity-40 hover:bg-gray-100 transition"
+                  className="btn btn-sm text-sm"
                 >
-                  Weiter
+                  Weiter →
                 </button>
               </div>
             )}

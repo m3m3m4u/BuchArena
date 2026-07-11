@@ -97,27 +97,29 @@ export default function TestleserPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="m-0">(Test)Leser entdecken</h1>
+          <h1 className="text-2xl font-bold m-0 text-arena-blue">(Test)Leser entdecken</h1>
           <Link href="/wohnort-karte/testleser" className="btn">Suche nach Wohnort</Link>
         </div>
-        <p className="text-arena-muted text-[0.95rem]">
+        <p className="text-arena-muted text-sm mt-1">
           Hier findest du (Test)Leser und ihre bevorzugten Genres.
         </p>
 
-        <label className="grid gap-1 text-[0.95rem]">
-          Suche
-          <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name …" />
-        </label>
-
-        {allGenres.length > 0 && (
-          <label className="grid gap-1 text-[0.95rem]">
-            Genre
-            <select className="input-base" value={filterGenre} onChange={(e) => setFilterGenre(e.target.value)}>
-              <option value="">Alle</option>
-              {allGenres.map((g) => <option key={g} value={g}>{g}</option>)}
-            </select>
+        <div className="grid gap-3 w-full">
+          <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+            Suche
+            <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name …" />
           </label>
-        )}
+
+          {allGenres.length > 0 && (
+            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+              Genre
+              <select className="input-base" value={filterGenre} onChange={(e) => setFilterGenre(e.target.value)}>
+                <option value="">Alle Genres</option>
+                {allGenres.map((g) => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </label>
+          )}
+        </div>
 
         {message && <p className="text-red-700">{message}</p>}
 
@@ -127,14 +129,14 @@ export default function TestleserPage() {
           <p>Noch keine Testleser vorhanden.</p>
         ) : (
           <>
-          <div className="grid gap-3 min-[700px]:grid-cols-2">
+          <div className="grid gap-3 min-[700px]:grid-cols-2 mt-4">
             {paged.map((tl) => (
               <Link
                 key={tl.username}
                 href={`/testleser/${encodeURIComponent(tl.profileSlug || tl.username)}`}
-                className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md h-full"
+                className="block no-underline text-inherit h-full"
               >
-                <article className="grid gap-2.5 rounded-lg border border-arena-border p-3 hover:border-gray-500 h-full">
+                <article className="member-card">
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
                     <div
                       className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
@@ -148,32 +150,32 @@ export default function TestleserPage() {
                       {!tl.profileImageUrl && <span>Kein Bild</span>}
                     </div>
                     <div>
-                      <h2 className="m-0 text-[1.05rem]">
+                      <h2 className="m-0 text-base font-bold text-arena-blue flex items-center gap-2 truncate">
                         {tl.displayName}
                         {tl.verfuegbar && (
-                          <span className="ml-2 inline-block rounded-full bg-green-100 text-green-700 text-[11px] font-medium px-2.5 py-0.5 align-middle">
+                          <span className="inline-block rounded-full bg-green-50 text-green-700 text-[11px] font-medium px-2 py-0.5 border border-green-200 align-middle">
                             Verfügbar
                           </span>
                         )}
                       </h2>
                       {tl.genres.length > 0 ? (
-                        <div className="flex flex-wrap gap-1 mt-1">
+                        <div className="flex flex-wrap gap-1 mt-2">
                           {tl.genres.slice(0, 4).map((g) => (
                             <span
                               key={g}
-                              className="inline-block rounded-full bg-arena-blue/10 text-arena-blue text-[11px] font-medium px-2.5 py-1"
+                              className="inline-block rounded-full bg-arena-blue/5 text-arena-blue text-[11px] font-medium px-2 py-0.5 border border-arena-blue/10"
                             >
                               {g}
                             </span>
                           ))}
                           {tl.genres.length > 4 && (
-                            <span className="text-[11px] text-arena-muted">
+                            <span className="text-[11px] text-arena-muted flex items-center font-medium">
                               +{tl.genres.length - 4}
                             </span>
                           )}
                         </div>
                       ) : (
-                        <p className="text-[11px] text-arena-muted mt-1 m-0">Hat kein bevorzugtes Genre angegeben.</p>
+                        <p className="text-[11px] text-arena-muted mt-1.5 m-0">Hat kein bevorzugtes Genre angegeben.</p>
                       )}
                     </div>
                   </div>

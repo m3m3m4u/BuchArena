@@ -228,7 +228,7 @@ export const STANDARD_TOPICS: BuchzirkelTopic[] = [
   { id: "buchoutfit", titel: "Cover & Buchsatz", typ: "buchoutfit" },
 ];
 
-export const ALLOWED_BEITRAG_EMOJIS = ["👍", "❤️", "😂", "🎉", "🤔", "👎"];
+export const ALLOWED_BEITRAG_EMOJIS = ["👍", "😊", "❤️", "😂", "🎉", "🤔", "👎"];
 
 // ── Gruppen-Chat ───────────────────────────────────────────────────────────
 

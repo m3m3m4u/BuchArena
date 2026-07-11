@@ -4,6 +4,7 @@ import { ProgressiveImage } from "@/app/components/progressive-image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { normalizeGenre } from "@/lib/genres";
+import { HeartIcon } from "@heroicons/react/24/solid";
 import {
   ACCOUNT_CHANGED_EVENT,
   getStoredAccount,
@@ -279,7 +280,7 @@ export default function BookDetailPage({ params }: PageProps) {
                 <h1 className="mb-2.5">{book.title}{author && <span className="block text-base font-normal text-arena-muted mt-1">von {author.name || author.username}</span>}</h1>
                 {empfehlungen.length > 0 && (
                   <div className="mb-3 flex items-center gap-1.5" title={`${empfehlungen.length} Empfehlung${empfehlungen.length !== 1 ? "en" : ""}`}>
-                    <span className="text-xl leading-none">❤️</span>
+                    <HeartIcon className="h-5 w-5 text-red-500 flex-shrink-0" />
                     <span className="text-base font-semibold text-red-600">{empfehlungen.length}</span>
                     <span className="text-sm text-arena-muted">{empfehlungen.length === 1 ? "Empfehlung" : "Empfehlungen"}</span>
                   </div>
