@@ -13,6 +13,9 @@
   --color-arena-text: #333;
   --color-arena-muted: #666;
   --color-arena-link: #2563eb;
+
+  --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-serif), Georgia, serif;
 }
 
 /* ── Global resets ── */
