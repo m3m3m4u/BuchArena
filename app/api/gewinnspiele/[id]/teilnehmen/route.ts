@@ -56,9 +56,14 @@ export async function POST(req: Request, { params }: Params) {
 
   const body = (await req.json()) as TeilnahmePayload;
 
-  // Bei Print-Gewinnspiel: Adresse erforderlich
-  if ((doc.format === "print" || doc.format === "both") && !body.adresse?.trim()) {
-    return NextResponse.json({ message: "Bitte gib eine Versandadresse an." }, { status: 400 });
+  // Bei Print-Gewinnspiel: Name und Adresse erforderlich
+  if (doc.format === "print" || doc.format === "both") {
+    if (!body.name?.trim()) {
+      return NextResponse.json({ message: "Bitte gib deinen Vor- und Nachnamen an." }, { status: 400 });
+    }
+    if (!body.adresse?.trim()) {
+      return NextResponse.json({ message: "Bitte gib eine Versandadresse an." }, { status: 400 });
+    }
   }
 
   const teilnahmeCol = await getGewinnspielteilnahmenCollection();
@@ -69,6 +74,7 @@ export async function POST(req: Request, { params }: Params) {
       username: account.username,
       displayName: getProfileDisplayName(user) || account.username,
       email: user.email,
+      name: body.name?.trim(),
       adresse: body.adresse?.trim(),
       ort: body.ort?.trim(),
       land: body.land?.trim(),

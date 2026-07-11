@@ -45,6 +45,7 @@ export default function GewinnspielDetailPage() {
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [account, setAccount] = useState(getStoredAccount());
   const [showAdresseForm, setShowAdresseForm] = useState(false);
+  const [name, setName] = useState("");
   const [adresse, setAdresse] = useState("");
   const [ort, setOrt] = useState("");
   const [land, setLand] = useState("Deutschland");
@@ -75,12 +76,19 @@ export default function GewinnspielDetailPage() {
       return;
     }
 
+    if (needsAdresse) {
+      if (!name.trim() || !adresse.trim() || !ort.trim()) {
+        setMsg({ text: "Bitte fülle alle Pflichtfelder (*) aus.", ok: false });
+        return;
+      }
+    }
+
     setSubmitting(true);
     setMsg(null);
     const r = await fetch(`/api/gewinnspiele/${id}/teilnehmen`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gewinnspielId: id, adresse, ort, land }),
+      body: JSON.stringify({ gewinnspielId: id, name, adresse, ort, land }),
     });
     const d = await r.json() as { ok?: boolean; message?: string; needsProfile?: boolean };
     if (r.ok) {
@@ -206,8 +214,10 @@ export default function GewinnspielDetailPage() {
           {/* Adress-Formular (für Print) */}
           {showAdresseForm && (
             <div className="mb-4 p-4 border rounded-lg" style={{ borderColor: "var(--color-arena-border)" }}>
-              <p className="text-sm font-medium mb-3">Bitte gib deine Versandadresse an (nur für den Gewinnfall):</p>
+              <p className="text-sm font-medium mb-3">Bitte gib deinen Namen und deine Versandadresse an (nur für den Gewinnfall):</p>
               <div className="flex flex-col gap-2">
+                <input placeholder="Vor- und Nachname *" value={name} onChange={(e) => setName(e.target.value)}
+                  className="border rounded px-3 py-1.5 text-sm" style={{ borderColor: "var(--color-arena-border)" }} />
                 <input placeholder="Straße und Hausnummer *" value={adresse} onChange={(e) => setAdresse(e.target.value)}
                   className="border rounded px-3 py-1.5 text-sm" style={{ borderColor: "var(--color-arena-border)" }} />
                 <input placeholder="Ort / PLZ *" value={ort} onChange={(e) => setOrt(e.target.value)}

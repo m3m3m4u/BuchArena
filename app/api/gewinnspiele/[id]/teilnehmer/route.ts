@@ -38,7 +38,7 @@ export async function GET(req: Request, { params }: Params) {
       angemeldetAt: t.angemeldetAt,
       // Adresse nur für Admin und Autor nach Ziehung
       adresse: isAdmin || (isAutor && doc.status !== "anmeldung")
-        ? [t.adresse, t.ort, t.land].filter(Boolean).join(", ")
+        ? [t.name, t.adresse, t.ort, t.land].filter(Boolean).join(", ")
         : undefined,
     }))
   );

@@ -68,6 +68,8 @@ export type GewinnspielteilnahmeDocument = {
   displayName: string;
   /** E-Mail für Benachrichtigung */
   email: string;
+  /** Name und Vorname des Empfängers */
+  name?: string;
   /** Adresse für Printversand (nur bei Teilnahme an Print-Gewinnspielen) */
   adresse?: string;
   /** Stadt */
@@ -98,6 +100,7 @@ export type AktivierungPayload = {
 
 export type TeilnahmePayload = {
   gewinnspielId: string;
+  name?: string;
   adresse?: string;
   ort?: string;
   land?: string;

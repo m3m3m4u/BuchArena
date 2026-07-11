@@ -77,7 +77,7 @@ export async function POST(req: Request, { params }: Params) {
         gewinnerName: gewinner.displayName,
         gewinnerEmail: gewinner.email,
         gewinnerAdresse: gewinner.adresse
-          ? [gewinner.adresse, gewinner.ort, gewinner.land].filter(Boolean).join(", ")
+          ? [gewinner.name, gewinner.adresse, gewinner.ort, gewinner.land].filter(Boolean).join(", ")
           : undefined,
         verlostAm: now,
         updatedAt: now,
@@ -116,7 +116,7 @@ export async function POST(req: Request, { params }: Params) {
       const kontaktHtml = isEbook
         ? `<p><strong>E-Mail-Adresse für E-Book-Versand:</strong> <a href="mailto:${gewinner.email}">${gewinner.email}</a></p>`
         : gewinner.adresse
-          ? `<p><strong>Versandadresse:</strong><br>${gewinner.adresse}${gewinner.ort ? ", " + gewinner.ort : ""}${gewinner.land ? ", " + gewinner.land : ""}</p>`
+          ? `<p><strong>Versandadresse:</strong><br>${gewinner.name ? gewinner.name + "<br>" : ""}${gewinner.adresse}${gewinner.ort ? ", " + gewinner.ort : ""}${gewinner.land ? ", " + gewinner.land : ""}</p>`
           : `<p><strong>E-Mail:</strong> ${gewinner.email}</p>`;
       const anweisung = isEbook
         ? "Bitte sende das E-Book direkt an die oben genannte E-Mail-Adresse."
