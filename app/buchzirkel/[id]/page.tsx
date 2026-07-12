@@ -29,7 +29,7 @@ function RichText({ text, className }: { text: string; className?: string }) {
 
   const paragraphs = text.split(/\n{2,}/);
   return (
-    <div className={className}>
+    <div className={`${className || ""} rich-text`}>
       {paragraphs.map((para, pi) => {
         const lines = para.split("\n");
         return (

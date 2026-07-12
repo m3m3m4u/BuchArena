@@ -319,7 +319,7 @@ export default function BookDetailPage({ params }: PageProps) {
             {book.description && (
               <div className="mb-5">
                 <h2 className="mb-2 text-lg">Beschreibung</h2>
-                <p className="whitespace-pre-line [overflow-wrap:break-word]">{book.description}</p>
+                <p className="whitespace-pre-line [overflow-wrap:break-word] book-description">{book.description}</p>
               </div>
             )}
 

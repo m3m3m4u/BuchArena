@@ -9,13 +9,13 @@ import "./globals.css";
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-sans",
+  variable: "--font-inter",
 });
 
 const lora = Lora({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-serif",
+  variable: "--font-lora",
 });
 
 export const viewport: Viewport = {
@@ -68,11 +68,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="de">
+    <html lang="de" className={`${inter.variable} ${lora.variable}`}>
       <head>
         <meta name="trustpilot-one-time-domain-verification-id" content="6a722b3e-d4e1-46c9-9e81-06b04541e2b4" />
       </head>
-      <body className={`${inter.variable} ${lora.variable}`}>
+      <body>
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-2 focus:left-2 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-arena-blue">
           Zum Inhalt springen
         </a>

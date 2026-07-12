@@ -14,8 +14,8 @@
   --color-arena-muted: #666;
   --color-arena-link: #2563eb;
 
-  --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
-  --font-serif: var(--font-serif), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
 }
 
 /* ── Global resets ── */
@@ -38,7 +38,7 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   background: var(--color-arena-bg);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -59,7 +59,7 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-serif);
 }
 
 /* ── Tiptap / ProseMirror Editor ── */
@@ -450,3 +450,11 @@ select.input-base {
 
 /* ── Admin table deactivated row ── */
 .row-deactivated td { opacity: 0.55; }
+
+/* ── Editorial Font Styling (Book-Theme) ── */
+.book-description,
+.rich-text,
+.discussion-body,
+.ProseMirror {
+  font-family: var(--font-serif);
+}

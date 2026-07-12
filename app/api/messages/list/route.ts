@@ -157,11 +157,46 @@ export async function GET(request: Request) {
       (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
     ).slice(0, 200);
 
+    // Get status of latest messages of all convDocs in a single batch query
+    const latestMsgIds = convDocs.map((c) => c.latestMessageId);
+    const latestMessages = latestMsgIds.length
+      ? await messages
+          .find(
+            { _id: { $in: latestMsgIds } },
+            {
+              projection: {
+                _id: 1,
+                senderUsername: 1,
+                recipientUsername: 1,
+                deletedBySender: 1,
+                deletedByRecipient: 1,
+              },
+            }
+          )
+          .toArray()
+      : [];
+
+    const latestMessageMap = new Map(
+      latestMessages.map((m) => [m._id.toHexString(), m])
+    );
+
     // Filter out conversations that do not have at least one message visible to `me`
     const visibleConvDocs = (
       await Promise.all(
         convDocs.map(async (c) => {
           const partner = c.userA === me ? c.userB : c.userA;
+
+          // Optimization: Check if the latest message is still visible to `me`
+          const lm = latestMessageMap.get(c.latestMessageId.toHexString());
+          if (lm) {
+            const isMine = lm.senderUsername === me;
+            const isDeleted = isMine ? lm.deletedBySender === true : lm.deletedByRecipient === true;
+            if (!isDeleted) {
+              return c;
+            }
+          }
+
+          // Fallback: If the latest message was deleted, check if ANY message in the conversation is still visible
           const hasVisible = await messages.findOne({
             $or: [
               { senderUsername: me, recipientUsername: partner, deletedBySender: { $ne: true } },
