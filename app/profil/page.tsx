@@ -2625,12 +2625,12 @@ function ProfilPageInner() {
           </div>
         </div>
 
-        <h3 className="text-base font-semibold mt-4 mb-1">Standort</h3>
+        <h3 className="font-sans text-lg font-bold text-arena-blue mt-6 mb-2">Standort</h3>
         <FieldWithVisibility label="Postleitzahl" value={verlageProfile.postalCode?.value ?? ""} visibility={verlageProfile.postalCode?.visibility ?? "internal"} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, postalCode: { ...c.postalCode, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, postalCode: { ...c.postalCode, visibility } }))} />
         <FieldWithVisibility label="Wohnort" value={verlageProfile.city?.value ?? ""} visibility={verlageProfile.city?.visibility ?? "internal"} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, city: { ...c.city, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, city: { ...c.city, visibility } }))} />
         <FieldWithVisibility label="Land" value={verlageProfile.country?.value ?? ""} visibility={verlageProfile.country?.visibility ?? "internal"} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, country: { ...c.country, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, country: { ...c.country, visibility } }))} />
 
-        <h3 className="text-base font-semibold mt-4 mb-1">Webseite / Social Media</h3>
+        <h3 className="font-sans text-lg font-bold text-arena-blue mt-6 mb-2">Webseite / Social Media</h3>
         <FieldWithVisibility label="Website" value={verlageProfile.socialWebsite.value} visibility={verlageProfile.socialWebsite.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialWebsite: { ...c.socialWebsite, visibility } }))} />
         <FieldWithVisibility label="Social Media: Instagram" value={verlageProfile.socialInstagram.value} visibility={verlageProfile.socialInstagram.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialInstagram: { ...c.socialInstagram, visibility } }))} />
         <FieldWithVisibility label="Social Media: Facebook" value={verlageProfile.socialFacebook.value} visibility={verlageProfile.socialFacebook.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialFacebook: { ...c.socialFacebook, visibility } }))} />
@@ -2645,25 +2645,25 @@ function ProfilPageInner() {
         <FieldWithVisibility label="Mailadresse" value={verlageProfile.socialEmail.value} visibility={verlageProfile.socialEmail.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))} />
 
         {/* ── Eigene Profil-URL ── */}
-        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
-          <span className="text-sm font-semibold">Eigene Profil-URL</span>
-          <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
+        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }} className="font-sans">
+          <span className="font-sans text-sm font-bold text-arena-blue">Eigene Profil-URL</span>
+          <p className="font-sans text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/verlage/{profileSlug || "dein-name"}</strong>
           </p>
           <div className="flex gap-2 items-end">
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
-                <span className="text-arena-muted text-sm whitespace-nowrap">/verlage/</span>
-                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <span className="font-sans text-arena-muted text-sm whitespace-nowrap">/verlage/</span>
+                <input type="text" className="input-base font-normal flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
-              {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
-              {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
+              {slugAvailable === true && <span className="font-sans text-xs text-green-600 font-semibold">✓ Verfügbar</span>}
+              {slugAvailable === false && <span className="font-sans text-xs text-red-600 font-semibold">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary font-sans" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 
-        <button type="button" className="btn" onClick={saveVerlageProfile} disabled={isSavingVerlage}>
+        <button type="button" className="btn font-sans" onClick={saveVerlageProfile} disabled={isSavingVerlage}>
           {isSavingVerlage ? "Speichern ..." : "Verlagsprofil speichern"}
         </button>
         </>
@@ -2675,8 +2675,8 @@ function ProfilPageInner() {
 
         {activeTab === "buecher" && (
           <>
-          <h2 className="text-lg font-semibold mt-0">Meine Bücher</h2>
-          <p className="text-arena-muted text-[0.95rem]">
+          <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2 mt-0">Meine Bücher</h2>
+          <p className="font-sans text-arena-muted text-sm mt-1">
             Lege hier deine Bücher an und verwalte sie. Die Bücher werden auf deiner Autorenseite und in der Bücherübersicht angezeigt.
           </p>
           <MeineBuecherTab username={targetUsername} />
@@ -2685,13 +2685,13 @@ function ProfilPageInner() {
 
         {activeTab === "konto" && (
           <>
-          <h2 className="text-lg font-semibold mt-0">Kontoeinstellungen</h2>
+          <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2 mt-0">Kontoeinstellungen</h2>
 
           {/* ── Newsletter Opt-In ── */}
           <div style={{ background: newsletterOptIn ? "#f0fdf4" : "#f7f7fa", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", transition: "background 0.2s" }}>
             <div>
-              <span className="text-sm font-semibold">{newsletterOptIn ? "✅ Newsletter aktiv" : "📬 Newsletter"}</span>
-              <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: newsletterOptIn ? "#16a34a" : "#6b7280" }}>
+              <span className="font-sans text-sm font-bold text-arena-blue">{newsletterOptIn ? "✅ Newsletter aktiv" : "📬 Newsletter"}</span>
+              <p className="font-sans" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: newsletterOptIn ? "#16a34a" : "#6b7280" }}>
                 {newsletterOptIn ? "Du erhältst Neuigkeiten und Updates per E-Mail." : "Erhalte Neuigkeiten und Updates per E-Mail."}
               </p>
             </div>
@@ -2741,10 +2741,10 @@ function ProfilPageInner() {
           </div>
 
           {/* ── E-Mail bei ungelesenen Nachrichten ── */}
-          <div style={{ background: emailOnUnreadMessages ? "#f0fdf4" : "#f7f7fa", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", transition: "background 0.2s" }}>
+          <div style={{ background: emailOnUnreadMessages ? "#f0fdf4" : "#f7f7fa", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", transition: "background 0.2s" }} className="mt-4">
             <div>
-              <span className="text-sm font-semibold">{emailOnUnreadMessages ? "✅ Nachrichteninfo aktiv" : "🔔 Nachrichteninfo"}</span>
-              <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: emailOnUnreadMessages ? "#16a34a" : "#6b7280" }}>
+              <span className="font-sans text-sm font-bold text-arena-blue">{emailOnUnreadMessages ? "✅ Nachrichteninfo aktiv" : "🔔 Nachrichteninfo"}</span>
+              <p className="font-sans" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: emailOnUnreadMessages ? "#16a34a" : "#6b7280" }}>
                 {emailOnUnreadMessages ? "Du wirst per E-Mail benachrichtigt, wenn Nachrichten 24 h ungelesen bleiben." : "Per E-Mail benachrichtigt werden, wenn Nachrichten 24 h ungelesen bleiben."}
               </p>
             </div>
@@ -2794,15 +2794,15 @@ function ProfilPageInner() {
           </div>
 
           {/* ── Angezeigter Name ── */}
-          <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem" }}>
-            <span className="text-sm font-semibold">📝 Angezeigter Name</span>
-            <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
+          <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem" }} className="font-sans mt-4">
+            <span className="font-sans text-sm font-bold text-arena-blue">📝 Angezeigter Name</span>
+            <p className="font-sans text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
               Dieser Name wird bei Nachrichten, Lesezeichen, im Treffpunkt und im Kalender angezeigt.
             </p>
             <div className="flex gap-2 items-end">
               <input
                 type="text"
-                className="input-base flex-1"
+                className="input-base font-normal flex-1"
                 placeholder="z. B. Dein Vorname oder Spitzname"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
@@ -2810,7 +2810,7 @@ function ProfilPageInner() {
               />
               <button
                 type="button"
-                className="btn btn-primary"
+                className="btn btn-primary font-sans"
                 disabled={isSavingDisplayName}
                 onClick={async () => {
                   setIsSavingDisplayName(true);
@@ -2839,18 +2839,18 @@ function ProfilPageInner() {
             </div>
           </div>
 
-          <hr className="my-2" />
+          <hr className="my-4 border-arena-border-light" />
 
-          <p className="text-arena-muted text-[0.95rem]">
+          <p className="font-sans text-arena-muted text-sm my-4">
             Hier kannst du deinen Benutzernamen, deine E-Mail-Adresse oder dein Passwort ändern.
             Zur Bestätigung musst du dein aktuelles Passwort eingeben.
           </p>
 
-          <label className="grid gap-1">
-            <span className="text-sm font-medium">Neuer Benutzername</span>
+          <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-4">
+            <span>Neuer Benutzername</span>
             <input
               type="text"
-              className="input-base"
+              className="input-base font-normal mt-1"
               placeholder={account.username}
               value={accountNewUsername}
               onChange={(e) => setAccountNewUsername(e.target.value)}
@@ -2858,11 +2858,11 @@ function ProfilPageInner() {
             />
           </label>
 
-          <label className="grid gap-1">
-            <span className="text-sm font-medium">Neue E-Mail-Adresse</span>
+          <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-4">
+            <span>Neue E-Mail-Adresse</span>
             <input
               type="email"
-              className="input-base"
+              className="input-base font-normal mt-1"
               placeholder={account.email}
               value={accountNewEmail}
               onChange={(e) => setAccountNewEmail(e.target.value)}
@@ -2870,11 +2870,11 @@ function ProfilPageInner() {
             />
           </label>
 
-          <label className="grid gap-1">
-            <span className="text-sm font-medium">Neues Passwort</span>
+          <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-4">
+            <span>Neues Passwort</span>
             <input
               type="password"
-              className="input-base"
+              className="input-base font-normal mt-1"
               placeholder="Mindestens 8 Zeichen"
               value={accountNewPassword}
               onChange={(e) => setAccountNewPassword(e.target.value)}
@@ -2882,11 +2882,11 @@ function ProfilPageInner() {
             />
           </label>
 
-          <label className="grid gap-1">
-            <span className="text-sm font-medium">Neues Passwort bestätigen</span>
+          <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-4">
+            <span>Neues Passwort bestätigen</span>
             <input
               type="password"
-              className="input-base"
+              className="input-base font-normal mt-1"
               placeholder="Passwort wiederholen"
               value={accountNewPasswordConfirm}
               onChange={(e) => setAccountNewPasswordConfirm(e.target.value)}
@@ -2894,13 +2894,13 @@ function ProfilPageInner() {
             />
           </label>
 
-          <hr className="my-2" />
+          <hr className="my-4 border-arena-border-light" />
 
-          <label className="grid gap-1">
-            <span className="text-sm font-medium">Aktuelles Passwort (Pflichtfeld)</span>
+          <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-4">
+            <span>Aktuelles Passwort (Pflichtfeld)</span>
             <input
               type="password"
-              className="input-base"
+              className="input-base font-normal mt-1"
               placeholder="Zur Bestätigung"
               value={accountCurrentPassword}
               onChange={(e) => setAccountCurrentPassword(e.target.value)}
@@ -2910,7 +2910,7 @@ function ProfilPageInner() {
 
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn btn-primary font-sans mt-4"
             disabled={isSavingAccount || !accountCurrentPassword}
             onClick={async () => {
               setMessage("");
@@ -2990,16 +2990,16 @@ function ProfilPageInner() {
         {/* Konto deaktivieren – nur für den eigenen Account (nicht als Admin für andere) */}
         {account && (!requestedUser || requestedUser === account.username) && account.role !== "SUPERADMIN" && account.role !== "ADMIN" && (
           <div className="mt-6">
-            <hr />
-            <h2>Konto deaktivieren</h2>
-            <p className="text-sm text-arena-muted mb-3">
+            <hr className="my-6 border-arena-border-light" />
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2 mt-0">Konto deaktivieren</h2>
+            <p className="font-sans text-sm text-arena-muted mb-4">
               Wenn du dein Konto deaktivierst, werden dein Profil und deine Bücher
               nicht mehr öffentlich angezeigt. Du kannst dich nicht mehr einloggen,
               bis ein Admin dein Konto wieder aktiviert.
             </p>
             <button
               type="button"
-              className="btn btn-danger"
+              className="btn btn-danger font-sans"
               disabled={isDeactivating}
               onClick={async () => {
                 if (!confirm("Möchtest du dein Konto wirklich deaktivieren?")) {
@@ -3039,7 +3039,7 @@ function ProfilPageInner() {
       {isImageOverlayOpen && (
         <div className="overlay-backdrop" onClick={() => setIsImageOverlayOpen(false)}>
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
-            <h2>Bildeinstellungen</h2>
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2 mt-0">Bildeinstellungen</h2>
 
             <input
               ref={imageFileInputRef}
@@ -3054,10 +3054,10 @@ function ProfilPageInner() {
                 event.currentTarget.value = "";
               }}
             />
-            {isUploadingImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
+            {isUploadingImage && <span className="font-sans text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
 
             <div>
-              <span className="block text-xs mb-1">Sichtbarkeit</span>
+              <span className="font-sans block text-xs font-bold text-arena-blue mb-1.5">Sichtbarkeit</span>
               <VisibilityToggle
                 value={profile.profileImage.visibility}
                 onChange={(visibility) => updateVisibility("profileImage", visibility)}
@@ -3065,7 +3065,7 @@ function ProfilPageInner() {
             </div>
 
             <div
-              className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${profile.profileImage.value ? "cursor-grab" : "cursor-pointer"}`}
+              className={`w-[160px] h-[160px] border border-arena-border-light rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${profile.profileImage.value ? "cursor-grab" : "cursor-pointer"}`}
               style={imagePreviewStyle}
               onPointerDown={onImagePointerDown}
               onPointerMove={onImagePointerMove}
@@ -3075,7 +3075,7 @@ function ProfilPageInner() {
               title={profile.profileImage.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}
             >
               {!profile.profileImage.value && (
-                <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none">
+                <span className="font-sans flex flex-col items-center gap-1 text-arena-muted pointer-events-none">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                   Bild auswählen
                 </span>
@@ -3083,13 +3083,14 @@ function ProfilPageInner() {
             </div>
 
             <div className="grid gap-2.5">
-              <label>
+              <label className="font-sans text-xs font-bold text-arena-blue block text-center">
                 Zoom
                 <input
                   type="range"
                   min={1}
                   max={3}
                   step={0.1}
+                  className="block mt-1 w-full"
                   value={profile.profileImage.crop.zoom}
                   onChange={(event) =>
                     setProfile((current) => ({
@@ -3109,7 +3110,7 @@ function ProfilPageInner() {
 
             <button
               type="button"
-              className="btn"
+              className="btn font-sans"
               onClick={() => setIsImageOverlayOpen(false)}
             >
               Fertig
@@ -3121,7 +3122,7 @@ function ProfilPageInner() {
       {isSpeakerImageOverlayOpen && (
         <div className="overlay-backdrop" onClick={() => setIsSpeakerImageOverlayOpen(false)}>
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
-            <h2>Sprecher-Bildeinstellungen</h2>
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2 mt-0">Sprecher-Bildeinstellungen</h2>
 
             <input
               ref={speakerImageFileInputRef}
@@ -3136,10 +3137,10 @@ function ProfilPageInner() {
                 event.currentTarget.value = "";
               }}
             />
-            {isUploadingSpeakerImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
+            {isUploadingSpeakerImage && <span className="font-sans text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
 
             <div>
-              <span className="block text-xs mb-1">Sichtbarkeit</span>
+              <span className="font-sans block text-xs font-bold text-arena-blue mb-1.5">Sichtbarkeit</span>
               <VisibilityToggle
                 value={speakerProfile.profileImage.visibility}
                 onChange={(visibility) =>
@@ -3152,7 +3153,7 @@ function ProfilPageInner() {
             </div>
 
             <div
-              className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${speakerProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`}
+              className={`w-[160px] h-[160px] border border-arena-border-light rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${speakerProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`}
               style={speakerImagePreviewStyle}
               onPointerDown={onSpeakerImagePointerDown}
               onPointerMove={onSpeakerImagePointerMove}
@@ -3162,7 +3163,7 @@ function ProfilPageInner() {
               title={speakerProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}
             >
               {!speakerProfile.profileImage?.value && (
-                <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none">
+                <span className="font-sans flex flex-col items-center gap-1 text-arena-muted pointer-events-none">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                   Bild auswählen
                 </span>
@@ -3170,13 +3171,14 @@ function ProfilPageInner() {
             </div>
 
             <div className="grid gap-2.5">
-              <label>
+              <label className="font-sans text-xs font-bold text-arena-blue block text-center">
                 Zoom
                 <input
                   type="range"
                   min={1}
                   max={3}
                   step={0.1}
+                  className="block mt-1 w-full"
                   value={speakerProfile.profileImage.crop.zoom}
                   onChange={(event) =>
                     setSpeakerProfile((current) => ({
@@ -3196,7 +3198,7 @@ function ProfilPageInner() {
 
             <button
               type="button"
-              className="btn"
+              className="btn font-sans"
               onClick={() => setIsSpeakerImageOverlayOpen(false)}
             >
               Fertig
@@ -3208,7 +3210,7 @@ function ProfilPageInner() {
       {isBloggerImageOverlayOpen && (
         <div className="overlay-backdrop" onClick={() => setIsBloggerImageOverlayOpen(false)}>
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
-            <h2>Blogger-Bildeinstellungen</h2>
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2 mt-0">Blogger-Bildeinstellungen</h2>
 
             <input
               ref={bloggerImageFileInputRef}
@@ -3223,10 +3225,10 @@ function ProfilPageInner() {
                 event.currentTarget.value = "";
               }}
             />
-            {isUploadingBloggerImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
+            {isUploadingBloggerImage && <span className="font-sans text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
 
             <div>
-              <span className="block text-xs mb-1">Sichtbarkeit</span>
+              <span className="font-sans block text-xs font-bold text-arena-blue mb-1.5">Sichtbarkeit</span>
               <VisibilityToggle
                 value={bloggerProfile.profileImage.visibility}
                 onChange={(visibility) =>
@@ -3239,7 +3241,7 @@ function ProfilPageInner() {
             </div>
 
             <div
-              className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${bloggerProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`}
+              className={`w-[160px] h-[160px] border border-arena-border-light rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${bloggerProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`}
               style={bloggerImagePreviewStyle}
               onPointerDown={onBloggerImagePointerDown}
               onPointerMove={onBloggerImagePointerMove}
@@ -3249,7 +3251,7 @@ function ProfilPageInner() {
               title={bloggerProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}
             >
               {!bloggerProfile.profileImage?.value && (
-                <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none">
+                <span className="font-sans flex flex-col items-center gap-1 text-arena-muted pointer-events-none">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                   Bild auswählen
                 </span>
@@ -3257,13 +3259,14 @@ function ProfilPageInner() {
             </div>
 
             <div className="grid gap-2.5">
-              <label>
+              <label className="font-sans text-xs font-bold text-arena-blue block text-center">
                 Zoom
                 <input
                   type="range"
                   min={1}
                   max={3}
                   step={0.1}
+                  className="block mt-1 w-full"
                   value={bloggerProfile.profileImage.crop.zoom}
                   onChange={(event) =>
                     setBloggerProfile((current) => ({
@@ -3283,7 +3286,7 @@ function ProfilPageInner() {
 
             <button
               type="button"
-              className="btn"
+              className="btn font-sans"
               onClick={() => setIsBloggerImageOverlayOpen(false)}
             >
               Fertig
@@ -3295,23 +3298,23 @@ function ProfilPageInner() {
       {isTestleserImageOverlayOpen && (
         <div className="overlay-backdrop" onClick={() => setIsTestleserImageOverlayOpen(false)}>
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
-            <h2>(Test)Leser-Bildeinstellungen</h2>
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2 mt-0">(Test)Leser-Bildeinstellungen</h2>
             <input ref={testleserImageFileInputRef} type="file" accept="image/*" className="sr-only" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadTestleserImage(selectedFile); event.currentTarget.value = ""; }} />
-            {isUploadingTestleserImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
+            {isUploadingTestleserImage && <span className="font-sans text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
             <div>
-              <span className="block text-xs mb-1">Sichtbarkeit</span>
+              <span className="font-sans block text-xs font-bold text-arena-blue mb-1.5">Sichtbarkeit</span>
               <VisibilityToggle value={testleserProfile.profileImage.visibility} onChange={(visibility) => setTestleserProfile((current) => ({ ...current, profileImage: { ...current.profileImage, visibility } }))} />
             </div>
-            <div className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${testleserProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`} style={testleserImagePreviewStyle} onPointerDown={onTestleserImagePointerDown} onPointerMove={onTestleserImagePointerMove} onPointerUp={onTestleserImagePointerUp} onPointerCancel={onTestleserImagePointerUp} onClick={() => testleserImageFileInputRef.current?.click()} title={testleserProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}>
-              {!testleserProfile.profileImage?.value && <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Bild auswählen</span>}
+            <div className={`w-[160px] h-[160px] border border-arena-border-light rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${testleserProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`} style={testleserImagePreviewStyle} onPointerDown={onTestleserImagePointerDown} onPointerMove={onTestleserImagePointerMove} onPointerUp={onTestleserImagePointerUp} onPointerCancel={onTestleserImagePointerUp} onClick={() => testleserImageFileInputRef.current?.click()} title={testleserProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}>
+              {!testleserProfile.profileImage?.value && <span className="font-sans flex flex-col items-center gap-1 text-arena-muted pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Bild auswählen</span>}
             </div>
             <div className="grid gap-2.5">
-              <label>
+              <label className="font-sans text-xs font-bold text-arena-blue block text-center">
                 Zoom
-                <input type="range" min={1} max={3} step={0.1} value={testleserProfile.profileImage.crop.zoom} onChange={(event) => setTestleserProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, zoom: Number(event.target.value) } } }))} />
+                <input type="range" min={1} max={3} step={0.1} className="block mt-1 w-full" value={testleserProfile.profileImage.crop.zoom} onChange={(event) => setTestleserProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, zoom: Number(event.target.value) } } }))} />
               </label>
             </div>
-            <button type="button" className="btn" onClick={() => setIsTestleserImageOverlayOpen(false)}>Fertig</button>
+            <button type="button" className="btn font-sans" onClick={() => setIsTestleserImageOverlayOpen(false)}>Fertig</button>
           </section>
         </div>
       )}
@@ -3319,23 +3322,23 @@ function ProfilPageInner() {
       {isLektorenImageOverlayOpen && (
         <div className="overlay-backdrop" onClick={() => setIsLektorenImageOverlayOpen(false)}>
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
-            <h2>Lektoren-Bildeinstellungen</h2>
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2 mt-0">Lektoren-Bildeinstellungen</h2>
             <input ref={lektorenImageFileInputRef} type="file" accept="image/*" className="sr-only" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadLektorenImage(selectedFile); event.currentTarget.value = ""; }} />
-            {isUploadingLektorenImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
+            {isUploadingLektorenImage && <span className="font-sans text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
             <div>
-              <span className="block text-xs mb-1">Sichtbarkeit</span>
+              <span className="font-sans block text-xs font-bold text-arena-blue mb-1.5">Sichtbarkeit</span>
               <VisibilityToggle value={lektorenProfile.profileImage.visibility} onChange={(visibility) => setLektorenProfile((current) => ({ ...current, profileImage: { ...current.profileImage, visibility } }))} />
             </div>
-            <div className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${lektorenProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`} style={lektorenImagePreviewStyle} onPointerDown={onLektorenImagePointerDown} onPointerMove={onLektorenImagePointerMove} onPointerUp={onLektorenImagePointerUp} onPointerCancel={onLektorenImagePointerUp} onClick={() => lektorenImageFileInputRef.current?.click()} title={lektorenProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}>
-              {!lektorenProfile.profileImage?.value && <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Bild auswählen</span>}
+            <div className={`w-[160px] h-[160px] border border-arena-border-light rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${lektorenProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`} style={lektorenImagePreviewStyle} onPointerDown={onLektorenImagePointerDown} onPointerMove={onLektorenImagePointerMove} onPointerUp={onLektorenImagePointerUp} onPointerCancel={onLektorenImagePointerUp} onClick={() => lektorenImageFileInputRef.current?.click()} title={lektorenProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}>
+              {!lektorenProfile.profileImage?.value && <span className="font-sans flex flex-col items-center gap-1 text-arena-muted pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Bild auswählen</span>}
             </div>
             <div className="grid gap-2.5">
-              <label>
+              <label className="font-sans text-xs font-bold text-arena-blue block text-center">
                 Zoom
-                <input type="range" min={1} max={3} step={0.1} value={lektorenProfile.profileImage.crop.zoom} onChange={(event) => setLektorenProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, zoom: Number(event.target.value) } } }))} />
+                <input type="range" min={1} max={3} step={0.1} className="block mt-1 w-full" value={lektorenProfile.profileImage.crop.zoom} onChange={(event) => setLektorenProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, zoom: Number(event.target.value) } } }))} />
               </label>
             </div>
-            <button type="button" className="btn" onClick={() => setIsLektorenImageOverlayOpen(false)}>Fertig</button>
+            <button type="button" className="btn font-sans" onClick={() => setIsLektorenImageOverlayOpen(false)}>Fertig</button>
           </section>
         </div>
       )}
@@ -3343,23 +3346,23 @@ function ProfilPageInner() {
       {isVerlageImageOverlayOpen && (
         <div className="overlay-backdrop" onClick={() => setIsVerlageImageOverlayOpen(false)}>
           <section className="w-[min(560px,100%)] bg-white rounded-xl p-4 box-border grid gap-3 justify-items-center" onClick={(event) => event.stopPropagation()}>
-            <h2>Verlags-Bildeinstellungen</h2>
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2 mt-0">Verlags-Bildeinstellungen</h2>
             <input ref={verlageImageFileInputRef} type="file" accept="image/*" className="sr-only" onChange={(event) => { const selectedFile = event.target.files?.[0]; if (selectedFile) void uploadVerlageImage(selectedFile); event.currentTarget.value = ""; }} />
-            {isUploadingVerlageImage && <span className="text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
+            {isUploadingVerlageImage && <span className="font-sans text-xs text-arena-muted">Bild wird hochgeladen ...</span>}
             <div>
-              <span className="block text-xs mb-1">Sichtbarkeit</span>
+              <span className="font-sans block text-xs font-bold text-arena-blue mb-1.5">Sichtbarkeit</span>
               <VisibilityToggle value={verlageProfile.profileImage.visibility} onChange={(visibility) => setVerlageProfile((current) => ({ ...current, profileImage: { ...current.profileImage, visibility } }))} />
             </div>
-            <div className={`w-[160px] h-[160px] border border-arena-border rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${verlageProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`} style={verlageImagePreviewStyle} onPointerDown={onVerlageImagePointerDown} onPointerMove={onVerlageImagePointerMove} onPointerUp={onVerlageImagePointerUp} onPointerCancel={onVerlageImagePointerUp} onClick={() => verlageImageFileInputRef.current?.click()} title={verlageProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}>
-              {!verlageProfile.profileImage?.value && <span className="flex flex-col items-center gap-1 text-arena-muted pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Bild auswählen</span>}
+            <div className={`w-[160px] h-[160px] border border-arena-border-light rounded-full bg-arena-bg overflow-hidden grid place-items-center text-xs text-center p-2 box-border ${verlageProfile.profileImage?.value ? "cursor-grab" : "cursor-pointer"}`} style={verlageImagePreviewStyle} onPointerDown={onVerlageImagePointerDown} onPointerMove={onVerlageImagePointerMove} onPointerUp={onVerlageImagePointerUp} onPointerCancel={onVerlageImagePointerUp} onClick={() => verlageImageFileInputRef.current?.click()} title={verlageProfile.profileImage?.value ? "Ziehen zum Positionieren, Klicken zum Ändern" : "Klicken zum Auswählen"}>
+              {!verlageProfile.profileImage?.value && <span className="font-sans flex flex-col items-center gap-1 text-arena-muted pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Bild auswählen</span>}
             </div>
             <div className="grid gap-2.5">
-              <label>
+              <label className="font-sans text-xs font-bold text-arena-blue block text-center">
                 Zoom
-                <input type="range" min={1} max={3} step={0.1} value={verlageProfile.profileImage.crop.zoom} onChange={(event) => setVerlageProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, zoom: Number(event.target.value) } } }))} />
+                <input type="range" min={1} max={3} step={0.1} className="block mt-1 w-full" value={verlageProfile.profileImage.crop.zoom} onChange={(event) => setVerlageProfile((current) => ({ ...current, profileImage: { ...current.profileImage, crop: { ...current.profileImage.crop, zoom: Number(event.target.value) } } }))} />
               </label>
             </div>
-            <button type="button" className="btn" onClick={() => setIsVerlageImageOverlayOpen(false)}>Fertig</button>
+            <button type="button" className="btn font-sans" onClick={() => setIsVerlageImageOverlayOpen(false)}>Fertig</button>
           </section>
         </div>
       )}
