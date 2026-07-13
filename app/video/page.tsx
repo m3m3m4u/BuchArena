@@ -61,12 +61,12 @@ export default function VideoPage() {
   return (
     <main className="centered-main">
       <section className="card">
-        <h1>{title || "Vorstellungsvideo"}</h1>
+        <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">{title || "Vorstellungsvideo"}</h1>
         {!embedUrl ? (
-          <p>Kein gültiger YouTube-Link vorhanden.</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Kein gültiger YouTube-Link vorhanden.</p>
         ) : !showVideo ? (
           <div
-            className="relative w-full max-w-[900px] overflow-hidden rounded-xl border border-arena-border bg-gray-900 cursor-pointer group"
+            className="relative w-full max-w-[900px] overflow-hidden rounded-xl border border-arena-border-light bg-gray-900 cursor-pointer group mt-4"
             style={{ aspectRatio: "16/9" }}
             onClick={() => setUserAccepted(true)}
           >
@@ -76,16 +76,16 @@ export default function VideoPage() {
             )}
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white text-center px-6">
               <svg className="w-16 h-16 opacity-80" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-              <p className="text-sm max-w-[400px] leading-snug">
+              <p className="font-sans text-sm max-w-[400px] leading-snug">
                 Mit dem Abspielen wird eine Verbindung zu YouTube (Google LLC) hergestellt.
                 Es gelten die{" "}
-                <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline">Datenschutzbestimmungen von Google</a>.
+                <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline font-sans">Datenschutzbestimmungen von Google</a>.
               </p>
-              <span className="btn bg-white text-gray-900 hover:bg-gray-100 text-sm">Video laden</span>
+              <span className="btn bg-white text-gray-900 hover:bg-gray-100 text-sm font-sans">Video laden</span>
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-[900px] overflow-hidden rounded-xl border border-arena-border bg-black" style={{ aspectRatio: "16/9" }}>
+          <div className="w-full max-w-[900px] overflow-hidden rounded-xl border border-arena-border-light bg-black mt-4" style={{ aspectRatio: "16/9" }}>
             <iframe
               className="h-full w-full border-0"
               src={embedUrl}
@@ -96,7 +96,7 @@ export default function VideoPage() {
             />
           </div>
         )}
-        <Link href="/meine-buecher" className="btn">Zurück zu Meine Bücher</Link>
+        <Link href="/meine-buecher" className="btn font-sans mt-4">Zurück zu Meine Bücher</Link>
       </section>
     </main>
   );

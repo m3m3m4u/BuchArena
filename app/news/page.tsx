@@ -30,19 +30,19 @@ export default function NewsPage() {
   return (
     <main className="top-centered-main">
       <section className="card gap-[1.5rem]">
-        <h1 className="text-2xl font-bold">News</h1>
+        <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">News</h1>
 
-        {loading && <p className="text-arena-muted text-sm">Wird geladen …</p>}
+        {loading && <p className="font-sans text-arena-muted text-sm mt-4">Wird geladen …</p>}
 
         {!loading && posts.length === 0 && (
-          <p className="text-arena-muted text-sm">Aktuell gibt es keine News.</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Aktuell gibt es keine News.</p>
         )}
 
         {posts.map((post, i) => (
-          <article key={post._id} className={`grid gap-3 ${i > 0 ? "pt-[1.5rem] border-t border-arena-border" : ""}`}>
+          <article key={post._id} className={`grid gap-3 ${i > 0 ? "pt-[1.5rem] border-t border-arena-border-light" : ""}`}>
             <div>
-              <h2 className="text-lg font-semibold text-arena-blue">{post.title}</h2>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight">{post.title}</h2>
+              <p className="font-sans text-xs text-gray-400 mt-0.5">
                 {new Date(post.createdAt).toLocaleDateString("de-DE", {
                   day: "2-digit",
                   month: "long",
@@ -53,7 +53,7 @@ export default function NewsPage() {
 
             {post.layout === "text-only" && (
               <div
-                className="ProseMirror text-[0.93rem] leading-relaxed text-gray-700"
+                className="ProseMirror font-sans text-[0.93rem] leading-relaxed text-gray-700"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.htmlContent) }}
               />
             )}
@@ -67,7 +67,7 @@ export default function NewsPage() {
                   )}
                 </div>
                 <div
-                  className="flex-1 min-w-0 ProseMirror text-[0.93rem] leading-relaxed text-gray-700"
+                  className="flex-1 min-w-0 ProseMirror font-sans text-[0.93rem] leading-relaxed text-gray-700"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.htmlContent) }}
                 />
               </div>
@@ -76,7 +76,7 @@ export default function NewsPage() {
             {post.layout === "image-right" && (
               <div className="flex gap-5 items-start flex-wrap sm:flex-nowrap">
                 <div
-                  className="flex-1 min-w-0 ProseMirror text-[0.93rem] leading-relaxed text-gray-700"
+                  className="flex-1 min-w-0 ProseMirror font-sans text-[0.93rem] leading-relaxed text-gray-700"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.htmlContent) }}
                 />
                 <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="max-sm:flex-none max-sm:w-full max-sm:max-w-full min-w-0">
