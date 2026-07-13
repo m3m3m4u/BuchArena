@@ -165,14 +165,14 @@ export default function AuthorProfilePage({ params }: PageProps) {
     <main className="top-centered-main">
       <section className="card">
         {isLoading ? (
-          <p>Lade Autorprofil ...</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Lade Autorprofil ...</p>
         ) : message ? (
-          <p className="text-red-700">{message}</p>
+          <p className="font-sans text-red-700 text-sm mt-4">{message}</p>
         ) : (
           <>
             <div className="grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
               <div
-                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
+                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light bg-arena-bg text-xs text-arena-muted"
                 style={profileImageUrl ? {
                   backgroundImage: `url(${profileImageUrl})`,
                   backgroundPosition: `${profileCrop?.x ?? 50}% ${profileCrop?.y ?? 50}%`,
@@ -180,24 +180,24 @@ export default function AuthorProfilePage({ params }: PageProps) {
                   backgroundRepeat: "no-repeat",
                 } : undefined}
               >
-                {!profileImageUrl && <span>Kein Bild</span>}
+                {!profileImageUrl && <span className="font-sans">Kein Bild</span>}
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl">{visibleName}</h1>
-                {visibleBeruf && <p className="mt-0.5 text-sm">{visibleBeruf}</p>}
-                {visibleCityCountry && <p className="mt-0.5">{visibleCityCountry}</p>}
-                {visibleMotto && <p className="mt-0.5 italic">„{visibleMotto}"</p>}
+                <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">{visibleName}</h1>
+                {visibleBeruf && <p className="font-sans mt-1 text-sm text-arena-muted">{visibleBeruf}</p>}
+                {visibleCityCountry && <p className="font-sans mt-1 text-sm text-arena-text">{visibleCityCountry}</p>}
+                {visibleMotto && <p className="font-sans mt-1 text-sm italic text-arena-muted">„{visibleMotto}"</p>}
               </div>
             </div>
 
             {visibleUeberMich && (
-              <div className="mt-4 text-sm whitespace-pre-line"><LinkifyText text={visibleUeberMich} /></div>
+              <div className="font-sans mt-4 text-sm leading-relaxed text-arena-text whitespace-pre-line"><LinkifyText text={visibleUeberMich} /></div>
             )}
 
             {socialLinks.length > 0 && (
               <div className="my-3 flex flex-wrap gap-3">
                 {socialLinks.map((entry) => (
-                  <a key={entry.label} className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3.5 py-2 text-sm font-medium no-underline text-arena-text transition-colors hover:bg-gray-200 min-h-[44px] sm:min-h-0" href={toSocialUrl(entry.label, entry.field.value)} target="_blank" rel="noreferrer" title={entry.label}>
+                  <a key={entry.label} className="font-sans inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3.5 py-2 text-sm font-semibold no-underline text-arena-text transition-colors hover:bg-gray-200 min-h-[44px] sm:min-h-0" href={toSocialUrl(entry.label, entry.field.value)} target="_blank" rel="noreferrer" title={entry.label}>
                     {socialIcons[entry.label]}
                     <span>{entry.label}</span>
                   </a>
@@ -207,7 +207,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
 
             {loggedInUsername && loggedInUsername !== username && (
               <div className="my-3">
-                <button className="btn" onClick={() => { setShowCompose(true); setComposeMsg(""); }}>
+                <button className="btn font-sans" onClick={() => { setShowCompose(true); setComposeMsg(""); }}>
                   Nachricht senden
                 </button>
               </div>
@@ -215,25 +215,25 @@ export default function AuthorProfilePage({ params }: PageProps) {
 
             {showCompose && (
               <div className="overlay-backdrop" onClick={() => setShowCompose(false)}>
-                <div className="card" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
+                <div className="card gap-4" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg m-0">Nachricht an {visibleName}</h2>
-                    <button className="btn btn-sm" onClick={() => setShowCompose(false)}>✕</button>
+                    <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0">Nachricht an {visibleName}</h2>
+                    <button className="btn btn-sm font-sans" onClick={() => setShowCompose(false)}>✕</button>
                   </div>
-                  <label className="block mt-2">
-                    <span className="text-sm font-semibold">Betreff</span>
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
+                    Betreff
                     <input
-                      className="input-base w-full mt-1"
+                      className="input-base font-normal w-full mt-1"
                       value={msgSubject}
                       onChange={(e) => setMsgSubject(e.target.value)}
                       placeholder="Betreff eingeben"
                       maxLength={200}
                     />
                   </label>
-                  <label className="block mt-2">
-                    <span className="text-sm font-semibold">Nachricht</span>
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
+                    Nachricht
                     <textarea
-                      className="input-base w-full mt-1"
+                      className="input-base font-normal w-full mt-1"
                       rows={6}
                       value={msgBody}
                       onChange={(e) => setMsgBody(e.target.value)}
@@ -242,15 +242,15 @@ export default function AuthorProfilePage({ params }: PageProps) {
                     />
                   </label>
                   {composeMsg && (
-                    <p className={`text-sm mt-1 ${composeMsg.includes("gesendet") ? "text-green-700" : "text-red-700"}`}>
+                    <p className={`font-sans text-sm mt-1 ${composeMsg.includes("gesendet") ? "text-green-700" : "text-red-700"}`}>
                       {composeMsg}
                     </p>
                   )}
                   <div className="flex gap-2 mt-3">
-                    <button className="btn btn-primary" disabled={isSending} onClick={handleSendMessage}>
+                    <button className="btn btn-primary font-sans" disabled={isSending} onClick={handleSendMessage}>
                       {isSending ? "Wird gesendet ..." : "Senden"}
                     </button>
-                    <button className="btn" onClick={() => setShowCompose(false)}>Abbrechen</button>
+                    <button className="btn font-sans" onClick={() => setShowCompose(false)}>Abbrechen</button>
                   </div>
                 </div>
               </div>
@@ -258,22 +258,22 @@ export default function AuthorProfilePage({ params }: PageProps) {
 
             <KooperationenAnzeige username={username} isAutor={true} />
 
-            <h2>Bücher von {visibleName}</h2>
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mt-6 mb-3">Bücher von {visibleName}</h2>
             {books.length === 0 ? (
-              <p>Keine öffentlichen Buchinformationen vorhanden.</p>
+              <p className="font-sans text-arena-muted text-sm">Keine öffentlichen Buchinformationen vorhanden.</p>
             ) : (
               <div className="grid gap-3 min-[1200px]:grid-cols-2">
                 {books.map((book, index) => (
-                  <Link href={`/buch/${book.id}`} className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md" key={`${book.title}-${index}`}>
-                    <article className="rounded-lg border border-arena-border p-3 hover:border-gray-500">
+                  <Link href={`/buch/${book.id}`} className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md font-sans" key={`${book.title}-${index}`}>
+                    <article className="card-base p-4 hover:border-arena-blue hover:shadow-xs transition-all duration-200 cursor-pointer h-full">
                       <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[600px]:grid-cols-1">
-                        <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[120px]">
-                          {book.coverImageUrl ? <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" /> : <span>Kein Cover</span>}
+                        <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border-light bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[120px]">
+                          {book.coverImageUrl ? <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" /> : <span className="font-sans">Kein Cover</span>}
                         </div>
                         <div className="min-w-0">
-                          <h3 className="mb-1.5 mt-0">{book.title}</h3>
-                          <p className="my-0.5">{book.genre}</p>
-                          {(book.ageFrom > 0 || book.ageTo > 0) && <p className="my-0.5">Alter: {book.ageFrom} bis {book.ageTo}</p>}
+                          <h3 className="font-sans text-base font-bold text-arena-blue mb-1 mt-0 truncate">{book.title}</h3>
+                          <p className="font-sans text-sm text-arena-muted my-0.5">{book.genre}</p>
+                          {(book.ageFrom > 0 || book.ageTo > 0) && <p className="font-sans text-sm text-arena-muted my-0.5">Alter: {book.ageFrom} bis {book.ageTo}</p>}
                         </div>
                       </div>
                     </article>
@@ -283,7 +283,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
             )}
           </>
         )}
-        <Link href="/autoren" className="btn">Zurück zu Autoren entdecken</Link>
+        <Link href="/autoren" className="btn font-sans mt-6">Zurück zu Autoren entdecken</Link>
       </section>
     </main>
   );

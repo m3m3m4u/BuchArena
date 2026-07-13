@@ -150,14 +150,14 @@ export default function VerlageProfilePage({ params }: PageProps) {
     <main className="top-centered-main">
       <section className="card">
         {isLoading ? (
-          <p>Lade Verlagsprofil ...</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Lade Verlagsprofil ...</p>
         ) : message ? (
-          <p className="text-red-700">{message}</p>
+          <p className="font-sans text-red-700 text-sm mt-4">{message}</p>
         ) : (
           <>
             <div className="grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
               <div
-                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
+                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light bg-arena-bg text-xs text-arena-muted"
                 style={profileImageUrl ? {
                   backgroundImage: `url(${profileImageUrl})`,
                   backgroundPosition: `${profileImageCrop?.x ?? 50}% ${profileImageCrop?.y ?? 50}%`,
@@ -165,45 +165,45 @@ export default function VerlageProfilePage({ params }: PageProps) {
                   backgroundRepeat: "no-repeat",
                 } : undefined}
               >
-                {!profileImageUrl && <span>Kein Bild</span>}
+                {!profileImageUrl && <span className="font-sans">Kein Bild</span>}
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl">{visibleName}</h1>
-                {verlageProfile.motto && <p className="mt-0.5 italic">„{verlageProfile.motto}“</p>}
+                <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">{visibleName}</h1>
+                {verlageProfile.motto && <p className="font-sans mt-1 text-sm italic text-arena-muted">„{verlageProfile.motto}“</p>}
               </div>
             </div>
 
             {verlageProfile.beschreibung && (
               <div className="my-2">
-                <h2 className="text-lg">Beschreibung</h2>
-                <p className="text-sm whitespace-pre-wrap"><LinkifyText text={verlageProfile.beschreibung} /></p>
+                <h2 className="font-sans text-lg font-bold text-arena-blue mb-1.5 mt-3">Beschreibung</h2>
+                <p className="font-sans text-sm text-arena-text leading-relaxed mt-1.5 whitespace-pre-wrap"><LinkifyText text={verlageProfile.beschreibung} /></p>
               </div>
             )}
 
             {verlageProfile.ansprechperson && (
               <div className="my-2">
-                <h2 className="text-lg">Ansprechperson</h2>
-                <p className="text-sm">{verlageProfile.ansprechperson}</p>
+                <h2 className="font-sans text-lg font-bold text-arena-blue mb-1.5 mt-3">Ansprechperson</h2>
+                <p className="font-sans text-sm text-arena-text">{verlageProfile.ansprechperson}</p>
               </div>
             )}
 
             {verlageProfile.voraussetzungen && (
               <div className="my-2">
-                <h2 className="text-lg">Voraussetzungen</h2>
-                <p className="text-sm whitespace-pre-wrap">{verlageProfile.voraussetzungen}</p>
+                <h2 className="font-sans text-lg font-bold text-arena-blue mb-1.5 mt-3">Voraussetzungen</h2>
+                <p className="font-sans text-sm text-arena-text leading-relaxed mt-1.5 whitespace-pre-wrap">{verlageProfile.voraussetzungen}</p>
               </div>
             )}
 
             {kapazitaeten.length > 0 && (
               <div className="my-2">
-                <h2 className="text-lg">Kapazitäten</h2>
-                <div className="flex flex-wrap gap-1.5">
+                <h2 className="font-sans text-lg font-bold text-arena-blue mb-1.5 mt-3">Kapazitäten</h2>
+                <div className="flex flex-wrap gap-1.5 font-sans">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => {
                     const hasCapacity = kapazitaeten.includes(m);
                     return (
                       <span
                         key={m}
-                        className={`inline-block rounded-full text-xs font-medium px-2.5 py-1 ${hasCapacity ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-400"}`}
+                        className={`font-sans inline-block rounded-full text-xs font-semibold px-2.5 py-1 ${hasCapacity ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-400"}`}
                       >
                         {monthLabels[m - 1]}
                       </span>
@@ -216,7 +216,7 @@ export default function VerlageProfilePage({ params }: PageProps) {
             {socialLinks.length > 0 && (
               <div className="my-3 flex flex-wrap gap-3">
                 {socialLinks.map((entry) => (
-                  <a key={entry.label} className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3.5 py-2 text-sm font-medium no-underline text-arena-text transition-colors hover:bg-gray-200 min-h-[44px] sm:min-h-0" href={toSocialUrl(entry.label, entry.field.value)} target="_blank" rel="noreferrer" title={entry.label}>
+                  <a key={entry.label} className="font-sans inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3.5 py-2 text-sm font-semibold no-underline text-arena-text transition-colors hover:bg-gray-200 min-h-[44px] sm:min-h-0" href={toSocialUrl(entry.label, entry.field.value)} target="_blank" rel="noreferrer" title={entry.label}>
                     {socialIcons[entry.label]}
                     <span>{entry.label}</span>
                   </a>
@@ -226,7 +226,7 @@ export default function VerlageProfilePage({ params }: PageProps) {
 
             {loggedInUsername && loggedInUsername !== username && (
               <div className="my-3">
-                <button className="btn" onClick={() => { setShowCompose(true); setComposeMsg(""); }}>
+                <button className="btn font-sans" onClick={() => { setShowCompose(true); setComposeMsg(""); }}>
                   Nachricht senden
                 </button>
               </div>
@@ -234,25 +234,25 @@ export default function VerlageProfilePage({ params }: PageProps) {
 
             {showCompose && (
               <div className="overlay-backdrop" onClick={() => setShowCompose(false)}>
-                <div className="card" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
+                <div className="card gap-4" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg m-0">Nachricht an {visibleName}</h2>
-                    <button className="btn btn-sm" onClick={() => setShowCompose(false)}>✕</button>
+                    <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0">Nachricht an {visibleName}</h2>
+                    <button className="btn btn-sm font-sans" onClick={() => setShowCompose(false)}>✕</button>
                   </div>
-                  <label className="block mt-2">
-                    <span className="text-sm font-semibold">Betreff</span>
-                    <input className="input-base w-full mt-1" value={msgSubject} onChange={(e) => setMsgSubject(e.target.value)} placeholder="Betreff eingeben" maxLength={200} />
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
+                    Betreff
+                    <input className="input-base font-normal w-full mt-1" value={msgSubject} onChange={(e) => setMsgSubject(e.target.value)} placeholder="Betreff eingeben" maxLength={200} />
                   </label>
-                  <label className="block mt-2">
-                    <span className="text-sm font-semibold">Nachricht</span>
-                    <textarea className="input-base w-full mt-1" rows={6} value={msgBody} onChange={(e) => setMsgBody(e.target.value)} placeholder="Deine Nachricht ..." maxLength={5000} />
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
+                    Nachricht
+                    <textarea className="input-base font-normal w-full mt-1" rows={6} value={msgBody} onChange={(e) => setMsgBody(e.target.value)} placeholder="Deine Nachricht ..." maxLength={5000} />
                   </label>
                   {composeMsg && (
-                    <p className={`text-sm mt-1 ${composeMsg.includes("gesendet") ? "text-green-700" : "text-red-700"}`}>{composeMsg}</p>
+                    <p className={`font-sans text-sm mt-1 ${composeMsg.includes("gesendet") ? "text-green-700" : "text-red-700"}`}>{composeMsg}</p>
                   )}
                   <div className="flex gap-2 mt-3">
-                    <button className="btn btn-primary" disabled={isSending} onClick={handleSendMessage}>{isSending ? "Wird gesendet ..." : "Senden"}</button>
-                    <button className="btn" onClick={() => setShowCompose(false)}>Abbrechen</button>
+                    <button className="btn btn-primary font-sans" disabled={isSending} onClick={handleSendMessage}>{isSending ? "Wird gesendet ..." : "Senden"}</button>
+                    <button className="btn font-sans" onClick={() => setShowCompose(false)}>Abbrechen</button>
                   </div>
                 </div>
               </div>
@@ -260,7 +260,7 @@ export default function VerlageProfilePage({ params }: PageProps) {
           </>
         )}
         <KooperationenAnzeige username={username} isAutor={false} />
-        <Link href="/verlage" className="btn">Zurück zu Verlage entdecken</Link>
+        <Link href="/verlage" className="btn font-sans mt-6">Zurück zu Verlage entdecken</Link>
       </section>
     </main>
   );

@@ -267,102 +267,145 @@ export default function BookDetailPage({ params }: PageProps) {
               }}
             />
             <div className="mb-6 grid grid-cols-[200px_1fr] items-start gap-6 max-[600px]:grid-cols-1 max-[600px]:gap-4">
-              <div className="relative w-[200px] aspect-[3/4] overflow-hidden rounded-lg border border-arena-border bg-arena-bg text-sm text-arena-muted max-[600px]:mx-auto max-[600px]:w-[150px] max-[380px]:w-[120px]">
+              <div className="relative w-[200px] aspect-[3/4] overflow-hidden rounded-lg border border-arena-border-light bg-arena-bg text-sm text-arena-muted max-[600px]:mx-auto max-[600px]:w-[150px] max-[380px]:w-[120px]">
                 {book.coverImageUrl ? (
                   <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain" sizes="200px" />
                 ) : (
                   <div className="grid place-items-center" style={{ aspectRatio: "3/4" }}>
-                    <span>Kein Cover</span>
+                    <span className="font-sans">Kein Cover</span>
                   </div>
                 )}
               </div>
               <div>
-                <h1 className="mb-2.5">{book.title}{author && <span className="block text-base font-normal text-arena-muted mt-1">von {author.name || author.username}</span>}</h1>
+                <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight mb-2.5">
+                  {book.title}
+                  {author && (
+                    <span className="block text-base font-normal text-arena-muted mt-1 font-sans">
+                      von {author.name || author.username}
+                    </span>
+                  )}
+                </h1>
                 {empfehlungen.length > 0 && (
                   <div className="mb-3 flex items-center gap-1.5" title={`${empfehlungen.length} Empfehlung${empfehlungen.length !== 1 ? "en" : ""}`}>
                     <HeartIcon className="h-5 w-5 text-red-500 flex-shrink-0" />
-                    <span className="text-base font-semibold text-red-600">{empfehlungen.length}</span>
-                    <span className="text-sm text-arena-muted">{empfehlungen.length === 1 ? "Empfehlung" : "Empfehlungen"}</span>
+                    <span className="text-base font-semibold text-red-600 font-sans">{empfehlungen.length}</span>
+                    <span className="text-sm text-arena-muted font-sans">{empfehlungen.length === 1 ? "Empfehlung" : "Empfehlungen"}</span>
                   </div>
                 )}
                 <div className="mt-2 space-y-1">
                   {author && (
-                    <p className="my-1"><strong>Autor*in:</strong>{" "}
-                      <Link href={`/autor/${author.username}`} className="no-underline text-inherit hover:underline">
+                    <p className="font-sans my-1">
+                      <strong>Autor*in:</strong>{" "}
+                      <Link href={`/autor/${author.username}`} className="font-sans text-arena-link hover:underline">
                         {author.name || author.username}
                       </Link>
                     </p>
                   )}
                   {coAuthors.length > 0 && (
-                    <p className="my-1"><strong>{coAuthors.length === 1 ? "Weitere Autor*in:" : "Weitere Autoren:"}</strong>{" "}
+                    <p className="font-sans my-1">
+                      <strong>{coAuthors.length === 1 ? "Weitere Autor*in:" : "Weitere Autoren:"}</strong>{" "}
                       {coAuthors.map((ca, i) => (
-                        <span key={ca.username}>{i > 0 && ", "}
-                          <Link href={`/autor/${ca.username}`} className="no-underline text-inherit hover:underline">
+                        <span key={ca.username} className="font-sans">
+                          {i > 0 && ", "}
+                          <Link href={`/autor/${ca.username}`} className="font-sans text-arena-link hover:underline">
                             {ca.name || ca.username}
                           </Link>
                         </span>
                       ))}
                     </p>
                   )}
-                  {book.genre && <p className="my-1"><strong>Genre:</strong> {book.genre.split(",").map((g) => normalizeGenre(g.trim())).filter(Boolean).map((g, i) => (<span key={g}>{i > 0 && ", "}<Link href={`/buecher?genre=${encodeURIComponent(g)}`} className="no-underline text-inherit hover:underline">{g}</Link></span>))}</p>}
-                  {(book.ageFrom > 0 || book.ageTo > 0) && <p className="my-1"><strong>Alter:</strong> {book.ageFrom} bis {book.ageTo}</p>}
-                  {book.publicationYear > 0 && <p className="my-1"><strong>Erscheinungsjahr:</strong> {book.publicationYear}</p>}
-                  {book.publisher && <p className="my-1"><strong>Verlag:</strong> {book.publisher}</p>}
-                  {book.isbn && <p className="my-1"><strong>ISBN:</strong> {book.isbn}</p>}
-                  {book.pageCount > 0 && <p className="my-1"><strong>Seitenanzahl:</strong> {book.pageCount}</p>}
+                  {book.genre && (
+                    <p className="font-sans my-1">
+                      <strong>Genre:</strong>{" "}
+                      {book.genre
+                        .split(",")
+                        .map((g) => normalizeGenre(g.trim()))
+                        .filter(Boolean)
+                        .map((g, i) => (
+                          <span key={g} className="font-sans">
+                            {i > 0 && ", "}
+                            <Link href={`/buecher?genre=${encodeURIComponent(g)}`} className="font-sans text-arena-link hover:underline">
+                              {g}
+                            </Link>
+                          </span>
+                        ))}
+                    </p>
+                  )}
+                  {(book.ageFrom > 0 || book.ageTo > 0) && (
+                    <p className="font-sans my-1">
+                      <strong>Alter:</strong> {book.ageFrom} bis {book.ageTo}
+                    </p>
+                  )}
+                  {book.publicationYear > 0 && (
+                    <p className="font-sans my-1">
+                      <strong>Erscheinungsjahr:</strong> {book.publicationYear}
+                    </p>
+                  )}
+                  {book.publisher && (
+                    <p className="font-sans my-1">
+                      <strong>Verlag:</strong> {book.publisher}
+                    </p>
+                  )}
+                  {book.isbn && (
+                    <p className="font-sans my-1">
+                      <strong>ISBN:</strong> {book.isbn}
+                    </p>
+                  )}
+                  {book.pageCount > 0 && (
+                    <p className="font-sans my-1">
+                      <strong>Seitenanzahl:</strong> {book.pageCount}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
 
-
-
             {book.description && (
               <div className="mb-5">
-                <h2 className="mb-2 text-lg">Beschreibung</h2>
-                <p className="whitespace-pre-line [overflow-wrap:break-word] book-description">{book.description}</p>
+                <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2">Beschreibung</h2>
+                <p className="font-sans whitespace-pre-line [overflow-wrap:break-word] book-description text-sm text-arena-text leading-relaxed mt-1.5">{book.description}</p>
               </div>
             )}
 
             {book.buyLinks.length > 0 && (
               <div className="mb-4">
-                <h2 className="mb-2 text-lg">Kaufen</h2>
+                <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2">Kaufen</h2>
                 <div className="flex flex-wrap gap-2">
                   {book.buyLinks.map((link) => {
-                    // Protokoll ergänzen, falls nicht vorhanden
                     let fixedUrl = link;
                     if (!/^https?:\/\//i.test(fixedUrl)) {
                       fixedUrl = "https://" + fixedUrl;
                     }
                     const { label, isAffiliate } = parseBuyLink(fixedUrl);
                     return (
-                      <a key={link} href={fixedUrl} target="_blank" rel={isAffiliate ? "noreferrer sponsored" : "noreferrer"} className="btn inline-flex items-center gap-1.5">
+                      <a key={link} href={fixedUrl} target="_blank" rel={isAffiliate ? "noreferrer sponsored" : "noreferrer"} className="btn inline-flex items-center gap-1.5 font-sans">
                         {label}
-                        {isAffiliate && <span className="text-[0.7rem] opacity-70" title="Affiliate-Link – bei einem Kauf über diesen Link erhalten wir eine kleine Provision">*</span>}
+                        {isAffiliate && <span className="text-[0.7rem] opacity-70 font-sans" title="Affiliate-Link">*</span>}
                       </a>
                     );
                   })}
                 </div>
                 {book.buyLinks.some((l) => parseBuyLink(l).isAffiliate) && (
-                  <p className="text-xs text-arena-muted mt-1.5">* Affiliate-Link – bei einem Kauf über diesen Link erhalten wir eine kleine Provision, ohne Mehrkosten für dich.</p>
+                  <p className="font-sans text-xs text-arena-muted mt-1.5">* Affiliate-Link – bei einem Kauf über diesen Link erhalten wir eine kleine Provision, ohne Mehrkosten für dich.</p>
                 )}
               </div>
             )}
 
             {book.excerpts && book.excerpts.length > 0 && (
               <div className="mb-4">
-                <h2 className="mb-2 text-lg">Textausschnitte</h2>
+                <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2">Textausschnitte</h2>
                 <div className="flex flex-col gap-4">
                   {book.excerpts.map((ex) => (
-                    <div key={ex.id} className="rounded-lg border border-arena-border-light bg-[#fafafa] p-4">
-                      <h3 className="mb-2 mt-0 flex items-center gap-2 text-base">
+                    <div key={ex.id} className="card-base bg-[#fafafa]/50 shadow-none p-4">
+                      <h3 className="font-sans mb-2 mt-0 flex items-center gap-2 text-base font-bold text-arena-blue">
                         {ex.title}
-                        <span className="badge">{ex.type === "mp3" ? "MP3" : "Text"}</span>
+                        <span className="font-sans text-xs text-arena-muted bg-arena-bg px-2 py-0.5 rounded-full border border-arena-border-light/40 font-semibold">{ex.type === "mp3" ? "MP3" : "Text"}</span>
                       </h3>
                       {ex.type === "text" && ex.content && (
-                        <p className="m-0 max-h-[300px] overflow-y-auto whitespace-pre-wrap text-[0.95rem] leading-relaxed text-arena-text">{ex.content}</p>
+                        <p className="font-sans m-0 max-h-[300px] overflow-y-auto whitespace-pre-wrap text-[0.95rem] leading-relaxed text-arena-text">{ex.content}</p>
                       )}
                       {ex.type === "mp3" && ex.fileUrl && (
-                        <audio controls preload="none" className="w-full max-w-[400px]">
+                        <audio controls preload="none" className="w-full max-w-[400px] font-sans">
                           <source src={ex.fileUrl} type="audio/mpeg" />
                           Ihr Browser unterstützt kein Audio.
                         </audio>
@@ -375,10 +418,10 @@ export default function BookDetailPage({ params }: PageProps) {
 
             {book.presentationVideoUrl && (
               <div className="mb-4">
-                <h2 className="mb-2 text-lg">Vorstellungsvideo</h2>
+                <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2">Vorstellungsvideo</h2>
                 <Link
                   href={`/video?url=${encodeURIComponent(book.presentationVideoUrl)}&title=${encodeURIComponent(book.title)}`}
-                  className="btn"
+                  className="btn font-sans"
                 >
                   Video ansehen
                 </Link>
@@ -388,17 +431,22 @@ export default function BookDetailPage({ params }: PageProps) {
             {/* ── Mehr zum Autor ── */}
             {author && (
               <div className="mb-8 border-t border-arena-border-light pt-6">
-                <h2 className="mb-2 text-lg">Mehr zum Autor</h2>
-                <p className="mb-2">Hier kommst du zum Profil von <Link href={`/autor/${author.username}`} className="underline hover:text-arena-accent">{author.name || author.username}</Link>.</p>
+                <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2">Mehr zum Autor</h2>
+                <p className="font-sans mb-2">
+                  Hier kommst du zum Profil von{" "}
+                  <Link href={`/autor/${author.username}`} className="font-sans text-arena-link hover:underline">
+                    {author.name || author.username}
+                  </Link>.
+                </p>
                 {authorBooks.length > 0 && (
                   <div className="mb-2">
-                    <div className="font-semibold mb-1">Weitere Bücher von {author.name || author.username}:</div>
-                    <ul className="list-disc list-inside space-y-1">
+                    <div className="font-sans font-bold mb-1">Weitere Bücher von {author.name || author.username}:</div>
+                    <ul className="list-disc list-inside space-y-1 font-sans">
                       {authorBooks.map((b) => (
-                        <li key={b.id}>
-                          <Link href={`/buch/${b.id}`} className="underline hover:text-arena-accent">{b.title}</Link>
+                        <li key={b.id} className="font-sans">
+                          <Link href={`/buch/${b.id}`} className="font-sans text-arena-link hover:underline">{b.title}</Link>
                           {b.genre && (
-                            <span className="text-arena-muted text-sm"> &ndash; {b.genre.split(',').map((g: string) => normalizeGenre(g.trim())).filter(Boolean).join(', ')}</span>
+                            <span className="font-sans text-arena-muted text-sm"> &ndash; {b.genre.split(',').map((g: string) => normalizeGenre(g.trim())).filter(Boolean).join(', ')}</span>
                           )}
                         </li>
                       ))}
@@ -409,12 +457,12 @@ export default function BookDetailPage({ params }: PageProps) {
             )}
             {/* ── Empfehlungen ── */}
             <div className="mt-8 border-t border-arena-border-light pt-6">
-              <h2 className="mb-3 text-lg">Empfehlungen</h2>
+              <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-3">Empfehlungen</h2>
 
               {account && !alreadyRecommended && (
-                <div className="mb-4 rounded-lg border border-arena-border-light bg-[#fafafa] p-4">
+                <div className="card-base bg-[#fafafa]/50 shadow-none p-4 mb-4">
                   <textarea
-                    className="input w-full"
+                    className="input-base font-normal w-full"
                     rows={3}
                     maxLength={2000}
                     placeholder="Schreibe eine Empfehlung für dieses Buch …"
@@ -423,25 +471,25 @@ export default function BookDetailPage({ params }: PageProps) {
                   />
                   <div className="mt-2 flex items-center gap-3">
                     <button
-                      className="btn"
+                      className="btn font-sans"
                       disabled={empBusy || !empText.trim()}
                       onClick={submitEmpfehlung}
                     >
                       {empBusy ? "Wird gespeichert …" : "Empfehlung abschicken"}
                     </button>
-                    {empMsg && <span className="text-sm text-arena-muted">{empMsg}</span>}
+                    {empMsg && <span className="font-sans text-sm text-arena-muted">{empMsg}</span>}
                   </div>
-                  <p className="mt-1 text-xs text-arena-muted">+1 Lesezeichen für dich und den Autor (max. 3 pro Tag)</p>
+                  <p className="font-sans mt-1.5 text-xs text-arena-muted">+1 Lesezeichen für dich und den Autor (max. 3 pro Tag)</p>
                 </div>
               )}
 
               {account && alreadyRecommended && !empMsg && (
-                <p className="mb-4 text-sm text-arena-muted">Du hast dieses Buch bereits empfohlen.</p>
+                <p className="font-sans mb-4 text-sm text-arena-muted">Du hast dieses Buch bereits empfohlen.</p>
               )}
-              {empMsg && !empBusy && <p className="mb-4 text-sm text-arena-muted">{empMsg}</p>}
+              {empMsg && !empBusy && <p className="font-sans mb-4 text-sm text-arena-muted">{empMsg}</p>}
 
               {empfehlungen.length === 0 ? (
-                <p className="text-sm text-arena-muted">Noch keine Empfehlungen. {!account && "Melde dich an, um die erste zu schreiben!"}</p>
+                <p className="font-sans text-sm text-arena-muted">Noch keine Empfehlungen. {!account && "Melde dich an, um die erste zu schreiben!"}</p>
               ) : (
                 <div className="flex flex-col gap-3">
                   {empfehlungen.map((e) => {
@@ -450,17 +498,17 @@ export default function BookDetailPage({ params }: PageProps) {
                     const isEditing = editingId === e.id;
 
                     return (
-                      <div key={e.id} className="rounded-lg border border-arena-border-light bg-[#fafafa] p-4">
+                      <div key={e.id} className="card-base bg-[#fafafa]/50 shadow-none p-4">
                         <div className="mb-1 flex items-baseline gap-2 flex-wrap">
-                          <span className="font-medium">{e.displayName}</span>
-                          <span className="text-xs text-arena-muted">
+                          <span className="font-sans font-bold text-arena-blue">{e.displayName}</span>
+                          <span className="font-sans text-xs text-arena-muted">
                             {new Date(e.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
                           </span>
                           {account && (isOwn || canDelete) && !isEditing && (
-                            <span className="ml-auto flex gap-2 text-xs">
+                            <span className="ml-auto flex gap-2 text-xs font-sans">
                               {isOwn && (
                                 <button
-                                  className="text-arena-muted hover:text-arena-text underline"
+                                  className="font-sans text-arena-muted hover:text-arena-text underline"
                                   onClick={() => { setEditingId(e.id); setEditText(e.text); }}
                                 >
                                   Bearbeiten
@@ -468,7 +516,7 @@ export default function BookDetailPage({ params }: PageProps) {
                               )}
                               {canDelete && (
                                 <button
-                                  className="text-red-600 hover:text-red-800 underline"
+                                  className="font-sans text-red-600 hover:text-red-800 underline"
                                   onClick={() => deleteEmpfehlung(e.id)}
                                 >
                                   Löschen
@@ -480,23 +528,23 @@ export default function BookDetailPage({ params }: PageProps) {
                         {isEditing ? (
                           <div>
                             <textarea
-                              className="input w-full"
+                              className="input-base font-normal w-full"
                               rows={3}
                               maxLength={2000}
                               value={editText}
                               onChange={(ev) => setEditText(ev.target.value)}
                             />
                             <div className="mt-2 flex gap-2">
-                              <button className="btn" disabled={empBusy || !editText.trim()} onClick={() => saveEdit(e.id)}>
+                              <button className="btn font-sans" disabled={empBusy || !editText.trim()} onClick={() => saveEdit(e.id)}>
                                 {empBusy ? "Speichern …" : "Speichern"}
                               </button>
-                              <button className="btn" onClick={() => { setEditingId(null); setEditText(""); }}>
+                              <button className="btn font-sans" onClick={() => { setEditingId(null); setEditText(""); }}>
                                 Abbrechen
                               </button>
                             </div>
                           </div>
                         ) : (
-                          <p className="m-0 whitespace-pre-line text-[0.95rem] [overflow-wrap:break-word]">{e.text}</p>
+                          <p className="font-sans m-0 whitespace-pre-line text-[0.95rem] [overflow-wrap:break-word] text-arena-text leading-relaxed mt-1.5">{e.text}</p>
                         )}
                       </div>
                     );
@@ -506,9 +554,9 @@ export default function BookDetailPage({ params }: PageProps) {
             </div>
           </>
         ) : (
-          <p>Buch nicht gefunden.</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Buch nicht gefunden.</p>
         )}
-        <Link href="/buecher" className="btn mt-6">Zurück zu Bücher entdecken</Link>
+        <Link href="/buecher" className="btn font-sans mt-6">Zurück zu Bücher entdecken</Link>
       </section>
     </main>
   );

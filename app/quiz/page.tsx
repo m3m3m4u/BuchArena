@@ -195,22 +195,22 @@ export default function QuizPage() {
     return (
       <main className="top-centered-main">
         <section className="card">
-          <h1 className="text-2xl font-bold">Quiz</h1>
-          {error && <p className="text-red-700">{error}</p>}
-          {!data && !error && <p className="text-arena-muted">Lade Quiz-Daten …</p>}
+          <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Quiz</h1>
+          {error && <p className="font-sans text-red-700 text-sm mt-4">{error}</p>}
+          {!data && !error && <p className="font-sans text-arena-muted text-sm mt-4">Lade Quiz-Daten …</p>}
           {data && (
-            <div className="flex flex-col gap-3 mt-2">
+            <div className="flex flex-col gap-3 mt-4">
               {(Object.keys(LABELS) as QuizType[]).map((type) => {
                 const disabled = type === "multipleChoice" && !mcData;
                 return (
                   <button
                     key={type}
-                    className={`btn btn-primary w-full text-left flex flex-col items-start gap-0.5 py-3 ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`card-base p-4 text-left flex flex-col items-start gap-1 hover:border-arena-blue hover:shadow-xs transition-all duration-200 ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                     onClick={() => !disabled && startRound(type)}
                     disabled={disabled}
                   >
-                    <span className="font-bold text-base">{LABELS[type]}</span>
-                    <span className="text-sm opacity-80 font-normal">{DESCRIPTIONS[type]}</span>
+                    <span className="font-sans font-bold text-arena-blue text-base">{LABELS[type]}</span>
+                    <span className="font-sans text-sm text-arena-muted font-normal">{DESCRIPTIONS[type]}</span>
                   </button>
                 );
               })}
@@ -229,15 +229,15 @@ export default function QuizPage() {
       return (
         <main className="top-centered-main">
           <section className="card">
-            <h1 className="text-2xl font-bold">Ergebnis</h1>
-            <div className="rounded-lg bg-arena-bg border border-arena-border-light p-5 text-center mt-2">
-              <p className="text-3xl font-bold m-0">
+            <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Ergebnis</h1>
+            <div className="rounded-lg bg-arena-bg border border-arena-border-light p-5 text-center mt-3 font-sans">
+              <p className="font-sans text-3xl font-bold m-0 text-arena-blue">
                 {mcScore} Punkte
               </p>
-              <p className="text-arena-muted text-sm mt-1 m-0">
+              <p className="font-sans text-arena-muted text-sm mt-1.5 m-0">
                 {mcCount} Fragen beantwortet
               </p>
-              <p className="text-arena-muted text-sm mt-1 m-0">
+              <p className="font-sans text-arena-muted text-sm mt-1 m-0">
                 {mcScore >= 20
                   ? "Unglaublich!"
                   : mcScore >= 10
@@ -249,22 +249,22 @@ export default function QuizPage() {
             </div>
 
             {username && !scoreSaved && (
-              <button className="btn btn-primary mt-3 w-full" onClick={saveHighscore}>
+              <button className="btn btn-primary mt-3 w-full font-sans" onClick={saveHighscore}>
                 Highscore speichern
               </button>
             )}
-            {scoreSaved && <p className="text-green-700 text-sm mt-2">✓ Highscore gespeichert!</p>}
+            {scoreSaved && <p className="font-sans text-green-700 text-sm mt-2">✓ Highscore gespeichert!</p>}
             {!username && (
-              <p className="text-arena-muted text-sm mt-2">Melde dich an, um deinen Highscore zu speichern.</p>
+              <p className="font-sans text-arena-muted text-sm mt-2">Melde dich an, um deinen Highscore zu speichern.</p>
             )}
 
             {/* Highscore-Tabelle */}
             <div className="mt-4">
               <button
-                className="btn btn-sm"
+                className="btn btn-sm font-sans"
                 onClick={() => { setShowHighscores((v) => !v); if (!showHighscores) loadHighscores(); }}
               >
-                <span className="flex items-center gap-1.5 justify-center">
+                <span className="flex items-center gap-1.5 justify-center font-sans">
                   <TrophyOutlineIcon className="h-4 w-4" />
                   <span>{showHighscores ? "Highscores ausblenden" : "Highscores anzeigen"}</span>
                 </span>
@@ -273,23 +273,23 @@ export default function QuizPage() {
               {showHighscores && (
                 <div className="mt-3">
                   {highscores.length === 0 ? (
-                    <p className="text-arena-muted text-sm">Noch keine Highscores vorhanden.</p>
+                    <p className="font-sans text-arena-muted text-sm">Noch keine Highscores vorhanden.</p>
                   ) : (
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 font-sans">
                       {highscores.map((hs, i) => (
                         <div
                           key={`${hs.username}-${hs.date}-${i}`}
-                          className={`flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-2 ${
+                          className={`flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-2 font-sans ${
                             i === 0 ? "bg-yellow-50 border-yellow-300" : i === 1 ? "bg-gray-50" : i === 2 ? "bg-orange-50" : "bg-white"
                           }`}
                         >
-                          <span className="font-bold text-lg w-8 text-center flex-shrink-0">
+                          <span className="font-sans font-bold text-lg w-8 text-center flex-shrink-0">
                             {i === 0 ? <TrophyIcon className="h-5 w-5 text-amber-500 mx-auto" /> : i === 1 ? <TrophyIcon className="h-5 w-5 text-slate-400 mx-auto" /> : i === 2 ? <TrophyIcon className="h-5 w-5 text-amber-700 mx-auto" /> : `${i + 1}.`}
                           </span>
-                          <span className="flex-1 font-medium truncate">{hs.username}</span>
-                          <span className="font-bold text-arena-blue">{hs.score} Pkt.</span>
-                          <span className="text-xs text-arena-muted">({hs.total} Fragen)</span>
-                          <span className="text-xs text-arena-muted flex-shrink-0">
+                          <span className="font-sans flex-1 font-medium truncate">{hs.username}</span>
+                          <span className="font-sans font-bold text-arena-blue">{hs.score} Pkt.</span>
+                          <span className="font-sans text-xs text-arena-muted">({hs.total} Fragen)</span>
+                          <span className="font-sans text-xs text-arena-muted flex-shrink-0">
                             {new Date(hs.date).toLocaleDateString("de-AT")}
                           </span>
                         </div>
@@ -300,11 +300,11 @@ export default function QuizPage() {
               )}
             </div>
 
-            <div className="flex gap-2 mt-4 pt-3 border-t border-arena-border">
-              <button className="btn btn-primary" onClick={() => startRound("multipleChoice")}>
+            <div className="flex gap-2 mt-4 pt-3 border-t border-arena-border-light">
+              <button className="btn btn-primary font-sans" onClick={() => startRound("multipleChoice")}>
                 Nochmal spielen
               </button>
-              <button className="btn" onClick={() => setMode(null)}>
+              <button className="btn font-sans" onClick={() => setMode(null)}>
                 Anderes Quiz
               </button>
             </div>

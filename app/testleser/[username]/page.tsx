@@ -165,14 +165,14 @@ export default function TestleserProfilePage({ params }: PageProps) {
     <main className="top-centered-main">
       <section className="card">
         {isLoading ? (
-          <p>Lade Testleserprofil ...</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Lade Testleserprofil ...</p>
         ) : message ? (
-          <p className="text-red-700">{message}</p>
+          <p className="font-sans text-red-700 text-sm mt-4">{message}</p>
         ) : (
           <>
             <div className="grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
               <div
-                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
+                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light bg-arena-bg text-xs text-arena-muted"
                 style={profileImageUrl ? {
                   backgroundImage: `url(${profileImageUrl})`,
                   backgroundPosition: `${profileImageCrop?.x ?? 50}% ${profileImageCrop?.y ?? 50}%`,
@@ -180,13 +180,13 @@ export default function TestleserProfilePage({ params }: PageProps) {
                   backgroundRepeat: "no-repeat",
                 } : undefined}
               >
-                {!profileImageUrl && <span>Kein Bild</span>}
+                {!profileImageUrl && <span className="font-sans">Kein Bild</span>}
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl">
+                <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">
                   {visibleName}
                   {testleserProfile.verfuegbar && (
-                    <span className="ml-2 inline-block rounded-full bg-green-100 text-green-700 text-xs font-medium px-2.5 py-1 align-middle">
+                    <span className="font-sans ml-2 inline-block rounded-full bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-1 align-middle">
                       Verfügbar
                     </span>
                   )}
@@ -196,10 +196,10 @@ export default function TestleserProfilePage({ params }: PageProps) {
 
             {genres.length > 0 && (
               <div className="my-2">
-                <h2 className="text-lg">Genres</h2>
-                <div className="flex flex-wrap gap-1.5">
+                <h2 className="font-sans text-lg font-bold text-arena-blue mb-1.5 mt-3">Genres</h2>
+                <div className="flex flex-wrap gap-1.5 font-sans">
                   {genres.map((g) => (
-                    <span key={g} className="inline-block rounded-full bg-arena-blue text-white text-xs font-medium px-2.5 py-1">{g}</span>
+                    <span key={g} className="font-sans inline-block rounded-full bg-arena-blue text-white text-xs font-semibold px-2.5 py-1">{g}</span>
                   ))}
                 </div>
               </div>
@@ -207,21 +207,21 @@ export default function TestleserProfilePage({ params }: PageProps) {
 
             {testleserProfile.zuMir && (
               <div className="my-2">
-                <h2 className="text-lg">Zu mir</h2>
-                <p className="text-sm whitespace-pre-wrap"><LinkifyText text={testleserProfile.zuMir} /></p>
+                <h2 className="font-sans text-lg font-bold text-arena-blue mb-1.5 mt-3">Zu mir</h2>
+                <p className="font-sans text-sm text-arena-text leading-relaxed mt-1.5 whitespace-pre-wrap"><LinkifyText text={testleserProfile.zuMir} /></p>
               </div>
             )}
 
             {testleserProfile.rezensionsLinks && (
               <div className="my-2">
-                <h2 className="text-lg">Rezensionen</h2>
-                <ul className="list-none p-0 m-0 flex flex-col gap-1">
+                <h2 className="font-sans text-lg font-bold text-arena-blue mb-1.5 mt-3">Rezensionen</h2>
+                <ul className="list-none p-0 m-0 flex flex-col gap-1 font-sans">
                   {testleserProfile.rezensionsLinks.split("\n").filter(Boolean).map((url, i) => {
                     let host = url;
                     try { host = new URL(url).hostname.replace(/^www\./, ""); } catch { /* keep raw */ }
                     return (
-                      <li key={i}>
-                        <a href={url} target="_blank" rel="noreferrer noopener" className="text-sm text-arena-blue hover:underline break-all">
+                      <li key={i} className="font-sans">
+                        <a href={url} target="_blank" rel="noreferrer noopener" className="font-sans text-sm text-arena-link hover:underline break-all">
                           🔗 {host}
                         </a>
                       </li>
@@ -233,32 +233,32 @@ export default function TestleserProfilePage({ params }: PageProps) {
 
             {buchzirkelBewertungen.length > 0 && (
               <div className="my-4">
-                <h2 className="text-lg">Buchzirkel-Bewertungen</h2>
+                <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mt-6 mb-3">Buchzirkel-Bewertungen</h2>
                 <div className="flex flex-col gap-3">
                   {buchzirkelBewertungen.map((b) => (
-                    <div key={b.buchzirkelId} className="rounded-lg border border-arena-border-light bg-[#fafafa] p-4">
-                      <div className="mb-1 flex flex-wrap items-baseline gap-2">
-                        <span className="font-medium">{b.buchzirkelTitel}</span>
-                        <span className="text-arena-muted text-xs">
+                    <div key={b.buchzirkelId} className="card-base bg-[#fafafa]/50 shadow-none p-4">
+                      <div className="mb-1 flex flex-wrap items-baseline gap-2 font-sans">
+                        <span className="font-sans font-bold text-arena-blue">{b.buchzirkelTitel}</span>
+                        <span className="font-sans text-arena-muted text-xs">
                           von{" "}
-                          <a href={`/autor/${encodeURIComponent(b.veranstalterUsername)}`} className="text-arena-blue hover:underline">
+                          <a href={`/autor/${encodeURIComponent(b.veranstalterUsername)}`} className="font-sans text-arena-link hover:underline">
                             {b.veranstalterUsername}
                           </a>
                         </span>
-                        <span className="ml-auto text-xs text-arena-muted">
+                        <span className="font-sans ml-auto text-xs text-arena-muted">
                           {new Date(b.bewertetAm).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
                         </span>
                       </div>
-                      <div className="mb-1 flex gap-0.5 text-amber-400">
+                      <div className="mb-1 flex gap-0.5 text-amber-400 font-sans">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <span key={i} className={i < b.sterne ? "text-amber-400" : "text-gray-300"}>
+                          <span key={i} className={i < b.sterne ? "text-amber-400 font-sans" : "text-gray-300 font-sans"}>
                             ★
                           </span>
                         ))}
-                        <span className="ml-1.5 text-sm text-arena-muted">{b.sterne}/5</span>
+                        <span className="font-sans ml-1.5 text-sm text-arena-muted">{b.sterne}/5</span>
                       </div>
                       {b.kommentar && (
-                        <p className="mt-1 text-sm text-arena-text whitespace-pre-wrap">{b.kommentar}</p>
+                        <p className="font-sans mt-1 text-sm text-arena-text whitespace-pre-wrap leading-relaxed">{b.kommentar}</p>
                       )}
                     </div>
                   ))}
@@ -269,7 +269,7 @@ export default function TestleserProfilePage({ params }: PageProps) {
             {socialLinks.length > 0 && (
               <div className="my-3 flex flex-wrap gap-3">
                 {socialLinks.map((entry) => (
-                  <a key={entry.label} className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3.5 py-2 text-sm font-medium no-underline text-arena-text transition-colors hover:bg-gray-200 min-h-[44px] sm:min-h-0" href={toSocialUrl(entry.label, entry.field.value)} target="_blank" rel="noreferrer" title={entry.label}>
+                  <a key={entry.label} className="font-sans inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3.5 py-2 text-sm font-semibold no-underline text-arena-text transition-colors hover:bg-gray-200 min-h-[44px] sm:min-h-0" href={toSocialUrl(entry.label, entry.field.value)} target="_blank" rel="noreferrer" title={entry.label}>
                     {socialIcons[entry.label]}
                     <span>{entry.label}</span>
                   </a>
@@ -279,7 +279,7 @@ export default function TestleserProfilePage({ params }: PageProps) {
 
             {loggedInUsername && loggedInUsername !== username && (
               <div className="my-3">
-                <button className="btn" onClick={() => { setShowCompose(true); setComposeMsg(""); }}>
+                <button className="btn font-sans" onClick={() => { setShowCompose(true); setComposeMsg(""); }}>
                   Nachricht senden
                 </button>
               </div>
@@ -287,25 +287,25 @@ export default function TestleserProfilePage({ params }: PageProps) {
 
             {showCompose && (
               <div className="overlay-backdrop" onClick={() => setShowCompose(false)}>
-                <div className="card" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
+                <div className="card gap-4" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg m-0">Nachricht an {visibleName}</h2>
-                    <button className="btn btn-sm" onClick={() => setShowCompose(false)}>✕</button>
+                    <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0">Nachricht an {visibleName}</h2>
+                    <button className="btn btn-sm font-sans" onClick={() => setShowCompose(false)}>✕</button>
                   </div>
-                  <label className="block mt-2">
-                    <span className="text-sm font-semibold">Betreff</span>
-                    <input className="input-base w-full mt-1" value={msgSubject} onChange={(e) => setMsgSubject(e.target.value)} placeholder="Betreff eingeben" maxLength={200} />
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
+                    Betreff
+                    <input className="input-base font-normal w-full mt-1" value={msgSubject} onChange={(e) => setMsgSubject(e.target.value)} placeholder="Betreff eingeben" maxLength={200} />
                   </label>
-                  <label className="block mt-2">
-                    <span className="text-sm font-semibold">Nachricht</span>
-                    <textarea className="input-base w-full mt-1" rows={6} value={msgBody} onChange={(e) => setMsgBody(e.target.value)} placeholder="Deine Nachricht ..." maxLength={5000} />
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
+                    Nachricht
+                    <textarea className="input-base font-normal w-full mt-1" rows={6} value={msgBody} onChange={(e) => setMsgBody(e.target.value)} placeholder="Deine Nachricht ..." maxLength={5000} />
                   </label>
                   {composeMsg && (
-                    <p className={`text-sm mt-1 ${composeMsg.includes("gesendet") ? "text-green-700" : "text-red-700"}`}>{composeMsg}</p>
+                    <p className={`font-sans text-sm mt-1 ${composeMsg.includes("gesendet") ? "text-green-700" : "text-red-700"}`}>{composeMsg}</p>
                   )}
                   <div className="flex gap-2 mt-3">
-                    <button className="btn btn-primary" disabled={isSending} onClick={handleSendMessage}>{isSending ? "Wird gesendet ..." : "Senden"}</button>
-                    <button className="btn" onClick={() => setShowCompose(false)}>Abbrechen</button>
+                    <button className="btn btn-primary font-sans" disabled={isSending} onClick={handleSendMessage}>{isSending ? "Wird gesendet ..." : "Senden"}</button>
+                    <button className="btn font-sans" onClick={() => setShowCompose(false)}>Abbrechen</button>
                   </div>
                 </div>
               </div>
@@ -319,7 +319,7 @@ export default function TestleserProfilePage({ params }: PageProps) {
           loggedInUsername={loggedInUsername}
           isProfileOwner={loggedInUsername === (actualUsername || username)}
         />
-        <Link href="/testleser" className="btn">Zurück zu Testleser entdecken</Link>
+        <Link href="/testleser" className="btn font-sans mt-6">Zurück zu Testleser entdecken</Link>
       </section>
     </main>
   );

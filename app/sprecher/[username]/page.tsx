@@ -175,14 +175,14 @@ export default function SpeakerProfilePage({ params }: PageProps) {
     <main className="top-centered-main">
       <section className="card">
         {isLoading ? (
-          <p>Lade Sprecherprofil ...</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Lade Sprecherprofil ...</p>
         ) : message ? (
-          <p className="text-red-700">{message}</p>
+          <p className="font-sans text-red-700 text-sm mt-4">{message}</p>
         ) : (
           <>
             <div className="grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
               <div
-                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
+                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light bg-arena-bg text-xs text-arena-muted"
                 style={profileImageUrl ? {
                   backgroundImage: `url(${profileImageUrl})`,
                   backgroundPosition: `${profileImageCrop?.x ?? 50}% ${profileImageCrop?.y ?? 50}%`,
@@ -190,17 +190,17 @@ export default function SpeakerProfilePage({ params }: PageProps) {
                   backgroundRepeat: "no-repeat",
                 } : undefined}
               >
-                {!profileImageUrl && <span>Kein Bild</span>}
+                {!profileImageUrl && <span className="font-sans">Kein Bild</span>}
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl">{visibleName}</h1>
-                {visibleOrt && <p className="mt-0.5">{visibleOrt}</p>}
-                {visibleMotto && <p className="mt-0.5 italic">„{visibleMotto}"</p>}
+                <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">{visibleName}</h1>
+                {visibleOrt && <p className="font-sans mt-1 text-sm text-arena-text">{visibleOrt}</p>}
+                {visibleMotto && <p className="font-sans mt-1 text-sm italic text-arena-muted">„{visibleMotto}"</p>}
               </div>
             </div>
 
             {visibleUeberMich && (
-              <div className="mt-4 text-sm whitespace-pre-line"><LinkifyText text={visibleUeberMich} /></div>
+              <div className="font-sans mt-4 text-sm leading-relaxed text-arena-text whitespace-pre-line"><LinkifyText text={visibleUeberMich} /></div>
             )}
 
             {visibleWebseite && (
@@ -209,7 +209,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
                   href={visibleWebseite.startsWith("http") ? visibleWebseite : `https://${visibleWebseite}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-arena-link hover:underline break-all"
+                  className="font-sans text-arena-link hover:underline break-all"
                 >
                   🌐 {visibleWebseite}
                 </a>
@@ -218,10 +218,10 @@ export default function SpeakerProfilePage({ params }: PageProps) {
 
             {visibleInfovideo && (
               <div className="my-3">
-                <h2 className="text-lg">Infovideo</h2>
+                <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2">Infovideo</h2>
                 <Link
                   href={`/video?url=${encodeURIComponent(visibleInfovideo)}&title=${encodeURIComponent(`Infovideo – ${visibleName}`)}`}
-                  className="btn"
+                  className="btn font-sans"
                 >
                   Video ansehen
                 </Link>
@@ -231,7 +231,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
             {socialLinks.length > 0 && (
               <div className="my-3 flex flex-wrap gap-3">
                 {socialLinks.map((entry) => (
-                  <a key={entry.label} className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3.5 py-2 text-sm font-medium no-underline text-arena-text transition-colors hover:bg-gray-200 min-h-[44px] sm:min-h-0" href={toSocialUrl(entry.label, entry.field.value)} target="_blank" rel="noreferrer" title={entry.label}>
+                  <a key={entry.label} className="font-sans inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3.5 py-2 text-sm font-semibold no-underline text-arena-text transition-colors hover:bg-gray-200 min-h-[44px] sm:min-h-0" href={toSocialUrl(entry.label, entry.field.value)} target="_blank" rel="noreferrer" title={entry.label}>
                     {socialIcons[entry.label]}
                     <span>{entry.label}</span>
                   </a>
@@ -241,7 +241,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
 
             {loggedInUsername && loggedInUsername !== username && (
               <div className="my-3">
-                <button className="btn" onClick={() => { setShowCompose(true); setComposeMsg(""); }}>
+                <button className="btn font-sans" onClick={() => { setShowCompose(true); setComposeMsg(""); }}>
                   Nachricht senden
                 </button>
               </div>
@@ -249,25 +249,25 @@ export default function SpeakerProfilePage({ params }: PageProps) {
 
             {showCompose && (
               <div className="overlay-backdrop" onClick={() => setShowCompose(false)}>
-                <div className="card" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
+                <div className="card gap-4" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg m-0">Nachricht an {visibleName}</h2>
-                    <button className="btn btn-sm" onClick={() => setShowCompose(false)}>✕</button>
+                    <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0">Nachricht an {visibleName}</h2>
+                    <button className="btn btn-sm font-sans" onClick={() => setShowCompose(false)}>✕</button>
                   </div>
-                  <label className="block mt-2">
-                    <span className="text-sm font-semibold">Betreff</span>
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
+                    Betreff
                     <input
-                      className="input-base w-full mt-1"
+                      className="input-base font-normal w-full mt-1"
                       value={msgSubject}
                       onChange={(e) => setMsgSubject(e.target.value)}
                       placeholder="Betreff eingeben"
                       maxLength={200}
                     />
                   </label>
-                  <label className="block mt-2">
-                    <span className="text-sm font-semibold">Nachricht</span>
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
+                    Nachricht
                     <textarea
-                      className="input-base w-full mt-1"
+                      className="input-base font-normal w-full mt-1"
                       rows={6}
                       value={msgBody}
                       onChange={(e) => setMsgBody(e.target.value)}
@@ -276,36 +276,36 @@ export default function SpeakerProfilePage({ params }: PageProps) {
                     />
                   </label>
                   {composeMsg && (
-                    <p className={`text-sm mt-1 ${composeMsg.includes("gesendet") ? "text-green-700" : "text-red-700"}`}>
+                    <p className={`font-sans text-sm mt-1 ${composeMsg.includes("gesendet") ? "text-green-700" : "text-red-700"}`}>
                       {composeMsg}
                     </p>
                   )}
                   <div className="flex gap-2 mt-3">
-                    <button className="btn btn-primary" disabled={isSending} onClick={handleSendMessage}>
+                    <button className="btn btn-primary font-sans" disabled={isSending} onClick={handleSendMessage}>
                       {isSending ? "Wird gesendet ..." : "Senden"}
                     </button>
-                    <button className="btn" onClick={() => setShowCompose(false)}>Abbrechen</button>
+                    <button className="btn font-sans" onClick={() => setShowCompose(false)}>Abbrechen</button>
                   </div>
                 </div>
               </div>
             )}
 
-            <h2>Sprechproben</h2>
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mt-6 mb-3">Sprechproben</h2>
             {sprechproben.length === 0 ? (
-              <p>Noch keine Sprechproben hochgeladen.</p>
+              <p className="font-sans text-arena-muted text-sm">Noch keine Sprechproben hochgeladen.</p>
             ) : (
               <div className="grid gap-2.5">
                 {sprechproben.map((sample) => (
                   <div
                     key={sample.id}
-                    className="flex items-center gap-3 rounded-lg border border-arena-border p-3"
+                    className="card-base p-4 flex items-center gap-3"
                   >
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                       🎙️
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[0.95rem] font-medium break-all">{sample.filename}</p>
-                      <audio controls className="mt-1.5 w-full max-w-[400px]">
+                      <p className="font-sans text-[0.95rem] font-medium break-all text-arena-text">{sample.filename}</p>
+                      <audio controls className="mt-1.5 w-full max-w-[400px] font-sans">
                         <source src={sample.url} type="audio/mpeg" />
                       </audio>
                     </div>
@@ -322,7 +322,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
           loggedInUsername={loggedInUsername}
           isProfileOwner={loggedInUsername === (actualUsername || username)}
         />
-        <Link href="/sprecher" className="btn">Zurück zu Sprecher entdecken</Link>
+        <Link href="/sprecher" className="btn font-sans mt-6">Zurück zu Sprecher entdecken</Link>
       </section>
     </main>
   );
