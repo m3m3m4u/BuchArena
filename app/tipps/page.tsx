@@ -35,18 +35,18 @@ const TABS: { key: Platform; label: string }[] = [
 
 function ChecklistItem({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-arena-border-light bg-white p-5 space-y-2">
-      <h3 className="text-base font-semibold m-0">{title}</h3>
-      <div className="text-[0.93rem] leading-relaxed text-arena-muted space-y-2">{children}</div>
+    <div className="card-base space-y-2">
+      <h3 className="font-sans text-base font-bold text-arena-blue m-0">{title}</h3>
+      <div className="font-sans text-[0.93rem] leading-relaxed text-arena-muted space-y-2">{children}</div>
     </div>
   );
 }
 
 function SectionIntro({ icon, text }: { icon: React.ReactNode; text: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-arena-blue/20 bg-arena-blue/5 p-5 flex gap-4 items-start">
-      <span className="text-arena-blue flex-shrink-0 mt-0.5 [&>svg]:h-7 [&>svg]:w-7">{icon}</span>
-      <div className="text-[0.93rem] leading-relaxed">{text}</div>
+    <div className="card-info flex gap-4 items-start">
+      <span className="text-arena-blue flex-shrink-0 mt-0.5 [&>svg]:h-6 [&>svg]:w-6">{icon}</span>
+      <div className="font-sans text-[0.93rem] leading-relaxed text-arena-text">{text}</div>
     </div>
   );
 }
@@ -65,7 +65,7 @@ function PlatformLink({ platform }: { platform: string }) {
   const link = PLATFORM_LINKS[platform];
   if (!link) return null;
   return (
-    <a href={link.url} target="_blank" rel="noopener noreferrer" className="mt-2 flex items-center gap-3 rounded-xl border border-arena-blue/20 bg-arena-blue/5 px-5 py-4 no-underline text-arena-blue font-semibold hover:bg-arena-blue/10 transition-colors">
+    <a href={link.url} target="_blank" rel="noopener noreferrer" className="card-info mt-2 flex items-center gap-3 no-underline text-arena-blue font-bold hover:bg-arena-blue/10 transition-colors">
       <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons[platform]}</span>
       <span>{link.label} →</span>
     </a>
@@ -132,70 +132,35 @@ export default function TippsPage() {
 
   return (
     <main className="centered-main">
-      <section className="w-full max-w-[1100px] rounded-[14px] bg-white px-12 py-10 box-border max-sm:px-4 max-sm:py-6">
+      <section className="w-full max-w-[1100px] rounded-2xl border border-arena-border-light bg-white p-12 max-sm:px-4 max-sm:py-6 shadow-xs">
         {/* Haupt-Tabs */}
-        <div className="flex gap-2 mb-5 border-b border-arena-border-light overflow-x-auto pb-px">
-          <button
-            type="button"
-            className={`shrink-0 whitespace-nowrap px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
-              mainTab === "social"
-                ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
-                : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
-            }`}
-            onClick={() => setMainTab("social")}
-          >
-            Social Media Tipps
-          </button>
-          <button
-            type="button"
-            className={`shrink-0 whitespace-nowrap px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
-              mainTab === "musik"
-                ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
-                : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
-            }`}
-            onClick={() => setMainTab("musik")}
-          >
-            Hintergrundmusik
-          </button>
-          <button
-            type="button"
-            className={`shrink-0 whitespace-nowrap px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
-              mainTab === "glossar"
-                ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
-                : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
-            }`}
-            onClick={() => setMainTab("glossar")}
-          >
-            Glossar
-          </button>
-          <button
-            type="button"
-            className={`shrink-0 whitespace-nowrap px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
-              mainTab === "beitrag-tool"
-                ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
-                : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
-            }`}
-            onClick={() => setMainTab("beitrag-tool")}
-          >
-            Beitrag-Tool
-          </button>
-          <button
-            type="button"
-            className={`shrink-0 whitespace-nowrap px-5 py-2.5 rounded-t-lg text-sm font-semibold cursor-pointer border-none transition-colors -mb-px ${
-              mainTab === "social-media-planer"
-                ? "bg-white border border-b-white border-arena-border-light text-arena-blue"
-                : "bg-arena-bg text-arena-muted hover:bg-arena-border-light border border-transparent"
-            }`}
-            onClick={() => setMainTab("social-media-planer")}
-          >
-            Social-Media-Planer
-          </button>
+        <div className="segmented-control mb-8">
+          {(["social", "musik", "glossar", "beitrag-tool", "social-media-planer"] as const).map((tabKey) => {
+            const labels: Record<MainTab, string> = {
+              social: "Social Media Tipps",
+              musik: "Hintergrundmusik",
+              glossar: "Glossar",
+              "beitrag-tool": "Beitrag-Tool",
+              "social-media-planer": "Social-Media-Planer",
+            };
+            const isActive = mainTab === tabKey;
+            return (
+              <button
+                key={tabKey}
+                type="button"
+                className={`segmented-control-btn ${isActive ? "active" : ""}`}
+                onClick={() => setMainTab(tabKey)}
+              >
+                {labels[tabKey]}
+              </button>
+            );
+          })}
         </div>
 
-        <h1 className="mb-2 text-3xl font-extrabold max-sm:text-2xl">
+        <h1 className="font-sans mb-2 text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight">
           {mainTab === "musik" ? "Hintergrundmusik" : mainTab === "glossar" ? "Glossar für Autoren" : mainTab === "beitrag-tool" ? "Beitrag-Tool" : mainTab === "social-media-planer" ? "Social-Media-Planer" : "Support-Tipps für Autoren"}
         </h1>
-        <p className="text-[0.95rem] text-arena-muted leading-relaxed mb-6">
+        <p className="font-sans text-[0.95rem] text-arena-muted leading-relaxed mb-8">
           {mainTab === "musik"
             ? "Kostenlose MP3-Tracks für deine Videos und Reels – von BuchArena für dich bereitgestellt."
             : mainTab === "glossar"
@@ -209,90 +174,93 @@ export default function TippsPage() {
 
         {/* Plattform-Tabs (nur bei Social Media) */}
         {mainTab === "social" && (
-          <div className="flex gap-1.5 flex-wrap mb-6">
-            {TABS.map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer border-none transition-colors ${tab === t.key ? "bg-arena-blue text-white" : "bg-arena-blue/10 text-arena-text hover:bg-arena-blue/20"}`}
-                onClick={() => setTab(t.key)}
-              >
-                <span className="flex items-center gap-2 justify-center">
-                  <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{socialIcons[t.key]}</span>
-                  <span>{t.label}</span>
-                </span>
-              </button>
-            ))}
+          <div className="segmented-control mb-8">
+            {TABS.map((t) => {
+              const isActive = tab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  className={`segmented-control-btn-primary ${isActive ? "active" : ""}`}
+                  onClick={() => setTab(t.key)}
+                >
+                  <span className="flex items-center gap-2 justify-center">
+                    <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{socialIcons[t.key]}</span>
+                    <span>{t.label}</span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
 
         {/* ── Social Media Content ── */}
         {mainTab === "social" && tab === "intro" && (
           <div className="space-y-5">
-            <div className="rounded-xl border-2 border-arena-blue/30 bg-arena-blue/5 p-6">
-              <h2 className="text-lg font-semibold m-0 mb-3">Der Community-Effekt</h2>
-              <p className="m-0 mb-3 text-[0.95rem] leading-relaxed">
+            <div className="card-info">
+              <h2 className="font-sans text-lg font-bold text-arena-blue m-0 mb-3">Der Community-Effekt</h2>
+              <p className="font-sans m-0 mb-4 text-[0.95rem] leading-relaxed">
                 Der größte Fehler, den du machen kannst, ist nur deinen eigenen Beitrag zu supporten („Post &amp; Run").
               </p>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex gap-3 items-start">
-                  <span className="text-xl flex-shrink-0 text-arena-blue font-bold">1.</span>
+                  <span className="font-sans text-xl flex-shrink-0 text-arena-blue font-bold">1.</span>
                   <div>
-                    <p className="font-semibold m-0">Die Mathematik</p>
-                    <p className="text-[0.9rem] text-arena-muted m-0">Wenn wir 100 Autoren sind und jeder nur sich selbst liked, hat jeder 1 Like. Wenn jeder auch die Beiträge der anderen supportet, hat jeder 100 Likes.</p>
+                    <p className="font-sans font-semibold text-arena-blue m-0">Die Mathematik</p>
+                    <p className="font-sans text-[0.9rem] text-arena-muted m-0">Wenn wir 100 Autoren sind und jeder nur sich selbst liked, hat jeder 1 Like. Wenn jeder auch die Beiträge der anderen supportet, hat jeder 100 Likes.</p>
                   </div>
                 </div>
                 <div className="flex gap-3 items-start">
-                  <span className="text-xl flex-shrink-0 text-arena-blue font-bold">2.</span>
+                  <span className="font-sans text-xl flex-shrink-0 text-arena-blue font-bold">2.</span>
                   <div>
-                    <p className="font-semibold m-0">Der Algorithmus</p>
-                    <p className="text-[0.9rem] text-arena-muted m-0">Plattformen erkennen Nutzer, die nur online kommen, wenn es um sie selbst geht. Wer regelmäßig bei anderen interagiert, wird als „wertvolles Community-Mitglied" eingestuft – deine eigenen Beiträge werden höher gerankt.</p>
+                    <p className="font-sans font-semibold text-arena-blue m-0">Der Algorithmus</p>
+                    <p className="font-sans text-[0.9rem] text-arena-muted m-0">Plattformen erkennen Nutzer, die nur online kommen, wenn es um sie selbst geht. Wer regelmäßig bei anderen interagiert, wird als „wertvolles Community-Mitglied" eingestuft – deine eigenen Beiträge werden höher gerankt.</p>
                   </div>
                 </div>
                 <div className="flex gap-3 items-start">
-                  <span className="text-xl flex-shrink-0 text-arena-blue font-bold">3.</span>
+                  <span className="font-sans text-xl flex-shrink-0 text-arena-blue font-bold">3.</span>
                   <div>
-                    <p className="font-semibold m-0">Nicht nur Instagram!</p>
-                    <p className="text-[0.9rem] text-arena-muted m-0">Es gibt Plattformen, die für die Auffindbarkeit auf Suchmaschinen und KI-Systemen wie ChatGPT viel wichtiger sind. Deshalb: Wende die folgenden Tipps bei deinem Post an UND regelmäßig bei Posts anderer Autorinnen und Autoren.</p>
+                    <p className="font-sans font-semibold text-arena-blue m-0">Nicht nur Instagram!</p>
+                    <p className="font-sans text-[0.9rem] text-arena-muted m-0">Es gibt Plattformen, die für die Auffindbarkeit auf Suchmaschinen und KI-Systemen wie ChatGPT viel wichtiger sind. Deshalb: Wende die folgenden Tipps bei deinem Post an UND regelmäßig bei Posts anderer Autorinnen und Autoren.</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-arena-border-light bg-white p-6">
-              <h2 className="text-lg font-semibold m-0 mb-4">Wichtige Links</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <a href="https://www.youtube.com/@BuchArena" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+            <div className="card-base">
+              <h2 className="font-sans text-lg font-bold text-arena-blue m-0 mb-4">Wichtige Links</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <a href="https://www.youtube.com/@BuchArena" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors">
                   <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.youtube}</span>
-                  <span className="font-medium text-[0.95rem]">YouTube-Kanal</span>
+                  <span className="font-sans font-semibold text-[0.95rem]">YouTube-Kanal</span>
                 </a>
-                <a href="https://www.youtube.com/@BuchArena/playlists" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+                <a href="https://www.youtube.com/@BuchArena/playlists" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors">
                   <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.youtube}</span>
-                  <span className="font-medium text-[0.95rem]">YouTube Playlist</span>
+                  <span className="font-sans font-semibold text-[0.95rem]">YouTube Playlist</span>
                 </a>
-                <a href="https://www.reddit.com/user/BuchArena/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+                <a href="https://www.reddit.com/user/BuchArena/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors">
                   <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.reddit}</span>
-                  <span className="font-medium text-[0.95rem]">Eure Bücher auf Reddit</span>
+                  <span className="font-sans font-semibold text-[0.95rem]">Eure Bücher auf Reddit</span>
                 </a>
-                <a href="https://www.tiktok.com/@bucharena" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+                <a href="https://www.tiktok.com/@bucharena" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors">
                   <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.tiktok}</span>
-                  <span className="font-medium text-[0.95rem]">TikTok-Account</span>
+                  <span className="font-sans font-semibold text-[0.95rem]">TikTok-Account</span>
                 </a>
-                <a href="https://www.facebook.com/BuchArena" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+                <a href="https://www.facebook.com/BuchArena" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors">
                   <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.facebook}</span>
-                  <span className="font-medium text-[0.95rem]">Facebook-Account</span>
+                  <span className="font-sans font-semibold text-[0.95rem]">Facebook-Account</span>
                 </a>
-                <a href="https://www.instagram.com/bucharena/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+                <a href="https://www.instagram.com/bucharena/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors">
                   <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.instagram}</span>
-                  <span className="font-medium text-[0.95rem]">Instagram-Account</span>
+                  <span className="font-sans font-semibold text-[0.95rem]">Instagram-Account</span>
                 </a>
-                <a href="https://at.pinterest.com/bucharena365/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+                <a href="https://at.pinterest.com/bucharena365/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors">
                   <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.pinterest}</span>
-                  <span className="font-medium text-[0.95rem]">Pinterest-Account</span>
+                  <span className="font-sans font-semibold text-[0.95rem]">Pinterest-Account</span>
                 </a>
-                <a href="https://www.linkedin.com/company/bucharena/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue transition-colors">
+                <a href="https://www.linkedin.com/company/bucharena/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors">
                   <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.linkedin}</span>
-                  <span className="font-medium text-[0.95rem]">LinkedIn-Seite</span>
+                  <span className="font-sans font-semibold text-[0.95rem]">LinkedIn-Seite</span>
                 </a>
               </div>
             </div>
@@ -304,9 +272,9 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.instagram}
-              text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> Instagram bewertet Interaktionen nach einer strengen Hierarchie. Ein einfaches „Gefällt mir" ist nett, aber für den Algorithmus fast wertlos. Ein „Speichern" oder „Teilen" hingegen signalisiert: „Dieser Inhalt ist so gut, ich will ihn behalten oder meinen Freunden zeigen."</p>}
+              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> Instagram bewertet Interaktionen nach einer strengen Hierarchie. Ein einfaches „Gefällt mir" ist nett, aber für den Algorithmus fast wertlos. Ein „Speichern" oder „Teilen" hingegen signalisiert: „Dieser Inhalt ist so gut, ich will ihn behalten oder meinen Freunden zeigen."</p>}
             />
-            <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
+            <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title='1. Das „Speichern"-Fähnchen (Priorität Nr. 1)'>
               <p className="m-0"><strong>Was tun:</strong> Klicke rechts unten beim Bild auf das Lesezeichen-Symbol. Mach das bei deinem Buch und bei den Büchern der Kollegen. Erstelle dort eine eigene Kategorie für die Bücher, so bringst du kein Chaos in deine anderen gespeicherten Inhalte. Das sind nur zwei Klicks, die aber viel bewirken können.</p>
               <p className="m-0"><strong>Der Effekt:</strong> Es kategorisiert den Post als wertvollen Content. Instagram spielt Posts mit vielen Speicherungen bevorzugt auf der „Explore Page" an fremde Leser aus.</p>
@@ -316,7 +284,7 @@ export default function TippsPage() {
               <p className="m-0"><strong>Der Effekt:</strong> Eine Story ohne Interaktion wird schnell weggeklickt. Wenn deine Follower auf deine Story reagieren, bewertet Instagram den ursprünglichen Post höher.</p>
             </ChecklistItem>
             <ChecklistItem title="3. Kommentieren, aber richtig">
-              <p className="m-0"><strong>Was tun:</strong> Schreibe einen Satz mit mindestens 4 Wörtern. Gehe auf Details ein (Cover, Zitat).</p>
+              <p className="m-0"><strong>Was tun:</strong> Schreibe einen Sätz mit mindestens 4 Wörtern. Gehe auf Details ein (Cover, Zitat).</p>
               <p className="m-0"><strong>Beispiel bei Kollegen:</strong> „Das Cover ist ja der Wahnsinn, erinnert mich total an [bekanntes Buch]!"</p>
               <p className="m-0"><strong>Der Effekt:</strong> Kurze Kommentare oder einzelne Emojis filtert Instagram oft als Bot-Spam heraus. Echte Sätze erhöhen die Verweildauer im Kommentarbereich.</p>
             </ChecklistItem>
@@ -329,9 +297,9 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.youtube}
-              text={<p className="m-0"><strong>Warum das hier ein „Game Changer" ist (SEO &amp; KI):</strong> YouTube gehört Google. Videos veralten nicht nach 24 Stunden, sie bleiben jahrelang suchbar. Noch wichtiger: Künstliche Intelligenzen (wie ChatGPT, Google Gemini) nutzen YouTube-Transkripte und Kommentare, um Wissen zu sammeln. Wenn jemand eine KI fragt „Welche neuen Fantasy-Bücher von kleinen Autoren sind gut?", durchsucht die KI YouTube-Daten. Wenn wir dort nicht stattfinden, existiert dein Buch für die KI nicht.</p>}
+              text={<p className="font-sans m-0"><strong>Warum das hier ein „Game Changer" ist (SEO &amp; KI):</strong> YouTube gehört Google. Videos veralten nicht nach 24 Stunden, sie bleiben jahrelang suchbar. Noch wichtiger: Künstliche Intelligenzen (wie ChatGPT, Google Gemini) nutzen YouTube-Transkripte und Kommentare, um Wissen zu sammeln. Wenn jemand eine KI fragt „Welche neuen Fantasy-Bücher von kleinen Autoren sind gut?", durchsucht die KI YouTube-Daten. Wenn wir dort nicht stattfinden, existiert dein Buch für die KI nicht.</p>}
             />
-            <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
+            <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Retention (Zuschauerdauer) ist König">
               <p className="m-0"><strong>Was tun:</strong> Schaue das Video zwingend bis zum Ende. Bei Shorts: Lass es 2–3 Mal im Loop laufen. Mach das unbedingt auch bei den Videos der anderen Autoren!</p>
               <p className="m-0"><strong>Der Effekt:</strong> Wenn du nach 5 Sekunden likst und wegklickst, signalisierst du YouTube: „Clickbait! Video ist langweilig." YouTube straft das Video sofort ab.</p>
@@ -353,9 +321,9 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.reddit}
-              text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> Reddit ist keine Social-Media-Plattform wie Instagram, sondern ein Wissensarchiv. Extrem wichtig: Reddit ist die Hauptdatenquelle für das Training von LLMs (Large Language Models). Wenn du willst, dass ChatGPT dein Buch kennt und empfiehlt, muss es auf Reddit „validiert" sein. Ein Reddit-Thread mit guter Diskussion ist für die KI ein Qualitätssiegel.</p>}
+              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> Reddit ist keine Social-Media-Plattform wie Instagram, sondern ein Wissensarchiv. Extrem wichtig: Reddit ist die Hauptdatenquelle für das Training von LLMs (Large Language Models). Wenn du willst, dass ChatGPT dein Buch kennt und empfiehlt, muss es auf Reddit „validiert" sein. Ein Reddit-Thread mit guter Diskussion ist für die KI ein Qualitätssiegel.</p>}
             />
-            <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
+            <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Upvote">
               <p className="m-0"><strong>Was tun:</strong> Klicke auf den Pfeil nach oben.</p>
               <p className="m-0"><strong>Der Effekt:</strong> Es erhöht die Sichtbarkeit im Subreddit und auf der Google-Startseite (Google zeigt Reddit-Ergebnisse inzwischen sehr weit oben an).</p>
@@ -365,9 +333,9 @@ export default function TippsPage() {
               <p className="m-0"><strong>Community-Tipp:</strong> Wenn du unter dem Post eines anderen Autors kommentierst, stelle ihm eine Frage zum Buch („Wie bist du auf die Idee gekommen?"). Das kurbelt die Diskussion an.</p>
               <p className="m-0"><strong>Der Effekt:</strong> KIs scannen diese Konversationen, um den Kontext und Inhalt des Buches zu verstehen. Je mehr Text du lieferst, desto präziser kann eine KI dein Buch später empfehlen.</p>
             </ChecklistItem>
-            <div className="rounded-xl border-2 border-arena-danger/30 bg-arena-danger/5 p-5">
-              <h3 className="text-base font-semibold m-0 mb-2 text-arena-danger">Absolute No-Gos</h3>
-              <p className="m-0 text-[0.9rem]"><strong>Brigading (Vote-Manipulation):</strong> Rufe niemals öffentlich (z.&nbsp;B. in deiner Insta-Story) dazu auf: „Geht alle auf Reddit und votet hoch!". Reddit erkennt, wenn viele User von extern kommen und nur voten. Das führt zur Löschung des Posts oder Sperrung unseres Accounts. Die Interaktion muss organisch wirken.</p>
+            <div className="card-danger">
+              <h3 className="font-sans text-base font-bold m-0 mb-2 text-arena-danger">Absolute No-Gos</h3>
+              <p className="font-sans m-0 text-[0.9rem] leading-relaxed"><strong>Brigading (Vote-Manipulation):</strong> Rufe niemals öffentlich (z.&nbsp;B. in deiner Insta-Story) dazu op: „Geht alle auf Reddit und votet hoch!". Reddit erkennt, wenn viele User von extern kommen und nur voten. Das führt zur Löschung des Posts oder Sperrung unseres Accounts. Die Interaktion muss organisch wirken.</p>
             </div>
             <PlatformLink platform="reddit" />
           </div>
@@ -378,9 +346,9 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.tiktok}
-              text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> TikTok interessiert sich nicht dafür, wer dir folgt. Es interessiert sich nur dafür: „Hält dieses Video die Leute in der App?".</p>}
+              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> TikTok interessiert sich nicht dafür, wer dir folgt. Es interessiert sich nur dafür: „Hält dieses Video die Leute in der App?".</p>}
             />
-            <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
+            <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Watchtime &amp; Re-Watch">
               <p className="m-0"><strong>Was tun:</strong> Guck das Video ganz an. Wenn es vorbei ist, lass es noch einmal laufen. Das ist der wichtigste Faktor für Viralität.</p>
             </ChecklistItem>
@@ -400,9 +368,9 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.facebook}
-              text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> Facebook priorisiert Inhalte, die „bedeutungsvolle Interaktionen" zwischen Menschen auslösen. Stilles Liken bringt fast nichts mehr.</p>}
+              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> Facebook priorisiert Inhalte, die „bedeutungsvolle Interaktionen" zwischen Menschen auslösen. Stilles Liken bringt fast nichts mehr.</p>}
             />
-            <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
+            <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Emotionale Reaktionen">
               <p className="m-0"><strong>Was tun:</strong> Nutze das Herz („Love") oder die Umarmung („Care").</p>
               <p className="m-0"><strong>Der Effekt:</strong> Ein einfacher „Daumen hoch" ist die Standard-Reaktion und wird vom Algorithmus geringer gewichtet als eine bewusste emotionale Reaktion.</p>
@@ -420,9 +388,9 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.pinterest}
-              text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> Pinterest ist keine klassische Social-Media-Plattform, sondern eine visuelle Suchmaschine. Pins bleiben jahrelang auffindbar und bringen langfristig Traffic. Pinterest-Nutzer suchen aktiv nach Inspiration – perfekt für Buchcover, Zitate und Leseempfehlungen.</p>}
+              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> Pinterest ist keine klassische Social-Media-Plattform, sondern eine visuelle Suchmaschine. Pins bleiben jahrelang auffindbar und bringen langfristig Traffic. Pinterest-Nutzer suchen aktiv nach Inspiration – perfekt für Buchcover, Zitate und Leseempfehlungen.</p>}
             />
-            <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
+            <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Pins speichern (Repinnen)">
               <p className="m-0"><strong>Was tun:</strong> Speichere den Pin auf einem passenden Board (z.&nbsp;B. „Buchtipps", „Fantasy-Bücher"). Mach das bei deinem Buch und bei den Büchern der Kollegen.</p>
               <p className="m-0"><strong>Der Effekt:</strong> Je öfter ein Pin gespeichert wird, desto höher rankt er in der Pinterest-Suche. Ein Pin mit vielen Saves wird auch auf der Startseite anderer Nutzer ausgespielt.</p>
@@ -448,9 +416,9 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.linkedin}
-              text={<p className="m-0"><strong>So tickt der Algorithmus:</strong> LinkedIn belohnt Fachwissen und echte Gespräche. Im Gegensatz zu anderen Plattformen geht es hier nicht um Unterhaltung, sondern um Expertise. Für Autoren ist LinkedIn Gold wert: Verlage, Buchhändler, Literaturagenten und Journalisten sind hier aktiv.</p>}
+              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> LinkedIn belohnt Fachwissen und echte Gespräche. Im Gegensatz zu anderen Plattformen geht es hier nicht um Unterhaltung, sondern um Expertise. Für Autoren ist LinkedIn Gold wert: Verlage, Buchhändler, Literaturagenten und Journalisten sind hier aktiv.</p>}
             />
-            <h2 className="text-lg font-semibold mt-2 mb-0">Deine Checkliste</h2>
+            <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Reagieren mit Bedacht">
               <p className="m-0"><strong>Was tun:</strong> Nutze die verschiedenen Reaktionen (Gefällt mir, Toll, Unterstützen, Aufschlussreich). „Aufschlussreich" und „Unterstützen" werden vom Algorithmus höher gewichtet als ein einfaches Like.</p>
               <p className="m-0"><strong>Der Effekt:</strong> LinkedIn zeigt Beiträge, auf die differenziert reagiert wird, einem breiteren Netzwerk an – auch Kontakten 2. und 3. Grades.</p>
@@ -475,16 +443,16 @@ export default function TippsPage() {
         {/* ── Hintergrundmusik ── */}
         {mainTab === "musik" && (
           <div className="space-y-5">
-            <div className="rounded-xl border-2 border-arena-blue/30 bg-arena-blue/5 p-6">
-              <h2 className="text-lg font-semibold m-0 mb-3">Musik für deine Social-Media-Beiträge</h2>
-              <p className="m-0 text-[0.95rem] leading-relaxed">
+            <div className="card-info">
+              <h2 className="font-sans text-lg font-bold text-arena-blue m-0 mb-3">Musik für deine Social-Media-Beiträge</h2>
+              <p className="font-sans m-0 text-[0.95rem] leading-relaxed">
                 Hier findest du kostenlose MP3-Dateien, die du in deinen Videos und Reels verwenden kannst.
               </p>
             </div>
 
-            <div className="rounded-xl border border-arena-yellow/30 bg-arena-yellow/10 p-5 text-[0.9rem] leading-relaxed text-arena-text">
-              <p className="m-0 font-semibold mb-1">Nutzungshinweis</p>
-              <p className="m-0">
+            <div className="card-tip text-[0.93rem] leading-relaxed text-arena-text">
+              <h3 className="font-sans text-base font-bold text-yellow-800 m-0 mb-1">Nutzungshinweis</h3>
+              <p className="font-sans m-0">
                 Die Musik darf frei verwendet werden – für private und kommerzielle Beiträge.
                 Wir freuen uns, wenn du in der Beschreibung{" "}
                 <strong>bucharena.org</strong> als Quelle erwähnst – eine Verpflichtung dazu gibt es aber nicht.
@@ -492,17 +460,17 @@ export default function TippsPage() {
             </div>
 
             {tracksLoading ? (
-              <p className="text-arena-muted text-sm">Lade Tracks…</p>
+              <p className="font-sans text-arena-muted text-sm">Lade Tracks…</p>
             ) : tracks.length === 0 ? (
-              <p className="text-arena-muted text-sm">Aktuell sind keine Tracks verfügbar. Schau bald wieder vorbei!</p>
+              <p className="font-sans text-arena-muted text-sm">Aktuell sind keine Tracks verfügbar. Schau bald wieder vorbei!</p>
             ) : (
               <div className="grid gap-4">
                 {tracks.map((track) => (
-                  <div key={track.id} className="rounded-xl border border-arena-border-light bg-white p-5 space-y-3">
+                  <div key={track.id} className="card-base space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-bold text-arena-text text-base m-0">{track.title}</p>
-                        <span className="inline-block mt-1 text-xs bg-arena-blue/10 text-arena-blue px-2 py-0.5 rounded-full">{track.style}</span>
+                        <h3 className="font-sans font-bold text-arena-blue text-base m-0">{track.title}</h3>
+                        <span className="inline-block mt-1 text-xs font-sans font-semibold bg-arena-blue/10 text-arena-blue px-2 py-0.5 rounded-full">{track.style}</span>
                       </div>
                       <a
                         href={track.soundcloudUrl ?? track.fileUrl}
@@ -514,7 +482,7 @@ export default function TippsPage() {
                         {track.soundcloudUrl ? "SoundCloud →" : "↓ Download"}
                       </a>
                     </div>
-                    <p className="text-[0.9rem] text-arena-muted m-0">{track.description}</p>
+                    <p className="font-sans text-[0.9rem] text-arena-muted m-0">{track.description}</p>
                     {track.soundcloudUrl ? (
                       <iframe
                         width="100%"
@@ -533,36 +501,34 @@ export default function TippsPage() {
             )}
           </div>
         )}
-
-        {/* ── Beitrag-Tool ── */}
         {mainTab === "beitrag-tool" && (
           <div className="space-y-5">
-            <div className="rounded-xl border-2 border-arena-blue/30 bg-arena-blue/5 p-6">
-              <h2 className="text-lg font-semibold m-0 mb-3">Social-Media-Beiträge selbst erstellen</h2>
-              <p className="m-0 text-[0.95rem] leading-relaxed">
+            <div className="card-info">
+              <h2 className="font-sans text-lg font-bold text-arena-blue m-0 mb-3">Social-Media-Beiträge selbst erstellen</h2>
+              <p className="font-sans m-0 text-[0.95rem] leading-relaxed">
                 Mit dem Beitrag-Tool kannst du professionelle Grafiken und Videos für Instagram, TikTok, YouTube & Co. direkt im Browser erstellen – ohne externe Software.
               </p>
-              <p className="m-0 mt-3 text-[0.95rem] leading-relaxed">
+              <p className="font-sans m-0 mt-3 text-[0.95rem] leading-relaxed">
                 Wir stellen euch frei nutzbare Bilder und Musik zur Verfügung, die ihr für eure Beiträge verwenden könnt.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-xl border border-arena-border-light bg-white p-5 space-y-2">
-                <h3 className="text-base font-semibold m-0 text-arena-text">Bild-Modus (4:5)</h3>
-                <p className="text-[0.9rem] text-arena-muted m-0">Erstelle statische Posts im Instagram-Format. Exportiere als PNG mit Bild, Text und dekorativem Rahmen.</p>
+              <div className="card-base space-y-2">
+                <h3 className="font-sans text-base font-bold m-0 text-arena-blue">Bild-Modus (4:5)</h3>
+                <p className="font-sans text-[0.9rem] text-arena-muted m-0">Erstelle statische Posts im Instagram-Format. Exportiere als PNG mit Bild, Text und dekorativem Rahmen.</p>
               </div>
-              <div className="rounded-xl border border-arena-border-light bg-white p-5 space-y-2">
-                <h3 className="text-base font-semibold m-0 text-arena-text">Video-Modus (9:16)</h3>
-                <p className="text-[0.9rem] text-arena-muted m-0">Erstelle Reels und Shorts mit Animationen und Hintergrundmusik. Export als MP4 direkt im Browser.</p>
+              <div className="card-base space-y-2">
+                <h3 className="font-sans text-base font-bold m-0 text-arena-blue">Video-Modus (9:16)</h3>
+                <p className="font-sans text-[0.9rem] text-arena-muted m-0">Erstelle Reels und Shorts mit Animationen und Hintergrundmusik. Export als MP4 direkt im Browser.</p>
               </div>
-              <div className="rounded-xl border border-arena-border-light bg-white p-5 space-y-2">
-                <h3 className="text-base font-semibold m-0 text-arena-text">Musik und Animationen</h3>
-                <p className="text-[0.9rem] text-arena-muted m-0">Wähle aus kostenlosen BuchArena-Tracks, stelle Fade-In/Out ein und animiere Text und Bilder (Slide, Fade, Zoom).</p>
+              <div className="card-base space-y-2">
+                <h3 className="font-sans text-base font-bold m-0 text-arena-blue">Musik und Animationen</h3>
+                <p className="font-sans text-[0.9rem] text-arena-muted m-0">Wähle aus kostenlosen BuchArena-Tracks, stelle Fade-In/Out ein und animiere Text und Bilder (Slide, Fade, Zoom).</p>
               </div>
-              <div className="rounded-xl border border-arena-border-light bg-white p-5 space-y-2">
-                <h3 className="text-base font-semibold m-0 text-arena-text">Rahmen und Designs</h3>
-                <p className="text-[0.9rem] text-arena-muted m-0">Über 10 edle Rahmenstile (Elegant, Vintage, Perlen u.v.m.). Speichere und lade eigene Designs.</p>
+              <div className="card-base space-y-2">
+                <h3 className="font-sans text-base font-bold m-0 text-arena-blue">Rahmen und Designs</h3>
+                <p className="font-sans text-[0.9rem] text-arena-muted m-0">Über 10 edle Rahmenstile (Elegant, Vintage, Perlen u.v.m.). Speichere und lade eigene Designs.</p>
               </div>
             </div>
 
@@ -578,20 +544,20 @@ export default function TippsPage() {
         {/* ── Social-Media-Planer ── */}
         {mainTab === "social-media-planer" && (
           <div className="space-y-5">
-            <div className="rounded-xl border border-arena-border-light bg-white p-6">
+            <div className="card-base">
               <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-lg font-bold m-0">Social Media Content planen mit Metricool</h2>
+                <h2 className="font-sans text-lg font-bold text-arena-blue m-0">Social Media Content planen mit Metricool</h2>
               </div>
-              <p className="text-[0.95rem] leading-relaxed m-0">
+              <p className="font-sans text-[0.95rem] leading-relaxed m-0 text-arena-text">
                 Vielleicht habt ihr euch schon gefragt, wie wir es schaffen, unsere Inhalte – zum Beispiel die Vorstellungsvideos – gleichzeitig auf sieben Plattformen zu veröffentlichen: YouTube, Instagram, Facebook, Pinterest, LinkedIn und TikTok.
               </p>
-              <p className="text-[0.95rem] leading-relaxed mt-3 m-0">
+              <p className="font-sans text-[0.95rem] leading-relaxed mt-3 m-0 text-arena-text">
                 Dafür verwenden wir das Tool <strong>Metricool</strong>.
               </p>
             </div>
 
-            <div className="rounded-xl border border-arena-border-light bg-white p-6">
-              <h3 className="text-base font-semibold m-0 mb-3">Das bietet einige Vorteile:</h3>
+            <div className="card-base">
+              <h3 className="font-sans text-base font-bold text-arena-blue m-0 mb-3">Das bietet einige Vorteile:</h3>
               <ul className="space-y-2 m-0 pl-0 list-none">
                 {[
                   "Beiträge bequem im Voraus planen – auch am PC oder Laptop",
@@ -602,7 +568,7 @@ export default function TippsPage() {
                   "Sehr guter Support",
                   "Günstiger als viele vergleichbare Plattformen",
                 ].map((v) => (
-                  <li key={v} className="flex items-start gap-2 text-[0.93rem] leading-relaxed">
+                  <li key={v} className="flex items-start gap-2 font-sans text-[0.93rem] leading-relaxed text-arena-text">
                     <span className="text-arena-blue font-bold mt-0.5">✓</span>
                     <span>{v}</span>
                   </li>
@@ -610,19 +576,19 @@ export default function TippsPage() {
               </ul>
             </div>
 
-            <div className="rounded-xl border border-arena-yellow/40 bg-arena-yellow/10 p-5">
-              <p className="font-semibold text-[0.95rem] m-0 mb-2 flex items-center gap-1.5">
+            <div className="card-tip">
+              <h3 className="font-sans text-base font-bold text-yellow-800 m-0 mb-2 flex items-center gap-1.5">
                 <LightBulbIcon className="h-5 w-5 text-yellow-600 flex-shrink-0" />
                 <span>Geheimtipp</span>
-              </p>
-              <p className="text-[0.93rem] leading-relaxed m-0">
+              </h3>
+              <p className="font-sans text-[0.93rem] leading-relaxed m-0 text-arena-text">
                 Man kann bis zu fünf „Marken" verwalten. Wenn du andere Autorinnen oder Autoren kennst, denen du vertraust, könnt ihr euch einen Account teilen. Jede Marke kann dann verschiedene Plattformen enthalten.
               </p>
             </div>
 
-            <div className="rounded-xl border border-arena-blue/20 bg-arena-blue/5 p-5">
-              <p className="font-semibold text-[0.95rem] m-0 mb-2">30 Tage kostenlos testen</p>
-              <p className="text-[0.93rem] leading-relaxed m-0 mb-3">
+            <div className="card-info">
+              <h3 className="font-sans text-base font-bold text-arena-blue m-0 mb-2">30 Tage kostenlos testen</h3>
+              <p className="font-sans text-[0.93rem] leading-relaxed m-0 mb-3 text-arena-text">
                 Mit dem Gutscheincode <strong>BUCHARENA</strong> kannst du Metricool 30 Tage kostenlos testen. Wenn du dich über unseren Link registrierst, erhält die BuchArena eine Affiliate-Provision – für dich bleibt der Preis natürlich gleich.
               </p>
               <a
@@ -635,11 +601,11 @@ export default function TippsPage() {
               </a>
             </div>
 
-            <div className="rounded-xl border border-arena-border-light bg-white p-5 text-[0.93rem] leading-relaxed text-arena-muted">
-              <p className="m-0">
+            <div className="card-base text-[0.93rem] leading-relaxed text-arena-muted">
+              <p className="font-sans m-0">
                 Vielleicht hast du jetzt nachgezählt und gemerkt, dass ich nur 6 Plattformen aufgezählt habe: Reddit ist leider nicht enthalten.
               </p>
-              <p className="m-0 mt-2">
+              <p className="font-sans m-0 mt-2">
                 Melde dich, wenn du weitere Informationen brauchst!
               </p>
             </div>
@@ -655,15 +621,15 @@ export default function TippsPage() {
               placeholder="Begriff oder Erklärung suchen…"
               value={glossarSearch}
               onChange={(e) => { setGlossarSearch(e.target.value); setGlossarLetter(""); }}
-              className="w-full rounded-xl border border-arena-border-light bg-white px-4 py-3 text-[0.95rem] outline-none focus:border-arena-blue transition-colors"
+              className="w-full rounded-xl border border-arena-border-light bg-white px-4 py-3 text-[0.95rem] outline-none font-sans shadow-xs focus:border-arena-blue-light transition-colors"
             />
 
             {/* A–Z Navigation */}
             <div className="flex flex-wrap gap-1">
               <button
                 type="button"
-                className={`w-9 h-9 rounded-lg text-sm font-semibold cursor-pointer border-none transition-colors ${
-                  glossarLetter === "" ? "bg-arena-blue text-white" : "bg-arena-blue/10 text-arena-text hover:bg-arena-blue/20"
+                className={`w-9 h-9 rounded-lg text-sm font-sans font-bold cursor-pointer border-none transition-colors ${
+                  glossarLetter === "" ? "bg-arena-blue text-white shadow-xs" : "bg-arena-blue/5 text-arena-blue hover:bg-arena-blue/10"
                 }`}
                 onClick={() => setGlossarLetter("")}
               >
@@ -673,8 +639,8 @@ export default function TippsPage() {
                 <button
                   key={l}
                   type="button"
-                  className={`w-9 h-9 rounded-lg text-sm font-semibold cursor-pointer border-none transition-colors ${
-                    glossarLetter === l ? "bg-arena-blue text-white" : "bg-arena-blue/10 text-arena-text hover:bg-arena-blue/20"
+                  className={`w-9 h-9 rounded-lg text-sm font-sans font-bold cursor-pointer border-none transition-colors ${
+                    glossarLetter === l ? "bg-arena-blue text-white shadow-xs" : "bg-arena-blue/5 text-arena-blue hover:bg-arena-blue/10"
                   }`}
                   onClick={() => { setGlossarLetter(glossarLetter === l ? "" : l); setGlossarSearch(""); }}
                 >
@@ -687,7 +653,7 @@ export default function TippsPage() {
             <select
               value={glossarKategorie}
               onChange={(e) => setGlossarKategorie(e.target.value)}
-              className="rounded-xl border border-arena-border-light bg-white px-4 py-2.5 text-[0.9rem] outline-none cursor-pointer focus:border-arena-blue transition-colors"
+              className="rounded-xl border border-arena-border-light bg-white px-4 py-2.5 text-[0.9rem] outline-none cursor-pointer font-sans shadow-xs focus:border-arena-blue-light transition-colors"
             >
               <option value="">Alle Kategorien</option>
               {glossarKategorien.map((k) => (
@@ -697,28 +663,28 @@ export default function TippsPage() {
 
             {/* Ergebnisse */}
             {glossarLoading ? (
-              <p className="text-arena-muted text-sm">Lade Glossar…</p>
+              <p className="font-sans text-arena-muted text-sm">Lade Glossar…</p>
             ) : filteredGlossar.length === 0 ? (
-              <p className="text-arena-muted text-sm">Keine Begriffe gefunden.</p>
+              <p className="font-sans text-arena-muted text-sm">Keine Begriffe gefunden.</p>
             ) : (
               <div className="space-y-2">
                 {filteredGlossar.map((e) => {
                   const isOpen = glossarOpen === e.begriff;
                   return (
-                    <div key={e.begriff} className="rounded-xl border border-arena-border-light bg-white overflow-hidden">
+                    <div key={e.begriff} className="card-base overflow-hidden p-0">
                       <button
                         type="button"
                         className="w-full flex items-center justify-between px-5 py-4 text-left cursor-pointer border-none bg-transparent hover:bg-arena-bg transition-colors"
                         onClick={() => setGlossarOpen(isOpen ? null : e.begriff)}
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="font-bold text-[0.95rem] text-arena-text truncate">{e.begriff}</span>
-                          <span className="shrink-0 text-xs bg-arena-blue/10 text-arena-blue px-2 py-0.5 rounded-full">{e.bereich}</span>
+                          <span className="font-sans font-bold text-[0.95rem] text-arena-blue truncate">{e.begriff}</span>
+                          <span className="shrink-0 text-xs font-sans font-semibold bg-arena-blue/10 text-arena-blue px-2 py-0.5 rounded-full">{e.bereich}</span>
                         </div>
                         <span className={`text-arena-muted text-lg transition-transform ${isOpen ? "rotate-180" : ""}`}>▾</span>
                       </button>
                       {isOpen && (
-                        <div className="px-5 pb-4 text-[0.9rem] leading-relaxed text-arena-muted border-t border-arena-border-light pt-3">
+                        <div className="px-5 pb-4 text-[0.9rem] leading-relaxed text-arena-muted border-t border-arena-border-light pt-3 font-sans">
                           {e.erklaerung}
                         </div>
                       )}
@@ -731,7 +697,7 @@ export default function TippsPage() {
         )}
 
         <div className="mt-10 border-t border-arena-border-light pt-6">
-          <Link href="/" className="font-medium text-arena-link no-underline hover:underline">
+          <Link href="/" className="font-sans font-bold text-arena-blue hover:text-arena-blue-light no-underline">
             ← Zurück zur Startseite
           </Link>
         </div>

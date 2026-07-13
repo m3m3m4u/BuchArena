@@ -42,19 +42,19 @@ export default function VerlagePage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="text-2xl font-bold m-0 text-arena-blue">Verlage entdecken</h1>
-          <Link href="/wohnort-karte/verlage" className="btn">Suche nach Wohnort</Link>
+          <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Verlage entdecken</h1>
+          <Link href="/wohnort-karte/verlage" className="btn font-sans">Suche nach Wohnort</Link>
         </div>
-        <p className="text-arena-muted text-sm mt-1">
+        <p className="font-sans text-arena-muted text-sm mt-1.5">
           Hier findest du Verlage und ihre Verfügbarkeit.
         </p>
 
-        {message && <p className="text-red-700">{message}</p>}
+        {message && <p className="font-sans text-red-700 text-sm mt-4">{message}</p>}
 
         {isLoading ? (
-          <p>Lade Verlage ...</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Lade Verlage ...</p>
         ) : verlage.length === 0 ? (
-          <p>Noch keine Verlage vorhanden.</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Noch keine Verlage vorhanden.</p>
         ) : (
           <div className="grid gap-3 min-[700px]:grid-cols-2 mt-4">
             {verlage.map((vl) => (
@@ -74,19 +74,19 @@ export default function VerlagePage() {
                         backgroundRepeat: "no-repeat",
                       } : undefined}
                     >
-                      {!vl.profileImageUrl && <span>Kein Bild</span>}
+                      {!vl.profileImageUrl && <span className="font-sans">Kein Bild</span>}
                     </div>
                     <div>
-                      <h2 className="m-0 text-base font-bold text-arena-blue truncate">{vl.displayName}</h2>
+                      <h2 className="font-sans m-0 text-base font-bold text-arena-blue truncate">{vl.displayName}</h2>
                       {vl.motto && (
-                        <p className="mt-1 text-sm italic text-arena-muted">„{vl.motto}“</p>
+                        <p className="font-sans mt-1 text-sm italic text-arena-muted">„{vl.motto}“</p>
                       )}
                       {vl.kapazitaeten.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
+                        <div className="flex flex-wrap gap-1 mt-2 font-sans">
                           {vl.kapazitaeten.map((m) => (
                             <span
                               key={m}
-                              className="inline-block rounded-full bg-green-50 text-green-700 text-[11px] font-medium px-2 py-0.5 border border-green-200"
+                              className="font-sans inline-block rounded-full bg-green-50 text-green-700 text-[11px] font-semibold px-2 py-0.5 border border-green-200"
                             >
                               {monthLabels[m - 1]}
                             </span>
@@ -101,8 +101,8 @@ export default function VerlagePage() {
           </div>
         )}
 
-        <div className="pt-2">
-          <Link href="/" className="text-arena-link text-sm no-underline hover:underline">
+        <div className="pt-2 mt-2">
+          <Link href="/" className="font-sans text-arena-link text-sm no-underline hover:underline">
             ← Zurück zur Startseite
           </Link>
         </div>

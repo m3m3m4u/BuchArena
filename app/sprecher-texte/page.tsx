@@ -202,14 +202,19 @@ export default function SprecherTextePage() {
     <main className="top-centered-main">
       <section className="card gap-4">
         <div className="text-center">
-          <h1>Sprecher-Texte</h1>
-          <p className="text-arena-muted mt-1">Wähle einen Text aus, trage deinen Namen ein und lade deine Aufnahme hoch.</p>
+          <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight">Sprecher-Texte</h1>
+          <p className="font-sans text-arena-muted mt-1.5 text-sm">Wähle einen Text aus, trage deinen Namen ein und lade deine Aufnahme hoch.</p>
         </div>
 
         {/* Filter */}
-        <div className="flex flex-wrap gap-1.5 justify-center">
+        <div className="segmented-control justify-center max-w-md mx-auto mb-4">
           {(["alle", "offen", "gebucht", "erledigt"] as const).map(f => (
-            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-lg text-[0.85rem] font-medium cursor-pointer border-none min-h-[44px] sm:min-h-0 ${filter === f ? "bg-arena-blue text-white" : "bg-gray-100 text-arena-text"}`}>
+            <button
+              key={f}
+              type="button"
+              onClick={() => setFilter(f)}
+              className={`segmented-control-btn ${filter === f ? "active" : ""}`}
+            >
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
@@ -226,13 +231,13 @@ export default function SprecherTextePage() {
 
         {/* Admin: Upload Form */}
         {isAdmin && showUploadForm && (
-          <form onSubmit={handlePdfUpload} className="p-4 bg-amber-50 border border-amber-400 rounded-lg grid gap-2.5">
-            <h3 className="m-0">Sprecher-Texte hochladen</h3>
-            <p className="m-0 text-[0.85rem] text-gray-400">Der Titel wird automatisch aus dem Dateinamen übernommen (ohne .pdf)</p>
-            <label className="grid gap-1 text-[0.9rem]">
+          <form onSubmit={handlePdfUpload} className="card-tip grid gap-2.5">
+            <h3 className="font-sans font-bold text-arena-blue text-base m-0">Sprecher-Texte hochladen</h3>
+            <p className="font-sans m-0 text-xs text-arena-muted">Der Titel wird automatisch aus dem Dateinamen übernommen (ohne .pdf)</p>
+            <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
               PDF-Dateien (mehrere möglich)
-              <input type="file" accept=".pdf" multiple onChange={e => setUploadFiles(e.target.files)} className="input-base" required />
-              {uploadFiles && uploadFiles.length > 0 && <span className="text-xs text-gray-400">{uploadFiles.length} Datei(en) ausgewählt</span>}
+              <input type="file" accept=".pdf" multiple onChange={e => setUploadFiles(e.target.files)} className="input-base font-normal" required />
+              {uploadFiles && uploadFiles.length > 0 && <span className="font-sans text-xs text-arena-muted font-normal">{uploadFiles.length} Datei(en) ausgewählt</span>}
             </label>
             <div className="flex gap-1.5">
               <button type="submit" className="btn btn-primary" disabled={uploading}>{uploading ? "Lädt hoch..." : "Hochladen"}</button>
@@ -242,15 +247,15 @@ export default function SprecherTextePage() {
         )}
 
         {/* Error */}
-        {error && <p className="text-red-700 bg-red-50 px-3 py-2.5 rounded-lg">{error}</p>}
+        {error && <p className="font-sans text-red-700 bg-red-50 px-3 py-2.5 rounded-lg text-sm">{error}</p>}
 
         {/* List */}
         {texte.length === 0 ? (
-          <p className="text-center text-gray-400 py-8">Keine Texte gefunden.</p>
+          <p className="font-sans text-center text-arena-muted py-8 text-sm">Keine Texte gefunden.</p>
         ) : (
           <div className="grid gap-2.5">
             {texte.map(text => (
-              <div key={text._id} className={`p-3 rounded-lg border ${text.status === "erledigt" ? "border-blue-200 bg-blue-50" : text.status === "gebucht" ? "border-amber-400 bg-amber-50" : "border-arena-border-light bg-white"}`}>
+              <div key={text._id} className={text.status === "erledigt" ? "card-info" : text.status === "gebucht" ? "card-tip" : "card-base"}>
                 {/* Header */}
                 <div className="flex gap-2.5 flex-wrap items-start">
                   <div className="p-1.5 bg-indigo-50 rounded-lg shrink-0">
@@ -258,19 +263,19 @@ export default function SprecherTextePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
-                      <strong>{text.title}</strong>
+                      <strong className="font-sans font-bold text-arena-blue text-base">{text.title}</strong>
                       {statusBadge(text.status)}
                     </div>
-                    <p className="text-[0.82rem] text-gray-400">{text.pdfFileName}</p>
+                    <p className="font-sans text-[0.82rem] text-arena-muted">{text.pdfFileName}</p>
 
-                    {text.sprecherName && <p className="mt-1 text-[0.9rem]"><strong>Sprecher:</strong> {text.sprecherName}</p>}
+                    {text.sprecherName && <p className="font-sans mt-1 text-[0.9rem] text-arena-text"><strong>Sprecher:</strong> {text.sprecherName}</p>}
 
                     {/* MP3s */}
                     {text.mp3Files.length > 0 && (
                       <div className="mt-2.5 grid gap-1">
-                        <p className="text-[0.85rem] font-medium">Hochgeladene MP3s:</p>
+                        <p className="font-sans text-[0.85rem] font-bold text-arena-blue mt-2">Hochgeladene MP3s:</p>
                         {text.mp3Files.map((mp3, idx) => (
-                          <div key={idx} className="flex items-center gap-1.5 text-[0.82rem] bg-gray-100 px-2.5 py-1.5 rounded-md flex-wrap">
+                          <div key={idx} className="font-sans flex items-center gap-1.5 text-[0.82rem] bg-black/5 px-2.5 py-1.5 rounded-md flex-wrap">
                             <MusicalNoteIcon className="w-3.5 h-3.5 text-green-600 shrink-0" />
                             <span className="flex-1 min-w-0 break-all">{mp3.fileName}</span>
                             {mp3.uploadedBy && <span className="text-gray-400">von {mp3.uploadedBy}</span>}
@@ -308,7 +313,7 @@ export default function SprecherTextePage() {
                 {/* Name eintragen */}
                 {text.status !== "erledigt" && editingId !== text._id && !text.sprecherName && (
                   <div className="mt-2.5 pt-2.5 border-t border-arena-border-light">
-                    <button onClick={() => { setEditingId(text._id); setEditName(""); }} className="text-[0.85rem] text-indigo-600 bg-transparent border-none cursor-pointer flex items-center gap-1 min-h-[44px] sm:min-h-0 py-2 sm:py-0">
+                    <button onClick={() => { setEditingId(text._id); setEditName(""); }} className="font-sans font-bold text-[0.85rem] text-indigo-600 bg-transparent border-none cursor-pointer flex items-center gap-1 min-h-[44px] sm:min-h-0 py-2 sm:py-0">
                       <UserIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />Meinen Namen eintragen
                     </button>
                   </div>
@@ -316,7 +321,7 @@ export default function SprecherTextePage() {
 
                 {editingId === text._id && (
                   <div className="mt-2.5 pt-2.5 border-t border-arena-border-light flex gap-1.5 flex-wrap">
-                    <input type="text" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Dein Name" className="input-base flex-1" />
+                    <input type="text" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Dein Name" className="input-base flex-1 font-sans" />
                     <button onClick={() => handleSaveName(text._id)} className="btn btn-primary text-[0.85rem]" disabled={!editName.trim()}>Speichern</button>
                     <button onClick={() => setEditingId(null)} className="btn text-[0.85rem]">Abbrechen</button>
                   </div>
@@ -325,12 +330,12 @@ export default function SprecherTextePage() {
                 {/* MP3 Upload Form */}
                 {mp3UploadId === text._id && (
                   <form onSubmit={handleMp3Upload} className="mt-2.5 pt-2.5 border-t border-arena-border-light grid gap-1.5">
-                    <h4 className="m-0 text-[0.9rem]">MP3(s) hochladen</h4>
+                    <h4 className="font-sans font-bold text-arena-blue text-[0.9rem] m-0">MP3(s) hochladen</h4>
                     <div className="flex gap-1.5 max-sm:flex-col sm:flex-row flex-wrap">
-                      <input type="text" value={mp3UploaderName} onChange={e => setMp3UploaderName(e.target.value)} placeholder="Dein Name (optional)" className="input-base flex-1" />
-                      <input type="file" accept=".mp3" multiple onChange={e => setMp3Files(e.target.files)} className="input-base flex-1" required />
+                      <input type="text" value={mp3UploaderName} onChange={e => setMp3UploaderName(e.target.value)} placeholder="Dein Name (optional)" className="input-base flex-1 font-sans" />
+                      <input type="file" accept=".mp3" multiple onChange={e => setMp3Files(e.target.files)} className="input-base flex-1 font-sans" required />
                     </div>
-                    {mp3Files && mp3Files.length > 0 && <span className="text-xs text-gray-400">{mp3Files.length} Datei(en) ausgewählt</span>}
+                    {mp3Files && mp3Files.length > 0 && <span className="font-sans text-xs text-arena-muted">{mp3Files.length} Datei(en) ausgewählt</span>}
                     <div className="flex gap-1.5">
                       <button type="submit" className="btn btn-primary text-[0.85rem]" disabled={!mp3Files || mp3Files.length === 0 || mp3Uploading}>{mp3Uploading ? "Lädt hoch..." : "Hochladen"}</button>
                       <button type="button" onClick={() => setMp3UploadId(null)} className="btn text-[0.85rem]">Abbrechen</button>
@@ -342,7 +347,11 @@ export default function SprecherTextePage() {
           </div>
         )}
 
-        <div><Link href="/social-media" className="text-arena-link no-underline">← Zurück zur Autoren-Übersicht</Link></div>
+        <div className="mt-6 border-t border-arena-border-light pt-6">
+          <Link href="/social-media" className="font-sans font-bold text-arena-blue hover:text-arena-blue-light no-underline">
+            ← Zurück zur Autoren-Übersicht
+          </Link>
+        </div>
       </section>
     </main>
   );

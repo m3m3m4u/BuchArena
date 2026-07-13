@@ -140,63 +140,63 @@ function BuecherContent() {
         <div className="p-3 bg-white/20 rounded-xl flex-shrink-0">
           <SparklesIcon className="h-6 w-6 text-arena-blue" />
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-lg font-bold m-0">Buchtipp – intelligent nach deinen Vorlieben</p>
-          <p className="text-sm opacity-90 m-0 mt-1">Beantworte ein paar kurze Fragen und erhalte eine persönliche Buchempfehlung aus unserer Bibliothek.</p>
+        <div className="min-w-0 flex-1 font-sans">
+          <p className="font-sans text-lg font-bold m-0">Buchtipp – intelligent nach deinen Vorlieben</p>
+          <p className="font-sans text-sm opacity-90 m-0 mt-1">Beantworte ein paar kurze Fragen und erhalte eine persönliche Buchempfehlung aus unserer Bibliothek.</p>
         </div>
         <ArrowRightIcon className="h-6 w-6 ml-auto flex-shrink-0 opacity-75 hidden sm:block" />
       </Link>
 
       <section className="card mt-3">
-        <h1 className="text-2xl font-bold">Bücher entdecken</h1>
+        <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Bücher entdecken</h1>
 
         <div className="grid gap-3 w-full">
-          <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+          <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-4">
             Suche
-            <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Titel, Autor, Verlag oder ISBN …" />
+            <input className="input-base font-normal" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Titel, Autor, Verlag oder ISBN …" />
           </label>
 
           <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
-            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+            <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
               Genre
-              <select className="input-base" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}>
+              <select className="input-base font-normal" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}>
                 <option value="">Alle Genres</option>
                 {genres.map((g) => <option key={g} value={g}>{g}</option>)}
               </select>
             </label>
-            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+            <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
               Alter
-              <input className="input-base" type="number" min={0} value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)} placeholder="z. B. 10" />
+              <input className="input-base font-normal" type="number" min={0} value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)} placeholder="z. B. 10" />
             </label>
           </div>
         </div>
 
-        {message && <p className="text-red-700">{message}</p>}
+        {message && <p className="font-sans text-red-700 text-sm mt-4">{message}</p>}
 
         {isLoading ? (
-          <p>Lade Bücher ...</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Lade Bücher ...</p>
         ) : filteredBooks.length === 0 ? (
-          <p>Keine Bücher für den gewählten Filter gefunden.</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Keine Bücher für den gewählten Filter gefunden.</p>
         ) : (
           <>
-          <div className="grid gap-3 min-[1200px]:grid-cols-2">
+          <div className="grid gap-3 min-[1200px]:grid-cols-2 mt-4">
             {pagedBooks.map((book, index) => (
               <Link
                 href={`/buch/${book.id}`}
                 className="block rounded-xl no-underline text-inherit transition-shadow h-full"
                 key={`${book.title}-${book.ownerUsername}-${book.createdAt}-${index}`}
               >
-                <article className="h-full rounded-xl border border-arena-border-light bg-white p-4 hover:border-arena-blue hover:shadow-xs transition-all duration-200">
+                <article className="card-base h-full p-4 hover:border-arena-blue hover:shadow-xs transition-all duration-200">
                   <div className="grid grid-cols-[100px_1fr] items-start gap-4 max-[400px]:grid-cols-1">
                     <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border-light bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px]">
                       {book.coverImageUrl ? (
                         <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded-lg p-1" sizes="100px" />
                       ) : (
-                        <span className="px-6 py-10">Kein Cover</span>
+                        <span className="font-sans px-6 py-10">Kein Cover</span>
                       )}
                     </div>
                     <div className="min-w-0 flex flex-col justify-between h-full">
-                      <h3 className="mb-2 mt-0 truncate text-base font-bold text-arena-blue">{book.title}</h3>
+                      <h3 className="font-sans mb-2 mt-0 truncate text-base font-bold text-arena-blue">{book.title}</h3>
                       <div className="grid gap-0.5">
                         {(() => {
                           const lines: { label: string; value: string }[] = [];
@@ -206,8 +206,8 @@ function BuecherContent() {
                           if (book.publicationYear) lines.push({ label: "Erscheinungsjahr", value: String(book.publicationYear) });
                           if (book.publisher) lines.push({ label: "Verlag", value: book.publisher });
                           return lines.slice(0, 4).map((l) => (
-                            <p key={l.label} className="my-0.5 truncate text-xs sm:text-sm text-arena-muted">
-                              <span className="font-semibold text-arena-text">{l.label}:</span> {l.value}
+                            <p key={l.label} className="font-sans my-0.5 truncate text-xs sm:text-sm text-arena-muted">
+                              <span className="font-sans font-semibold text-arena-text">{l.label}:</span> {l.value}
                             </p>
                           ));
                         })()}

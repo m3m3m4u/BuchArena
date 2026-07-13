@@ -13,18 +13,18 @@ function FaqSection({ title, items }: { title: string; items: FaqItem[] }) {
 
   return (
     <div className="mb-10">
-      <h2 className="mb-5 text-2xl font-bold text-arena-text max-sm:text-xl">{title}</h2>
+      <h2 className="font-sans mb-5 text-xl font-bold text-arena-blue tracking-tight">{title}</h2>
       <div className="space-y-3">
         {items.map((item, i) => {
           const isOpen = openIndex === i;
           return (
             <div
               key={i}
-              className="rounded-xl border border-arena-border-light bg-white overflow-hidden transition-shadow hover:shadow-sm"
+              className="card-base overflow-hidden p-0 transition-shadow hover:shadow-sm"
             >
               <button
                 type="button"
-                className="flex w-full items-center justify-between gap-3 px-6 py-4 text-left font-semibold text-arena-text text-[0.97rem] cursor-pointer bg-transparent border-none"
+                className="font-sans flex w-full items-center justify-between gap-3 px-6 py-4 text-left font-bold text-arena-blue text-[0.97rem] cursor-pointer bg-transparent border-none"
                 onClick={() => setOpenIndex(isOpen ? null : i)}
                 aria-expanded={isOpen}
               >
@@ -36,7 +36,7 @@ function FaqSection({ title, items }: { title: string; items: FaqItem[] }) {
                 </span>
               </button>
               {isOpen && (
-                <div className="px-6 pb-5 pt-0 text-[0.93rem] leading-relaxed text-[#444]">
+                <div className="px-6 pb-5 pt-0 font-sans text-[0.93rem] leading-relaxed text-arena-muted">
                   {item.answer}
                 </div>
               )}
@@ -358,11 +358,11 @@ const allgemeinFaq: FaqItem[] = [
 export default function InfoPage() {
   return (
     <main className="centered-main">
-      <section className="w-full max-w-[1100px] rounded-[14px] bg-white px-12 py-10 box-border max-sm:px-5 max-sm:py-6">
-        <h1 className="mb-3 border-b-2 border-gray-200 pb-4 text-3xl font-extrabold max-sm:text-2xl">
+      <section className="w-full max-w-[1100px] rounded-2xl border border-arena-border-light bg-white p-12 max-sm:px-4 max-sm:py-6 shadow-xs">
+        <h1 className="font-sans mb-2 text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight">
           FAQ – Häufige Fragen
         </h1>
-        <p className="mb-10 text-[0.95rem] leading-relaxed text-[#555]">
+        <p className="font-sans text-[0.95rem] text-arena-muted leading-relaxed mb-10">
           Hier findest du Antworten auf die häufigsten Fragen rund um die BuchArena, die LernArena und
           Meridian Books. Klicke auf eine Frage, um die Antwort aufzuklappen.
         </p>
@@ -372,8 +372,8 @@ export default function InfoPage() {
         <FaqSection title="Meridian Books (meridianbooks.at)" items={meridianFaq} />
         <FaqSection title="Allgemeines" items={allgemeinFaq} />
 
-        <div className="mt-10 border-t border-gray-200 pt-6">
-          <Link href="/" className="font-medium text-arena-link no-underline hover:underline">
+        <div className="mt-10 border-t border-arena-border-light pt-6">
+          <Link href="/" className="font-sans font-bold text-arena-blue hover:text-arena-blue-light no-underline">
             ← Zurück zur Startseite
           </Link>
         </div>

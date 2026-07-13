@@ -179,7 +179,7 @@ export default function SupportPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1>Support</h1>
+          <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight">Support</h1>
           {username && (
             <button className="btn" onClick={openNew}>
               Neuer Beitrag
@@ -190,20 +190,20 @@ export default function SupportPage() {
         {message && <p className="text-red-700">{message}</p>}
 
         {isLoading ? (
-          <p>Lade Beiträge ...</p>
+          <p className="font-sans text-arena-muted text-sm">Lade Beiträge ...</p>
         ) : posts.length === 0 ? (
-          <p>Noch keine Support-Beiträge vorhanden.</p>
+          <p className="font-sans text-arena-muted text-sm">Noch keine Support-Beiträge vorhanden.</p>
         ) : (
           <div className="grid gap-3.5">
             {posts.map((post) => (
-              <article key={post.id} className="rounded-lg border border-arena-border p-3.5">
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <strong>{post.authorUsername}</strong>
-                  <span className="text-xs text-arena-muted">{timeAgo(post.createdAt)}</span>
+              <article key={post.id} className="card-base flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-3 mb-1">
+                  <strong className="font-sans font-bold text-arena-blue text-sm">{post.authorUsername}</strong>
+                  <span className="font-sans text-xs text-arena-muted">{timeAgo(post.createdAt)}</span>
                 </div>
-                <h3>{post.title}</h3>
+                <h3 className="font-sans font-bold text-arena-blue text-base m-0">{post.title}</h3>
                 <div
-                  className="mt-1 text-[0.95rem] leading-relaxed [overflow-wrap:break-word]" style={{ wordBreak: "break-word" }}
+                  className="font-sans text-[0.95rem] leading-relaxed text-arena-text [overflow-wrap:break-word]" style={{ wordBreak: "break-word" }}
                   dangerouslySetInnerHTML={{ __html: formatBody(post.body) }}
                 />
                 {post.authorUsername === username && (
@@ -224,10 +224,10 @@ export default function SupportPage() {
 
       {showOverlay && (
         <div className="overlay-backdrop" onClick={() => setShowOverlay(false)}>
-          <div className="w-[min(660px,100%)] bg-white rounded-xl p-4 box-border grid gap-3.5" onClick={(e) => e.stopPropagation()}>
-            <h2>{editingId ? "Beitrag bearbeiten" : "Neuer Support-Beitrag"}</h2>
+          <div className="w-full max-w-[660px] bg-white rounded-2xl p-6 shadow-xl grid gap-4" onClick={(e) => e.stopPropagation()}>
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight">{editingId ? "Beitrag bearbeiten" : "Neuer Support-Beitrag"}</h2>
 
-            <label className="grid gap-1 text-[0.95rem]">
+            <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
               Titel
               <input
                 className="input-base"
@@ -239,11 +239,11 @@ export default function SupportPage() {
               />
             </label>
 
-            <label className="grid gap-1 text-[0.95rem]">
+            <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
               Text
-              <p className="text-xs text-arena-muted">
+              <span className="font-sans text-xs text-arena-muted font-normal mt-0.5">
                 Formatierung: **fett**, *kursiv*, [Linktext](URL) und direkte URLs werden erkannt.
-              </p>
+              </span>
               <textarea
                 className="input-base"
                 value={body}
@@ -256,7 +256,7 @@ export default function SupportPage() {
 
             <div className="flex gap-2 justify-end">
               <button
-                className="btn"
+                className="btn btn-primary"
                 onClick={handleCreate}
                 disabled={isSaving || !title.trim() || !body.trim()}
               >

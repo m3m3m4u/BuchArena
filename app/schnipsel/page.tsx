@@ -96,64 +96,64 @@ export default function BucharenaSnippetsPage() {
     <main className="top-centered-main">
       <section className="card gap-5 max-w-[700px]">
         <div className="text-center">
-          <h1>Schnipsel einreichen</h1>
-          <p className="text-arena-muted mt-1">Teile einen Text-Schnipsel aus einem Buch – optional mit Audio-Aufnahme!</p>
+          <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Schnipsel einreichen</h1>
+          <p className="font-sans text-arena-muted mt-1.5 text-sm">Teile einen Text-Schnipsel aus einem Buch – optional mit Audio-Aufnahme!</p>
         </div>
 
         {message && (
-          <p className={`rounded-lg px-3 py-2.5 border ${message.type === "success" ? "bg-green-50 border-green-300 text-green-800" : "bg-red-50 border-red-300 text-red-700"}`}>
+          <p className={`font-sans rounded-lg px-3 py-2.5 border ${message.type === "success" ? "bg-green-50 border-green-300 text-green-800" : "bg-red-50 border-red-300 text-red-700"}`}>
             {message.text}
           </p>
         )}
 
         <form onSubmit={handleSubmit} className="grid gap-3.5">
-          <label className="grid gap-1 text-[0.95rem]">
+          <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
             Buchtitel <span className="text-red-600">*</span>
-            <input type="text" value={bookTitle} onChange={e => setBookTitle(e.target.value)} className="input-base" placeholder="z.B. Harry Potter und der Stein der Weisen" required maxLength={200} disabled={submitting} />
-            <span className="text-xs text-[#888]">{bookTitle.length}/200 Zeichen</span>
+            <input type="text" value={bookTitle} onChange={e => setBookTitle(e.target.value)} className="input-base font-normal" placeholder="z.B. Harry Potter und der Stein der Weisen" required maxLength={200} disabled={submitting} />
+            <span className="font-sans text-xs text-[#888]">{bookTitle.length}/200 Zeichen</span>
           </label>
 
-          <label className="grid gap-1 text-[0.95rem]">
+          <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
             Text-Schnipsel <span className="text-red-600">*</span>
-            <textarea value={text} onChange={e => setText(e.target.value)} className="input-base min-h-[150px] resize-y" placeholder="Schreibe hier deinen Lieblings-Schnipsel aus dem Buch..." required maxLength={3000} disabled={submitting} />
-            <span className="text-xs text-[#888]">{text.length}/3000 Zeichen</span>
+            <textarea value={text} onChange={e => setText(e.target.value)} className="input-base font-normal min-h-[150px] resize-y" placeholder="Schreibe hier deinen Lieblings-Schnipsel aus dem Buch..." required maxLength={3000} disabled={submitting} />
+            <span className="font-sans text-xs text-[#888]">{text.length}/3000 Zeichen</span>
           </label>
 
           <div>
-            <label className="text-[0.95rem] block mb-1.5">Audio-Aufnahme (optional)</label>
+            <label className="font-sans text-sm font-bold text-arena-blue block mb-1.5">Audio-Aufnahme (optional)</label>
             <div className="flex items-center gap-2.5">
-              <label className="btn cursor-pointer flex items-center gap-1.5">
+              <label className="btn font-sans cursor-pointer flex items-center gap-1.5">
                 <MusicalNoteIcon className="w-4 h-4" />
                 {audioFile ? "Andere Datei wählen" : "MP3 auswählen"}
                 <input type="file" id="audioFile" accept=".mp3,audio/mpeg" onChange={handleFileChange} className="hidden" disabled={submitting} />
               </label>
               {audioFile && (
-                <span className="text-sm">
-                  <strong>{audioFile.name}</strong>
-                  <span className="text-[#888] ml-1.5">({(audioFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+                <span className="font-sans text-sm">
+                  <strong className="font-sans">{audioFile.name}</strong>
+                  <span className="font-sans text-[#888] ml-1.5">({(audioFile.size / 1024 / 1024).toFixed(2)} MB)</span>
                 </span>
               )}
             </div>
-            <p className="text-xs text-[#888] mt-1">Maximal 10MB, nur MP3-Format</p>
+            <p className="font-sans text-xs text-[#888] mt-1">Maximal 10MB, nur MP3-Format</p>
           </div>
 
           <button
             type="submit"
             disabled={submitting || !bookTitle.trim() || !text.trim() || text.trim().length < 10}
-            className={`btn btn-primary py-2.5 px-4 ${submitting ? "opacity-60" : ""}`}
+            className={`btn btn-primary py-2.5 px-4 font-sans ${submitting ? "opacity-60" : ""}`}
           >
             {submitting ? "Wird eingereicht..." : "Schnipsel einreichen"}
           </button>
         </form>
 
-        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="m-0 text-sm text-blue-800">
-            <strong>Tipp:</strong> Du kannst deinen Lieblings-Textabschnitt auch selbst vorlesen und als MP3 hochladen. Das macht deinen Schnipsel noch persönlicher!
+        <div className="card-info p-4">
+          <p className="font-sans m-0 text-sm text-blue-800 leading-relaxed">
+            <strong className="font-sans">Tipp:</strong> Du kannst deinen Lieblings-Textabschnitt auch selbst vorlesen und als MP3 hochladen. Das macht deinen Schnipsel noch persönlicher!
           </p>
         </div>
 
         <div className="text-center">
-          <Link href="/social-media" className="text-arena-link no-underline">← Zurück zur Übersicht</Link>
+          <Link href="/social-media" className="font-sans text-arena-link text-sm no-underline hover:underline">← Zurück zur Übersicht</Link>
         </div>
       </section>
     </main>

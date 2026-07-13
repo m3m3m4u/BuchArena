@@ -357,14 +357,14 @@ export default function BuchempfehlungPage() {
   return (
     <main className="top-centered-main">
       <section className="card">
-        <h1 className="text-2xl font-bold text-arena-blue">Persönliche Buchempfehlung</h1>
+        <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Persönliche Buchempfehlung</h1>
 
         {/* ── Chat-Verlauf ── */}
-        <div className="flex flex-col gap-3 pr-1">
+        <div className="flex flex-col gap-3 pr-1 mt-4">
           {chat.map((msg, i) => (
             <div
               key={i}
-              className={`max-w-[85%] rounded-xl px-4 py-2 text-sm leading-relaxed ${
+              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed font-sans ${
                 msg.role === "bot"
                   ? "self-start bg-arena-bg text-arena-text"
                   : "self-end bg-arena-blue text-white"
@@ -375,14 +375,14 @@ export default function BuchempfehlungPage() {
           ))}
 
           {step === "loading" && (
-            <div className="self-start bg-arena-bg rounded-xl px-4 py-2 text-sm text-arena-muted animate-pulse">
+            <div className="self-start bg-arena-bg rounded-2xl px-4 py-2.5 text-sm text-arena-muted animate-pulse font-sans">
               Bücher werden analysiert …
             </div>
           )}
         </div>
 
         {/* ── Antwort-Bereich ── */}
-        <div className="border-t border-arena-border pt-3">
+        <div className="border-t border-arena-border-light pt-4 mt-2">
           {/* Genre (Multi-Select) */}
           {step === "genre" && (
             <div className="grid gap-2">
@@ -391,7 +391,7 @@ export default function BuchempfehlungPage() {
                   <button
                     key={g}
                     onClick={() => handleGenreToggle(g)}
-                    className={`rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
+                    className={`rounded-full border px-3 py-1 text-sm font-sans font-semibold cursor-pointer transition-colors ${
                       prefs.genres.includes(g)
                         ? "bg-arena-blue text-white border-arena-blue"
                         : "bg-white text-arena-text border-arena-border hover:bg-arena-bg"
@@ -634,25 +634,25 @@ export default function BuchempfehlungPage() {
           {/* Ergebnis */}
           {step === "result" && (
             <div className="grid gap-4">
-              {error && <p className="text-red-700 text-sm">{error}</p>}
+              {error && <p className="font-sans text-red-700 text-sm">{error}</p>}
 
               {results.map((rec, i) => (
                 <div
                   key={i}
-                  className="rounded-xl border border-arena-border bg-white p-4 grid gap-2"
+                  className="card-base p-4 grid gap-2"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-bold text-arena-blue text-base">
+                      <p className="font-sans font-bold text-arena-blue text-base">
                         {i + 1}. {rec.title}
                       </p>
-                      <p className="text-sm text-arena-muted">von {rec.author}</p>
+                      <p className="font-sans text-sm text-arena-muted">von {rec.author}</p>
                     </div>
                   </div>
                   {rec.description && (
-                    <p className="text-sm text-arena-text">{rec.description}</p>
+                    <p className="font-sans text-sm text-arena-text leading-relaxed">{rec.description}</p>
                   )}
-                  <p className="text-sm text-arena-blue-light font-medium italic">
+                  <p className="font-sans text-sm text-arena-blue-light font-medium italic">
                     {rec.reason}
                   </p>
                   {rec.bookId && (
@@ -660,7 +660,7 @@ export default function BuchempfehlungPage() {
                       href={`/buch/${rec.bookId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-arena-link hover:underline"
+                      className="font-sans text-sm text-arena-link hover:underline"
                     >
                       → Zum Buch in der BuchArena
                     </Link>

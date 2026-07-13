@@ -91,24 +91,24 @@ export default function SprecherPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="text-2xl font-bold m-0 text-arena-blue">Hörbuchsprecher entdecken</h1>
+          <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Hörbuchsprecher entdecken</h1>
           <Link href="/wohnort-karte/sprecher" className="btn">Suche nach Wohnort</Link>
         </div>
-        <p className="text-arena-muted text-sm mt-1">
+        <p className="font-sans text-arena-muted text-sm mt-1.5">
           Hier findest du Hörbuchsprecher und ihre Sprechproben.
         </p>
 
-        <label className="grid gap-1 text-sm font-semibold text-arena-blue mt-4 w-full">
+        <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-4 w-full">
           Suche
-          <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name oder Ort …" />
+          <input className="input-base font-normal" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name oder Ort …" />
         </label>
 
-        {message && <p className="text-red-700">{message}</p>}
+        {message && <p className="font-sans text-red-700 text-sm mt-4">{message}</p>}
 
         {isLoading ? (
-          <p>Lade Sprecher ...</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Lade Sprecher ...</p>
         ) : speakers.length === 0 ? (
-          <p>Noch keine Sprecher vorhanden.</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Noch keine Sprecher vorhanden.</p>
         ) : (
           <>
           <div className="grid gap-3 min-[700px]:grid-cols-2 mt-4">
@@ -118,7 +118,7 @@ export default function SprecherPage() {
                 href={`/sprecher/${encodeURIComponent(speaker.profileSlug || speaker.username)}`}
                 className="block no-underline text-inherit h-full"
               >
-                <article className="member-card">
+                <article className="member-card font-sans">
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
                     <div
                       className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
@@ -132,14 +132,14 @@ export default function SprecherPage() {
                       {!speaker.profileImageUrl && <span>Kein Bild</span>}
                     </div>
                     <div>
-                      <h2 className="m-0 text-base font-bold text-arena-blue truncate">{speaker.displayName}</h2>
+                      <h2 className="font-sans m-0 text-base font-bold text-arena-blue truncate">{speaker.displayName}</h2>
                       {speaker.ort && (
-                        <p className="mt-0.5 text-sm text-arena-text">{speaker.ort}</p>
+                        <p className="font-sans mt-0.5 text-sm text-arena-text">{speaker.ort}</p>
                       )}
                       {speaker.motto && (
-                        <p className="mt-1 text-sm italic text-arena-muted">„{speaker.motto}"</p>
+                        <p className="font-sans mt-1 text-sm italic text-arena-muted">„{speaker.motto}"</p>
                       )}
-                      <p className="mt-1.5 text-xs text-arena-muted font-medium">
+                      <p className="font-sans mt-1.5 text-xs text-arena-muted font-medium">
                         {speaker.sprechprobenCount}{" "}
                         {speaker.sprechprobenCount === 1 ? "Sprechprobe" : "Sprechproben"}
                       </p>
@@ -160,8 +160,8 @@ export default function SprecherPage() {
           </>
         )}
 
-        <div className="pt-2">
-          <Link href="/" className="text-arena-link text-sm no-underline hover:underline">
+        <div className="mt-6 border-t border-arena-border-light pt-6">
+          <Link href="/" className="font-sans font-bold text-arena-blue hover:text-arena-blue-light no-underline">
             ← Zurück zur Startseite
           </Link>
         </div>

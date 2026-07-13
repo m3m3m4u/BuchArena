@@ -124,47 +124,47 @@ export default function AutorenPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="text-2xl font-bold m-0">Autoren entdecken</h1>
+          <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Autoren entdecken</h1>
           <Link href="/wohnort-karte/autoren" className="btn">Suche nach Wohnort</Link>
         </div>
 
         <div className="grid gap-3 w-full">
-          <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+          <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-4">
             Suche
-            <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name oder Buchtitel …" />
+            <input className="input-base font-normal" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name oder Buchtitel …" />
           </label>
 
           <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
-            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+            <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
               Genre
-              <select className="input-base" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}>
+              <select className="input-base font-normal" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}>
                 <option value="">Alle Genres</option>
                 {genres.map((g) => <option key={g} value={g}>{g}</option>)}
               </select>
             </label>
-            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+            <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
               Alter
-              <input className="input-base" type="number" min={0} value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)} placeholder="z. B. 10" />
+              <input className="input-base font-normal" type="number" min={0} value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)} placeholder="z. B. 10" />
             </label>
           </div>
         </div>
 
-        {message && <p className="text-red-700">{message}</p>}
+        {message && <p className="font-sans text-red-700 text-sm mt-4">{message}</p>}
 
         {isLoading ? (
-          <p>Lade Autoren ...</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Lade Autoren ...</p>
         ) : filteredAuthors.length === 0 ? (
-          <p>Keine Autoren für den gewählten Filter gefunden.</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Keine Autoren für den gewählten Filter gefunden.</p>
         ) : (
           <>
-            <div className="grid gap-3 min-[700px]:grid-cols-2">
+            <div className="grid gap-3 min-[700px]:grid-cols-2 mt-4">
               {pagedAuthors.map((author) => (
                 <Link
                   key={author.username}
                   href={`/autor/${encodeURIComponent(author.profileSlug || author.username)}`}
                   className="block no-underline text-inherit h-full"
                 >
-                  <article className="member-card">
+                  <article className="member-card font-sans">
                     <div className="grid grid-cols-[72px_1fr] items-start gap-3">
                       <div
                         className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
@@ -178,8 +178,8 @@ export default function AutorenPage() {
                         {!author.profileImageUrl && <span>Kein Bild</span>}
                       </div>
                       <div className="min-w-0">
-                        <h2 className="m-0 text-base font-bold text-arena-blue truncate">{author.displayName}</h2>
-                        <p className="mt-0.5 mb-0 text-sm text-arena-text">
+                        <h2 className="font-sans m-0 text-base font-bold text-arena-blue truncate">{author.displayName}</h2>
+                        <p className="font-sans mt-0.5 mb-0 text-sm text-arena-text">
                           {author.books.length === 0
                             ? "Noch keine Bücher"
                             : hasActiveFilter
@@ -191,7 +191,7 @@ export default function AutorenPage() {
                             author.books.flatMap((b) => (b.genre ?? "").split(",").map((g) => g.trim()).filter(Boolean))
                           );
                           return allGenres.size > 0 ? (
-                            <p className="mt-1.5 mb-0 text-xs text-arena-muted truncate">{[...allGenres].join(", ")}</p>
+                            <p className="font-sans mt-1.5 mb-0 text-xs text-arena-muted truncate">{[...allGenres].join(", ")}</p>
                           ) : null;
                         })()}
                       </div>
@@ -237,6 +237,12 @@ export default function AutorenPage() {
             )}
           </>
         )}
+
+        <div className="mt-6 border-t border-arena-border-light pt-6">
+          <Link href="/" className="font-sans font-bold text-arena-blue hover:text-arena-blue-light no-underline">
+            ← Zurück zur Startseite
+          </Link>
+        </div>
       </section>
     </main>
   );

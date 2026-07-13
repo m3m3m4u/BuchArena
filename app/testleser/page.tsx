@@ -97,23 +97,23 @@ export default function TestleserPage() {
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="text-2xl font-bold m-0 text-arena-blue">(Test)Leser entdecken</h1>
-          <Link href="/wohnort-karte/testleser" className="btn">Suche nach Wohnort</Link>
+          <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">(Test)Leser entdecken</h1>
+          <Link href="/wohnort-karte/testleser" className="btn font-sans">Suche nach Wohnort</Link>
         </div>
-        <p className="text-arena-muted text-sm mt-1">
+        <p className="font-sans text-arena-muted text-sm mt-1.5">
           Hier findest du (Test)Leser und ihre bevorzugten Genres.
         </p>
 
         <div className="grid gap-3 w-full">
-          <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+          <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-4">
             Suche
-            <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name …" />
+            <input className="input-base font-normal" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name …" />
           </label>
 
           {allGenres.length > 0 && (
-            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+            <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
               Genre
-              <select className="input-base" value={filterGenre} onChange={(e) => setFilterGenre(e.target.value)}>
+              <select className="input-base font-normal" value={filterGenre} onChange={(e) => setFilterGenre(e.target.value)}>
                 <option value="">Alle Genres</option>
                 {allGenres.map((g) => <option key={g} value={g}>{g}</option>)}
               </select>
@@ -121,12 +121,12 @@ export default function TestleserPage() {
           )}
         </div>
 
-        {message && <p className="text-red-700">{message}</p>}
+        {message && <p className="font-sans text-red-700 text-sm mt-4">{message}</p>}
 
         {isLoading ? (
-          <p>Lade Testleser ...</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Lade Testleser ...</p>
         ) : filtered.length === 0 ? (
-          <p>Noch keine Testleser vorhanden.</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Noch keine Testleser vorhanden.</p>
         ) : (
           <>
           <div className="grid gap-3 min-[700px]:grid-cols-2 mt-4">
@@ -147,13 +147,13 @@ export default function TestleserPage() {
                         backgroundRepeat: "no-repeat",
                       } : undefined}
                     >
-                      {!tl.profileImageUrl && <span>Kein Bild</span>}
+                      {!tl.profileImageUrl && <span className="font-sans">Kein Bild</span>}
                     </div>
                     <div>
-                      <h2 className="m-0 text-base font-bold text-arena-blue flex items-center gap-2 truncate">
+                      <h2 className="font-sans m-0 text-base font-bold text-arena-blue flex items-center gap-2 truncate">
                         {tl.displayName}
                         {tl.verfuegbar && (
-                          <span className="inline-block rounded-full bg-green-50 text-green-700 text-[11px] font-medium px-2 py-0.5 border border-green-200 align-middle">
+                          <span className="font-sans inline-block rounded-full bg-green-50 text-green-700 text-[11px] font-semibold px-2 py-0.5 border border-green-200 align-middle">
                             Verfügbar
                           </span>
                         )}
@@ -163,19 +163,19 @@ export default function TestleserPage() {
                           {tl.genres.slice(0, 4).map((g) => (
                             <span
                               key={g}
-                              className="inline-block rounded-full bg-arena-blue/5 text-arena-blue text-[11px] font-medium px-2 py-0.5 border border-arena-blue/10"
+                              className="font-sans inline-block rounded-full bg-arena-blue/5 text-arena-blue text-[11px] font-semibold px-2 py-0.5 border border-arena-blue/10"
                             >
                               {g}
                             </span>
                           ))}
                           {tl.genres.length > 4 && (
-                            <span className="text-[11px] text-arena-muted flex items-center font-medium">
+                            <span className="font-sans text-[11px] text-arena-muted flex items-center font-semibold">
                               +{tl.genres.length - 4}
                             </span>
                           )}
                         </div>
                       ) : (
-                        <p className="text-[11px] text-arena-muted mt-1.5 m-0">Hat kein bevorzugtes Genre angegeben.</p>
+                        <p className="font-sans text-[11px] text-arena-muted mt-1.5 m-0">Hat kein bevorzugtes Genre angegeben.</p>
                       )}
                     </div>
                   </div>
@@ -186,16 +186,16 @@ export default function TestleserPage() {
 
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
-              <button className="btn btn-sm text-sm" disabled={page === 1} onClick={() => goTo(page - 1)}>← Zurück</button>
-              <span className="text-sm text-arena-muted">Seite {page} / {totalPages}</span>
-              <button className="btn btn-sm text-sm" disabled={page === totalPages} onClick={() => goTo(page + 1)}>Weiter →</button>
+              <button className="btn btn-sm text-sm font-sans" disabled={page === 1} onClick={() => goTo(page - 1)}>← Zurück</button>
+              <span className="font-sans text-sm text-arena-muted">Seite {page} / {totalPages}</span>
+              <button className="btn btn-sm text-sm font-sans" disabled={page === totalPages} onClick={() => goTo(page + 1)}>Weiter →</button>
             </div>
           )}
           </>
         )}
 
-        <div className="pt-2">
-          <Link href="/" className="text-arena-link text-sm no-underline hover:underline">
+        <div className="pt-2 mt-2">
+          <Link href="/" className="font-sans text-arena-link text-sm no-underline hover:underline">
             ← Zurück zur Startseite
           </Link>
         </div>

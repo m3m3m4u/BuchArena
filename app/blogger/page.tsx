@@ -97,30 +97,29 @@ export default function BloggerPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [totalPages]);
 
-  // Filter-Wechsel → Seite zurücksetzen
   useEffect(() => { setPage(1); }, [filterGenre, searchQuery]);
 
   return (
     <main className="top-centered-main">
       <section className="card">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="text-2xl font-bold m-0 text-arena-blue">Buchblogger entdecken</h1>
+          <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Buchblogger entdecken</h1>
           <Link href="/wohnort-karte/blogger" className="btn">Suche nach Wohnort</Link>
         </div>
-        <p className="text-arena-muted text-sm mt-1">
+        <p className="font-sans text-arena-muted text-sm mt-1.5">
           Hier findest du Buchblogger und ihre Lieblingsgenres.
         </p>
 
         <div className="grid gap-3 w-full">
-          <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+          <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-4">
             Suche
-            <input className="input-base" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name …" />
+            <input className="input-base font-normal" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Name …" />
           </label>
 
           {allGenres.length > 0 && (
-            <label className="grid gap-1 text-sm font-semibold text-arena-blue">
+            <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
               Genre
-              <select className="input-base" value={filterGenre} onChange={(e) => setFilterGenre(e.target.value)}>
+              <select className="input-base font-normal" value={filterGenre} onChange={(e) => setFilterGenre(e.target.value)}>
                 <option value="">Alle Genres</option>
                 {allGenres.map((g) => <option key={g} value={g}>{g}</option>)}
               </select>
@@ -128,12 +127,12 @@ export default function BloggerPage() {
           )}
         </div>
 
-        {message && <p className="text-red-700">{message}</p>}
+        {message && <p className="font-sans text-red-700 text-sm mt-4">{message}</p>}
 
         {isLoading ? (
-          <p>Lade Blogger ...</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Lade Blogger ...</p>
         ) : filtered.length === 0 ? (
-          <p>Noch keine Blogger vorhanden.</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Noch keine Blogger vorhanden.</p>
         ) : (
           <>
           <div className="grid gap-3 min-[700px]:grid-cols-2 mt-4">
@@ -143,7 +142,7 @@ export default function BloggerPage() {
                 href={`/blogger/${encodeURIComponent(blogger.profileSlug || blogger.username)}`}
                 className="block no-underline text-inherit h-full"
               >
-                <article className="member-card">
+                <article className="member-card font-sans">
                   <div className="grid grid-cols-[72px_1fr] items-center gap-3">
                     <div
                       className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
@@ -157,13 +156,13 @@ export default function BloggerPage() {
                       {!blogger.profileImageUrl && <span>Kein Bild</span>}
                     </div>
                     <div>
-                      <h2 className="m-0 text-base font-bold text-arena-blue truncate">{blogger.displayName}</h2>
+                      <h2 className="font-sans m-0 text-base font-bold text-arena-blue truncate">{blogger.displayName}</h2>
                       {blogger.motto && (
-                        <p className="mt-1 text-sm italic text-arena-muted">„{blogger.motto}"</p>
+                        <p className="font-sans mt-1 text-sm italic text-arena-muted">„{blogger.motto}"</p>
                       )}
                       {blogger.lieblingsbuch && (
-                        <p className="mt-1.5 text-xs text-arena-muted flex items-center gap-1">
-                          <HeartIcon className="h-3.5 w-3.5 text-red-500 flex-shrink-0" /> 
+                        <p className="font-sans mt-1.5 text-xs text-arena-muted flex items-center gap-1">
+                          <HeartIcon className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />
                           <span>{blogger.lieblingsbuch}</span>
                         </p>
                       )}
@@ -172,13 +171,13 @@ export default function BloggerPage() {
                           {blogger.genres.slice(0, 4).map((g) => (
                             <span
                               key={g}
-                              className="inline-block rounded-full bg-arena-blue/5 text-arena-blue text-[11px] font-medium px-2 py-0.5 border border-arena-blue/10"
+                              className="font-sans inline-block rounded-full bg-arena-blue/5 text-arena-blue text-[11px] font-semibold px-2 py-0.5 border border-arena-blue/10"
                             >
                               {g}
                             </span>
                           ))}
                           {blogger.genres.length > 4 && (
-                            <span className="text-[11px] text-arena-muted flex items-center font-medium">
+                            <span className="font-sans text-[11px] text-arena-muted flex items-center font-semibold">
                               +{blogger.genres.length - 4}
                             </span>
                           )}
@@ -201,8 +200,8 @@ export default function BloggerPage() {
           </>
         )}
 
-        <div className="pt-2">
-          <Link href="/" className="text-arena-link text-sm no-underline hover:underline">
+        <div className="mt-6 border-t border-arena-border-light pt-6">
+          <Link href="/" className="font-sans font-bold text-arena-blue hover:text-arena-blue-light no-underline">
             ← Zurück zur Startseite
           </Link>
         </div>

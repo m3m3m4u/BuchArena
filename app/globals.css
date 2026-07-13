@@ -444,6 +444,96 @@ select.input-base {
   color: var(--color-arena-blue);
 }
 
+/* ── Central Design System Component Utilities ── */
+
+@utility card-base {
+  border: 1px solid var(--color-arena-border-light);
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+@utility card-info {
+  border: 1px solid color-mix(in srgb, var(--color-arena-blue) 15%, transparent);
+  background-color: color-mix(in srgb, var(--color-arena-blue) 5%, transparent);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+@utility card-tip {
+  border: 1px solid color-mix(in srgb, var(--color-arena-yellow) 20%, transparent);
+  background-color: color-mix(in srgb, var(--color-arena-yellow) 5%, transparent);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+@utility card-danger {
+  border: 1px solid color-mix(in srgb, var(--color-arena-danger) 15%, transparent);
+  background-color: color-mix(in srgb, var(--color-arena-danger) 5%, transparent);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+@utility segmented-control {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background-color: color-mix(in srgb, var(--color-arena-blue) 5%, transparent);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+@utility segmented-control-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  color: var(--color-arena-muted);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    color: var(--color-arena-blue);
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  &.active {
+    background-color: #ffffff;
+    color: var(--color-arena-blue);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+}
+
+@utility segmented-control-btn-primary {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  color: var(--color-arena-muted);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    color: var(--color-arena-blue);
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  &.active {
+    background-color: var(--color-arena-blue);
+    color: #ffffff;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+}
+
 /* ── Draggable image preview ── */
 .draggable { cursor: grab; touch-action: none; user-select: none; }
 .draggable:active { cursor: grabbing; }

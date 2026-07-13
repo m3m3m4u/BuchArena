@@ -78,15 +78,15 @@ export default function GewinnspielUebersichtPage() {
   const setPage = tab === "aktiv" ? setPageAktiv : setPageArchiv;
   const totalPages = Math.ceil(displayed.length / PAGE_SIZE);
   const pageItems = displayed.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
-  return (
+  return (
     <main className="top-centered-main">
       <div className="w-full flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-arena-blue flex items-center gap-2">
+          <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0 flex items-center gap-2">
             <GiftIcon className="h-6 w-6 text-arena-blue" />
             Gewinnspiele
           </h1>
-          <p className="text-sm text-arena-muted mt-1">
+          <p className="font-sans text-sm text-arena-muted mt-1.5">
             Bücher gewinnen – direkt von den Autoren der BuchArena-Community
           </p>
         </div>
@@ -112,25 +112,27 @@ export default function GewinnspielUebersichtPage() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 p-1 bg-arena-bg rounded-xl grid grid-cols-2 gap-1 border border-arena-border-light w-full max-w-[440px] self-start">
+      <div className="segmented-control max-w-[440px] mb-6">
         <button
+          type="button"
           onClick={() => setTab("aktiv")}
-          className={`py-2 px-3 rounded-lg text-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 ${tab === "aktiv" ? "bg-white text-arena-blue font-bold shadow-xs border border-arena-border-light/40" : "text-arena-muted hover:text-arena-blue font-medium bg-transparent border border-transparent"}`}
+          className={`segmented-control-btn ${tab === "aktiv" ? "active" : ""}`}
         >
           Aktive Gewinnspiele
           {aktive.length > 0 && (
-            <span className="text-xs bg-green-50 text-green-700 border border-green-100 px-1.5 py-0.5 rounded-full font-semibold">
+            <span className="text-xs bg-green-50 text-green-700 border border-green-100 px-1.5 py-0.5 rounded-full font-semibold ml-1.5">
               {aktive.length}
             </span>
           )}
         </button>
         <button
+          type="button"
           onClick={() => setTab("archiv")}
-          className={`py-2 px-3 rounded-lg text-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 ${tab === "archiv" ? "bg-white text-arena-blue font-bold shadow-xs border border-arena-border-light/40" : "text-arena-muted hover:text-arena-blue font-medium bg-transparent border border-transparent"}`}
+          className={`segmented-control-btn ${tab === "archiv" ? "active" : ""}`}
         >
           Archiv
           {archiv.length > 0 && (
-            <span className="text-xs bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded-full font-semibold">
+            <span className="text-xs bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded-full font-semibold ml-1.5">
               {archiv.length}
             </span>
           )}
@@ -138,9 +140,9 @@ export default function GewinnspielUebersichtPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-arena-muted w-full text-left">Lade Gewinnspiele…</p>
+        <p className="font-sans text-sm text-arena-muted w-full text-left">Lade Gewinnspiele…</p>
       ) : displayed.length === 0 ? (
-        <p className="text-sm text-arena-muted w-full text-left">
+        <p className="font-sans text-sm text-arena-muted w-full text-left">
           {tab === "aktiv" ? "Aktuell laufen keine Gewinnspiele." : "Noch keine archivierten Gewinnspiele."}
         </p>
       ) : (
@@ -150,22 +152,22 @@ export default function GewinnspielUebersichtPage() {
               <Link
                 key={g._id}
                 href={`/gewinnspiel/${g._id}`}
-                className="border border-arena-border-light rounded-xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 hover:border-arena-blue bg-white transition-all duration-200 flex flex-row group no-underline text-inherit"
+                className="card-base p-0 flex flex-row group overflow-hidden no-underline text-inherit hover:border-arena-blue hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
               >
                 {/* Cover – hochkant */}
                 <div className="relative shrink-0 w-24 sm:w-32 bg-arena-bg flex items-center justify-center overflow-hidden border-r border-arena-border-light">
                   {g.coverImageUrl ? (
                     <img src={g.coverImageUrl} alt={g.buchTitel} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" style={{ aspectRatio: "2/3", objectPosition: "center" }} />
                   ) : (
-                    <span className="text-4xl text-arena-muted">-</span>
+                    <span className="font-sans text-4xl text-arena-muted">-</span>
                   )}
                 </div>
 
                 {/* Info */}
                 <div className="p-4 flex flex-col flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="font-bold text-base leading-snug line-clamp-2 text-arena-blue">{g.buchTitel}</h3>
-                    <span className={`shrink-0 text-xs px-2.5 py-0.5 rounded-full font-medium border ${
+                    <h3 className="font-sans font-bold text-base leading-snug line-clamp-2 text-arena-blue">{g.buchTitel}</h3>
+                    <span className={`font-sans shrink-0 text-xs px-2.5 py-0.5 rounded-full font-medium border ${
                       g.status === "anmeldung" ? "bg-green-50 text-green-700 border-green-200" :
                       g.status === "verlost" ? "bg-yellow-50 text-yellow-800 border-yellow-200" :
                       "bg-slate-50 text-slate-700 border border-slate-200"
@@ -173,19 +175,19 @@ export default function GewinnspielUebersichtPage() {
                       {STATUS_LABEL[g.status]}
                     </span>
                   </div>
-                  <p className="text-sm text-arena-muted mb-2">von {g.autorName}</p>
+                  <p className="font-sans text-sm text-arena-muted mb-2">von {g.autorName}</p>
 
                   {g.beschreibung && (
-                    <p className="text-sm text-arena-text mb-3 line-clamp-2 leading-relaxed">{g.beschreibung}</p>
+                    <p className="font-sans text-sm text-arena-text mb-3 line-clamp-2 leading-relaxed">{g.beschreibung}</p>
                   )}
 
-                  <div className="mt-auto text-xs text-arena-muted flex flex-wrap gap-x-4 gap-y-1">
+                  <div className="font-sans mt-auto text-xs text-arena-muted flex flex-wrap gap-x-4 gap-y-1">
                     <span>Format: <strong>{FORMAT_LABEL[g.format]}</strong></span>
                     {g.status === "anmeldung" && (
                       <span>Anmeldung bis: <strong>{fmtDate(g.anmeldungBis)}</strong></span>
                     )}
                     {g.status !== "anmeldung" && g.gewinnerName && (
-                      <span className="text-green-700 font-semibold">Gewinner: {g.gewinnerName}</span>
+                      <span className="font-sans text-green-700 font-semibold">Gewinner: {g.gewinnerName}</span>
                     )}
                   </div>
                 </div>

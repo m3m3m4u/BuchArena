@@ -156,18 +156,18 @@ export default function SocialMediaPage() {
 
   /* ── shared card class ── */
   const optionCls =
-    "flex items-start gap-4 rounded-xl border border-arena-border bg-white p-4 text-left transition-colors hover:border-arena-blue hover:bg-[#f0f7ff] cursor-pointer w-full";
+    "card-base font-sans flex items-start gap-4 text-left transition-colors hover:border-arena-blue hover:bg-arena-blue/5 cursor-pointer w-full";
 
   return (
     <main className="top-centered-main">
       <section className="card">
-        <h1 className="text-2xl font-bold">BuchArena – Social Media</h1>
+        <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight">BuchArena – Social Media</h1>
 
         {wizardStep !== "start" && (
           <button
             type="button"
             onClick={() => setWizardStep("start")}
-            className="flex items-center gap-1 text-sm text-arena-muted hover:text-arena-blue transition-colors -mt-1"
+            className="font-sans flex items-center gap-1 text-sm font-bold text-arena-muted hover:text-arena-blue transition-colors -mt-1 cursor-pointer border-none bg-transparent"
           >
             <ChevronLeftIcon className="size-4" /> Zurück zur Übersicht
           </button>
@@ -176,7 +176,7 @@ export default function SocialMediaPage() {
         {/* ═══ SCHRITT 1: Was möchtest du tun? ═══ */}
         {wizardStep === "start" && (
           <div className="grid gap-4">
-            <p className="text-arena-muted text-[0.95rem]">
+            <p className="font-sans text-arena-muted text-[0.95rem]">
               Was möchtest du heute tun? Wähle eine Option:
             </p>
 
@@ -276,7 +276,7 @@ export default function SocialMediaPage() {
               {(account?.role === "ADMIN" || account?.role === "SUPERADMIN") && (
                 <button
                   type="button"
-                  className={`${optionCls} border-amber-300 bg-amber-50 hover:border-amber-500 hover:bg-amber-50`}
+                  className={`${optionCls} border-amber-300 bg-amber-50 hover:border-amber-500 hover:bg-amber-100/50`}
                   onClick={() => setWizardStep("admin")}
                 >
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
@@ -291,18 +291,18 @@ export default function SocialMediaPage() {
               )}
             </div>
 
-            <div className="rounded-lg border border-arena-border bg-[#f8fafc] p-4 text-[0.85rem] leading-relaxed grid gap-1.5 text-arena-muted mt-1">
-              <p className="m-0 font-medium text-arena-text">Wie funktioniert die BuchArena?</p>
-              <p className="m-0">
+            <div className="card-info text-[0.93rem] leading-relaxed grid gap-1.5 text-arena-muted mt-4">
+              <p className="font-sans m-0 font-bold text-arena-blue">Wie funktioniert die BuchArena?</p>
+              <p className="font-sans m-0">
                 Wir veröffentlichen auf Instagram, Facebook, Reddit, YouTube, TikTok, Pinterest und LinkedIn.
                 Die Texte werden von{" "}
-                <Link href="/sprecher" className="text-arena-blue hover:underline">Hörbuchsprechern</Link>{" "}
+                <Link href="/sprecher" className="text-arena-link hover:underline font-bold">Hörbuchsprechern</Link>{" "}
                 gesprochen, die ehrenamtlich für die BuchArena arbeiten.
               </p>
-              <p className="m-0">
+              <p className="font-sans m-0">
                 Deine Eingaben (Bücher, Rezensionen, Schnipsel, Umfragen) werden öfter verwendet –
                 du wirst immer wieder erwähnt und kannst deine Reichweite vergrößern.{" "}
-                <Link href="/tipps" className="text-arena-blue hover:underline font-medium">Mehr Infos hier.</Link>
+                <Link href="/tipps" className="text-arena-link hover:underline font-bold">Mehr Infos hier.</Link>
               </p>
             </div>
           </div>
@@ -312,26 +312,25 @@ export default function SocialMediaPage() {
         {wizardStep === "video-tools" && (
           <div className="grid gap-4">
             <div>
-              <h2 className="text-lg font-semibold">Welches Tool möchtest du verwenden?</h2>
-              <p className="text-sm text-arena-muted mt-1">
+              <h2 className="font-sans text-lg font-bold text-arena-blue">Welches Tool möchtest du verwenden?</h2>
+              <p className="font-sans text-sm text-arena-muted mt-1">
                 Beide Tools findest du direkt hier im Browser – keine Software nötig.
               </p>
             </div>
-
             <div className="grid gap-3">
               {/* Reel-Tool */}
               <Link
                 href="/social-media/reel-erstellen"
-                className="grid gap-2 rounded-xl border-2 border-arena-border p-4 no-underline text-inherit hover:border-arena-blue hover:bg-[#f0f7ff] transition-colors"
+                className="card-base grid gap-2 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-arena-blue">
                     <FilmIcon className="size-6" />
                   </div>
-                  <strong className="text-[0.95rem]">Reel-Tool – Kurzvideo</strong>
-                  <span className="ml-auto text-xs rounded-full bg-green-100 text-green-800 px-2 py-0.5 font-medium">Schnell</span>
+                  <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Reel-Tool – Kurzvideo</strong>
+                  <span className="ml-auto text-xs rounded-full bg-green-100 text-green-800 px-2 py-0.5 font-semibold">Schnell</span>
                 </div>
-                <ul className="text-sm text-arena-muted list-disc list-inside space-y-1 mt-1 pl-1">
+                <ul className="font-sans text-sm text-arena-muted list-disc list-inside space-y-1 mt-1 pl-1">
                   <li><strong>3 Seiten</strong> mit Buchinformationen ausfüllen</li>
                   <li>Musik im Hintergrund</li>
                   <li>Format: 9:16 (Instagram Reels, YouTube Shorts, TikTok)</li>
@@ -342,33 +341,32 @@ export default function SocialMediaPage() {
               {/* Reel + Video-Tool */}
               <Link
                 href="/social-media/shorts-erstellen"
-                className="grid gap-2 rounded-xl border-2 border-arena-border p-4 no-underline text-inherit hover:border-arena-blue hover:bg-[#f0f7ff] transition-colors"
+                className="card-base grid gap-2 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-700">
                     <StarIcon className="size-6" />
                   </div>
-                  <strong className="text-[0.95rem]">Reel- und Video-Tool – Kurzvideo + längere Version</strong>
-                  <span className="ml-auto text-xs rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 font-medium">Aufwendig</span>
+                  <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Reel- und Video-Tool – Kurzvideo + längere Version</strong>
+                  <span className="ml-auto text-xs rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 font-semibold">Aufwendig</span>
                 </div>
-                <ul className="text-sm text-arena-muted list-disc list-inside space-y-1 mt-1 pl-1">
+                <ul className="font-sans text-sm text-arena-muted list-disc list-inside space-y-1 mt-1 pl-1">
                   <li><strong>5 Seiten</strong> mit Buchinformationen und Sprechertext</li>
                   <li>Professioneller Sprecher liest den Text vor</li>
                   <li>Kurzvideo (Reel) <strong>und</strong> längere Version</li>
                   <li>Bearbeitung dauert aktuell <strong>einige Wochen</strong></li>
                 </ul>
               </Link>
-
             </div>
           </div>
         )}
 
-        {/* ═══ SCHRITT 2b: Inhalte für Social Media ═══ */}
+        {/* ── ═══ SCHRITT 2b: Inhalte für Social Media ═══ ── */}
         {wizardStep === "content-tools" && (
           <div className="grid gap-4">
             <div>
-              <h2 className="text-lg font-semibold">Was möchtest du einreichen?</h2>
-              <p className="text-sm text-arena-muted mt-1">
+              <h2 className="font-sans text-lg font-bold text-arena-blue">Was möchtest du einreichen?</h2>
+              <p className="font-sans text-sm text-arena-muted mt-1">
                 Diese Inhalte werden in regelmäßigen Abständen zu Social-Media-Beiträgen verarbeitet.
               </p>
             </div>
@@ -382,8 +380,8 @@ export default function SocialMediaPage() {
                   <PencilSquareIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
-                  <strong className="text-[0.95rem]">Rezension einreichen</strong>
-                  <span className="text-sm text-arena-muted">Teile eine Rezension zu einem Buch – wir veröffentlichen Ausschnitte auf Social Media.</span>
+                  <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Rezension einreichen</strong>
+                  <span className="font-sans text-sm text-arena-muted">Teile eine Rezension zu einem Buch – wir veröffentlichen Ausschnitte auf Social Media.</span>
                 </div>
                 <span className="text-arena-muted self-center shrink-0">→</span>
               </Link>
@@ -396,8 +394,8 @@ export default function SocialMediaPage() {
                   <MusicalNoteIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
-                  <strong className="text-[0.95rem]">Schnipsel einreichen</strong>
-                  <span className="text-sm text-arena-muted">Teile einen Lieblings-Textabschnitt – optional mit eigener Vorlesung als MP3.</span>
+                  <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Schnipsel einreichen</strong>
+                  <span className="font-sans text-sm text-arena-muted">Teile einen Lieblings-Textabschnitt – optional mit eigener Vorlesung als MP3.</span>
                 </div>
                 <span className="text-arena-muted self-center shrink-0">→</span>
               </Link>
@@ -410,8 +408,8 @@ export default function SocialMediaPage() {
                   <ChatBubbleLeftRightIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
-                  <strong className="text-[0.95rem]">Kurz gefragt – Autorenfragen</strong>
-                  <span className="text-sm text-arena-muted">Beantworte kurze Fragen zu dir und deinem Schreibstil – wir machen daraus Social-Media-Beiträge.</span>
+                  <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Kurz gefragt – Autorenfragen</strong>
+                  <span className="font-sans text-sm text-arena-muted">Beantworte kurze Fragen zu dir und deinem Schreibstil – wir machen daraus Social-Media-Beiträge.</span>
                 </div>
                 <span className="text-arena-muted self-center shrink-0">→</span>
               </Link>
@@ -419,81 +417,81 @@ export default function SocialMediaPage() {
           </div>
         )}
 
-        {/* ═══ SCHRITT 2f: Admin-Bereich ═══ */}
+        {/* ── ═══ SCHRITT 2f: Admin-Bereich ═══ ── */}
         {wizardStep === "admin" && (account?.role === "ADMIN" || account?.role === "SUPERADMIN") && (
           <div className="grid gap-4">
             <div>
-              <h2 className="text-lg font-semibold">Admin-Bereich</h2>
-              <p className="text-sm text-arena-muted mt-1">Verwaltung aller Einreichungen und Inhalte.</p>
+              <h2 className="font-sans text-lg font-bold text-arena-blue">Admin-Bereich</h2>
+              <p className="font-sans text-sm text-arena-muted mt-1">Verwaltung aller Einreichungen und Inhalte.</p>
             </div>
 
             <div className="grid gap-2.5">
               <Link
                 href="/admin/einreichungen"
-                className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 no-underline text-inherit hover:border-amber-500 transition-colors"
+                className="font-sans flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-xs no-underline text-inherit hover:border-amber-500 hover:bg-amber-100/50 transition-colors"
               >
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
                   <Cog6ToothIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1 text-[0.95rem]">
-                  <strong>Einreichungen verwalten</strong>
-                  <span className="text-sm text-arena-muted">Alle eingesendeten Buchvorstellungen – herunterladen, bearbeiten, genehmigen.</span>
+                  <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Einreichungen verwalten</strong>
+                  <span className="font-sans text-sm text-arena-muted">Alle eingesendeten Buchvorstellungen – herunterladen, bearbeiten, genehmigen.</span>
                 </div>
                 <span className="text-amber-600 shrink-0">→</span>
               </Link>
 
               <Link
                 href="/admin/reel-einreichungen"
-                className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 no-underline text-inherit hover:border-amber-500 transition-colors"
+                className="font-sans flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-xs no-underline text-inherit hover:border-amber-500 hover:bg-amber-100/50 transition-colors"
               >
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
                   <FilmIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1 text-[0.95rem]">
-                  <strong>Reel-Einreichungen verwalten</strong>
-                  <span className="text-sm text-arena-muted">Alle eingereichten Kurzvideos (9:16) – Dateien herunterladen und Status verwalten.</span>
+                  <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Reel-Einreichungen verwalten</strong>
+                  <span className="font-sans text-sm text-arena-muted">Alle eingereichten Kurzvideos (9:16) – Dateien herunterladen und Status verwalten.</span>
                 </div>
                 <span className="text-amber-600 shrink-0">→</span>
               </Link>
 
               <Link
                 href="/rezensionen/admin"
-                className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 no-underline text-inherit hover:border-amber-500 transition-colors"
+                className="font-sans flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-xs no-underline text-inherit hover:border-amber-500 hover:bg-amber-100/50 transition-colors"
               >
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
                   <PencilSquareIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1 text-[0.95rem]">
-                  <strong>Rezensionen verwalten</strong>
-                  <span className="text-sm text-arena-muted">Alle eingereichten Rezensionen – als bearbeitet markieren, löschen, als XLSX exportieren.</span>
+                  <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Rezensionen verwalten</strong>
+                  <span className="font-sans text-sm text-arena-muted">Alle eingereichten Rezensionen – als bearbeitet markieren, löschen, als XLSX exportieren.</span>
                 </div>
                 <span className="text-amber-600 shrink-0">→</span>
               </Link>
 
               <Link
                 href="/schnipsel/admin"
-                className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 no-underline text-inherit hover:border-amber-500 transition-colors"
+                className="font-sans flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-xs no-underline text-inherit hover:border-amber-500 hover:bg-amber-100/50 transition-colors"
               >
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
                   <MusicalNoteIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1 text-[0.95rem]">
-                  <strong>Schnipsel verwalten</strong>
-                  <span className="text-sm text-arena-muted">Alle eingereichten Schnipsel – Audio herunterladen, löschen, als XLSX exportieren.</span>
+                  <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Schnipsel verwalten</strong>
+                  <span className="font-sans text-sm text-arena-muted">Alle eingereichten Schnipsel – Audio herunterladen, löschen, als XLSX exportieren.</span>
                 </div>
                 <span className="text-amber-600 shrink-0">→</span>
               </Link>
 
               <Link
                 href="/admin/social-media-content"
-                className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 no-underline text-inherit hover:border-amber-500 transition-colors"
+                className="font-sans flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-xs no-underline text-inherit hover:border-amber-500 hover:bg-amber-100/50 transition-colors"
               >
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
                   <ArrowDownTrayIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1 text-[0.95rem]">
-                  <strong>Fertige Inhalte für Social Media</strong>
-                  <span className="text-sm text-arena-muted">Bilder und Videos hochladen, die Mitglieder später inklusive Caption-Vorschlägen herunterladen können.</span>
+                  <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Fertige Inhalte für Social Media</strong>
+                  <span className="font-sans text-sm text-arena-muted">Bilder und Videos hochladen, die Mitglieder später inklusive Caption-Vorschlägen herunterladen können.</span>
                 </div>
                 <span className="text-amber-600 shrink-0">→</span>
               </Link>

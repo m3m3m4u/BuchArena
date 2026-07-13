@@ -49,37 +49,37 @@ export default function PodcastPage() {
   return (
     <main className="top-centered-main">
       <section className="card gap-6">
-        <h1 className="text-2xl font-bold text-arena-blue">Podcast</h1>
+        <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Podcast</h1>
 
-        {loading && <p className="text-arena-muted text-sm">Wird geladen …</p>}
+        {loading && <p className="font-sans text-arena-muted text-sm mt-4">Wird geladen …</p>}
 
         {!loading && htmlContent && (
           <div
-            className="ProseMirror text-[0.93rem] leading-relaxed text-gray-700"
+            className="ProseMirror font-sans text-[0.93rem] leading-relaxed text-gray-700"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }}
           />
         )}
 
         {!loading && folgen.length > 0 && (
           <div className="flex flex-col gap-6 mt-2">
-            <h2 className="text-xl font-semibold text-arena-blue">Alle Folgen</h2>
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight">Alle Folgen</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {pageFolgen.map((folge) => {
                 const ytId = extractYoutubeId(folge.youtubeUrl);
                 return (
-                  <article key={folge._id} className="flex flex-col gap-3 rounded-xl border border-arena-border-light bg-white p-4 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200">
+                  <article key={folge._id} className="card-base flex flex-col gap-3 p-4 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200">
                     <Link
                       href={`/podcast/${folge._id}`}
-                      className="text-base font-bold text-arena-blue hover:text-arena-blue-light no-underline"
+                      className="font-sans text-base font-bold text-arena-blue hover:text-arena-blue-light no-underline"
                     >
                       {folge.title}
                     </Link>
-                    <p className="text-xs text-arena-muted m-0">
+                    <p className="font-sans text-xs text-arena-muted m-0">
                       {formatDate(folge.createdAt)} · {folge.views} Aufruf{folge.views !== 1 ? "e" : ""}
                     </p>
                     {folge.text && (
-                      <p className="text-sm text-arena-text leading-relaxed line-clamp-3 m-0">{folge.text}</p>
+                      <p className="font-sans text-sm text-arena-text leading-relaxed line-clamp-3 m-0">{folge.text}</p>
                     )}
                     {ytId && (
                       <div className="relative w-full mt-auto rounded-lg overflow-hidden border border-arena-border-light" style={{ paddingBottom: "56.25%" }}>
@@ -128,7 +128,7 @@ export default function PodcastPage() {
         )}
 
         {!loading && folgen.length === 0 && (
-          <p className="text-arena-muted text-sm">Noch keine Folgen veröffentlicht.</p>
+          <p className="font-sans text-arena-muted text-sm mt-4">Noch keine Folgen veröffentlicht.</p>
         )}
       </section>
     </main>

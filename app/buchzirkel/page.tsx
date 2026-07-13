@@ -74,18 +74,17 @@ export default function BuchzirkelPage() {
   return (
     <main className="top-centered-main">
 
-
       {/* Header */}
       <section className="card">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold m-0 flex items-center gap-2">Buchzirkel</h1>
-            <p className="text-arena-muted text-sm m-0 mt-1">
+            <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Buchzirkel</h1>
+            <p className="font-sans text-arena-muted text-sm mt-1.5">
               (Test)Leser- und Betaleser-Runden – direkt von Autoren und Verlagen
             </p>
           </div>
           {account && (
-            <Link href="/buchzirkel/erstellen" className="btn btn-primary">
+            <Link href="/buchzirkel/erstellen" className="btn btn-primary font-sans">
               + Buchzirkel erstellen
             </Link>
           )}
@@ -94,13 +93,13 @@ export default function BuchzirkelPage() {
 
       {/* So funktioniert's */}
       <section className="card mt-3">
-        <h2 className="text-lg font-semibold m-0 mb-3">So funktioniert ein Buchzirkel</h2>
-        <ol className="flex flex-col gap-2 text-sm text-arena-text pl-0 list-none m-0">
-          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">1</span><span><strong>Autor erstellt einen Zirkel</strong> – mit Beschreibung, Bewerbungsfrist und optionalen Fragen an Interessenten.</span></li>
-          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">2</span><span><strong>Leser bewerben sich</strong> – innerhalb der Bewerbungsfrist können registrierte Mitglieder eine Bewerbung einreichen.</span></li>
-          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">3</span><span><strong>Autor wählt Teilnehmer aus</strong> – angenommene Teilnehmer erhalten Zugang zum Lesebereich mit Manuskript/Buch und Diskussion.</span></li>
-          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">4</span><span><strong>Gemeinsames Lesen</strong> – Teilnehmer lesen nach Zeitplan, diskutieren in Themen-Bereichen und geben Feedback.</span></li>
-          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold">5</span><span><strong>Rezensionen</strong> – nach dem Lesen tragen (Test)Leser ihre Rezensionslinks ein (Amazon, Goodreads, …).</span></li>
+        <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0 mb-3">So funktioniert ein Buchzirkel</h2>
+        <ol className="flex flex-col gap-2 text-sm text-arena-text pl-0 list-none m-0 font-sans">
+          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold font-sans">1</span><span><strong>Autor erstellt einen Zirkel</strong> – mit Beschreibung, Bewerbungsfrist und optionalen Fragen an Interessenten.</span></li>
+          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold font-sans">2</span><span><strong>Leser bewerben sich</strong> – innerhalb der Bewerbungsfrist können registrierte Mitglieder eine Bewerbung einreichen.</span></li>
+          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold font-sans">3</span><span><strong>Autor wählt Teilnehmer aus</strong> – angenommene Teilnehmer erhalten Zugang zum Lesebereich mit Manuskript/Buch und Diskussion.</span></li>
+          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold font-sans">4</span><span><strong>Gemeinsames Lesen</strong> – Teilnehmer lesen nach Zeitplan, diskutieren in Themen-Bereichen und geben Feedback.</span></li>
+          <li className="flex gap-3"><span className="flex-shrink-0 w-6 h-6 rounded-full bg-arena-blue text-white text-xs flex items-center justify-center font-bold font-sans">5</span><span><strong>Rezensionen</strong> – nach dem Lesen tragen (Test)Leser ihre Rezensionslinks ein (Amazon, Goodreads, …).</span></li>
         </ol>
       </section>
 
@@ -110,7 +109,7 @@ export default function BuchzirkelPage() {
           <button
             type="button"
             onClick={() => setTypFilter("")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
               typFilter === "" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
             }`}
           >
@@ -119,7 +118,7 @@ export default function BuchzirkelPage() {
           <button
             type="button"
             onClick={() => setTypFilter("testleser")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
               typFilter === "testleser" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
             }`}
           >
@@ -128,18 +127,18 @@ export default function BuchzirkelPage() {
           <button
             type="button"
             onClick={() => setTypFilter("betaleser")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
               typFilter === "betaleser" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
             }`}
           >
             Buchzirkel (Beta)
           </button>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap font-sans">
           <button
             type="button"
             onClick={() => setBewerbungsStatusFilter("")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
               bewerbungsStatusFilter === "" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
             }`}
           >
@@ -148,7 +147,7 @@ export default function BuchzirkelPage() {
           <button
             type="button"
             onClick={() => setBewerbungsStatusFilter("offen")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
               bewerbungsStatusFilter === "offen" ? "bg-green-700 text-white border-green-700" : "border-arena-border text-arena-text hover:border-green-700"
             }`}
           >
@@ -157,7 +156,7 @@ export default function BuchzirkelPage() {
           <button
             type="button"
             onClick={() => setBewerbungsStatusFilter("beendet")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
               bewerbungsStatusFilter === "beendet" ? "bg-red-700 text-white border-red-700" : "border-arena-border text-arena-text hover:border-red-700"
             }`}
           >
@@ -169,11 +168,11 @@ export default function BuchzirkelPage() {
       {/* Meine eigenen Zirkel (Veranstalter) + Teilnahmen */}
       {account && (meineAktive.length > 0 || meineTeilnahmen.length > 0) && (
         <section className="card mt-3">
-          <h2 className="text-lg font-semibold mb-3">Meine Buchzirkel</h2>
+          <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0 mb-3">Meine Buchzirkel</h2>
           {meineAktive.length > 0 && (
             <>
               {meineTeilnahmen.length > 0 && (
-                <p className="text-xs font-semibold uppercase tracking-wide text-arena-muted mb-2">Als Veranstalter</p>
+                <p className="font-sans text-xs font-bold uppercase tracking-wider text-arena-muted mb-2">Als Veranstalter</p>
               )}
               <div className="w-full grid grid-cols-1 gap-2">
                 {meineAktive.map((z) => (
@@ -191,7 +190,7 @@ export default function BuchzirkelPage() {
           {meineTeilnahmen.length > 0 && (
             <>
               {meineAktive.length > 0 && <hr className="border-arena-border-light my-3" />}
-              <p className="text-xs font-semibold uppercase tracking-wide text-arena-muted mb-2">Als Teilnehmer</p>
+              <p className="font-sans text-xs font-bold uppercase tracking-wider text-arena-muted mb-2">Als Teilnehmer</p>
               <div className="w-full grid grid-cols-1 gap-2">
                 {meineTeilnahmen
                   .filter((z) => !meineAktive.some((m) => m._id === z._id))
@@ -228,13 +227,13 @@ export default function BuchzirkelPage() {
 
       {/* Liste */}
       {loading ? (
-        <p className="text-arena-muted text-center py-8">Wird geladen…</p>
+        <p className="font-sans text-arena-muted text-center py-8">Wird geladen…</p>
       ) : zirkel.length === 0 ? (
         <section className="card mt-3 text-center py-8">
-          <p className="text-arena-muted m-0">Aktuell keine offenen Buchzirkel.</p>
+          <p className="font-sans text-arena-muted m-0">Aktuell keine offenen Buchzirkel.</p>
           {account && (
-            <p className="text-sm m-0 mt-2">
-              <Link href="/buchzirkel/erstellen" className="text-arena-blue hover:underline">
+            <p className="font-sans text-sm m-0 mt-2">
+              <Link href="/buchzirkel/erstellen" className="font-sans text-arena-blue hover:underline">
                 Erstelle den ersten →
               </Link>
             </p>
@@ -261,7 +260,7 @@ export default function BuchzirkelPage() {
       {/* Meine abgeschlossenen Zirkel */}
       {account && meine.length > 0 && (
         <section className="card mt-6">
-          <h2 className="text-lg font-semibold mb-3">Meine abgeschlossenen Zirkel</h2>
+          <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0 mb-3">Meine abgeschlossenen Zirkel</h2>
           <div className="w-full grid grid-cols-1 gap-2">
             {meine.map((z) => (
               <ZirkelKarte key={z._id} zirkel={z} deletable={z.veranstalterUsername === account.username} onDelete={() => setMeine((prev) => prev.filter((m) => m._id !== z._id))} />
@@ -300,20 +299,20 @@ function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirk
   let statusBadge = null;
   const bewerbungOffen = zirkel.status === "bewerbung" && !expired;
   if (showStatus && zirkel.status === "entwurf") {
-    statusBadge = <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">✏️ Entwurf</span>;
+    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">✏️ Entwurf</span>;
   } else if (showStatus && zirkel.status === "abgeschlossen") {
-    statusBadge = <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">✅ Abgeschlossen</span>;
+    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">✅ Abgeschlossen</span>;
   } else if (bewerbungOffen) {
-    statusBadge = <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">🟢 Bewerbung möglich</span>;
+    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">🟢 Bewerbung möglich</span>;
   } else {
-    statusBadge = <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">🔒 Läuft schon</span>;
+    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">🔒 Läuft schon</span>;
   }
 
   return (
     <div className="relative group">
       <Link
         href={`/buchzirkel/${zirkel._id}`}
-        className="no-underline text-inherit flex gap-3 rounded-xl border border-arena-border bg-white p-3 hover:border-arena-blue transition-colors h-full overflow-hidden"
+        className="card-base p-3 no-underline text-inherit flex gap-3 hover:border-arena-blue transition-colors h-full overflow-hidden"
       >
         {/* Cover */}
         <div className="flex-shrink-0 w-[62px] h-[88px] rounded-lg overflow-hidden bg-arena-border-light flex items-center justify-center">
@@ -327,42 +326,42 @@ function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirk
         {/* Info */}
         <div className="flex-1 min-w-0 flex flex-col">
           <div className="flex items-start gap-1.5 flex-wrap">
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
+            <span className={`font-sans text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
               {isBeta ? "Buchzirkel (Beta)" : "Buchzirkel"}
             </span>
             {zirkel.genre && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">
+              <span className="font-sans text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">
                 {zirkel.genre}
               </span>
             )}
             {statusBadge}
             {zirkel.isTeilnehmer && (
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✅ Teilnehmer</span>
+              <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✅ Teilnehmer</span>
             )}
             {!zirkel.isTeilnehmer && zirkel.isBeworben && (
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-yellow text-arena-blue">⏳ Beworben</span>
+              <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-yellow text-arena-blue">⏳ Beworben</span>
             )}
           </div>
 
-          <h2 className="text-base font-semibold m-0 mt-0.5 truncate">{zirkel.titel}</h2>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-arena-muted m-0">
+          <h2 className="font-sans text-base font-bold text-arena-blue m-0 mt-0.5 truncate">{zirkel.titel}</h2>
+          <div className="font-sans flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-arena-muted m-0">
             <span>von {zirkel.veranstalterUsername}</span>
             <span aria-hidden>·</span>
             <span>max. {zirkel.maxTeilnehmer} Teilnehmer</span>
             <span aria-hidden>·</span>
             {expired ? (
-              <span className="text-red-600 font-medium">Bewerbung beendet</span>
+              <span className="font-sans text-red-600 font-semibold">Bewerbung beendet</span>
             ) : (
               <span>Frist: {frist.toLocaleDateString("de-AT")}</span>
             )}
           </div>
-          <p className="text-sm text-arena-muted m-0 mt-0.5 line-clamp-1 flex-1">{zirkel.beschreibung}</p>
+          <p className="font-sans text-sm text-arena-muted m-0 mt-1 line-clamp-1 flex-1">{zirkel.beschreibung}</p>
 
         </div>
         {deletable && (
           <button
             type="button"
-            className="absolute top-2 right-2 z-10 btn btn-danger btn-xs opacity-80 group-hover:opacity-100"
+            className="absolute top-2 right-2 z-10 btn btn-danger btn-xs opacity-80 group-hover:opacity-100 font-sans"
             onClick={e => { e.preventDefault(); setShowDelete(true); }}
             disabled={deleting}
             title="Zirkel löschen"
@@ -374,13 +373,13 @@ function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirk
       {showDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowDelete(false)}>
           <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-xl" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-2">Zirkel wirklich löschen?</h3>
-            <p className="text-sm text-arena-muted mb-4">Diese Aktion kann nicht rückgängig gemacht werden.</p>
-            {deleteError && <p className="text-red-600 text-sm mb-2">{deleteError}</p>}
+            <h3 className="font-sans text-lg font-bold text-arena-blue mb-2">Zirkel wirklich löschen?</h3>
+            <p className="font-sans text-sm text-arena-muted mb-4">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+            {deleteError && <p className="font-sans text-red-600 text-sm mb-2">{deleteError}</p>}
             <div className="flex gap-2 mt-2">
               <button
                 type="button"
-                className="btn btn-danger flex-1"
+                className="btn btn-danger flex-1 font-sans"
                 onClick={confirmDelete}
                 disabled={deleting}
               >
@@ -388,7 +387,7 @@ function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirk
               </button>
               <button
                 type="button"
-                className="btn flex-1"
+                className="btn flex-1 font-sans"
                 onClick={() => setShowDelete(false)}
                 disabled={deleting}
               >
