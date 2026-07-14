@@ -96,11 +96,11 @@ export default function AnalyticsPage() {
 
   if (!account || (account.role !== "ADMIN" && account.role !== "SUPERADMIN")) {
     return (
-      <main className="centered-main">
-        <div className="card" style={{ textAlign: "center" }}>
-          <h1>Zugriff verweigert</h1>
-          <p>Diese Seite ist nur für Administratoren.</p>
-          <Link href="/" className="btn btn-primary">
+      <main className="centered-main font-sans">
+        <div className="card font-sans max-w-md p-8 text-center bg-white">
+          <h1 className="font-sans text-2xl font-bold text-arena-danger mb-3">Zugriff verweigert</h1>
+          <p className="font-sans text-sm text-arena-muted mb-6">Diese Seite ist nur für Administratoren.</p>
+          <Link href="/" className="btn btn-primary font-sans w-full">
             Zur Startseite
           </Link>
         </div>
@@ -112,21 +112,21 @@ export default function AnalyticsPage() {
     data?.visitorsPerDay.reduce((max, d) => Math.max(max, d.count), 0) ?? 0;
 
   return (
-    <main className="centered-main">
-      <div className="card">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
-          <h1 style={{ fontSize: "1.3rem" }}>📊 Analyse-Dashboard</h1>
-          <Link href="/admin" className="btn btn-sm">
+    <main className="centered-main font-sans">
+      <div className="card font-sans">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4 font-sans">
+          <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">📊 Analyse-Dashboard</h1>
+          <Link href="/admin" className="btn btn-sm font-sans">
             ← Admin
           </Link>
         </div>
 
         {/* Zeitraum-Auswahl */}
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <div className="segmented-control font-sans max-w-sm mb-4">
           {[7, 14, 30, 90].map((d) => (
             <button
               key={d}
-              className={`btn btn-sm${d === days ? " btn-primary" : ""}`}
+              className={`segmented-control-btn font-sans ${d === days ? "active" : ""}`}
               onClick={() => setDays(d)}
             >
               {d} Tage
@@ -135,47 +135,28 @@ export default function AnalyticsPage() {
         </div>
 
         {isLoading ? (
-          <p style={{ color: "var(--color-arena-muted)" }}>Lade Daten…</p>
+          <p className="font-sans text-sm text-arena-muted">Lade Daten…</p>
         ) : data ? (
           <>
             {/* Übersichtskarten */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "0.5rem",
-              }}
-            >
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 font-sans mb-4">
               {[
-                { value: data.todayViews, label: "Aufrufe heute", bg: "var(--color-arena-blue)", color: "#fff" },
-                { value: data.todayUniqueVisitors, label: "Nutzer heute", bg: "var(--color-arena-yellow)", color: "#333" },
-                { value: data.todayLoggedInUsers, label: "Eingeloggt", bg: "var(--color-arena-blue-light)", color: "#fff" },
-                { value: data.todayAnonymousUsers, label: "Anonym", bg: "var(--color-arena-blue-mid)", color: "#fff" },
-                { value: data.totalViews, label: `Gesamt (${data.days}d)`, bg: "var(--color-arena-blue)", color: "#fff" },
-                { value: data.visitorsPerDay.length, label: "Aktive Tage", bg: "var(--color-arena-blue-mid)", color: "#fff" },
+                { value: data.todayViews, label: "Aufrufe heute" },
+                { value: data.todayUniqueVisitors, label: "Nutzer heute" },
+                { value: data.todayLoggedInUsers, label: "Eingeloggt" },
+                { value: data.todayAnonymousUsers, label: "Anonym" },
+                { value: data.totalViews, label: `Gesamt (${data.days}d)` },
+                { value: data.visitorsPerDay.length, label: "Aktive Tage" },
               ].map((card) => (
-                <div
-                  key={card.label}
-                  style={{
-                    background: card.bg,
-                    color: card.color,
-                    borderRadius: 8,
-                    padding: "0.6rem 0.4rem",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{ fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.1 }}>
-                    {card.value}
-                  </div>
-                  <div style={{ fontSize: "0.72rem", opacity: 0.85 }}>
-                    {card.label}
-                  </div>
+                <div key={card.label} className="p-4 rounded-xl border border-arena-border-light text-center bg-white shadow-sm font-sans transition-all hover:shadow-md">
+                  <div className="font-sans text-2xl font-bold text-arena-blue">{card.value}</div>
+                  <div className="font-sans text-xs text-arena-muted font-bold mt-1">{card.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Tabs */}
-            <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
+            <div className="segmented-control font-sans w-full max-w-md mb-4">
               {[
                 { key: "chart" as const, label: "📈 Verlauf" },
                 { key: "pages" as const, label: "📄 Top-Seiten" },
@@ -183,7 +164,7 @@ export default function AnalyticsPage() {
               ].map((t) => (
                 <button
                   key={t.key}
-                  className={`btn btn-sm${tab === t.key ? " btn-primary" : ""}`}
+                  className={`segmented-control-btn font-sans ${tab === t.key ? "active" : ""}`}
                   onClick={() => setTab(t.key)}
                 >
                   {t.label}
@@ -193,203 +174,84 @@ export default function AnalyticsPage() {
 
             {/* Tab: Verlauf */}
             {tab === "chart" && (
-              <>
-              <div style={{ display: "flex", gap: "1rem", fontSize: "0.72rem", color: "var(--color-arena-muted)", flexWrap: "wrap" }}>
-                <span>Aufrufe · <span style={{ color: "var(--color-arena-blue)", fontWeight: 600 }}>Eingeloggt</span> / <span style={{ opacity: 0.6 }}>Anonym</span></span>
-              </div>
-              <div
-                style={{
-                  display: "grid",
-                  gap: "3px",
-                  maxHeight: 400,
-                  overflowY: "auto",
-                }}
-              >
-                {data.visitorsPerDay.map((d) => (
-                  <div
-                    key={d.date}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "80px 1fr 55px",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                      fontSize: "0.78rem",
-                    }}
-                  >
-                    <span style={{ color: "var(--color-arena-muted)" }}>
-                      {formatDate(d.date)}
-                    </span>
-                    <div
-                      style={{
-                        background: "#e0e0e0",
-                        borderRadius: 4,
-                        height: 16,
-                        overflow: "hidden",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: maxCount
-                            ? `${(d.count / maxCount) * 100}%`
-                            : "0%",
-                          background: "var(--color-arena-yellow)",
-                          height: "100%",
-                          borderRadius: 4,
-                          transition: "width 0.3s",
-                        }}
-                      />
+              <div className="font-sans">
+                <div className="flex gap-4 text-xs text-arena-muted flex-wrap font-sans font-bold mb-3">
+                  <span>Aufrufe · <span className="text-arena-blue">Eingeloggt</span> / <span className="opacity-70">Anonym</span></span>
+                </div>
+                <div className="grid gap-2 max-h-[400px] overflow-y-auto pr-1 font-sans">
+                  {data.visitorsPerDay.map((d) => (
+                    <div key={d.date} className="grid grid-cols-[85px_1fr_auto] items-center gap-4 text-sm font-sans py-1.5 border-b border-arena-border-light">
+                      <span className="text-arena-muted font-medium">{formatDate(d.date)}</span>
+                      <div className="bg-arena-border-light rounded-full h-2.5 overflow-hidden w-full font-sans">
+                        <div
+                          style={{ width: maxCount ? `${(d.count / maxCount) * 100}%` : "0%" }}
+                          className="bg-arena-yellow h-full rounded-full transition-all duration-300"
+                        />
+                      </div>
+                      <span className="font-bold text-right white-space-nowrap text-xs font-sans">
+                        {d.count} · <span className="text-arena-blue">{d.loggedIn}</span>/<span className="opacity-60">{d.anonymous}</span>
+                      </span>
                     </div>
-                    <span style={{ fontWeight: 600, textAlign: "right", whiteSpace: "nowrap", fontSize: "0.75rem" }}>
-                      {d.count} · <span title="Eingeloggt" style={{ color: "var(--color-arena-blue)" }}>{d.loggedIn}</span>/<span title="Anonym" style={{ opacity: 0.6 }}>{d.anonymous}</span>
-                    </span>
-                  </div>
-                ))}
-                {data.visitorsPerDay.length === 0 && (
-                  <p style={{ color: "var(--color-arena-muted)" }}>
-                    Keine Daten im gewählten Zeitraum.
-                  </p>
-                )}
+                  ))}
+                  {data.visitorsPerDay.length === 0 && (
+                    <p className="font-sans text-sm text-arena-muted">Keine Daten im gewählten Zeitraum.</p>
+                  )}
+                </div>
               </div>
-              </>
             )}
 
             {/* Tab: Top-Seiten */}
             {tab === "pages" && (
-              <>
-            <div style={{ overflowX: "auto" }}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: "0.85rem",
-                }}
-              >
-                <thead>
-                  <tr
-                    style={{
-                      borderBottom: "2px solid var(--color-arena-border)",
-                      textAlign: "left",
-                    }}
-                  >
-                    <th style={{ padding: "0.4rem 0.5rem" }}>Seite</th>
-                    <th
-                      style={{
-                        padding: "0.4rem 0.5rem",
-                        textAlign: "right",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Aufrufe
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.topPages.map((p) => (
-                    <tr
-                      key={p.page}
-                      style={{
-                        borderBottom: "1px solid var(--color-arena-border-light)",
-                      }}
-                    >
-                      <td
-                        style={{
-                          padding: "0.35rem 0.5rem",
-                          wordBreak: "break-all",
-                        }}
-                      >
-                        {p.page}
-                      </td>
-                      <td
-                        style={{
-                          padding: "0.35rem 0.5rem",
-                          textAlign: "right",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {p.count}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-              </>
-            )}
-
-            {/* Tab: Referrer */}
-            {tab === "referrer" && (
-              <>
-            {data.topReferrers.length === 0 ? (
-              <p style={{ color: "var(--color-arena-muted)", fontSize: "0.9rem" }}>
-                Keine externen Referrer im gewählten Zeitraum.
-              </p>
-            ) : (
-              <div style={{ overflowX: "auto" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontSize: "0.85rem",
-                  }}
-                >
+              <div className="overflow-x-auto border border-arena-border-light rounded-lg font-sans">
+                <table className="w-full text-left border-collapse font-sans text-sm">
                   <thead>
-                    <tr
-                      style={{
-                        borderBottom: "2px solid var(--color-arena-border)",
-                        textAlign: "left",
-                      }}
-                    >
-                      <th style={{ padding: "0.4rem 0.5rem" }}>Quelle</th>
-                      <th
-                        style={{
-                          padding: "0.4rem 0.5rem",
-                          textAlign: "right",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Aufrufe
-                      </th>
+                    <tr className="border-b border-arena-border-light bg-arena-bg font-bold text-arena-blue font-sans">
+                      <th className="py-2.5 px-4 font-sans">Seite</th>
+                      <th className="py-2.5 px-4 text-right font-sans">Aufrufe</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {data.topReferrers.map((r) => (
-                      <tr
-                        key={r.referrer}
-                        style={{
-                          borderBottom:
-                            "1px solid var(--color-arena-border-light)",
-                        }}
-                      >
-                        <td
-                          style={{
-                            padding: "0.35rem 0.5rem",
-                            wordBreak: "break-all",
-                          }}
-                        >
-                          {tryExtractHost(r.referrer)}
-                        </td>
-                        <td
-                          style={{
-                            padding: "0.35rem 0.5rem",
-                            textAlign: "right",
-                            fontWeight: 600,
-                          }}
-                        >
-                          {r.count}
-                        </td>
+                    {data.topPages.map((p) => (
+                      <tr key={p.page} className="border-b border-arena-border-light hover:bg-arena-bg-light transition-colors font-sans">
+                        <td className="py-2.5 px-4 font-mono text-xs text-arena-blue break-all">{p.page}</td>
+                        <td className="py-2.5 px-4 text-right font-bold font-sans">{p.count}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             )}
+
+            {/* Tab: Referrer */}
+            {tab === "referrer" && (
+              <>
+                {data.topReferrers.length === 0 ? (
+                  <p className="font-sans text-sm text-arena-muted font-sans">Keine externen Referrer im gewählten Zeitraum.</p>
+                ) : (
+                  <div className="overflow-x-auto border border-arena-border-light rounded-lg font-sans">
+                    <table className="w-full text-left border-collapse font-sans text-sm">
+                      <thead>
+                        <tr className="border-b border-arena-border-light bg-arena-bg font-bold text-arena-blue font-sans">
+                          <th className="py-2.5 px-4 font-sans">Quelle</th>
+                          <th className="py-2.5 px-4 text-right font-sans">Aufrufe</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.topReferrers.map((r) => (
+                          <tr key={r.referrer} className="border-b border-arena-border-light hover:bg-arena-bg-light transition-colors font-sans">
+                            <td className="py-2.5 px-4 font-medium text-arena-text break-all font-sans">{tryExtractHost(r.referrer)}</td>
+                            <td className="py-2.5 px-4 text-right font-bold font-sans">{r.count}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </>
             )}
           </>
         ) : (
-          <p style={{ color: "var(--color-arena-danger)" }}>
-            Daten konnten nicht geladen werden.
-          </p>
+          <p className="font-sans text-sm text-arena-danger">Daten konnten nicht geladen werden.</p>
         )}
       </div>
     </main>

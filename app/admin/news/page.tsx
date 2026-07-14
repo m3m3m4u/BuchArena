@@ -2,16 +2,59 @@
 
 import { useEditor, EditorContent, useEditorState, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
+import LinkExtension from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import { useEffect, useState, useCallback, useRef } from "react";
+import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 
-/* ══════════════════════════════════════════════════════════════
-   Erweitertes Image-Node mit width-Attribut
-══════════════════════════════════════════════════════════════ */
+type NewsLayout = "text-only" | "image-left" | "image-right";
+
+const LAYOUT_OPTIONS: { key: NewsLayout; label: string; description: string; preview: React.ReactNode }[] = [
+  {
+    key: "text-only",
+    label: "Nur Text",
+    description: "Klassischer Blog-Stil ohne Titelbild im Teaser.",
+    preview: (
+      <div className="border border-arena-border rounded p-2 flex flex-col gap-1 w-full bg-white text-[8px] leading-tight select-none">
+        <div className="font-bold text-[9px] text-arena-blue">Titel des Beitrags</div>
+        <div className="text-arena-muted">Dies ist ein reiner Text-Layout Teaser. Der Text erstreckt sich über die gesamte Breite des Beitrags...</div>
+      </div>
+    ),
+  },
+  {
+    key: "image-left",
+    label: "Bild links",
+    description: "Teaser zeigt das Titelbild links neben dem Text.",
+    preview: (
+      <div className="border border-arena-border rounded p-2 grid grid-cols-[30px_1fr] gap-2 w-full bg-white text-[8px] leading-tight select-none">
+        <div className="h-10 bg-arena-border rounded flex items-center justify-center text-[10px]">🖼️</div>
+        <div className="flex flex-col gap-1">
+          <div className="font-bold text-[9px] text-arena-blue">Titel des Beitrags</div>
+          <div className="text-arena-muted">Das Bild befindet sich links...</div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: "image-right",
+    label: "Bild rechts",
+    description: "Teaser zeigt das Titelbild rechts neben dem Text.",
+    preview: (
+      <div className="border border-arena-border rounded p-2 grid grid-cols-[1fr_30px] gap-2 w-full bg-white text-[8px] leading-tight select-none">
+        <div className="flex flex-col gap-1">
+          <div className="font-bold text-[9px] text-arena-blue">Titel des Beitrags</div>
+          <div className="text-arena-muted">Das Bild befindet sich rechts...</div>
+        </div>
+        <div className="h-10 bg-arena-border rounded flex items-center justify-center text-[10px]">🖼️</div>
+      </div>
+    ),
+  },
+];
+
+/* ── Resizable Image ── */
 const ResizableImage = Image.extend({
   addAttributes() {
     return {
@@ -24,7 +67,7 @@ const ResizableImage = Image.extend({
           if (sw.endsWith("px")) return sw.slice(0, -2);
           return element.getAttribute("width") ?? null;
         },
-        renderHTML: () => ({}), // merged in node renderHTML below
+        renderHTML: () => ({}),
       },
       align: {
         default: null,
@@ -35,7 +78,7 @@ const ResizableImage = Image.extend({
           if (s.float === "right") return "right";
           return (element.getAttribute("data-align") as string | null) ?? null;
         },
-        renderHTML: () => ({}), // merged in node renderHTML below
+        renderHTML: () => ({}),
       },
     };
   },
@@ -60,9 +103,7 @@ const ResizableImage = Image.extend({
   },
 });
 
-/* ══════════════════════════════════════════════════════════════
-   Toolbar
-══════════════════════════════════════════════════════════════ */
+/* ── Toolbar-Button ── */
 function ToolbarButton({
   onClick, active, title, children,
 }: {
@@ -73,8 +114,10 @@ function ToolbarButton({
       type="button"
       onMouseDown={(e) => { e.preventDefault(); onClick(); }}
       title={title}
-      className={`px-2 py-1 rounded text-sm font-medium border transition-colors ${
-        active ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+      className={`px-2 py-1 rounded text-sm font-bold border font-sans transition-colors min-h-[2rem] flex items-center justify-center cursor-pointer ${
+        active
+          ? "bg-arena-blue text-white border-arena-blue"
+          : "bg-white text-arena-text border-arena-border hover:bg-arena-bg hover:text-arena-blue"
       }`}
     >
       {children}
@@ -82,6 +125,7 @@ function ToolbarButton({
   );
 }
 
+/* ── URL-Modal ── */
 type UrlModalConfig = { title: string; placeholder: string; initial: string; onConfirm: (url: string) => void };
 
 function UrlInputModal({ config, onClose }: { config: UrlModalConfig; onClose: () => void }) {
@@ -90,17 +134,22 @@ function UrlInputModal({ config, onClose }: { config: UrlModalConfig; onClose: (
   useEffect(() => { inputRef.current?.focus(); inputRef.current?.select(); }, []);
   const confirm = () => { if (value.trim()) config.onConfirm(value.trim()); onClose(); };
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50"
+    <div className="overlay-backdrop font-sans"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white rounded-xl shadow-2xl w-[min(480px,95vw)] p-5">
-        <h3 className="text-base font-semibold text-gray-800 mb-3">{config.title}</h3>
-        <input ref={inputRef} type="url" value={value} onChange={(e) => setValue(e.target.value)}
+      <div className="card font-sans max-w-md w-full p-6 bg-white" onMouseDown={(e) => e.stopPropagation()}>
+        <h3 className="font-sans text-base font-bold text-arena-blue tracking-tight m-0 mb-3">{config.title}</h3>
+        <input
+          ref={inputRef}
+          type="url"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
           placeholder={config.placeholder}
           onKeyDown={(e) => { if (e.key === "Enter") confirm(); if (e.key === "Escape") onClose(); }}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4" />
-        <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="px-4 py-1.5 rounded-lg text-sm border border-gray-300 text-gray-600 hover:bg-gray-50">Abbrechen</button>
-          <button type="button" onClick={confirm} className="px-4 py-1.5 rounded-lg text-sm bg-blue-600 text-white font-medium hover:bg-blue-700">Einfügen</button>
+          className="input-base w-full mb-4 font-sans"
+        />
+        <div className="flex justify-end gap-2 font-sans">
+          <button type="button" onClick={onClose} className="btn font-sans">Abbrechen</button>
+          <button type="button" onClick={confirm} className="btn btn-primary font-sans">Einfügen</button>
         </div>
       </div>
     </div>
@@ -111,7 +160,6 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
   const imgInputRef = useRef<HTMLInputElement>(null);
   const [urlModal, setUrlModal] = useState<UrlModalConfig | null>(null);
   const [imgWidthInput, setImgWidthInput] = useState("");
-
   const [imgAlignActive, setImgAlignActive] = useState<string | null>(null);
 
   const editorState = useEditorState({
@@ -167,9 +215,16 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
 
   const handleImageFile = useCallback(async (file: File) => {
     if (!editor) return;
-    const reader = new FileReader();
-    reader.onload = () => { editor.chain().focus().setImage({ src: reader.result as string }).run(); };
-    reader.readAsDataURL(file);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/editor/upload-image", { method: "POST", body: formData });
+      const data = (await res.json()) as { imageUrl?: string; message?: string };
+      if (!res.ok || !data.imageUrl) throw new Error(data.message ?? "Upload fehlgeschlagen.");
+      editor.chain().focus().setImage({ src: data.imageUrl }).run();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Bild-Upload fehlgeschlagen.");
+    }
   }, [editor]);
 
   if (!editor) return null;
@@ -177,40 +232,40 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
   return (
     <>
       {urlModal && <UrlInputModal config={urlModal} onClose={() => setUrlModal(null)} />}
-      <div className="flex flex-wrap gap-1 p-2 border border-b-0 border-gray-300 rounded-t-lg bg-gray-50">
+      <div className="flex flex-wrap gap-1.5 p-2.5 border border-b-0 border-arena-border rounded-t-xl bg-arena-bg font-sans">
         <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Fett"><strong>B</strong></ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Kursiv"><em>I</em></ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Unterstrichen"><span className="underline">U</span></ToolbarButton>
-        <span className="border-l border-gray-300 mx-1" />
-        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="Überschrift 1">H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="Überschrift 2">H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="Überschrift 3">H3</ToolbarButton>
-        <span className="border-l border-gray-300 mx-1" />
+        <span className="border-l border-arena-border mx-1.5" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="H1">H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="H2">H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="H3">H3</ToolbarButton>
+        <span className="border-l border-arena-border mx-1.5" />
         <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Aufzählung">• Liste</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Nummerierte Liste">1. Liste</ToolbarButton>
-        <span className="border-l border-gray-300 mx-1" />
+        <span className="border-l border-arena-border mx-1.5" />
         <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title="Linksbündig">Links</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title="Zentriert">Mitte</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Rechtsbündig">Rechts</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("justify").run()} active={editor.isActive({ textAlign: "justify" })} title="Blocksatz">Block</ToolbarButton>
-        <span className="border-l border-gray-300 mx-1" />
-        <ToolbarButton onClick={openLinkModal} active={editor.isActive("link")} title="Link einfügen">🔗 Link</ToolbarButton>
+        <span className="border-l border-arena-border mx-1.5" />
+        <ToolbarButton onClick={openLinkModal} active={editor.isActive("link")} title="Link einfügen">Link</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Zitat">❝</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} active={false} title="Trennlinie">—</ToolbarButton>
-        <span className="border-l border-gray-300 mx-1" />
-        <ToolbarButton onClick={() => imgInputRef.current?.click()} active={false} title="Bild hochladen">🖼 Bild</ToolbarButton>
-        <ToolbarButton onClick={openImageUrlModal} active={false} title="Bild per URL">🔗 Bild-URL</ToolbarButton>
-        <span className="border-l border-gray-300 mx-1" />
+        <span className="border-l border-arena-border mx-1.5" />
+        <ToolbarButton onClick={() => imgInputRef.current?.click()} active={false} title="Bild hochladen">Bild</ToolbarButton>
+        <ToolbarButton onClick={openImageUrlModal} active={false} title="Bild per URL">Bild-URL</ToolbarButton>
+        <span className="border-l border-arena-border mx-1.5 ml-auto" />
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} active={false} title="Rückgängig">↩</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().redo().run()} active={false} title="Wiederholen">↪</ToolbarButton>
-        <span className="border-l border-gray-300 mx-1" />
+        <span className="border-l border-arena-border mx-1.5" />
         <ToolbarButton onClick={onToggleHtml} active={htmlMode} title="HTML-Quelltext">&lt;/&gt; HTML</ToolbarButton>
         <input ref={imgInputRef} type="file" accept="image/*" className="hidden"
           onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleImageFile(f); e.target.value = ""; }} />
       </div>
       {editorState?.isImage && (
-        <div className="flex flex-wrap items-center gap-2 px-3 py-1.5 bg-blue-50 border border-b-0 border-blue-200 text-xs">
-          <span className="text-blue-700 font-medium">🖼️ Bildgröße:</span>
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-blue-50 border border-b-0 border-blue-200 text-xs font-sans">
+          <span className="text-blue-700 font-bold">Bildgröße:</span>
           <input type="text" value={imgWidthInput}
             onChange={(e) => setImgWidthInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") applyImageWidth(imgWidthInput); }}
@@ -219,22 +274,17 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
             className="w-16 border border-blue-300 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white" />
           <span className="text-blue-500">px</span>
           {(["200", "400", "600"] as const).map((val) => (
-            <button key={val} type="button"
-              onMouseDown={(e) => { e.preventDefault(); setImgWidthInput(val); applyImageWidth(val); }}
-              className={`px-2 py-0.5 rounded border text-xs transition-colors ${imgWidthInput === val ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"}`}>
-              {val}
-            </button>
+            <button key={val} type="button" onMouseDown={(e) => { e.preventDefault(); setImgWidthInput(val); applyImageWidth(val); }}
+              className={`px-2 py-0.5 rounded border text-xs transition-colors cursor-pointer ${imgWidthInput === val ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"}`}>{val}</button>
           ))}
           <button type="button" onMouseDown={(e) => { e.preventDefault(); setImgWidthInput("100%"); applyImageWidth("100%"); }}
-            className={`px-2 py-0.5 rounded border text-xs transition-colors ${imgWidthInput === "100%" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"}`}>
-            Voll
-          </button>
+            className={`px-2 py-0.5 rounded border text-xs transition-colors cursor-pointer ${imgWidthInput === "100%" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"}`}>Voll</button>
           <span className="border-l border-blue-200 mx-1 self-stretch" />
-          <span className="text-blue-700 font-medium">Ausrichtung:</span>
+          <span className="text-blue-700 font-bold">Ausrichtung:</span>
           {(["left", "center", "right", null] as const).map((a) => (
             <button key={String(a)} type="button"
               onMouseDown={(e) => { e.preventDefault(); applyImageAlign(a); }}
-              className={`px-2 py-0.5 rounded border text-xs transition-colors ${
+              className={`px-2 py-0.5 rounded border text-xs transition-colors cursor-pointer ${
                 imgAlignActive === a ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"
               }`}>
               {a === "left" ? "Links" : a === "center" ? "Mitte" : a === "right" ? "Rechts" : "Normal"}
@@ -245,56 +295,6 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
     </>
   );
 }
-
-/* ══════════════════════════════════════════════════════════════
-   Layout-Selector
-══════════════════════════════════════════════════════════════ */
-type NewsLayout = "text-only" | "image-left" | "image-right";
-
-const LAYOUT_OPTIONS: { key: NewsLayout; label: string; description: string; preview: React.ReactNode }[] = [
-  {
-    key: "text-only",
-    label: "Nur Text",
-    description: "Kein Bild, nur Textinhalt",
-    preview: (
-      <div className="space-y-1">
-        <div className="h-2 bg-gray-300 rounded w-full" />
-        <div className="h-2 bg-gray-300 rounded w-5/6" />
-        <div className="h-2 bg-gray-300 rounded w-4/5" />
-      </div>
-    ),
-  },
-  {
-    key: "image-left",
-    label: "Bild links, Text rechts",
-    description: "Bild auf der linken Seite",
-    preview: (
-      <div className="flex gap-1.5">
-        <div className="w-2/5 h-8 bg-blue-200 rounded" />
-        <div className="flex-1 space-y-1">
-          <div className="h-2 bg-gray-300 rounded w-full" />
-          <div className="h-2 bg-gray-300 rounded w-5/6" />
-          <div className="h-2 bg-gray-300 rounded w-4/5" />
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: "image-right",
-    label: "Text links, Bild rechts",
-    description: "Bild auf der rechten Seite",
-    preview: (
-      <div className="flex gap-1.5">
-        <div className="flex-1 space-y-1">
-          <div className="h-2 bg-gray-300 rounded w-full" />
-          <div className="h-2 bg-gray-300 rounded w-5/6" />
-          <div className="h-2 bg-gray-300 rounded w-4/5" />
-        </div>
-        <div className="w-2/5 h-8 bg-blue-200 rounded" />
-      </div>
-    ),
-  },
-];
 
 /* ══════════════════════════════════════════════════════════════
    Haupt-Komponente
@@ -356,13 +356,13 @@ export default function NewsAdminPage() {
     extensions: [
       StarterKit,
       Underline,
-      Link.configure({ openOnClick: false, HTMLAttributes: { rel: "noopener noreferrer" } }),
+      LinkExtension.configure({ openOnClick: false, HTMLAttributes: { rel: "noopener noreferrer" } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       ResizableImage.configure({ inline: false, allowBase64: true }),
     ],
     content: "",
     editorProps: {
-      attributes: { class: "prose prose-sm max-w-none min-h-[300px] p-4 focus:outline-none" },
+      attributes: { class: "prose prose-sm max-w-none min-h-[300px] p-4 focus:outline-none font-sans" },
     },
   });
 
@@ -478,8 +478,29 @@ export default function NewsAdminPage() {
     reader.readAsDataURL(file);
   }
 
-  if (isAdmin === null) return <div className="p-8 text-gray-500">Lade…</div>;
-  if (!isAdmin) return <div className="p-8 text-red-600 font-semibold">Kein Zugriff.</div>;
+  if (isAdmin === null) {
+    return (
+      <main className="centered-main font-sans">
+        <section className="card font-sans text-center py-8">
+          <p className="font-sans text-sm text-arena-muted">Wird geladen …</p>
+        </section>
+      </main>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <main className="centered-main font-sans">
+        <div className="card font-sans max-w-md p-8 text-center bg-white">
+          <h1 className="font-sans text-2xl font-bold text-arena-danger mb-3">Zugriff verweigert</h1>
+          <p className="font-sans text-sm text-arena-muted mb-6">Diese Seite ist nur für Administratoren.</p>
+          <Link href="/" className="btn btn-primary font-sans w-full">
+            Zur Startseite
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   const LAYOUT_LABELS: Record<NewsLayout, string> = {
     "text-only": "Nur Text",
@@ -488,193 +509,244 @@ export default function NewsAdminPage() {
   };
 
   return (
-    <main className="w-[min(1100px,100%)] mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">📰 News-Beiträge</h1>
-        {view === "list" ? (
-          <button type="button" onClick={openNew}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-            + Neuer Beitrag
-          </button>
-        ) : (
-          <button type="button" onClick={() => setView("list")}
-            className="px-4 py-2 rounded-lg text-sm border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors">
-            ← Zur Übersicht
-          </button>
-        )}
-      </div>
-
-      {/* ═══ LIST VIEW ═══ */}
-      {view === "list" && (
-        <>
-          {postsLoading ? (
-            <p className="text-gray-400 text-sm">Lade…</p>
-          ) : posts.length === 0 ? (
-            <p className="text-gray-400 text-sm">Noch keine Beiträge vorhanden.</p>
+    <main className="centered-main font-sans">
+      <div className="card font-sans">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4 font-sans border-b border-arena-border-light pb-3">
+          <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">📰 News-Beiträge</h1>
+          {view === "list" ? (
+            <button type="button" onClick={openNew} className="btn btn-sm btn-primary font-sans">
+              + Neuer Beitrag
+            </button>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-gray-600 font-medium">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Titel</th>
-                    <th className="px-4 py-2 text-left">Layout</th>
-                    <th className="px-4 py-2 text-left">Status</th>
-                    <th className="px-4 py-2 text-left">Erstellt von</th>
-                    <th className="px-4 py-2 text-left">Datum</th>
-                    <th className="px-4 py-2 text-left">Aktionen</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {posts.map((p) => (
-                    <tr key={p._id} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 font-medium text-gray-800 max-w-xs truncate">{p.title}</td>
-                      <td className="px-4 py-2 text-gray-500 text-xs">{LAYOUT_LABELS[p.layout]}</td>
-                      <td className="px-4 py-2">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${p.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                          {p.active ? "Aktiv" : "Inaktiv"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 text-gray-500">{p.createdBy}</td>
-                      <td className="px-4 py-2 text-gray-500 whitespace-nowrap">
-                        {new Date(p.updatedAt).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}
-                      </td>
-                      <td className="px-4 py-2">
-                        <div className="flex gap-2">
-                          <button type="button" onClick={() => void openEdit(p._id)} className="text-blue-600 hover:underline text-xs">Bearbeiten</button>
-                          <button type="button" onClick={() => void handleToggleActive(p._id, !p.active)}
-                            className={`text-xs hover:underline ${p.active ? "text-yellow-600" : "text-green-600"}`}>
-                            {p.active ? "Deaktivieren" : "Aktivieren"}
-                          </button>
-                          <button type="button" onClick={() => void handleDelete(p._id)} className="text-red-500 hover:underline text-xs">Löschen</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <button type="button" onClick={() => setView("list")} className="btn btn-sm font-sans">
+              ← Zur Übersicht
+            </button>
           )}
-        </>
-      )}
+        </div>
 
-      {/* ═══ EDITOR VIEW ═══ */}
-      {view === "editor" && (
-        <div className="space-y-6">
-          {/* Titel */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Titel</label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-              placeholder="Titel des Beitrags…" maxLength={200}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
+        {/* ═══ LIST VIEW ═══ */}
+        {view === "list" && (
+          <>
+            {postsLoading ? (
+              <p className="font-sans text-sm text-arena-muted">Lade…</p>
+            ) : posts.length === 0 ? (
+              <p className="font-sans text-sm text-arena-muted">Noch keine Beiträge vorhanden.</p>
+            ) : (
+              <div className="overflow-x-auto border border-arena-border-light rounded-lg font-sans">
+                <table className="w-full text-left border-collapse font-sans text-sm">
+                  <thead>
+                    <tr className="border-b border-arena-border-light bg-arena-bg font-bold text-arena-blue font-sans">
+                      <th className="py-2.5 px-4 font-sans">Titel</th>
+                      <th className="py-2.5 px-4 font-sans">Layout</th>
+                      <th className="py-2.5 px-4 font-sans">Status</th>
+                      <th className="py-2.5 px-4 font-sans">Erstellt von</th>
+                      <th className="py-2.5 px-4 font-sans">Datum</th>
+                      <th className="py-2.5 px-4 font-sans">Aktionen</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {posts.map((p) => (
+                      <tr key={p._id} className="border-b border-arena-border-light hover:bg-arena-bg-light transition-colors font-sans">
+                        <td className="py-2.5 px-4 font-bold text-arena-blue max-w-xs truncate font-sans">{p.title}</td>
+                        <td className="py-2.5 px-4 text-arena-muted text-xs font-sans">{LAYOUT_LABELS[p.layout]}</td>
+                        <td className="py-2.5 px-4">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${p.active ? "bg-green-50 text-green-800 border border-green-200" : "bg-arena-bg text-arena-muted border border-arena-border"}`}>
+                            {p.active ? "Aktiv" : "Inaktiv"}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-4 text-arena-text font-sans">{p.createdBy}</td>
+                        <td className="py-2.5 px-4 text-arena-muted whitespace-nowrap font-sans">
+                          {new Date(p.updatedAt).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}
+                        </td>
+                        <td className="py-2.5 px-4">
+                          <div className="flex gap-2 font-sans">
+                            <button type="button" onClick={() => void openEdit(p._id)} className="btn btn-sm font-sans">Bearbeiten</button>
+                            <button
+                              type="button"
+                              onClick={() => void handleToggleActive(p._id, !p.active)}
+                              className={`btn btn-sm font-sans ${p.active ? "border-arena-blue text-arena-blue hover:bg-arena-bg" : "bg-green-600 border-green-600 text-white"}`}
+                            >
+                              {p.active ? "Deaktivieren" : "Aktivieren"}
+                            </button>
+                            <button type="button" onClick={() => void handleDelete(p._id)} className="btn btn-sm btn-danger font-sans">Löschen</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
 
-          {/* Layout-Auswahl */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Layout</label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {LAYOUT_OPTIONS.map((opt) => (
-                <button key={opt.key} type="button" onClick={() => setLayout(opt.key)}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    layout === opt.key ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white hover:border-gray-300"
-                  }`}>
-                  <div className="mb-3">{opt.preview}</div>
-                  <div className="text-sm font-semibold text-gray-800">{opt.label}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">{opt.description}</div>
-                </button>
-              ))}
+        {/* ═══ EDITOR VIEW ═══ */}
+        {view === "editor" && (
+          <div className="grid gap-5 w-full font-sans">
+            {/* Titel */}
+            <div>
+              <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Titel</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Titel des Beitrags…"
+                maxLength={200}
+                className="input-base w-full font-sans"
+              />
             </div>
-          </div>
 
-          {/* Bild-Einstellungen (nur bei Image-Layouts) */}
-          {layout !== "text-only" && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-4">
-              <h2 className="text-sm font-semibold text-blue-800">🖼️ Bild</h2>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Bild hochladen oder URL eingeben</label>
-                <div className="flex gap-2">
-                  <input type="text" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://… oder Base64 nach Upload"
-                    className="flex-1 border border-blue-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                  <button type="button" onClick={() => imgInputRef.current?.click()}
-                    className="px-3 py-2 rounded-lg border border-blue-300 bg-white text-sm text-blue-600 hover:bg-blue-100 whitespace-nowrap">
-                    📁 Datei
+            {/* Layout-Auswahl */}
+            <div>
+              <label className="block text-sm font-bold text-arena-blue mb-2 font-sans">Layout</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {LAYOUT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setLayout(opt.key)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all cursor-pointer ${
+                      layout === opt.key ? "border-arena-blue bg-blue-50/40" : "border-arena-border bg-white hover:border-arena-blue/50"
+                    }`}
+                  >
+                    <div className="mb-3">{opt.preview}</div>
+                    <div className="text-sm font-bold text-arena-blue">{opt.label}</div>
+                    <div className="text-xs text-arena-muted mt-1">{opt.description}</div>
                   </button>
-                  <input ref={imgInputRef} type="file" accept="image/*" className="hidden"
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleImageFile(f); e.target.value = ""; }} />
+                ))}
+              </div>
+            </div>
+
+            {/* Bild-Einstellungen (nur bei Image-Layouts) */}
+            {layout !== "text-only" && (
+              <div className="p-4 bg-blue-50/40 border border-blue-200 rounded-xl grid gap-4 font-sans">
+                <h2 className="text-sm font-bold text-blue-900 m-0">🖼️ Titelbild</h2>
+                <div>
+                  <label className="block text-xs font-bold text-blue-950 mb-1">Bild hochladen oder URL eingeben</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      placeholder="https://… oder Base64 nach Upload"
+                      className="flex-1 input-base bg-white border-blue-200 text-xs min-h-[2.25rem] focus:border-blue-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => imgInputRef.current?.click()}
+                      className="btn btn-sm border-blue-300 bg-white text-blue-600 hover:bg-blue-100 whitespace-nowrap min-h-[2.25rem] px-3 font-sans"
+                    >
+                      📁 Datei
+                    </button>
+                    <input
+                      ref={imgInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleImageFile(f); e.target.value = ""; }}
+                    />
+                  </div>
+                  {imageUrl && (
+                    <div className="mt-3 flex justify-center border border-blue-100 rounded-lg p-2 bg-white">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imageUrl} alt="Vorschau" className="max-h-40 rounded-lg object-contain" />
+                    </div>
+                  )}
                 </div>
-                {imageUrl && (
-                  <div className="mt-2 flex justify-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={imageUrl} alt="Vorschau" className="max-h-40 rounded-lg object-contain" />
+                <div>
+                  <label className="block text-xs font-bold text-blue-950 mb-1">
+                    Bildbreite: <span className="font-bold text-blue-700">{imageRatio}%</span>
+                    <span className="text-blue-500 ml-1">(Text: {100 - imageRatio}%)</span>
+                  </label>
+                  <input
+                    type="range"
+                    min={20}
+                    max={80}
+                    step={5}
+                    value={imageRatio}
+                    onChange={(e) => setImageRatio(Number(e.target.value))}
+                    className="w-full accent-arena-blue"
+                  />
+                  <div className="flex justify-between text-[10px] text-blue-950 mt-0.5 font-bold">
+                    <span>20% Bild</span>
+                    <span>80% Bild</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Textinhalt */}
+            <div>
+              <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Inhalt</label>
+              <div className="border border-arena-border rounded-xl overflow-hidden shadow-sm font-sans bg-white">
+                <EditorToolbar editor={editor} htmlMode={htmlMode} onToggleHtml={toggleHtmlMode} />
+                {htmlMode ? (
+                  <textarea
+                    value={htmlSource}
+                    onChange={(e) => setHtmlSource(e.target.value)}
+                    className="w-full min-h-[300px] p-4 font-mono text-sm bg-white focus:outline-none resize-y"
+                    spellCheck={false}
+                  />
+                ) : (
+                  <div className="bg-white">
+                    <EditorContent editor={editor} />
                   </div>
                 )}
               </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Bildbreite: <span className="font-bold text-blue-700">{imageRatio}%</span>
-                  <span className="text-gray-400 ml-1">(Text: {100 - imageRatio}%)</span>
-                </label>
-                <input type="range" min={20} max={80} step={5} value={imageRatio}
-                  onChange={(e) => setImageRatio(Number(e.target.value))}
-                  className="w-full" />
-                <div className="flex justify-between text-xs text-gray-400 mt-0.5">
-                  <span>20% Bild</span>
-                  <span>80% Bild</span>
-                </div>
-              </div>
             </div>
-          )}
 
-          {/* Textinhalt */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Inhalt</label>
-            <div className="border border-gray-300 rounded-lg overflow-hidden shadow-sm">
-              <EditorToolbar editor={editor} htmlMode={htmlMode} onToggleHtml={toggleHtmlMode} />
-              {htmlMode ? (
-                <textarea value={htmlSource} onChange={(e) => setHtmlSource(e.target.value)}
-                  className="w-full min-h-[300px] p-4 font-mono text-sm bg-white focus:outline-none resize-y"
-                  spellCheck={false} />
-              ) : (
-                <EditorContent editor={editor} className="bg-white" />
+            {/* Aktiv/Inaktiv */}
+            <div className="flex items-center gap-3 font-sans">
+              <label className="flex items-center gap-2 cursor-pointer select-none font-sans text-sm font-bold text-arena-blue">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="w-4 h-4 rounded border-arena-border text-arena-blue focus:ring-arena-blue-light"
+                />
+                Beitrag sofort aktivieren (im Header sichtbar)
+              </label>
+            </div>
+
+            {/* Speichern */}
+            <div className="flex items-center gap-2 flex-wrap font-sans border-t border-arena-border-light pt-4 mt-2">
+              <button
+                type="button"
+                onClick={() => void handleSave()}
+                disabled={saving}
+                className="btn btn-primary font-sans bg-arena-blue border-arena-blue text-white"
+              >
+                {saving ? "Speichert…" : "Speichern"}
+              </button>
+              {!isActive && (
+                <button
+                  type="button"
+                  onClick={() => void handleSave(true)}
+                  disabled={saving}
+                  className="btn btn-primary font-sans"
+                >
+                  Speichern & aktivieren
+                </button>
+              )}
+              {isActive && (
+                <button
+                  type="button"
+                  onClick={() => void handleSave(false)}
+                  disabled={saving}
+                  className="btn font-sans border-arena-blue text-arena-blue font-bold hover:bg-arena-bg"
+                >
+                  Speichern & deaktivieren
+                </button>
+              )}
+              {saveStatus && (
+                <span className={`text-sm font-bold ml-2 ${saveStatus.includes("✓") ? "text-green-700" : "text-arena-danger"}`}>
+                  {saveStatus}
+                </span>
               )}
             </div>
           </div>
-
-          {/* Aktiv/Inaktiv */}
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-              <span className="text-sm font-medium text-gray-700">Beitrag sofort aktivieren (im Header sichtbar)</span>
-            </label>
-          </div>
-
-          {/* Speichern */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <button type="button" onClick={() => void handleSave()} disabled={saving}
-              className="bg-gray-700 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-800 disabled:opacity-50 transition-colors">
-              {saving ? "Speichert…" : "Speichern"}
-            </button>
-            {!isActive && (
-              <button type="button" onClick={() => void handleSave(true)} disabled={saving}
-                className="bg-green-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-green-700 disabled:opacity-50 transition-colors">
-                Speichern & aktivieren
-              </button>
-            )}
-            {isActive && (
-              <button type="button" onClick={() => void handleSave(false)} disabled={saving}
-                className="bg-yellow-500 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-yellow-600 disabled:opacity-50 transition-colors">
-                Speichern & deaktivieren
-              </button>
-            )}
-            {saveStatus && (
-              <span className={`text-sm ${saveStatus.startsWith("✓") ? "text-green-700" : "text-red-600"}`}>
-                {saveStatus}
-              </span>
-            )}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }
