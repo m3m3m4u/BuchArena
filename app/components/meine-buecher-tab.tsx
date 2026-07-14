@@ -572,18 +572,18 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
 
   return (
     <>
-      <button type="button" className="btn" onClick={openCreateOverlay}>
+      <button type="button" className="btn btn-primary font-sans" onClick={openCreateOverlay}>
         Neues Buch anlegen
       </button>
 
-      {message && !isError && <p className="text-sm text-green-700 mt-2">{message}</p>}
+      {message && !isError && <p className="font-sans text-sm text-green-700 mt-2 font-semibold">{message}</p>}
       {isError && message && (
-        <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-xl mx-4">
-            <p className="text-red-700 font-medium mb-4">{message}</p>
+        <div className="overlay-backdrop" style={{ zIndex: 1200 }}>
+          <div className="card font-sans max-w-sm w-full shadow-xl mx-4 p-6 bg-white rounded-xl">
+            <p className="font-sans text-arena-danger font-medium mb-4">{message}</p>
             <button
               type="button"
-              className="btn w-full"
+              className="btn btn-primary font-sans w-full"
               onClick={() => { setMessage(""); setIsError(false); }}
             >
               OK
@@ -592,30 +592,30 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
         </div>
       )}
 
-      <h2>Meine angelegten Bücher</h2>
+      <h2 className="font-sans text-lg font-bold text-arena-blue mt-6 mb-3">Meine angelegten Bücher</h2>
       {isLoading ? (
-        <p>Lade Bücher ...</p>
+        <p className="font-sans text-sm text-arena-muted">Lade Bücher ...</p>
       ) : books.length === 0 ? (
-        <p>Noch keine Bücher angelegt.</p>
+        <p className="font-sans text-sm text-arena-muted">Noch keine Bücher angelegt.</p>
       ) : (
         <div className="grid gap-3 min-[1200px]:grid-cols-2">
           {[...books].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((book, index) => {
             const isOwner = book.ownerUsername === username;
             return (
-              <article className="rounded-lg border border-arena-border p-3" key={`${book.title}-${book.createdAt}-${index}`}>
-                <Link href={`/buch/${book.id}`} className="block no-underline text-inherit hover:opacity-90">
-                  <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[400px]:grid-cols-1">
-                    <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px]">
+              <article className="rounded-lg border border-arena-border-light bg-white p-3 font-sans" key={`${book.title}-${book.createdAt}-${index}`}>
+                <Link href={`/buch/${book.id}`} className="block no-underline text-inherit hover:opacity-90 font-sans">
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[400px]:grid-cols-1 font-sans">
+                    <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border-light bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px] font-sans">
                       {book.coverImageUrl ? (
                         <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" />
                       ) : (
-                        <span className="px-6 py-10">Kein Cover</span>
+                        <span className="px-6 py-10 font-sans">Kein Cover</span>
                       )}
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="mb-1 mt-0 truncate">{book.title}</h3>
+                    <div className="min-w-0 font-sans">
+                      <h3 className="font-sans text-base font-bold text-arena-blue mb-1 mt-0 truncate">{book.title}</h3>
                       {!isOwner && (
-                        <span className="inline-block mb-1 text-xs bg-arena-blue/10 text-arena-blue px-2 py-0.5 rounded-full font-medium">Mitautor*in</span>
+                        <span className="inline-block mb-1 text-xs bg-arena-blue/10 text-arena-blue px-2 py-0.5 rounded-full font-semibold font-sans">Mitautor*in</span>
                       )}
                       {(() => {
                         const lines: { label: string; value: string }[] = [];
@@ -626,21 +626,21 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                         if (book.isbn) lines.push({ label: "ISBN", value: book.isbn });
                         if (book.pageCount && book.pageCount > 0) lines.push({ label: "Seitenanzahl", value: String(book.pageCount) });
                         return lines.slice(0, 5).map((l) => (
-                          <p key={l.label} className="my-0.5 truncate">{l.label}: {l.value}</p>
+                          <p key={l.label} className="font-sans text-xs text-arena-muted my-0.5 truncate">{l.label}: {l.value}</p>
                         ));
                       })()}
                     </div>
                   </div>
                 </Link>
-                <div className="flex gap-2 flex-wrap mt-3">
+                <div className="flex gap-2 flex-wrap mt-3 font-sans">
                   {isOwner ? (
                     <>
-                      <button type="button" className="btn btn-sm" onClick={() => onEditBook(book)}>
+                      <button type="button" className="btn btn-sm font-sans" onClick={() => onEditBook(book)}>
                         Bearbeiten
                       </button>
                       <button
                         type="button"
-                        className="btn btn-sm"
+                        className="btn btn-sm font-sans text-arena-danger hover:bg-red-50"
                         onClick={() => onDeleteBook(book.id)}
                       >
                         Löschen
@@ -649,7 +649,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                   ) : (
                     <button
                       type="button"
-                      className="btn btn-sm"
+                      className="btn btn-sm font-sans"
                       onClick={() => onRemoveSelfAsCoAuthor(book.id)}
                     >
                       Mitautorenschaft entfernen
@@ -664,25 +664,25 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
 
       {isBookOverlayOpen && (
         <div className="overlay-backdrop" onClick={resetForm}>
-          <section className="w-[min(960px,100%)] bg-white rounded-xl p-4 box-border grid gap-2.5" onClick={(event) => event.stopPropagation()}>
-            <h2>{editingBookId ? "Buch bearbeiten" : "Neues Buch"}</h2>
+          <section className="w-[min(960px,100%)] bg-white rounded-xl p-4 box-border grid gap-2.5 font-sans" onClick={(event) => event.stopPropagation()}>
+            <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0 mb-1">{editingBookId ? "Buch bearbeiten" : "Neues Buch"}</h2>
 
             {!editingBookId && (
-              <p className="text-sm text-arena-muted mt-0 mb-1">Weitere Daten (Textausschnitte, Cover etc.) können beim Bearbeiten des Buches nachträglich hinzugefügt werden.</p>
+              <p className="font-sans text-xs text-arena-muted mt-0 mb-2">Weitere Daten (Textausschnitte, Cover etc.) können beim Bearbeiten des Buches nachträglich hinzugefügt werden.</p>
             )}
 
-            <div className="grid grid-cols-[2fr_1fr] gap-4 items-start max-[900px]:grid-cols-1">
-              <div className="grid gap-2">
-                <label className="grid gap-1 text-[0.95rem]">
+            <div className="grid grid-cols-[2fr_1fr] gap-4 items-start max-[900px]:grid-cols-1 font-sans">
+              <div className="grid gap-2 font-sans">
+                <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                   Titel
-                  <input className="input-base" value={title} onChange={(event) => setTitle(event.target.value)} />
+                  <input className="input-base font-normal mt-1" value={title} onChange={(event) => setTitle(event.target.value)} />
                 </label>
 
-                <div className="grid grid-cols-2 max-[400px]:grid-cols-1 gap-2">
-                  <label className="grid gap-1 text-[0.95rem]">
+                <div className="grid grid-cols-2 max-[400px]:grid-cols-1 gap-2 font-sans">
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                     Erscheinungsjahr
                     <input
-                      className="input-base"
+                      className="input-base font-normal mt-1"
                       type="number"
                       value={publicationYear}
                       onChange={(event) => setPublicationYear(event.target.value)}
@@ -691,20 +691,20 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                   <GenrePicker label="Genre" value={genre} onChange={setGenre} />
                 </div>
 
-                <div className="grid grid-cols-2 max-[400px]:grid-cols-1 gap-2">
-                  <label className="grid gap-1 text-[0.95rem]">
+                <div className="grid grid-cols-2 max-[400px]:grid-cols-1 gap-2 font-sans">
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                     Alter von
                     <input
-                      className="input-base"
+                      className="input-base font-normal mt-1"
                       type="number"
                       value={ageFrom}
                       onChange={(event) => setAgeFrom(event.target.value)}
                     />
                   </label>
-                  <label className="grid gap-1 text-[0.95rem]">
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                     Alter bis
                     <input
-                      className="input-base"
+                      className="input-base font-normal mt-1"
                       type="number"
                       value={ageTo}
                       onChange={(event) => setAgeTo(event.target.value)}
@@ -712,21 +712,21 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                   </label>
                 </div>
 
-                <div className="grid grid-cols-2 max-[400px]:grid-cols-1 gap-2">
-                  <label className="grid gap-1 text-[0.95rem]">
+                <div className="grid grid-cols-2 max-[400px]:grid-cols-1 gap-2 font-sans">
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                     Verlag
-                    <input className="input-base" value={publisher} onChange={(event) => setPublisher(event.target.value)} />
+                    <input className="input-base font-normal mt-1" value={publisher} onChange={(event) => setPublisher(event.target.value)} />
                   </label>
-                  <label className="grid gap-1 text-[0.95rem]">
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                     ISBN
-                    <input className="input-base" value={isbn} onChange={(event) => setIsbn(event.target.value)} />
+                    <input className="input-base font-normal mt-1" value={isbn} onChange={(event) => setIsbn(event.target.value)} />
                   </label>
                 </div>
 
-                <label className="grid gap-1 text-[0.95rem]">
+                <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                   Seitenanzahl
                   <input
-                    className="input-base"
+                    className="input-base font-normal mt-1"
                     type="number"
                     min={0}
                     value={pageCount}
@@ -734,30 +734,30 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                   />
                 </label>
 
-                <label className="grid gap-1 text-[0.95rem]">
+                <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                   Beschreibung
                   <textarea
-                    className="input-base"
+                    className="input-base font-normal mt-1 resize-y font-sans"
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     rows={3}
                   />
                 </label>
 
-                <label className="grid gap-1 text-[0.95rem]">
+                <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                   Links zum Buch kaufen (ein Link pro Zeile)
                   <textarea
-                    className="input-base"
+                    className="input-base font-normal mt-1 resize-y font-sans"
                     value={buyLinksText}
                     onChange={(event) => setBuyLinksText(event.target.value)}
                     rows={2}
                   />
                 </label>
 
-                <label className="grid gap-1 text-[0.95rem]">
+                <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                   Link zum Vorstellungsvideo (YouTube)
                   <input
-                    className="input-base"
+                    className="input-base font-normal mt-1"
                     value={presentationVideoUrl}
                     onChange={(event) => setPresentationVideoUrl(event.target.value)}
                   />
@@ -780,7 +780,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                 />
 
                 <div
-                  className={`w-full border border-arena-border rounded-lg overflow-hidden grid place-items-center bg-arena-bg ${coverImageUrl ? "cursor-pointer" : "cursor-pointer"}`}
+                  className={`w-full border border-arena-border-light rounded-lg overflow-hidden grid place-items-center bg-arena-bg ${coverImageUrl ? "cursor-pointer" : "cursor-pointer"}`}
                   style={{ aspectRatio: "3/4" }}
                   onClick={() => coverFileInputRef.current?.click()}
                   title={coverImageUrl ? "Klicken zum Ändern" : "Klicken zum Auswählen"}
@@ -788,33 +788,33 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                   {coverImageUrl ? (
                     <img src={coverImageUrl} alt="Buchcover" className="h-full w-full object-contain" />
                   ) : (
-                    <span className="flex flex-col items-center gap-2 text-arena-muted text-xs text-center p-4">
+                    <span className="flex flex-col items-center gap-2 text-arena-muted text-xs text-center p-4 font-sans">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                       Cover auswählen
                     </span>
                   )}
                 </div>
 
-                {isUploadingCover && <span className="text-xs text-arena-muted">Cover wird hochgeladen ...</span>}
+                {isUploadingCover && <span className="font-sans text-xs text-arena-muted">Cover wird hochgeladen ...</span>}
 
                 {/* ── Weitere Autoren ── */}
-                <div className="mt-5 pt-4 border-t border-arena-border-light">
-                  <h3 className="mt-0 mb-3">Weitere Autoren</h3>
+                <div className="mt-5 pt-4 border-t border-arena-border-light font-sans">
+                  <h3 className="font-sans text-sm font-bold text-arena-blue mt-0 mb-3">Weitere Autoren</h3>
 
                   {/* Bestehende Mitautoren (nur beim Bearbeiten) */}
                   {editingBookId && currentCoAuthors.length > 0 && (
-                    <div className="flex flex-col gap-2 mb-3">
+                    <div className="flex flex-col gap-2 mb-3 font-sans">
                       {currentCoAuthors.map((ca) => {
                         const { label, cls } = getCoAuthorStatusLabel(ca.status);
                         return (
-                          <div key={ca.username} className="flex items-center justify-between gap-2 px-3 py-2 bg-[#f9f9f9] border border-arena-border-light rounded-md">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="font-medium truncate">{ca.username}</span>
-                              <span className={`text-xs ${cls}`}>({label})</span>
+                          <div key={ca.username} className="flex items-center justify-between gap-2 px-3 py-2 bg-arena-bg border border-arena-border-light rounded-md font-sans">
+                            <div className="flex items-center gap-2 flex-1 min-w-0 font-sans">
+                              <span className="font-sans font-semibold text-sm truncate">{ca.username}</span>
+                              <span className={`font-sans text-xs ${cls}`}>({label})</span>
                             </div>
                             <button
                               type="button"
-                              className="btn btn-sm"
+                              className="btn btn-sm font-sans"
                               onClick={() => onRemoveCoAuthor(ca.username)}
                               disabled={coAuthorBusy}
                             >
@@ -828,13 +828,13 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
 
                   {/* Noch nicht gespeicherte Liste (beim Anlegen) */}
                   {!editingBookId && pendingCoAuthorUsernames.length > 0 && (
-                    <div className="flex flex-col gap-2 mb-3">
+                    <div className="flex flex-col gap-2 mb-3 font-sans">
                       {pendingCoAuthorUsernames.map((u) => (
-                        <div key={u} className="flex items-center justify-between gap-2 px-3 py-2 bg-[#f9f9f9] border border-arena-border-light rounded-md">
-                          <span className="font-medium truncate">{u}</span>
+                        <div key={u} className="flex items-center justify-between gap-2 px-3 py-2 bg-arena-bg border border-arena-border-light rounded-md font-sans">
+                          <span className="font-sans font-semibold text-sm truncate">{u}</span>
                           <button
                             type="button"
-                            className="btn btn-sm"
+                            className="btn btn-sm font-sans"
                             onClick={() => setPendingCoAuthorUsernames((prev) => prev.filter((x) => x !== u))}
                           >
                             Entfernen
@@ -844,11 +844,11 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                     </div>
                   )}
 
-                  <div ref={coAuthorWrapperRef} className="relative">
-                    <label className="grid gap-1 text-[0.95rem]">
+                  <div ref={coAuthorWrapperRef} className="relative font-sans">
+                    <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                       Autor*in hinzufügen
                       <input
-                        className="input-base"
+                        className="input-base font-normal mt-1"
                         value={coAuthorInput}
                         onChange={(e) => {
                           setCoAuthorInput(e.target.value);
@@ -868,17 +868,17 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                       />
                     </label>
                     {coAuthorSuggestionsOpen && coAuthorSuggestions.length > 0 && (
-                      <ul className="absolute z-50 mt-1 w-full rounded-lg border border-arena-border bg-white shadow-lg max-h-52 overflow-y-auto">
+                      <ul className="absolute z-50 mt-1 w-full rounded-lg border border-arena-border-light bg-white shadow-lg max-h-52 overflow-y-auto font-sans">
                         {coAuthorSuggestions.map((s) => (
-                          <li key={s.username}>
+                          <li key={s.username} className="font-sans">
                             <button
                               type="button"
-                              className="w-full text-left px-3 py-2 hover:bg-arena-bg flex items-baseline gap-2 text-sm"
+                              className="font-sans w-full text-left px-3 py-2 hover:bg-arena-blue/5 flex items-baseline gap-2 text-sm"
                               onMouseDown={(e) => { e.preventDefault(); addCoAuthor(s.username); }}
                             >
-                              <span className="font-medium">{s.username}</span>
+                              <span className="font-semibold text-arena-blue">{s.username}</span>
                               {s.displayName !== s.username && (
-                                <span className="text-arena-muted truncate">{s.displayName}</span>
+                                <span className="text-arena-muted truncate text-xs">{s.displayName}</span>
                               )}
                             </button>
                           </li>
@@ -887,29 +887,29 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                     )}
                   </div>
                   {coAuthorMsg && (
-                    <p className={`text-xs mt-1 ${coAuthorIsError ? "text-red-600" : "text-green-700"}`}>{coAuthorMsg}</p>
+                    <p className={`font-sans text-xs mt-1 ${coAuthorIsError ? "text-arena-danger font-semibold" : "text-green-700 font-semibold"}`}>{coAuthorMsg}</p>
                   )}
-                  <p className="text-xs text-arena-muted mt-1">
+                  <p className="font-sans text-xs text-arena-muted mt-1">
                     Nur, wenn der Autor ein Profil hat. Autoren ohne Profil in der BuchArena kannst du bei der Beschreibung angeben. Änderungen sind jederzeit möglich.
                   </p>
                 </div>
 
                 {/* ── Textausschnitte ── */}
                 {editingBookId && (
-                  <div className="mt-5 pt-4 border-t border-arena-border-light">
-                    <h3>Textausschnitte</h3>
+                  <div className="mt-5 pt-4 border-t border-arena-border-light font-sans">
+                    <h3 className="font-sans text-sm font-bold text-arena-blue mt-0 mb-3">Textausschnitte</h3>
 
                     {currentBookExcerpts.length > 0 && (
-                      <div className="flex flex-col gap-2 mb-4">
+                      <div className="flex flex-col gap-2 mb-4 font-sans">
                         {currentBookExcerpts.map((ex) => (
-                          <div key={ex.id} className="flex items-center justify-between gap-2.5 px-3 py-2 bg-[#f9f9f9] border border-arena-border-light rounded-md">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <strong>{ex.title}</strong>
-                              <span className="badge">{ex.type === "mp3" ? "MP3" : "Text"}</span>
+                          <div key={ex.id} className="flex items-center justify-between gap-2.5 px-3 py-2 bg-arena-bg border border-arena-border-light rounded-md font-sans">
+                            <div className="flex items-center gap-2 flex-1 min-w-0 font-sans">
+                              <strong className="font-sans text-sm font-bold text-arena-blue">{ex.title}</strong>
+                              <span className="badge font-sans">{ex.type === "mp3" ? "MP3" : "Text"}</span>
                             </div>
                             <button
                               type="button"
-                              className="btn btn-sm"
+                              className="btn btn-sm font-sans"
                               onClick={() => onDeleteExcerpt(ex.id)}
                             >
                               Entfernen
@@ -919,45 +919,47 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                       </div>
                     )}
 
-                    <div className="flex flex-col gap-2.5">
-                      <label className="grid gap-1 text-[0.95rem]">
+                    <div className="flex flex-col gap-2.5 font-sans">
+                      <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                         Titel des Ausschnitts
                         <input
-                          className="input-base"
+                          className="input-base font-normal mt-1"
                           value={excerptTitle}
                           onChange={(event) => setExcerptTitle(event.target.value)}
                           placeholder="z.B. Kapitel 1 – Leseprobe"
                         />
                       </label>
 
-                      <div className="flex gap-5 items-center">
-                        <label className="flex items-center gap-1 cursor-pointer font-normal">
+                      <div className="flex gap-5 items-center font-sans mt-2">
+                        <label className="flex items-center gap-1 cursor-pointer font-sans text-sm font-normal">
                           <input
                             type="radio"
                             name="excerptType"
                             value="text"
                             checked={excerptType === "text"}
                             onChange={() => setExcerptType("text")}
+                            className="cursor-pointer"
                           />
                           Text
                         </label>
-                        <label className="flex items-center gap-1 cursor-pointer font-normal">
+                        <label className="flex items-center gap-1 cursor-pointer font-sans text-sm font-normal">
                           <input
                             type="radio"
                             name="excerptType"
                             value="mp3"
                             checked={excerptType === "mp3"}
                             onChange={() => setExcerptType("mp3")}
+                            className="cursor-pointer"
                           />
                           MP3-Datei
                         </label>
                       </div>
 
                       {excerptType === "text" ? (
-                        <label className="grid gap-1 text-[0.95rem]">
+                        <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                           Textinhalt
                           <textarea
-                            className="input-base"
+                            className="input-base font-normal mt-1 resize-y font-sans"
                             value={excerptContent}
                             onChange={(event) => setExcerptContent(event.target.value)}
                             rows={5}
@@ -965,11 +967,12 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                           />
                         </label>
                       ) : (
-                        <label className="grid gap-1 text-[0.95rem]">
+                        <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                           MP3-Datei hochladen
                           <input
                             type="file"
                             accept=".mp3,audio/mpeg"
+                            className="font-sans mt-1 text-sm"
                             onChange={(event) => {
                               const file = event.target.files?.[0] ?? null;
                               setExcerptFile(file);
@@ -977,14 +980,14 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                             }}
                           />
                           {excerptFile && (
-                            <span className="text-xs text-arena-muted">{excerptFile.name}</span>
+                            <span className="font-sans text-xs text-arena-muted mt-1 block">{excerptFile.name}</span>
                           )}
                         </label>
                       )}
 
                       <button
                         type="button"
-                        className="btn"
+                        className="btn font-sans w-full mt-2"
                         onClick={onUploadExcerpt}
                         disabled={isUploadingExcerpt}
                       >
@@ -996,16 +999,16 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
               </div>
             </div>
 
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap font-sans mt-4">
               <button
                 type="button"
-                className="btn"
+                className="btn btn-primary font-sans"
                 onClick={onSaveBook}
                 disabled={isSaving}
               >
                 {isSaving ? "Speichern ..." : editingBookId ? "Buch speichern" : "Buch anlegen"}
               </button>
-              <button type="button" className="btn" onClick={resetForm}>
+              <button type="button" className="btn font-sans" onClick={resetForm}>
                 Abbrechen
               </button>
             </div>

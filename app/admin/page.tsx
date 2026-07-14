@@ -567,79 +567,83 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="centered-main">
-      <section className="card">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
-          <h1>Admin</h1>
+    <main className="centered-main font-sans">
+      <section className="card font-sans">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4 font-sans">
+          <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">Admin</h1>
         </div>
 
         {/* ── Haupt-Reiter ── */}
-        <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
+        <div className="segmented-control font-sans w-full max-w-3xl mb-4">
           {([
             { key: "bdw" as const, label: "Buch der Woche" },
             { key: "analytics" as const, label: "Analyse" },
             { key: "nachrichten" as const, label: "Nachrichten" },
             { key: "buchzirkel" as const, label: "Buchzirkel" },
-          { key: "users" as const, label: "User-Übersicht" },
+            { key: "users" as const, label: "User-Übersicht" },
           ] as { key: "bdw" | "analytics" | "nachrichten" | "buchzirkel" | "users"; label: string }[]).map((t) => (
             <button
               key={t.key}
-              className={`btn btn-sm${mainTab === t.key ? " btn-primary" : ""}`}
+              className={`segmented-control-btn font-sans ${mainTab === t.key ? "active" : ""}`}
               onClick={() => setMainTab(t.key)}
             >
               {t.label}
             </button>
           ))}
+        </div>
+
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-arena-border-light font-sans mb-6">
+          <span className="font-sans text-xs text-arena-muted w-full font-bold mb-1">Verwaltung & Inhalte:</span>
           <button
-            className="btn btn-sm"
+            className="btn btn-sm font-sans"
             onClick={() => router.push("/admin/news")}
           >
             News
           </button>
           <button
-            className="btn btn-sm"
+            className="btn btn-sm font-sans"
             onClick={() => router.push("/admin/blog")}
           >
             Blog
           </button>
           <button
-            className="btn btn-sm"
+            className="btn btn-sm font-sans"
             onClick={() => router.push("/admin/podcast")}
           >
             Podcast
           </button>
           <button
-            className="btn btn-sm"
+            className="btn btn-sm font-sans"
             onClick={() => router.push("/admin/newsletter")}
           >
             Newsletter
           </button>
           <button
-            className="btn btn-sm"
+            className="btn btn-sm font-sans"
             onClick={() => router.push("/admin/musik")}
           >
             Musik
           </button>
           <button
-            className="btn btn-sm"
+            className="btn btn-sm font-sans"
             onClick={() => router.push("/admin/einreichungen")}
           >
             Einreichungen
           </button>
           <button
-            className="btn btn-sm"
+            className="btn btn-sm font-sans"
             onClick={() => router.push("/admin/social-media")}
           >
             Social-Media-Galerie
           </button>
           <button
-            className="btn btn-sm"
+            className="btn btn-sm font-sans"
             onClick={() => router.push("/admin/social-media-content")}
           >
             Fertige Inhalte
           </button>
           <button
-            className="btn btn-sm"
+            className="btn btn-sm font-sans"
             onClick={() => router.push("/admin/gewinnspiele")}
           >
             Gewinnspiele
@@ -773,13 +777,13 @@ export default function AdminPage() {
 
         {/* ══ Tab: Analytics ══ */}
         {mainTab === "analytics" && (
-          <div className="grid gap-3">
+          <div className="grid gap-3 font-sans">
             {/* Zeitraum-Auswahl */}
-            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            <div className="segmented-control font-sans max-w-sm mb-2">
               {[7, 14, 30, 90].map((d) => (
                 <button
                   key={d}
-                  className={`btn btn-sm${d === analyticsDays ? " btn-primary" : ""}`}
+                  className={`segmented-control-btn font-sans ${d === analyticsDays ? "active" : ""}`}
                   onClick={() => setAnalyticsDays(d)}
                 >
                   {d} Tage
@@ -788,34 +792,38 @@ export default function AdminPage() {
             </div>
 
             {analyticsLoading ? (
-              <p style={{ color: "var(--color-arena-muted)" }}>Lade Daten…</p>
+              <p className="font-sans text-sm text-arena-muted">Lade Daten…</p>
             ) : analyticsData ? (
               <>
                 {/* Übersichtskarten */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.5rem" }}>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 font-sans mb-2">
                   {[
-                    { value: analyticsData.todayViews, label: "Aufrufe heute", bg: "var(--color-arena-blue)", color: "#fff" },
-                    { value: analyticsData.todayUniqueVisitors, label: "Nutzer heute", bg: "var(--color-arena-yellow)", color: "#333" },
-                    { value: analyticsData.todayLoggedInUsers, label: "Eingeloggt", bg: "var(--color-arena-blue-light)", color: "#fff" },
-                    { value: analyticsData.todayAnonymousUsers, label: "Anonym", bg: "var(--color-arena-blue-mid)", color: "#fff" },
-                    { value: analyticsData.totalViews, label: `Gesamt (${analyticsData.days}d)`, bg: "var(--color-arena-blue)", color: "#fff" },
-                    { value: analyticsData.visitorsPerDay.length, label: "Aktive Tage", bg: "var(--color-arena-blue-mid)", color: "#fff" },
+                    { value: analyticsData.todayViews, label: "Aufrufe heute" },
+                    { value: analyticsData.todayUniqueVisitors, label: "Nutzer heute" },
+                    { value: analyticsData.todayLoggedInUsers, label: "Eingeloggt" },
+                    { value: analyticsData.todayAnonymousUsers, label: "Anonym" },
+                    { value: analyticsData.totalViews, label: `Gesamt (${analyticsData.days}d)` },
+                    { value: analyticsData.visitorsPerDay.length, label: "Aktive Tage" },
                   ].map((card) => (
-                    <div key={card.label} style={{ background: card.bg, color: card.color, borderRadius: 8, padding: "0.6rem 0.4rem", textAlign: "center" }}>
-                      <div style={{ fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.1 }}>{card.value}</div>
-                      <div style={{ fontSize: "0.72rem", opacity: 0.85 }}>{card.label}</div>
+                    <div key={card.label} className="p-4 rounded-xl border border-arena-border-light text-center bg-white shadow-sm font-sans transition-all hover:shadow-md">
+                      <div className="font-sans text-2xl font-bold text-arena-blue">{card.value}</div>
+                      <div className="font-sans text-xs text-arena-muted font-bold mt-1">{card.label}</div>
                     </div>
                   ))}
                 </div>
 
                 {/* Sub-Tabs */}
-                <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
+                <div className="segmented-control font-sans w-full max-w-md mb-2">
                   {([
                     { key: "chart" as const, label: "📈 Verlauf" },
                     { key: "pages" as const, label: "📄 Top-Seiten" },
                     { key: "referrer" as const, label: "🔗 Herkunft" },
                   ]).map((t) => (
-                    <button key={t.key} className={`btn btn-sm${analyticsTab === t.key ? " btn-primary" : ""}`} onClick={() => setAnalyticsTab(t.key)}>
+                    <button
+                      key={t.key}
+                      className={`segmented-control-btn font-sans ${analyticsTab === t.key ? "active" : ""}`}
+                      onClick={() => setAnalyticsTab(t.key)}
+                    >
                       {t.label}
                     </button>
                   ))}
@@ -825,45 +833,48 @@ export default function AdminPage() {
                 {analyticsTab === "chart" && (() => {
                   const maxCount = analyticsData.visitorsPerDay.reduce((max, d) => Math.max(max, d.count), 0);
                   return (
-                    <>
-                      <div style={{ display: "flex", gap: "1rem", fontSize: "0.72rem", color: "var(--color-arena-muted)", flexWrap: "wrap" }}>
-                        <span>Aufrufe · <span style={{ color: "var(--color-arena-blue)", fontWeight: 600 }}>Eingeloggt</span> / <span style={{ opacity: 0.6 }}>Anonym</span></span>
+                    <div className="font-sans">
+                      <div className="flex gap-4 text-xs text-arena-muted flex-wrap font-sans font-bold mb-3">
+                        <span>Aufrufe · <span className="text-arena-blue">Eingeloggt</span> / <span className="opacity-70">Anonym</span></span>
                       </div>
-                      <div style={{ display: "grid", gap: "3px", maxHeight: 400, overflowY: "auto", overflowX: "hidden" }}>
+                      <div className="grid gap-2 max-h-[400px] overflow-y-auto pr-1 font-sans">
                         {analyticsData.visitorsPerDay.map((d) => (
-                          <div key={d.date} style={{ display: "grid", gridTemplateColumns: "80px 1fr auto", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem" }}>
-                            <span style={{ color: "var(--color-arena-muted)" }}>{formatDateShort(d.date)}</span>
-                            <div style={{ background: "#e0e0e0", borderRadius: 4, height: 16, overflow: "hidden" }}>
-                              <div style={{ width: maxCount ? `${(d.count / maxCount) * 100}%` : "0%", background: "var(--color-arena-yellow)", height: "100%", borderRadius: 4, transition: "width 0.3s" }} />
+                          <div key={d.date} className="grid grid-cols-[85px_1fr_auto] items-center gap-4 text-sm font-sans py-1.5 border-b border-arena-border-light">
+                            <span className="text-arena-muted font-medium">{formatDateShort(d.date)}</span>
+                            <div className="bg-arena-border-light rounded-full h-2.5 overflow-hidden w-full font-sans">
+                              <div
+                                style={{ width: maxCount ? `${(d.count / maxCount) * 100}%` : "0%" }}
+                                className="bg-arena-yellow h-full rounded-full transition-all duration-300"
+                              />
                             </div>
-                            <span style={{ fontWeight: 600, textAlign: "right", whiteSpace: "nowrap", fontSize: "0.75rem" }}>
-                              {d.count} · <span title="Eingeloggt" style={{ color: "var(--color-arena-blue)" }}>{d.loggedIn}</span>/<span title="Anonym" style={{ opacity: 0.6 }}>{d.anonymous}</span>
+                            <span className="font-bold text-right white-space-nowrap text-xs font-sans">
+                              {d.count} · <span className="text-arena-blue">{d.loggedIn}</span>/<span className="opacity-60">{d.anonymous}</span>
                             </span>
                           </div>
                         ))}
                         {analyticsData.visitorsPerDay.length === 0 && (
-                          <p style={{ color: "var(--color-arena-muted)" }}>Keine Daten im gewählten Zeitraum.</p>
+                          <p className="font-sans text-sm text-arena-muted">Keine Daten im gewählten Zeitraum.</p>
                         )}
                       </div>
-                    </>
+                    </div>
                   );
                 })()}
 
                 {/* Sub-Tab: Top-Seiten */}
                 {analyticsTab === "pages" && (
-                  <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+                  <div className="overflow-x-auto border border-arena-border-light rounded-lg font-sans">
+                    <table className="w-full text-left border-collapse font-sans text-sm">
                       <thead>
-                        <tr style={{ borderBottom: "2px solid var(--color-arena-border)", textAlign: "left" }}>
-                          <th style={{ padding: "0.4rem 0.5rem" }}>Seite</th>
-                          <th style={{ padding: "0.4rem 0.5rem", textAlign: "right", whiteSpace: "nowrap" }}>Aufrufe</th>
+                        <tr className="border-b border-arena-border-light bg-arena-bg font-bold text-arena-blue font-sans">
+                          <th className="py-2.5 px-4 font-sans">Seite</th>
+                          <th className="py-2.5 px-4 text-right font-sans">Aufrufe</th>
                         </tr>
                       </thead>
                       <tbody>
                         {analyticsData.topPages.map((p) => (
-                          <tr key={p.page} style={{ borderBottom: "1px solid var(--color-arena-border-light)" }}>
-                            <td style={{ padding: "0.35rem 0.5rem", wordBreak: "break-all" }}>{p.page}</td>
-                            <td style={{ padding: "0.35rem 0.5rem", textAlign: "right", fontWeight: 600 }}>{p.count}</td>
+                          <tr key={p.page} className="border-b border-arena-border-light hover:bg-arena-bg-light transition-colors font-sans">
+                            <td className="py-2.5 px-4 font-mono text-xs text-arena-blue break-all">{p.page}</td>
+                            <td className="py-2.5 px-4 text-right font-bold font-sans">{p.count}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -875,21 +886,21 @@ export default function AdminPage() {
                 {analyticsTab === "referrer" && (
                   <>
                     {analyticsData.topReferrers.length === 0 ? (
-                      <p style={{ color: "var(--color-arena-muted)", fontSize: "0.9rem" }}>Keine externen Referrer im gewählten Zeitraum.</p>
+                      <p className="font-sans text-sm text-arena-muted">Keine externen Referrer im gewählten Zeitraum.</p>
                     ) : (
-                      <div style={{ overflowX: "auto" }}>
-                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+                      <div className="overflow-x-auto border border-arena-border-light rounded-lg font-sans">
+                        <table className="w-full text-left border-collapse font-sans text-sm">
                           <thead>
-                            <tr style={{ borderBottom: "2px solid var(--color-arena-border)", textAlign: "left" }}>
-                              <th style={{ padding: "0.4rem 0.5rem" }}>Quelle</th>
-                              <th style={{ padding: "0.4rem 0.5rem", textAlign: "right", whiteSpace: "nowrap" }}>Aufrufe</th>
+                            <tr className="border-b border-arena-border-light bg-arena-bg font-bold text-arena-blue font-sans">
+                              <th className="py-2.5 px-4 font-sans">Quelle</th>
+                              <th className="py-2.5 px-4 text-right font-sans">Aufrufe</th>
                             </tr>
                           </thead>
                           <tbody>
                             {analyticsData.topReferrers.map((r) => (
-                              <tr key={r.referrer} style={{ borderBottom: "1px solid var(--color-arena-border-light)" }}>
-                                <td style={{ padding: "0.35rem 0.5rem", wordBreak: "break-all" }}>{tryExtractHost(r.referrer)}</td>
-                                <td style={{ padding: "0.35rem 0.5rem", textAlign: "right", fontWeight: 600 }}>{r.count}</td>
+                              <tr key={r.referrer} className="border-b border-arena-border-light hover:bg-arena-bg-light transition-colors font-sans">
+                                <td className="py-2.5 px-4 font-medium text-arena-text break-all font-sans">{tryExtractHost(r.referrer)}</td>
+                                <td className="py-2.5 px-4 text-right font-bold font-sans">{r.count}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -900,7 +911,7 @@ export default function AdminPage() {
                 )}
               </>
             ) : (
-              <p style={{ color: "var(--color-arena-danger)" }}>Daten konnten nicht geladen werden.</p>
+              <p className="font-sans text-sm text-arena-danger">Daten konnten nicht geladen werden.</p>
             )}
           </div>
         )}
@@ -1579,15 +1590,15 @@ export default function AdminPage() {
         {/* ══ Overlay: Benutzername ändern ══ */}
         {renameTarget && (
           <div className="overlay-backdrop" onClick={() => setRenameTarget(null)}>
-            <div className="bg-white rounded-xl p-5 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-lg m-0 mb-3">Benutzername ändern</h2>
-              <p className="text-sm text-arena-muted mb-2">
+            <div className="card font-sans max-w-sm w-full p-6 bg-white" onClick={(e) => e.stopPropagation()}>
+              <h2 className="font-sans text-lg font-bold text-arena-blue tracking-tight m-0 mb-3">Benutzername ändern</h2>
+              <p className="font-sans text-sm text-arena-muted mb-2">
                 Aktuell: <strong>{renameTarget}</strong>
               </p>
-              <label className="block">
-                <span className="text-sm font-semibold">Neuer Benutzername</span>
+              <label className="block font-sans">
+                <span className="block text-sm font-bold text-arena-blue mb-1 font-sans">Neuer Benutzername</span>
                 <input
-                  className="input-base w-full mt-1"
+                  className="input-base w-full mt-1 font-sans"
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
                   placeholder="Neuer Benutzername"
@@ -1595,11 +1606,11 @@ export default function AdminPage() {
                   onKeyDown={(e) => { if (e.key === "Enter") void handleRename(); }}
                 />
               </label>
-              <div className="flex gap-2 mt-4">
-                <button type="button" className="btn btn-primary flex-1" disabled={!newUsername.trim() || busyUser === renameTarget} onClick={() => void handleRename()}>
+              <div className="flex gap-2 mt-4 font-sans">
+                <button type="button" className="btn btn-primary font-sans flex-1" disabled={!newUsername.trim() || busyUser === renameTarget} onClick={() => void handleRename()}>
                   Umbenennen
                 </button>
-                <button type="button" className="btn flex-1" onClick={() => setRenameTarget(null)}>
+                <button type="button" className="btn font-sans flex-1" onClick={() => setRenameTarget(null)}>
                   Abbrechen
                 </button>
               </div>
@@ -1610,16 +1621,16 @@ export default function AdminPage() {
         {/* ══ Overlay: E-Mail ändern ══ */}
         {emailChangeTarget && (
           <div className="overlay-backdrop" onClick={() => setEmailChangeTarget(null)}>
-            <div className="bg-white rounded-xl p-5 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-lg m-0 mb-3">E-Mail ändern</h2>
-              <p className="text-sm text-arena-muted mb-2">
+            <div className="card font-sans max-w-sm w-full p-6 bg-white" onClick={(e) => e.stopPropagation()}>
+              <h2 className="font-sans text-lg font-bold text-arena-blue tracking-tight m-0 mb-3">E-Mail ändern</h2>
+              <p className="font-sans text-sm text-arena-muted mb-2">
                 Benutzer: <strong>{emailChangeTarget}</strong>
               </p>
-              <label className="block">
-                <span className="text-sm font-semibold">Neue E-Mail-Adresse</span>
+              <label className="block font-sans">
+                <span className="block text-sm font-bold text-arena-blue mb-1 font-sans">Neue E-Mail-Adresse</span>
                 <input
                   type="email"
-                  className="input-base w-full mt-1"
+                  className="input-base w-full mt-1 font-sans"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="neue@email.de"
@@ -1627,11 +1638,11 @@ export default function AdminPage() {
                   onKeyDown={(e) => { if (e.key === "Enter") void handleChangeEmail(); }}
                 />
               </label>
-              <div className="flex gap-2 mt-4">
-                <button type="button" className="btn btn-primary flex-1" disabled={!newEmail.trim() || busyUser === emailChangeTarget} onClick={() => void handleChangeEmail()}>
+              <div className="flex gap-2 mt-4 font-sans">
+                <button type="button" className="btn btn-primary font-sans flex-1" disabled={!newEmail.trim() || busyUser === emailChangeTarget} onClick={() => void handleChangeEmail()}>
                   Ändern
                 </button>
-                <button type="button" className="btn flex-1" onClick={() => setEmailChangeTarget(null)}>
+                <button type="button" className="btn font-sans flex-1" onClick={() => setEmailChangeTarget(null)}>
                   Abbrechen
                 </button>
               </div>
@@ -1642,16 +1653,16 @@ export default function AdminPage() {
         {/* ══ Overlay: Passwort zurücksetzen ══ */}
         {pwResetTarget && (
           <div className="overlay-backdrop" onClick={() => setPwResetTarget(null)}>
-            <div className="bg-white rounded-xl p-5 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-lg m-0 mb-3">Passwort zurücksetzen</h2>
-              <p className="text-sm text-arena-muted mb-2">
+            <div className="card font-sans max-w-sm w-full p-6 bg-white" onClick={(e) => e.stopPropagation()}>
+              <h2 className="font-sans text-lg font-bold text-arena-blue tracking-tight m-0 mb-3">Passwort zurücksetzen</h2>
+              <p className="font-sans text-sm text-arena-muted mb-2">
                 Benutzer: <strong>{pwResetTarget}</strong>
               </p>
-              <label className="block">
-                <span className="text-sm font-semibold">Neues Passwort</span>
+              <label className="block font-sans">
+                <span className="block text-sm font-bold text-arena-blue mb-1 font-sans">Neues Passwort</span>
                 <input
                   type="password"
-                  className="input-base w-full mt-1"
+                  className="input-base w-full mt-1 font-sans"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Min. 6 Zeichen"
@@ -1659,11 +1670,11 @@ export default function AdminPage() {
                   onKeyDown={(e) => { if (e.key === "Enter") void handleResetPassword(); }}
                 />
               </label>
-              <div className="flex gap-2 mt-4">
-                <button type="button" className="btn btn-primary flex-1" disabled={newPassword.trim().length < 6 || busyUser === pwResetTarget} onClick={() => void handleResetPassword()}>
+              <div className="flex gap-2 mt-4 font-sans">
+                <button type="button" className="btn btn-primary font-sans flex-1" disabled={newPassword.trim().length < 6 || busyUser === pwResetTarget} onClick={() => void handleResetPassword()}>
                   Zurücksetzen
                 </button>
-                <button type="button" className="btn flex-1" onClick={() => setPwResetTarget(null)}>
+                <button type="button" className="btn font-sans flex-1" onClick={() => setPwResetTarget(null)}>
                   Abbrechen
                 </button>
               </div>

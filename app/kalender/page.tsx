@@ -699,43 +699,39 @@ export default function KalenderPage() {
     <main className="top-centered-main">
       <div className="w-full space-y-6">
         {/* Header mit View Toggle */}
-        <section className="card">
-          <div className="flex flex-col items-center gap-3 sm:gap-4">
-            <div className="flex items-center gap-1.5 sm:gap-2 w-full justify-center">
+        <section className="card font-sans">
+          <div className="flex flex-col items-center gap-3 sm:gap-4 font-sans">
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full justify-center font-sans">
               <button
                 onClick={goToPreviousMonth}
-                className="px-2.5 py-2 sm:w-28 sm:px-4 text-sm sm:text-base bg-[var(--color-arena-blue)] text-white rounded hover:bg-[var(--color-arena-blue-mid)]"
+                className="btn btn-sm font-sans flex-shrink-0 sm:!w-24"
               >
                 ← <span className="hidden sm:inline">Zurück</span>
               </button>
-              <h1 className="text-2xl font-bold text-center text-arena-blue flex-1 sm:flex-none sm:min-w-[14rem]">
+              <h1 className="font-sans text-2xl font-bold text-center text-arena-blue flex-1 sm:flex-none sm:min-w-[14rem]">
                 {getMonthLabel(year, month)}
               </h1>
               <button
                 onClick={goToNextMonth}
-                className="px-2.5 py-2 sm:w-28 sm:px-4 text-sm sm:text-base bg-[var(--color-arena-blue)] text-white rounded hover:bg-[var(--color-arena-blue-mid)]"
+                className="btn btn-sm font-sans flex-shrink-0 sm:!w-24"
               >
                 <span className="hidden sm:inline">Weiter </span>→
               </button>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-2 w-full">
-              <div className="flex gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-3 w-full font-sans">
+              <div className="segmented-control font-sans">
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded font-semibold text-sm sm:text-base transition ${
-                    viewMode === "list"
-                      ? "bg-[var(--color-arena-blue)] text-white"
-                      : "border border-[var(--color-arena-blue)] text-[var(--color-arena-blue)] hover:bg-blue-50"
+                  className={`segmented-control-btn font-sans ${
+                    viewMode === "list" ? "active" : ""
                   }`}
                 >
                   📅 Kalender
                 </button>
                 <button
                   onClick={() => setViewMode("map")}
-                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded font-semibold text-sm sm:text-base transition ${
-                    viewMode === "map"
-                      ? "bg-[var(--color-arena-blue)] text-white"
-                      : "border border-[var(--color-arena-blue)] text-[var(--color-arena-blue)] hover:bg-blue-50"
+                  className={`segmented-control-btn font-sans ${
+                    viewMode === "map" ? "active" : ""
                   }`}
                 >
                   🗺️ Karte
@@ -744,23 +740,23 @@ export default function KalenderPage() {
               {loggedIn && (
                 <button
                   onClick={() => setShowForm(!showForm)}
-                  className="px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base bg-[var(--color-arena-yellow)] text-[var(--color-arena-blue)] font-bold rounded hover:bg-yellow-400"
+                  className="btn btn-primary font-sans"
                 >
                   + Termin erstellen
                 </button>
               )}
             </div>
             {/* Category filter */}
-            <div className="flex flex-wrap items-center justify-center gap-2 w-full">
-              <span className="text-xs text-[var(--color-arena-muted)] font-medium">Filtern:</span>
+            <div className="flex flex-wrap items-center justify-center gap-2 w-full font-sans">
+              <span className="font-sans text-xs text-arena-muted font-bold">Filtern:</span>
               {CATEGORIES.map((cat) => {
                 const active = filterCategories.has(cat);
                 return (
                   <button
                     key={cat}
                     onClick={() => toggleFilterCategory(cat)}
-                    className={`px-3 py-1 text-xs sm:text-sm font-semibold rounded border transition ${
-                      active ? CATEGORY_COLORS[cat] : "border-[var(--color-arena-border)] text-[var(--color-arena-muted)] hover:border-[var(--color-arena-blue)] hover:text-[var(--color-arena-blue)]"
+                    className={`font-sans px-3 py-1 text-xs sm:text-sm font-semibold rounded border transition ${
+                      active ? CATEGORY_COLORS[cat] : "border-arena-border-light text-arena-muted hover:border-arena-blue hover:text-arena-blue"
                     }`}
                   >
                     {cat}
@@ -770,7 +766,7 @@ export default function KalenderPage() {
               {filterCategories.size > 0 && (
                 <button
                   onClick={() => setFilterCategories(new Set())}
-                  className="px-3 py-1 text-xs sm:text-sm rounded border border-[var(--color-arena-border)] text-[var(--color-arena-muted)] hover:text-red-600 hover:border-red-400 transition"
+                  className="font-sans px-3 py-1 text-xs sm:text-sm rounded border border-arena-border-light text-arena-muted hover:text-arena-danger hover:border-arena-danger/40 transition"
                 >
                   ✕ Alle
                 </button>
@@ -780,51 +776,51 @@ export default function KalenderPage() {
         </section>
 
         {showForm && loggedIn && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4" style={{ zIndex: 10000 }}>
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="sticky top-0 bg-white border-b border-[var(--color-arena-border)] p-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-arena-blue">
+          <div className="overlay-backdrop" style={{ zIndex: 10000 }}>
+            <div className="card font-sans max-w-2xl w-full max-h-[90vh] overflow-y-auto p-0 bg-white" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-white border-b border-arena-border-light px-6 py-4 flex items-center justify-between z-10 font-sans">
+                <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0">
                   Neuer Termin
                 </h2>
                 <button
                   onClick={() => setShowForm(false)}
-                  className="text-2xl leading-none hover:text-[var(--color-arena-muted)]"
+                  className="text-2xl leading-none text-arena-muted hover:text-arena-text transition-colors border-none bg-transparent cursor-pointer font-sans"
                 >
                   ×
                 </button>
               </div>
-              <div className="p-6 space-y-4">
+              <div className="p-6 space-y-4 font-sans">
               <div>
-                <label className="block font-semibold mb-1">Titel *</label>
+                <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Titel *</label>
                 <input
                   type="text"
                   maxLength={200}
                   value={formData.title}
                   onChange={(e) => handleFormChange("title", e.target.value)}
-                  className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                  className="input-base font-normal w-full mt-1"
                   placeholder="z.B. Frankfurter Buchmesse 2026"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Beschreibung *</label>
+                <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Beschreibung *</label>
                 <textarea
                   maxLength={3000}
                   value={formData.description}
                   onChange={(e) => handleFormChange("description", e.target.value)}
                   rows={4}
-                  className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                  className="input-base font-normal w-full mt-1 resize-y font-sans"
                   placeholder="Beschreibe den Termin..."
                 />
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-4 font-sans">
                 <div>
-                  <label className="block font-semibold mb-1">Kategorie *</label>
+                  <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Kategorie *</label>
                   <select
                     value={formData.category}
                     onChange={(e) => handleFormChange("category", e.target.value)}
-                    className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                    className="input-base font-normal w-full mt-1"
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
@@ -835,89 +831,89 @@ export default function KalenderPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold mb-1">Datum *</label>
+                  <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Datum *</label>
                   <input
                     type="date"
                     value={formData.date}
                     onChange={(e) => handleFormChange("date", e.target.value)}
-                    className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                    className="input-base font-normal w-full mt-1"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Bis Datum (optional, für mehrtägige Termine)</label>
+                <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Bis Datum (optional, für mehrtägige Termine)</label>
                 <input
                   type="date"
                   value={formData.dateTo}
                   onChange={(e) => handleFormChange("dateTo", e.target.value)}
                   min={formData.date || undefined}
-                  className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                  className="input-base font-normal w-full mt-1"
                 />
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-4 font-sans">
                 <div>
-                  <label className="block font-semibold mb-1">Von (optional)</label>
+                  <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Von (optional)</label>
                   <input
                     type="time"
                     value={formData.timeFrom}
                     onChange={(e) => handleFormChange("timeFrom", e.target.value)}
-                    className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                    className="input-base font-normal w-full mt-1"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold mb-1">Bis (optional)</label>
+                  <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Bis (optional)</label>
                   <input
                     type="time"
                     value={formData.timeTo}
                     onChange={(e) => handleFormChange("timeTo", e.target.value)}
-                    className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                    className="input-base font-normal w-full mt-1"
                   />
                 </div>
               </div>
 
-              <fieldset className="border border-[var(--color-arena-border)] rounded p-4">
-                <legend className="font-semibold">Ort {formData.category === "Buchmesse" || formData.category === "Lesung" ? "(Stadt + Land Pflicht)" : "(optional)"}</legend>
-                <div className="space-y-3 mt-3">
+              <fieldset className="border border-arena-border-light rounded-lg p-4 font-sans">
+                <legend className="font-sans text-sm font-bold text-arena-blue px-1.5">Ort {formData.category === "Buchmesse" || formData.category === "Lesung" ? "(Stadt + Land Pflicht)" : "(optional)"}</legend>
+                <div className="space-y-3 mt-3 font-sans">
                   <div>
-                    <label className="block text-sm mb-1">Straße</label>
+                    <label className="block text-xs font-bold text-arena-blue mb-0.5 font-sans">Straße</label>
                     <input
                       type="text"
                       value={formData.locationStreet}
                       onChange={(e) => handleFormChange("locationStreet", e.target.value)}
-                      className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                      className="input-base font-normal w-full mt-1 text-sm"
                       placeholder="Straße und Hausnummer"
                     />
                   </div>
-                  <div className="grid sm:grid-cols-3 gap-3">
+                  <div className="grid sm:grid-cols-3 gap-3 font-sans">
                     <div>
-                      <label className="block text-sm mb-1">PLZ</label>
+                      <label className="block text-xs font-bold text-arena-blue mb-0.5 font-sans">PLZ</label>
                       <input
                         type="text"
                         value={formData.locationZipCode}
                         onChange={(e) => handleFormChange("locationZipCode", e.target.value)}
-                        className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                        className="input-base font-normal w-full mt-1 text-sm"
                         placeholder="12345"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-1">Stadt {formData.category === "Buchmesse" || formData.category === "Lesung" ? "*" : ""}</label>
+                      <label className="block text-xs font-bold text-arena-blue mb-0.5 font-sans">Stadt {formData.category === "Buchmesse" || formData.category === "Lesung" ? "*" : ""}</label>
                       <input
                         type="text"
                         value={formData.locationCity}
                         onChange={(e) => handleFormChange("locationCity", e.target.value)}
-                        className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                        className="input-base font-normal w-full mt-1 text-sm"
                         placeholder="Hamburg"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-1">Land {formData.category === "Buchmesse" || formData.category === "Lesung" ? "*" : ""}</label>
+                      <label className="block text-xs font-bold text-arena-blue mb-0.5 font-sans">Land {formData.category === "Buchmesse" || formData.category === "Lesung" ? "*" : ""}</label>
                       <CountryAutocomplete
                         value={formData.locationCountry}
                         onChange={(v) => handleFormChange("locationCountry", v)}
-                        className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                        className="input-base font-normal w-full mt-1 text-sm"
                         placeholder="Deutschland"
                       />
                     </div>
@@ -926,30 +922,30 @@ export default function KalenderPage() {
               </fieldset>
 
               <div>
-                <label className="block font-semibold mb-1">Link (optional)</label>
+                <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Link (optional)</label>
                 <input
                   type="url"
                   maxLength={500}
                   value={formData.link}
                   onChange={(e) => handleFormChange("link", e.target.value)}
-                  className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                  className="input-base font-normal w-full mt-1 text-sm"
                   placeholder="https://beispiel.de/event"
                 />
               </div>
 
-              {message && <div className="p-3 bg-green-100 text-green-800 rounded">{message}</div>}
+              {message && <div className="font-sans p-3 bg-green-100 text-green-800 rounded font-semibold text-sm">{message}</div>}
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 font-sans mt-4">
                 <button
                   onClick={handleFormSubmit}
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-[var(--color-arena-blue)] text-white font-bold rounded hover:bg-[var(--color-arena-blue-mid)] disabled:opacity-50"
+                  className="btn btn-primary font-sans flex-1"
                 >
                   {isSubmitting ? "Wird erstellt..." : "Erstellen"}
                 </button>
                 <button
                   onClick={() => setShowForm(false)}
-                  className="px-4 py-2 border border-[var(--color-arena-blue)] text-[var(--color-arena-blue)] rounded hover:bg-gray-100"
+                  className="btn font-sans"
                 >
                   Abbrechen
                 </button>
@@ -961,55 +957,55 @@ export default function KalenderPage() {
 
         {/* List View */}
         {viewMode === "list" && (
-          <section className="card">
+          <section className="card font-sans">
             {isLoading ? (
-              <p>Lade Termine...</p>
+              <p className="font-sans text-sm text-arena-muted">Lade Termine...</p>
             ) : filteredEvents.length === 0 ? (
-              <p>{events.length === 0 ? `Keine Termine im ${getMonthLabel(year, month)}.` : "Keine Termine für den gewählten Filter."}</p>
+              <p className="font-sans text-sm text-arena-muted">{events.length === 0 ? `Keine Termine im ${getMonthLabel(year, month)}.` : "Keine Termine für den gewählten Filter."}</p>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-6 font-sans">
                 {sortedDates.map((date) => (
-                  <div key={date}>
-                    <h3 className="font-semibold text-base mb-3 text-arena-blue">
+                  <div key={date} className="font-sans">
+                    <h3 className="font-sans font-bold text-base mb-3 text-arena-blue">
                       {new Date(date + "T00:00:00").toLocaleDateString("de-DE", {
                         weekday: "long",
                         day: "numeric",
                         month: "long",
                       })}
                     </h3>
-                    <div className="grid gap-3">
+                    <div className="grid gap-3 font-sans">
                       {groupedEvents.get(date)!.map((event) => (
                         <div
                           key={event.id}
                           onClick={() => openEventDetail(event)}
-                          className="p-4 border-2 border-[var(--color-arena-border)] rounded cursor-pointer hover:shadow-lg transition-shadow"
+                          className="p-4 border border-arena-border-light rounded-lg cursor-pointer hover:shadow-md transition-shadow font-sans bg-white"
                         >
-                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 font-sans">
+                            <div className="flex-1 min-w-0 font-sans">
+                              <div className="flex flex-wrap items-center gap-2 mb-2 font-sans">
                                 <span
-                                  className={`px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-bold rounded border ${CATEGORY_COLORS[event.category]}`}
+                                  className={`font-sans px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-bold rounded border ${CATEGORY_COLORS[event.category]}`}
                                 >
                                   {event.category}
                                 </span>
                                 {event.dateTo && event.dateTo > event.date && (
-                                  <span className="px-2 py-0.5 text-xs font-semibold rounded bg-amber-100 text-amber-800 border border-amber-300">
+                                  <span className="font-sans px-2 py-0.5 text-xs font-semibold rounded bg-amber-100 text-amber-800 border border-amber-300 font-sans">
                                     {new Date(event.date + "T00:00:00").toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
                                     {" – "}
                                     {new Date(event.dateTo + "T00:00:00").toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
                                   </span>
                                 )}
                                 {event.timeFrom && (
-                                  <span className="text-xs sm:text-sm text-[var(--color-arena-muted)] font-semibold">
+                                  <span className="font-sans text-xs sm:text-sm text-arena-muted font-semibold">
                                     {event.timeFrom}
                                     {event.timeTo ? ` - ${event.timeTo}` : ""}
                                   </span>
                                 )}
                               </div>
-                              <h4 className="font-bold text-base sm:text-lg mb-1">{event.title}</h4>
-                              <p className="text-xs sm:text-sm text-[var(--color-arena-muted)] line-clamp-2">{event.description}</p>
+                              <h4 className="font-sans font-bold text-base sm:text-lg text-arena-blue mb-1">{event.title}</h4>
+                              <p className="font-sans text-xs sm:text-sm text-arena-muted line-clamp-2">{event.description}</p>
                               {event.location && (
-                                <p className="text-xs sm:text-sm mt-2" style={{ color: "var(--color-arena-muted)" }}>
+                                <p className="font-sans text-xs sm:text-sm text-arena-muted mt-2">
                                   📍{" "}
                                   {[event.location.street, event.location.zipCode, event.location.city, event.location.country]
                                     .filter(Boolean)
@@ -1017,18 +1013,18 @@ export default function KalenderPage() {
                                 </p>
                               )}
                             </div>
-                            <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 shrink-0 flex-wrap">
-                              <div className="text-xs text-[var(--color-arena-muted)]">von {event.createdByDisplayName || event.createdBy}</div>
+                            <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 shrink-0 flex-wrap font-sans">
+                              <div className="font-sans text-xs text-arena-muted">von {event.createdByDisplayName || event.createdBy}</div>
                               {event.participants.length > 0 && (
-                                <div className="sm:text-right">
-                                  <div className="text-xs text-[var(--color-arena-muted)] mb-1">Dabei ({event.participants.length}):</div>
-                                  <div className="flex flex-wrap sm:justify-end gap-1">
+                                <div className="sm:text-right font-sans">
+                                  <div className="text-xs text-arena-muted mb-1 font-sans">Dabei ({event.participants.length}):</div>
+                                  <div className="flex flex-wrap sm:justify-end gap-1 font-sans">
                                     {event.participants.map((p) => (
                                       <Link
                                         key={p}
                                         href={`/autor/${encodeURIComponent(event.participantUsernames?.[p] || p)}`}
                                         onClick={(e) => e.stopPropagation()}
-                                        className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-arena-blue)] text-white hover:opacity-80 transition-opacity"
+                                        className="text-xs px-2.5 py-1 rounded-full bg-arena-blue text-white hover:opacity-85 transition-opacity font-sans font-semibold"
                                       >
                                         {event.participantDisplayNames?.[p] || p}
                                       </Link>
@@ -1050,27 +1046,24 @@ export default function KalenderPage() {
 
         {/* Map View */}
         {viewMode === "map" && (
-          <section className="card">
-            <div className="space-y-4">
+          <section className="card font-sans">
+            <div className="space-y-4 font-sans">
               <>
                 <div
                   ref={mapContainer}
-                  className="relative z-0 h-[350px] sm:h-[600px]"
+                  className="relative z-0 h-[350px] sm:h-[600px] border border-arena-border-light rounded-lg bg-arena-bg"
                   style={{
                     width: "100%",
-                    borderRadius: "8px",
-                    border: "2px solid var(--color-arena-border)",
-                    backgroundColor: "#f0f0f0",
                   }}
                 />
 
                 {eventsWithLocation.length === 0 && (
-                  <p>Keine Termine mit Standortinformationen im {getMonthLabel(year, month)}.</p>
+                  <p className="font-sans text-sm text-arena-muted">Keine Termine mit Standortinformationen im {getMonthLabel(year, month)}.</p>
                 )}
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-sans">
                   {Object.entries(CATEGORY_MAP_COLORS).map(([cat, color]) => (
-                    <div key={cat} className="flex items-center gap-2">
+                    <div key={cat} className="flex items-center gap-2 font-sans">
                       <div
                         style={{
                           width: "16px",
@@ -1081,7 +1074,7 @@ export default function KalenderPage() {
                           boxShadow: "0 0 4px rgba(0,0,0,0.3)",
                         }}
                       />
-                      <span className="text-xs">{cat}</span>
+                      <span className="text-xs font-sans font-medium text-arena-muted">{cat}</span>
                     </div>
                   ))}
                 </div>
@@ -1093,38 +1086,38 @@ export default function KalenderPage() {
 
       {/* Event Detail Modal */}
       {selectedEvent && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4" style={{ zIndex: 10000 }}>
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-white border-b border-[var(--color-arena-border)] p-3 sm:p-4 flex items-center justify-between gap-2">
-              <h2 className="text-lg font-semibold line-clamp-2 text-arena-blue">
+        <div className="overlay-backdrop" style={{ zIndex: 10000 }}>
+          <div className="card font-sans max-w-2xl w-full max-h-[90vh] overflow-y-auto p-0 bg-white" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-arena-border-light px-6 py-4 flex items-center justify-between gap-2 z-10 font-sans">
+              <h2 className="font-sans text-xl font-bold line-clamp-2 text-arena-blue tracking-tight m-0">
                 {selectedEvent.title}
               </h2>
               <button
                 onClick={() => closeEventDetail()}
-                className="text-2xl leading-none hover:text-[var(--color-arena-muted)] flex-shrink-0"
+                className="text-2xl leading-none text-arena-muted hover:text-arena-text transition-colors border-none bg-transparent cursor-pointer font-sans"
               >
                 ×
               </button>
             </div>
 
-            <div className="p-4 sm:p-6 space-y-4">
+            <div className="p-6 space-y-4 font-sans">
               {!isEditMode ? (
                 <>
                   <div>
-                    <span className={`inline-block px-3 py-1 text-sm font-bold rounded border ${CATEGORY_COLORS[selectedEvent.category]}`}>
+                    <span className={`font-sans inline-block px-3 py-1 text-sm font-bold rounded border ${CATEGORY_COLORS[selectedEvent.category]}`}>
                       {selectedEvent.category}
                     </span>
                   </div>
 
                   <div>
-                    <label className="block font-semibold mb-1">Beschreibung</label>
-                    <p className="text-justify">{selectedEvent.description}</p>
+                    <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Beschreibung</label>
+                    <p className="font-sans text-sm text-arena-text text-justify leading-relaxed">{selectedEvent.description}</p>
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="grid sm:grid-cols-2 gap-4 font-sans">
                     <div>
-                      <label className="block font-semibold mb-1">Datum</label>
-                      <p>
+                      <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Datum</label>
+                      <p className="font-sans text-sm text-arena-text">
                         {new Date(selectedEvent.date + "T00:00:00").toLocaleDateString("de-DE", {
                           weekday: "long",
                           day: "numeric",
@@ -1146,8 +1139,8 @@ export default function KalenderPage() {
                     </div>
                     {selectedEvent.timeFrom && (
                       <div>
-                        <label className="block font-semibold mb-1">Uhrzeit</label>
-                        <p>
+                        <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Uhrzeit</label>
+                        <p className="font-sans text-sm text-arena-text">
                           {selectedEvent.timeFrom}
                           {selectedEvent.timeTo && ` - ${selectedEvent.timeTo}`}
                         </p>
@@ -1157,8 +1150,8 @@ export default function KalenderPage() {
 
                   {selectedEvent.location && (
                     <div>
-                      <label className="block font-semibold mb-1">Ort</label>
-                      <p>
+                      <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Ort</label>
+                      <p className="font-sans text-sm text-arena-text">
                         {[
                           selectedEvent.location.street,
                           selectedEvent.location.zipCode,
@@ -1173,13 +1166,13 @@ export default function KalenderPage() {
 
                   {selectedEvent.link && (
                     <div>
-                      <label className="block font-semibold mb-1">Link</label>
-                      <p>
+                      <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Link</label>
+                      <p className="font-sans text-sm text-arena-text">
                         <a
                           href={selectedEvent.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[var(--color-arena-link)] hover:underline break-all"
+                          className="font-sans text-sm text-arena-link hover:underline break-all"
                         >
                           {selectedEvent.link}
                         </a>
@@ -1188,22 +1181,22 @@ export default function KalenderPage() {
                   )}
 
                   <div>
-                    <label className="block font-semibold mb-1">Erstellt von</label>
-                    <p>
-                      <Link href={`/autor/${encodeURIComponent(selectedEvent.createdByUsername || selectedEvent.createdBy)}`} className="text-[var(--color-arena-link)] hover:underline">
+                    <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Erstellt von</label>
+                    <p className="font-sans text-sm text-arena-text">
+                      <Link href={`/autor/${encodeURIComponent(selectedEvent.createdByUsername || selectedEvent.createdBy)}`} className="font-sans text-sm text-arena-link hover:underline">
                         {selectedEvent.createdByDisplayName || selectedEvent.createdBy}
                       </Link>
                     </p>
                   </div>
 
                   <div>
-                    <label className="block font-semibold mb-2">Teilnehmer ({selectedEvent.participantCount})</label>
-                    <div className="flex flex-wrap gap-2">
+                    <label className="block text-sm font-bold text-arena-blue mb-2 font-sans">Teilnehmer ({selectedEvent.participantCount})</label>
+                    <div className="flex flex-wrap gap-2 font-sans">
                       {selectedEvent.participants.map((p) => (
                         <Link
                           key={p}
                           href={`/autor/${encodeURIComponent(selectedEvent.participantUsernames?.[p] || p)}`}
-                          className="px-3 py-1 bg-[var(--color-arena-blue)] text-white text-sm rounded hover:bg-[var(--color-arena-blue-mid)] transition-colors"
+                          className="font-sans px-3 py-1 bg-arena-blue text-white text-sm rounded-full hover:opacity-85 transition-opacity font-semibold"
                         >
                           {selectedEvent.participantDisplayNames?.[p] || p}
                         </Link>
@@ -1211,11 +1204,11 @@ export default function KalenderPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 sm:gap-3 pt-4 border-t border-[var(--color-arena-border)]">
+                  <div className="flex flex-wrap gap-2 sm:gap-3 pt-4 border-t border-arena-border-light font-sans mt-4">
                     {loggedIn && !selectedEvent.participants.includes(username) && (
                       <button
                         onClick={handleJoinEvent}
-                        className="flex-1 min-w-[120px] px-3 py-2 sm:px-4 text-sm sm:text-base bg-[var(--color-arena-yellow)] text-[var(--color-arena-blue)] font-bold rounded hover:bg-yellow-400"
+                        className="btn btn-primary font-sans flex-1 min-w-[120px] font-bold"
                       >
                         ✓ Ich bin dabei
                       </button>
@@ -1223,7 +1216,7 @@ export default function KalenderPage() {
                     {loggedIn && selectedEvent.participants.includes(username) && (
                       <button
                         onClick={handleJoinEvent}
-                        className="flex-1 min-w-[120px] px-3 py-2 sm:px-4 text-sm sm:text-base bg-gray-300 text-gray-700 font-bold rounded hover:bg-gray-400"
+                        className="btn font-sans flex-1 min-w-[120px] text-arena-muted hover:bg-gray-200 font-bold"
                       >
                         ✓ Absagen
                       </button>
@@ -1231,7 +1224,7 @@ export default function KalenderPage() {
                     {(isUserRole === "user" || isUserRole === "admin") && (
                       <button
                         onClick={handleStartEdit}
-                        className="px-3 py-2 sm:px-4 text-sm sm:text-base border border-[var(--color-arena-blue)] text-[var(--color-arena-blue)] font-bold rounded hover:bg-blue-50"
+                        className="btn font-sans font-bold"
                       >
                         ✎ Bearbeiten
                       </button>
@@ -1239,7 +1232,7 @@ export default function KalenderPage() {
                     {(isUserRole === "user" || isUserRole === "admin") && (
                       <button
                         onClick={handleDeleteEvent}
-                        className="px-4 py-2 border border-red-500 text-red-600 font-bold rounded hover:bg-red-50"
+                        className="btn font-sans text-arena-danger hover:bg-red-50 font-bold"
                       >
                         🗑 Löschen
                       </button>
@@ -1247,14 +1240,14 @@ export default function KalenderPage() {
                     {loggedIn && selectedEvent.createdBy !== username && (
                       <button
                         onClick={() => { setReportText(""); setShowReportModal(true); }}
-                        className="px-3 py-2 sm:px-4 text-sm sm:text-base border border-orange-400 text-orange-600 rounded hover:bg-orange-50"
+                        className="btn font-sans text-orange-600 border-orange-400/40 hover:bg-orange-55 font-bold"
                       >
                         ⚠ Fehler melden
                       </button>
                     )}
                     <button
                       onClick={() => closeEventDetail()}
-                      className="px-4 py-2 border border-[var(--color-arena-border)] rounded hover:bg-gray-100"
+                      className="btn font-sans"
                     >
                       Schließen
                     </button>
@@ -1262,27 +1255,27 @@ export default function KalenderPage() {
 
                   {/* Fehler melden Modal */}
                   {showReportModal && (
-                    <div className="mt-4 p-4 border border-orange-300 rounded bg-orange-50">
-                      <h4 className="font-bold mb-2 text-orange-800">Fehler melden</h4>
+                    <div className="mt-4 p-4 border border-orange-200 rounded-lg bg-orange-50/50 font-sans">
+                      <h4 className="font-sans font-bold mb-2 text-orange-800 text-sm">Fehler melden</h4>
                       <textarea
                         value={reportText}
                         onChange={(e) => setReportText(e.target.value)}
                         maxLength={2000}
                         rows={3}
-                        className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                        className="input-base font-normal w-full mt-1 text-sm font-sans resize-y border-orange-200"
                         placeholder="Beschreibe den Fehler (mind. 5 Zeichen)..."
                       />
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex gap-2 mt-2 font-sans">
                         <button
                           onClick={handleReportSubmit}
                           disabled={isReportSubmitting || reportText.trim().length < 5}
-                          className="px-4 py-2 bg-orange-500 text-white font-bold rounded hover:bg-orange-600 disabled:opacity-50 text-sm"
+                          className="btn font-sans text-sm bg-orange-500 hover:bg-orange-600 text-white font-bold"
                         >
                           {isReportSubmitting ? "Wird gesendet..." : "Absenden"}
                         </button>
                         <button
                           onClick={() => setShowReportModal(false)}
-                          className="px-4 py-2 border border-[var(--color-arena-border)] rounded hover:bg-gray-100 text-sm"
+                          className="btn font-sans text-sm"
                         >
                           Abbrechen
                         </button>
@@ -1293,34 +1286,34 @@ export default function KalenderPage() {
               ) : (
                 <>
                   <div>
-                    <label className="block font-semibold mb-1">Titel *</label>
+                    <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Titel *</label>
                     <input
                       type="text"
                       maxLength={200}
                       value={editFormData.title}
                       onChange={(e) => handleEditFormChange("title", e.target.value)}
-                      className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                      className="input-base font-normal w-full mt-1"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold mb-1">Beschreibung *</label>
+                    <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Beschreibung *</label>
                     <textarea
                       maxLength={3000}
                       value={editFormData.description}
                       onChange={(e) => handleEditFormChange("description", e.target.value)}
                       rows={4}
-                      className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                      className="input-base font-normal w-full mt-1 resize-y font-sans"
                     />
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="grid sm:grid-cols-2 gap-4 font-sans">
                     <div>
-                      <label className="block font-semibold mb-1">Kategorie *</label>
+                      <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Kategorie *</label>
                       <select
                         value={editFormData.category}
                         onChange={(e) => handleEditFormChange("category", e.target.value)}
-                        className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                        className="input-base font-normal w-full mt-1"
                       >
                         {CATEGORIES.map((cat) => (
                           <option key={cat} value={cat}>
@@ -1331,86 +1324,86 @@ export default function KalenderPage() {
                     </div>
 
                     <div>
-                      <label className="block font-semibold mb-1">Datum *</label>
+                      <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Datum *</label>
                       <input
                         type="date"
                         value={editFormData.date}
                         onChange={(e) => handleEditFormChange("date", e.target.value)}
-                        className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                        className="input-base font-normal w-full mt-1"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-semibold mb-1">Bis Datum (optional, für mehrtägige Termine)</label>
+                    <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Bis Datum (optional, für mehrtägige Termine)</label>
                     <input
                       type="date"
                       value={editFormData.dateTo}
                       onChange={(e) => handleEditFormChange("dateTo", e.target.value)}
                       min={editFormData.date || undefined}
-                      className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                      className="input-base font-normal w-full mt-1"
                     />
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="grid sm:grid-cols-2 gap-4 font-sans">
                     <div>
-                      <label className="block font-semibold mb-1">Von (optional)</label>
+                      <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Von (optional)</label>
                       <input
                         type="time"
                         value={editFormData.timeFrom}
                         onChange={(e) => handleEditFormChange("timeFrom", e.target.value)}
-                        className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                        className="input-base font-normal w-full mt-1"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-semibold mb-1">Bis (optional)</label>
+                      <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Bis (optional)</label>
                       <input
                         type="time"
                         value={editFormData.timeTo}
                         onChange={(e) => handleEditFormChange("timeTo", e.target.value)}
-                        className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded"
+                        className="input-base font-normal w-full mt-1"
                       />
                     </div>
                   </div>
 
-                  <fieldset className="border border-[var(--color-arena-border)] rounded p-4">
-                    <legend className="font-semibold">Ort {editFormData.category === "Buchmesse" || editFormData.category === "Lesung" ? "(Stadt + Land Pflicht)" : "(optional)"}</legend>
-                    <div className="space-y-3 mt-3">
+                  <fieldset className="border border-arena-border-light rounded-lg p-4 font-sans">
+                    <legend className="font-sans text-sm font-bold text-arena-blue px-1.5">Ort {editFormData.category === "Buchmesse" || editFormData.category === "Lesung" ? "(Stadt + Land Pflicht)" : "(optional)"}</legend>
+                    <div className="space-y-3 mt-3 font-sans">
                       <div>
-                        <label className="block text-sm mb-1">Straße</label>
+                        <label className="block text-xs font-bold text-arena-blue mb-0.5 font-sans">Straße</label>
                         <input
                           type="text"
                           value={editFormData.locationStreet}
                           onChange={(e) => handleEditFormChange("locationStreet", e.target.value)}
-                          className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                          className="input-base font-normal w-full mt-1 text-sm"
                         />
                       </div>
-                      <div className="grid sm:grid-cols-3 gap-3">
+                      <div className="grid sm:grid-cols-3 gap-3 font-sans">
                         <div>
-                          <label className="block text-sm mb-1">PLZ</label>
+                          <label className="block text-xs font-bold text-arena-blue mb-0.5 font-sans">PLZ</label>
                           <input
                             type="text"
                             value={editFormData.locationZipCode}
                             onChange={(e) => handleEditFormChange("locationZipCode", e.target.value)}
-                            className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                            className="input-base font-normal w-full mt-1 text-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm mb-1">Stadt {editFormData.category === "Buchmesse" || editFormData.category === "Lesung" ? "*" : ""}</label>
+                          <label className="block text-xs font-bold text-arena-blue mb-0.5 font-sans">Stadt {editFormData.category === "Buchmesse" || editFormData.category === "Lesung" ? "*" : ""}</label>
                           <input
                             type="text"
                             value={editFormData.locationCity}
                             onChange={(e) => handleEditFormChange("locationCity", e.target.value)}
-                            className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                            className="input-base font-normal w-full mt-1 text-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm mb-1">Land {editFormData.category === "Buchmesse" || editFormData.category === "Lesung" ? "*" : ""}</label>
+                          <label className="block text-xs font-bold text-arena-blue mb-0.5 font-sans">Land {editFormData.category === "Buchmesse" || editFormData.category === "Lesung" ? "*" : ""}</label>
                           <CountryAutocomplete
                             value={editFormData.locationCountry}
                             onChange={(v) => handleEditFormChange("locationCountry", v)}
-                            className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                            className="input-base font-normal w-full mt-1 text-sm"
                           />
                         </div>
                       </div>
@@ -1418,30 +1411,30 @@ export default function KalenderPage() {
                   </fieldset>
 
                   <div>
-                    <label className="block font-semibold mb-1">Link (optional)</label>
+                    <label className="block text-sm font-bold text-arena-blue mb-1 font-sans">Link (optional)</label>
                     <input
                       type="url"
                       maxLength={500}
                       value={editFormData.link}
                       onChange={(e) => handleEditFormChange("link", e.target.value)}
-                      className="w-full px-3 py-2 border border-[var(--color-arena-border)] rounded text-sm"
+                      className="input-base font-normal w-full mt-1 text-sm"
                       placeholder="https://beispiel.de/event"
                     />
                   </div>
 
-                  {message && <div className="p-3 bg-green-100 text-green-800 rounded">{message}</div>}
+                  {message && <div className="font-sans p-3 bg-green-100 text-green-800 rounded font-semibold text-sm">{message}</div>}
 
-                  <div className="flex gap-3 pt-4 border-t border-[var(--color-arena-border)]">
+                  <div className="flex gap-3 pt-4 border-t border-arena-border-light font-sans mt-4">
                     <button
                       onClick={handleEditSubmit}
                       disabled={isEditSubmitting}
-                      className="flex-1 px-4 py-2 bg-[var(--color-arena-blue)] text-white font-bold rounded hover:bg-[var(--color-arena-blue-mid)] disabled:opacity-50"
+                      className="btn btn-primary font-sans flex-1"
                     >
                       {isEditSubmitting ? "Wird gespeichert..." : "Speichern"}
                     </button>
                     <button
                       onClick={() => setIsEditMode(false)}
-                      className="px-4 py-2 border border-[var(--color-arena-border)] rounded hover:bg-gray-100"
+                      className="btn font-sans"
                     >
                       Abbrechen
                     </button>

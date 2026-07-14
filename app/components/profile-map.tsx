@@ -200,9 +200,9 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
 
           marker.bindPopup(
             `<div style="max-width:200px; font-family: inherit">
-              <strong style="font-size:0.95rem">${user.displayName}</strong><br>
+              <strong style="font-size:0.95rem; color:#1a1a2e">${user.displayName}</strong><br>
               <span style="font-size:0.8rem; color:#666">${location}</span><br>
-              <a href="${user.profilePath}" style="font-size:0.85rem; color:#7c3aed">Profil ansehen →</a>
+              <a href="${user.profilePath}" style="font-size:0.85rem; color:#2563eb; text-decoration:none; font-weight:bold">Profil ansehen →</a>
             </div>`
           );
 
@@ -238,17 +238,17 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
       : null;
 
   return (
-    <div>
+    <div className="font-sans">
       {/* Header */}
-      <div className="mb-3">
-        <h2 className="m-0 text-lg">Suche nach Wohnort – {categoryLabel}</h2>
+      <div className="mb-3 font-sans">
+        <h2 className="font-sans text-lg font-bold text-arena-blue tracking-tight m-0 mb-1">Suche nach Wohnort – {categoryLabel}</h2>
         {geocodeProgress && geocodeProgress.done < geocodeProgress.total && (
-          <p className="text-xs text-arena-muted m-0">
+          <p className="font-sans text-xs text-arena-muted m-0">
             Neue Orte werden ermittelt … {geocodeProgress.done}/{geocodeProgress.total}
           </p>
         )}
         {locatedPercent !== null && (
-          <p className="text-xs text-arena-muted m-0">
+          <p className="font-sans text-xs text-arena-muted m-0">
             {locatedPercent} von {users.length} Einträgen auf der Karte
           </p>
         )}
@@ -256,11 +256,11 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
 
       {/* Map body */}
       {isLoading ? (
-        <div className="flex items-center justify-center min-h-[400px] text-arena-muted">
+        <div className="font-sans flex items-center justify-center min-h-[400px] text-arena-muted text-sm">
           Lade Daten …
         </div>
       ) : users.length === 0 ? (
-        <div className="flex items-center justify-center min-h-[400px] text-arena-muted">
+        <div className="font-sans flex items-center justify-center min-h-[400px] text-arena-muted text-sm">
           Noch keine Einträge mit Ortsinformationen vorhanden.
         </div>
       ) : (
