@@ -961,9 +961,9 @@ function NachrichtenPageInner() {
             {activeBzId ? (
               <>
                 {/* BZ-Chat-Header */}
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-arena-border bg-gray-50">
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-arena-border-light bg-white">
                   <button
-                    className="min-[641px]:hidden btn btn-sm !p-1"
+                    className="min-[641px]:hidden btn btn-sm font-sans !p-1"
                     onClick={() => setMobileShowChat(false)}
                   >
                     ←
@@ -974,12 +974,12 @@ function NachrichtenPageInner() {
                     ) : activeBzTitel.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex flex-col flex-1 min-w-0">
-                    <span className="font-semibold text-sm truncate">{activeBzTitel}</span>
-                    <span className="text-xs text-arena-muted">Buchzirkel-Gruppen-Chat</span>
+                    <span className="font-sans font-bold text-sm text-arena-blue truncate">{activeBzTitel}</span>
+                    <span className="font-sans text-xs text-arena-muted">Buchzirkel-Gruppen-Chat</span>
                   </div>
                   <Link
                     href={`/buchzirkel/${activeBzId}/teilnehmer`}
-                    className="btn btn-sm !py-1 !px-3 text-[0.8rem] flex-shrink-0"
+                    className="btn btn-sm font-sans !py-1 !px-3 text-[0.8rem] flex-shrink-0"
                     target="_blank"
                   >
                     Zum Buchzirkel
@@ -989,25 +989,25 @@ function NachrichtenPageInner() {
                 {/* BZ-Nachrichten */}
                 <div className="flex-1 overflow-y-auto px-4 py-3">
                   {bzLoading ? (
-                    <p className="text-sm text-arena-muted text-center mt-8">Lade …</p>
+                    <p className="font-sans text-sm text-arena-muted text-center mt-8">Lade …</p>
                   ) : bzMessages.length === 0 ? (
-                    <p className="text-sm text-arena-muted text-center mt-8">Noch keine Nachrichten.</p>
+                    <p className="font-sans text-sm text-arena-muted text-center mt-8">Noch keine Nachrichten.</p>
                   ) : (
                     bzMessages.map((msg) => {
                       const isMine = msg.senderUsername === username;
                       return (
                         <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"} mb-1.5 group`}>
-                          <div className={`relative max-w-[80%] sm:max-w-[75%] rounded-2xl px-3.5 py-2 text-[0.95rem] ${
+                          <div className={`font-sans relative max-w-[80%] sm:max-w-[75%] rounded-2xl px-3.5 py-2 text-sm shadow-sm ${
                             isMine
                               ? "bg-arena-blue text-white rounded-br-md"
-                              : "bg-white border border-gray-200 text-gray-900 rounded-bl-md"
+                              : "bg-white border border-arena-border-light text-arena-text rounded-bl-md"
                           }`}>
                             {!isMine && (
-                              <p className="text-[11px] font-semibold text-arena-blue m-0 mb-0.5">{msg.senderUsername}</p>
+                              <p className="font-sans text-[11px] font-bold text-arena-blue m-0 mb-0.5">{msg.senderUsername}</p>
                             )}
-                            <p className="whitespace-pre-wrap m-0" style={{ lineHeight: 1.5 }}>{msg.body}</p>
-                            <div className={`flex items-center gap-1.5 mt-1 ${isMine ? "justify-end" : "justify-start"}`}>
-                              <span className={`text-[10px] ${isMine ? "text-white/50" : "text-arena-muted"}`}>
+                            <p className="whitespace-pre-wrap m-0 font-sans" style={{ lineHeight: 1.5 }}>{msg.body}</p>
+                            <div className={`flex items-center gap-1.5 mt-1 font-sans ${isMine ? "justify-end" : "justify-start"}`}>
+                              <span className={`text-[10px] font-sans ${isMine ? "text-white/60" : "text-arena-muted"}`}>
                                 {formatTime(msg.createdAt)}
                               </span>
                             </div>
@@ -1020,10 +1020,10 @@ function NachrichtenPageInner() {
                 </div>
 
                 {/* BZ-Eingabe */}
-                <div className="border-t border-arena-border px-4 py-3 bg-gray-50">
+                <div className="border-t border-arena-border-light px-4 py-3 bg-white">
                   <div className="flex gap-2 items-end">
                     <textarea
-                      className="input-base flex-1 resize-none"
+                      className="input-base font-normal flex-1 resize-none font-sans"
                       rows={1}
                       value={bzInput}
                       onChange={(e) => setBzInput(e.target.value)}
@@ -1038,7 +1038,7 @@ function NachrichtenPageInner() {
                       style={{ minHeight: 40, maxHeight: 120 }}
                     />
                     <button
-                      className="btn btn-primary btn-sm !py-2 !px-4"
+                      className="btn btn-primary btn-sm font-sans !py-2 !px-4 font-bold text-base"
                       disabled={bzSending || !bzInput.trim()}
                       onClick={() => void handleBzSend()}
                     >
@@ -1050,29 +1050,29 @@ function NachrichtenPageInner() {
             ) : activePartner ? (
               <>
                 {/* Chat-Header */}
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-arena-border bg-gray-50">
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-arena-border-light bg-white">
                   <button
-                    className="min-[641px]:hidden btn btn-sm !p-1"
+                    className="min-[641px]:hidden btn btn-sm font-sans !p-1"
                     onClick={() => setMobileShowChat(false)}
                   >
                     ←
                   </button>
-                  <div className="w-9 h-9 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold uppercase overflow-hidden">
+                  <div className="w-9 h-9 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold uppercase overflow-hidden font-sans">
                     {activePartnerImage ? (
                       <img src={activePartnerImage} alt={activePartner} className="w-full h-full object-cover" />
                     ) : (
                       activePartner.charAt(0)
                     )}
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col font-sans">
                     <Link
                       href={`/autor/${activePartner}`}
-                      className="font-semibold text-sm no-underline text-inherit hover:underline"
+                      className="font-sans font-bold text-sm no-underline text-arena-blue hover:underline"
                     >
                       {activePartner}
                     </Link>
                     {activePartnerDisplayName && activePartnerDisplayName !== activePartner && (
-                      <span className="text-xs text-arena-muted leading-tight">
+                      <span className="font-sans text-xs text-arena-muted leading-tight">
                         {activePartnerDisplayName}
                       </span>
                     )}
@@ -1080,7 +1080,7 @@ function NachrichtenPageInner() {
                   {/* Admin: Unterhaltung löschen */}
                   {isAdmin && (
                     <button
-                      className="ml-auto btn btn-sm !py-1 !px-2 text-arena-danger bg-arena-danger/10 border-arena-danger/20 hover:bg-arena-danger hover:text-white transition-colors"
+                      className="ml-auto btn btn-sm font-sans !py-1 !px-2 text-arena-danger bg-arena-danger/10 border-arena-danger/20 hover:bg-arena-danger hover:text-white transition-colors"
                       onClick={() => void handleDeleteConversation()}
                       title="Gesamte Unterhaltung löschen"
                     >
@@ -1100,14 +1100,14 @@ function NachrichtenPageInner() {
                   }}
                 >
                   {loadingOlder && (
-                    <p className="text-xs text-arena-muted text-center mb-2">Lade ältere Nachrichten …</p>
+                    <p className="font-sans text-xs text-arena-muted text-center mb-2">Lade ältere Nachrichten …</p>
                   )}
                   {chatLoading ? (
-                    <p className="text-sm text-arena-muted text-center mt-8">
+                    <p className="font-sans text-sm text-arena-muted text-center mt-8">
                       Lade Nachrichten …
                     </p>
                   ) : chatMessages.length === 0 ? (
-                    <p className="text-sm text-arena-muted text-center mt-8">
+                    <p className="font-sans text-sm text-arena-muted text-center mt-8">
                       Noch keine Nachrichten. Schreibe die erste!
                     </p>
                   ) : (
@@ -1117,11 +1117,11 @@ function NachrichtenPageInner() {
                 </div>
 
                 {/* Eingabefeld */}
-                <div className="border-t border-arena-border px-4 py-3 bg-gray-50">
+                <div className="border-t border-arena-border-light px-4 py-3 bg-white">
                   <div className="flex gap-2 items-end">
                     <textarea
                       ref={inputRef}
-                      className="input-base flex-1 resize-none"
+                      className="input-base font-normal flex-1 resize-none font-sans"
                       rows={1}
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
@@ -1136,7 +1136,7 @@ function NachrichtenPageInner() {
                       style={{ minHeight: 40, maxHeight: 120 }}
                     />
                     <button
-                      className="btn btn-primary btn-sm !py-2 !px-4"
+                      className="btn btn-primary btn-sm font-sans !py-2 !px-4 font-bold text-base"
                       disabled={isSending || !inputText.trim()}
                       onClick={() => void handleSend()}
                     >
@@ -1146,7 +1146,7 @@ function NachrichtenPageInner() {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-arena-muted text-sm">
+              <div className="font-sans flex-1 flex items-center justify-center text-arena-muted text-sm">
                 Wähle eine Unterhaltung oder starte einen neuen Chat.
               </div>
             )}
@@ -1157,16 +1157,16 @@ function NachrichtenPageInner() {
         {showNewChat && (
           <div className="overlay-backdrop" onClick={() => setShowNewChat(false)}>
             <div
-              className="card"
+              className="card font-sans"
               style={{ maxWidth: 400 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-lg font-semibold m-0 mb-3">Neuer Chat</h2>
-              <label className="block">
-                <span className="text-sm font-semibold">Empfänger (Benutzername)</span>
-                <div className="relative">
+              <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0 mb-3">Neuer Chat</h2>
+              <label className="block font-sans">
+                <span className="font-sans text-sm font-bold text-arena-blue">Empfänger (Benutzername)</span>
+                <div className="relative font-sans">
                   <input
-                    className="input-base w-full mt-1"
+                    className="input-base font-normal w-full mt-1"
                     value={newRecipient}
                     onChange={(e) => handleRecipientChange(e.target.value)}
                     placeholder="Benutzername eingeben"
@@ -1181,11 +1181,11 @@ function NachrichtenPageInner() {
                   />
                   {/* Autocomplete Dropdown */}
                   {(userSuggestions.length > 0 || suggestionsLoading) && newRecipient.trim().length >= 1 && (
-                    <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-arena-border rounded-lg shadow-lg max-h-52 overflow-y-auto">
+                    <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-arena-border-light rounded-lg shadow-lg max-h-52 overflow-y-auto font-sans">
                       {suggestionsLoading && userSuggestions.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-arena-muted">Suche …</div>
+                        <div className="font-sans px-3 py-2 text-sm text-arena-muted">Suche …</div>
                       ) : userSuggestions.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-arena-muted">
+                        <div className="font-sans px-3 py-2 text-sm text-arena-muted">
                           Kein Benutzer gefunden.
                         </div>
                       ) : (
@@ -1193,10 +1193,10 @@ function NachrichtenPageInner() {
                           <button
                             key={u.username}
                             type="button"
-                            className="w-full text-left px-3 py-2 flex items-center gap-2.5 hover:bg-blue-50 transition-colors cursor-pointer border-none bg-transparent"
+                            className="font-sans w-full text-left px-3 py-2 flex items-center gap-2.5 hover:bg-arena-blue/5 transition-colors cursor-pointer border-none bg-transparent"
                             onClick={() => selectSuggestion(u.username)}
                           >
-                            <div className="w-8 h-8 rounded-full bg-arena-blue text-white flex items-center justify-center text-xs font-bold flex-shrink-0 uppercase overflow-hidden">
+                            <div className="w-8 h-8 rounded-full bg-arena-blue text-white flex items-center justify-center text-xs font-bold flex-shrink-0 uppercase overflow-hidden font-sans">
                               {u.profileImage ? (
                                 <img
                                   src={u.profileImage}
@@ -1207,10 +1207,10 @@ function NachrichtenPageInner() {
                                 u.username.charAt(0)
                               )}
                             </div>
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium truncate">{u.username}</div>
+                            <div className="min-w-0 font-sans">
+                              <div className="font-sans text-sm font-bold text-arena-blue truncate">{u.username}</div>
                               {u.displayName !== u.username && (
-                                <div className="text-xs text-arena-muted truncate">
+                                <div className="font-sans text-xs text-arena-muted truncate">
                                   {u.displayName}
                                 </div>
                               )}
@@ -1222,25 +1222,25 @@ function NachrichtenPageInner() {
                   )}
                 </div>
               </label>
-              <label className="block mt-2">
-                <span className="text-sm font-semibold">Betreff (optional)</span>
+              <label className="block mt-2 font-sans">
+                <span className="font-sans text-sm font-bold text-arena-blue">Betreff (optional)</span>
                 <input
-                  className="input-base w-full mt-1"
+                  className="input-base font-normal w-full mt-1"
                   value={newSubject}
                   onChange={(e) => setNewSubject(e.target.value)}
                   placeholder="z. B. Frage zu deinem Buch"
                   maxLength={200}
                 />
               </label>
-              <div className="flex gap-2 mt-4">
+              <div className="flex gap-2 mt-4 font-sans">
                 <button
-                  className="btn btn-primary"
+                  className="btn btn-primary font-sans"
                   disabled={!newRecipient.trim()}
                   onClick={() => void handleStartNewChat()}
                 >
                   Chat starten
                 </button>
-                <button className="btn" onClick={() => setShowNewChat(false)}>
+                <button className="btn font-sans" onClick={() => setShowNewChat(false)}>
                   Abbrechen
                 </button>
               </div>
@@ -1252,22 +1252,22 @@ function NachrichtenPageInner() {
         {showBroadcast && (
           <div className="overlay-backdrop" onClick={() => setShowBroadcast(false)}>
             <div
-              className="card"
+              className="card font-sans"
               style={{ maxWidth: 450 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-lg font-semibold m-0 mb-3">Nachricht senden</h2>
-              <div className="mb-3">
-                <span className="text-sm font-semibold block mb-1.5">Empfänger</span>
-                <div className="flex flex-wrap gap-1.5">
+              <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0 mb-3">Nachricht senden</h2>
+              <div className="mb-3 font-sans">
+                <span className="font-sans text-sm font-bold text-arena-blue block mb-1.5">Empfänger</span>
+                <div className="flex flex-wrap gap-1.5 font-sans">
                   {(["all", "autoren", "sprecher", "lektoren", "testleser", "blogger", "verlage"] as const).map((g) => (
                     <button
                       key={g}
                       type="button"
                       onClick={() => setBroadcastGroup(g)}
-                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      className={`px-3 py-1 rounded-full text-sm border transition-colors font-sans ${
                         broadcastGroup === g
-                          ? "bg-arena-blue text-white border-arena-blue"
+                          ? "bg-arena-blue text-white border-arena-blue font-semibold"
                           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                       }`}
                     >
@@ -1276,10 +1276,10 @@ function NachrichtenPageInner() {
                   ))}
                 </div>
               </div>
-              <label className="block">
-                <span className="text-sm font-semibold">Betreff</span>
+              <label className="block font-sans">
+                <span className="font-sans text-sm font-bold text-arena-blue">Betreff</span>
                 <input
-                  className="input-base w-full mt-1"
+                  className="input-base font-normal w-full mt-1"
                   value={broadcastSubject}
                   onChange={(e) => setBroadcastSubject(e.target.value)}
                   placeholder="z. B. Wichtige Ankündigung"
@@ -1287,10 +1287,10 @@ function NachrichtenPageInner() {
                   autoFocus
                 />
               </label>
-              <label className="block mt-2">
-                <span className="text-sm font-semibold">Nachricht</span>
+              <label className="block mt-2 font-sans">
+                <span className="font-sans text-sm font-bold text-arena-blue">Nachricht</span>
                 <textarea
-                  className="input-base w-full mt-1 resize-none"
+                  className="input-base font-normal w-full mt-1 resize-none font-sans"
                   rows={5}
                   value={broadcastBody}
                   onChange={(e) => setBroadcastBody(e.target.value)}
@@ -1299,19 +1299,19 @@ function NachrichtenPageInner() {
                 />
               </label>
               {broadcastMessage && (
-                <p className={`text-sm mt-2 ${broadcastMessage.includes("fehlgeschlagen") ? "text-red-600" : "text-green-700"}`}>
+                <p className={`font-sans text-sm mt-2 ${broadcastMessage.includes("fehlgeschlagen") ? "text-arena-danger font-semibold" : "text-green-700 font-semibold"}`}>
                   {broadcastMessage}
                 </p>
               )}
-              <div className="flex gap-2 mt-4">
+              <div className="flex gap-2 mt-4 font-sans">
                 <button
-                  className="btn btn-primary"
+                  className="btn btn-primary font-sans"
                   disabled={!broadcastSubject.trim() || !broadcastBody.trim() || broadcastSending}
                   onClick={() => void handleBroadcast()}
                 >
                   {broadcastSending ? "Sende …" : `An ${broadcastGroup === "all" ? "alle" : broadcastGroup.charAt(0).toUpperCase() + broadcastGroup.slice(1)} senden`}
                 </button>
-                <button className="btn" onClick={() => setShowBroadcast(false)}>
+                <button className="btn font-sans" onClick={() => setShowBroadcast(false)}>
                   Abbrechen
                 </button>
               </div>
