@@ -143,6 +143,19 @@ const bucharenaFaq: FaqItem[] = [
     ),
   },
   {
+    question: "Welche Verlage dürfen sich auf der BuchArena registrieren?",
+    answer: (
+      <>
+        <p className="mb-2">
+          Die BuchArena steht ausschließlich <strong>klassischen und seriösen Publikumsverlagen</strong> offen, die das verlegerische Risiko für ihre Autorinnen und Autoren vollumfänglich selbst tragen.
+        </p>
+        <p>
+          Druckkostenzuschussverlage, Pseudoverlage oder Dienstleister, die von Autorinnen und Autoren Geld für eine Veröffentlichung verlangen (z. B. durch Pflichtabnahmen von Büchern, Bearbeitungsgebühren oder finanzielle Vorleistungen), sind auf unserer Plattform <strong>nicht gestattet</strong>. Da solche kostenpflichtigen Modelle in der seriösen Buchbranche unüblich sind, behalten wir uns vor, Profile von entsprechenden Anbietern bei Kenntnisnahme umgehend zu löschen.
+        </p>
+      </>
+    ),
+  },
+  {
     question: "Was sind (Test)Leser und wie funktioniert das?",
     answer: (
       <p>

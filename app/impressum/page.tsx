@@ -58,6 +58,12 @@ export default function ImpressumPage() {
             Beleidigungen, Diskriminierung, Hassrede oder ähnliches Fehlverhalten werden nicht toleriert. 
             Verstöße gegen diese Grundsätze führen zur <strong>sofortigen Deaktivierung des Profils</strong>.
           </p>
+          <h3 className="mt-4 mb-2 text-lg font-semibold text-arena-text">Richtlinien für Verlage</h3>
+          <p className="my-2 leading-relaxed text-[#444]">
+            Die Registrierung und Präsentation als Verlag richtet sich ausschließlich an <strong>seriöse Publikumsverlage</strong>, bei denen für Autorinnen und Autoren keine Kosten anfallen. 
+            Druckkostenzuschussverlage, Pseudoverlage oder Dienstleister, die finanzielle Beteiligungen, Mindestabnahmen oder sonstige Zahlungen von Autoren verlangen, sind auf der BuchArena nicht zulässig. 
+            Bei Verstößen behalten wir uns die sofortige Löschung des Profils vor.
+          </p>
         </div>
 
         {/* ── Datenschutzerklärung ── */}

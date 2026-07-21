@@ -123,6 +123,14 @@ export default function DiskussionenPage() {
   const [filterTopic, setFilterTopic] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "activity">("activity");
 
+  /* ── Paginierung ── */
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 25;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterTopic, sortBy]);
+
   /* ── Poll state ── */
   const [polls, setPolls] = useState<PollItem[]>([]);
   const [showPollOverlay, setShowPollOverlay] = useState(false);
@@ -496,9 +504,14 @@ export default function DiskussionenPage() {
             return <p>Noch keine Diskussionen vorhanden. Starte das erste Thema!</p>;
           }
 
+          const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+          const clampedPage = Math.min(Math.max(currentPage, 1), totalPages);
+          const paginatedItems = items.slice((clampedPage - 1) * ITEMS_PER_PAGE, clampedPage * ITEMS_PER_PAGE);
+
           return (
             <div className="grid gap-3">
-              {items.map((item) => {
+              <div className="grid gap-3">
+                {paginatedItems.map((item) => {
                 if (item.type === "discussion") {
                   const d = item.data;
                   return (
@@ -594,6 +607,32 @@ export default function DiskussionenPage() {
                   </div>
                 );
               })}
+              </div>
+
+              {/* Paginierung */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-4 pt-2 border-t border-arena-border-light">
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    disabled={clampedPage <= 1}
+                    onClick={() => setCurrentPage(clampedPage - 1)}
+                  >
+                    ← Zurück
+                  </button>
+                  <span className="text-sm text-arena-muted font-sans">
+                    Seite {clampedPage} / {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    disabled={clampedPage >= totalPages}
+                    onClick={() => setCurrentPage(clampedPage + 1)}
+                  >
+                    Weiter →
+                  </button>
+                </div>
+              )}
             </div>
           );
         })()}
