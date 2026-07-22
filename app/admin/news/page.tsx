@@ -8,6 +8,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
+import { ProgressiveImg } from "@/app/components/progressive-image";
 import { getStoredAccount } from "@/lib/client-account";
 
 type NewsLayout = "text-only" | "image-left" | "image-right";
@@ -648,8 +649,7 @@ export default function NewsAdminPage() {
                   </div>
                   {imageUrl && (
                     <div className="mt-3 flex justify-center border border-blue-100 rounded-lg p-2 bg-white">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={imageUrl} alt="Vorschau" className="max-h-40 rounded-lg object-contain" />
+                      <ProgressiveImg src={imageUrl} alt="Vorschau" className="max-h-40 rounded-lg object-contain" />
                     </div>
                   )}
                 </div>

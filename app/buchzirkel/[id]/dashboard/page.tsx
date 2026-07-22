@@ -7,6 +7,7 @@ import { getStoredAccount } from "@/lib/client-account";
 import GenrePicker from "@/app/components/genre-picker";
 import { STANDARD_AGB_TEXT, ALLOWED_BEITRAG_EMOJIS } from "@/lib/buchzirkel";
 import { CommentToolbar } from "@/app/components/comment-toolbar";
+import { toProxyUrl, ProgressiveImg } from "@/app/components/progressive-image";
 
 type Bewerber = {
   _id: string;
@@ -611,7 +612,7 @@ export default function BuchzirkelDashboardPage() {
                             onMouseDown={() => { setEinladenUsername(u.username); setEinladenSuggestions([]); setEinladenMsg(""); }}
                           >
                             {u.profileImage && (
-                              <img src={u.profileImage} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                              <img src={toProxyUrl(u.profileImage, 100) || u.profileImage} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
                             )}
                             <span className="font-medium">{u.username}</span>
                             {u.displayName && u.displayName !== u.username && (
@@ -1366,7 +1367,7 @@ function BewerberKarte({
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-start gap-3">
           {coverImageUrl && (
-            <img src={coverImageUrl} alt="Cover" className="w-10 h-14 object-cover rounded border border-arena-border-light flex-shrink-0" />
+            <ProgressiveImg src={coverImageUrl} alt="Cover" className="w-10 h-14 object-cover rounded border border-arena-border-light flex-shrink-0" />
           )}
           <div>
             <Link href={`/testleser/${bewerber.bewerberUsername}`} className="font-semibold hover:underline">

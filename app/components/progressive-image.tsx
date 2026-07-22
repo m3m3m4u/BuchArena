@@ -14,19 +14,24 @@ const WEBDAV_HOST_RE = /your-storagebox\.de/i;
  * `/api/profile/image?path=…&w=…`-Proxy-Route um.
  * Gibt `null` zurück, wenn die URL keinen WebDAV-Ursprung hat.
  */
-function toProxyUrl(src: string, width: number): string | null {
+export function toProxyUrl(src: string, width: number): string | null {
+  if (!src) return null;
   try {
     const url = new URL(src, "http://localhost");
-    if (!WEBDAV_HOST_RE.test(url.hostname)) return null;
-    // Der Pfad hinter dem Host ist der Remote-Pfad
-    return `/api/profile/image?path=${encodeURIComponent(url.pathname)}&w=${width}`;
-  } catch {
-    // Relative URLs → prüfe ob bereits Proxy-URL
+    const isWebdavHost = WEBDAV_HOST_RE.test(url.hostname);
+    const isWebdavPath = url.pathname.startsWith("/bucharena-profile-images/");
+
     if (src.startsWith("/api/profile/image")) {
       const u = new URL(src, "http://localhost");
       u.searchParams.set("w", String(width));
       return u.pathname + "?" + u.searchParams.toString();
     }
+
+    if (!isWebdavHost && !isWebdavPath) return null;
+
+    // Der Pfad hinter dem Host ist der Remote-Pfad
+    return `/api/profile/image?path=${encodeURIComponent(url.pathname)}&w=${width}`;
+  } catch {
     return null;
   }
 }
@@ -46,6 +51,8 @@ type ProgressiveImageProps = {
   style?: React.CSSProperties;
   /** Breite der Blur-Vorschau in Pixeln (default 32) */
   thumbWidth?: number;
+  /** Breite des Hauptbildes in Pixeln (default 600 oder `width`) */
+  targetWidth?: number;
   priority?: boolean;
 };
 
@@ -59,10 +66,13 @@ export function ProgressiveImage({
   className,
   style,
   thumbWidth = 32,
+  targetWidth,
   priority = false,
 }: ProgressiveImageProps) {
   const [loaded, setLoaded] = useState(false);
+  const mainWidth = targetWidth || width || 600;
   const thumbUrl = toProxyUrl(src, thumbWidth);
+  const mainUrl = toProxyUrl(src, mainWidth) || src;
 
   const handleLoad = useCallback(() => setLoaded(true), []);
 
@@ -97,7 +107,7 @@ export function ProgressiveImage({
 
       {/* Full image */}
       <Image
-        src={src}
+        src={mainUrl}
         alt={alt}
         fill={fill}
         sizes={sizes}
@@ -124,6 +134,7 @@ export function ProgressiveImage({
 
 type ProgressiveImgProps = React.ImgHTMLAttributes<HTMLImageElement> & {
   thumbWidth?: number;
+  targetWidth?: number;
 };
 
 export function ProgressiveImg({
@@ -132,11 +143,13 @@ export function ProgressiveImg({
   className,
   style,
   thumbWidth = 32,
+  targetWidth = 600,
   ...rest
 }: ProgressiveImgProps) {
   const [loaded, setLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const thumbUrl = typeof src === "string" ? toProxyUrl(src, thumbWidth) : null;
+  const mainUrl = typeof src === "string" ? (toProxyUrl(src, targetWidth) || src) : src;
 
   useEffect(() => setLoaded(false), [src]);
 
@@ -180,7 +193,7 @@ export function ProgressiveImg({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imgRef}
-        src={src}
+        src={mainUrl}
         alt={alt}
         className={className}
         style={{
@@ -205,6 +218,7 @@ type ProgressiveBgImageProps = {
   className?: string;
   style?: React.CSSProperties;
   thumbWidth?: number;
+  targetWidth?: number;
   children?: React.ReactNode;
 };
 
@@ -213,20 +227,22 @@ export function ProgressiveBgImage({
   className,
   style,
   thumbWidth = 32,
+  targetWidth = 300,
   children,
 }: ProgressiveBgImageProps) {
   const [loaded, setLoaded] = useState(false);
   const thumbUrl = toProxyUrl(src, thumbWidth);
+  const mainUrl = toProxyUrl(src, targetWidth) || src;
 
   useEffect(() => {
     setLoaded(false);
     const img = new window.Image();
-    img.src = src;
+    img.src = mainUrl;
     img.onload = () => setLoaded(true);
     // bei cached Images
     if (img.complete && img.naturalWidth > 0) setLoaded(true);
     return () => { img.onload = null; };
-  }, [src]);
+  }, [src, mainUrl]);
 
   return (
     <div
@@ -234,7 +250,7 @@ export function ProgressiveBgImage({
       style={{
         ...style,
         // Zeige entweder das Thumbnail oder das finale Bild
-        backgroundImage: loaded ? style?.backgroundImage : `url(${thumbUrl || src})`,
+        backgroundImage: loaded ? `url(${mainUrl})` : `url(${thumbUrl || src})`,
         backgroundSize: loaded ? style?.backgroundSize : "cover",
         backgroundPosition: loaded ? style?.backgroundPosition : "center",
         backgroundRepeat: "no-repeat",

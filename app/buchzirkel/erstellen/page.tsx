@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import GenrePicker from "@/app/components/genre-picker";
 import { STANDARD_AGB_TEXT, STANDARD_TOPICS } from "@/lib/buchzirkel";
+import { ProgressiveImg } from "@/app/components/progressive-image";
 
 type Leseabschnitt = { id: string; titel: string; deadline?: string; beschreibung: string };
 type Topic = { id: string; titel: string; typ: string };
@@ -258,7 +259,7 @@ export default function BuchzirkelErstellenPage() {
                   />
                 </label>
               </div>
-              {coverImageUrl && <img src={coverImageUrl} alt="Cover-Vorschau" className="mt-1 w-16 h-24 object-cover rounded-lg border border-arena-border" />}
+              {coverImageUrl && <ProgressiveImg src={coverImageUrl} alt="Cover-Vorschau" className="mt-1 w-16 h-24 object-cover rounded-lg border border-arena-border" />}
               {coverUploadError && <p className="text-xs text-red-600">{coverUploadError}</p>}
             </div>
           </div>
@@ -285,7 +286,7 @@ export default function BuchzirkelErstellenPage() {
           {mediaTyp === "bild" && (
             <div className="grid gap-1">
               <label className="text-sm font-semibold">Bild hochladen</label>
-              {mediaImageUrl && <img src={mediaImageUrl} alt="Vorschau" className="max-w-xs max-h-48 w-auto h-auto rounded-lg border border-arena-border mb-1" />}
+              {mediaImageUrl && <ProgressiveImg src={mediaImageUrl} alt="Vorschau" className="max-w-xs max-h-48 w-auto h-auto rounded-lg border border-arena-border mb-1" />}
               <input type="file" accept="image/*" disabled={mediaImageUploading}
                 onChange={async (e) => {
                   const file = e.target.files?.[0];

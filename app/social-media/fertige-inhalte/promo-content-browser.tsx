@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { ProgressiveImg } from "@/app/components/progressive-image";
 
 type PromoContentItem = {
   id: string;
@@ -188,8 +189,7 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
                       <video controls className="w-full rounded-xl border border-arena-border-light bg-black" src={selectedItem.fileUrl} />
                     ) : (
                       getItemFiles(selectedItem).map((file, index) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img key={`${selectedItem.id}-${index}`} src={file.fileUrl} alt={`${selectedItem.title} ${index + 1}`} className="w-full rounded-xl border border-arena-border-light object-cover" />
+                        <ProgressiveImg key={`${selectedItem.id}-${index}`} src={file.fileUrl} alt={`${selectedItem.title} ${index + 1}`} className="w-full rounded-xl border border-arena-border-light object-cover" />
                       ))
                     )}
                   </div>

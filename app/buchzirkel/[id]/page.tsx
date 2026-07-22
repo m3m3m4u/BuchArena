@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
+import { ProgressiveImg } from "@/app/components/progressive-image";
 
 /** Rendert Text mit Absätzen und klickbaren URLs */
 function RichText({ text, className }: { text: string; className?: string }) {
@@ -162,7 +163,7 @@ export default function BuchzirkelDetailPage() {
       <section className="card">
         <div className="flex gap-5 flex-wrap">
           {zirkel.coverImageUrl && (
-            <img src={zirkel.coverImageUrl} alt={zirkel.titel} className="w-24 h-36 object-cover rounded-lg flex-shrink-0" />
+            <ProgressiveImg src={zirkel.coverImageUrl} alt={zirkel.titel} className="w-24 h-36 object-cover rounded-lg flex-shrink-0" />
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -238,7 +239,7 @@ export default function BuchzirkelDetailPage() {
           })()}
           {!zirkel.youtubeUrl && zirkel.mediaImageUrl && (
             <div className="flex justify-center">
-              <img src={zirkel.mediaImageUrl} alt={zirkel.titel} className="rounded-lg max-w-full w-auto max-h-[600px]" />
+              <ProgressiveImg src={zirkel.mediaImageUrl} alt={zirkel.titel} className="rounded-lg max-w-full w-auto max-h-[600px]" />
             </div>
           )}
         </section>
@@ -291,7 +292,7 @@ export default function BuchzirkelDetailPage() {
         <section className="card mt-3">
           <div className="flex items-start gap-4">
             {zirkel.coverImageUrl && (
-              <img src={zirkel.coverImageUrl} alt={zirkel.titel} className="w-16 h-24 object-cover rounded-lg flex-shrink-0 border border-arena-border-light" />
+              <ProgressiveImg src={zirkel.coverImageUrl} alt={zirkel.titel} className="w-16 h-24 object-cover rounded-lg flex-shrink-0 border border-arena-border-light" />
             )}
             <div className="flex-1 min-w-0">
               <h2 className="text-base font-semibold m-0 mb-1">Bewerbung einreichen</h2>

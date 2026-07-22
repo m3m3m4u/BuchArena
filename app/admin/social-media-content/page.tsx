@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
+import { ProgressiveImg } from "@/app/components/progressive-image";
 
 type PromoContentItem = {
   id: string;
@@ -355,8 +356,7 @@ export default function AdminSocialMediaContentPage() {
                 ) : (
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     {getItemFiles(selectedItem).map((file, index) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={`${selectedItem.id}-${index}`} src={file.fileUrl} alt={`${selectedItem.title} ${index + 1}`} className="w-full rounded-lg border border-arena-border object-cover" />
+                      <ProgressiveImg key={`${selectedItem.id}-${index}`} src={file.fileUrl} alt={`${selectedItem.title} ${index + 1}`} className="w-full rounded-lg border border-arena-border object-cover" />
                     ))}
                   </div>
                 )}

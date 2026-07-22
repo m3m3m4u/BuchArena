@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { getStoredAccount, clearStoredAccount, type AccountRole } from "@/lib/client-account";
+import { toProxyUrl } from "@/app/components/progressive-image";
 
 /* ── Typen ── */
 type ConversationItem = {
@@ -857,7 +858,7 @@ function NachrichtenPageInner() {
                         >
                           <div className="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center text-base font-bold flex-shrink-0 overflow-hidden">
                             {bz.coverImageUrl ? (
-                              <img src={bz.coverImageUrl} alt={bz.titel} className="w-full h-full object-cover" />
+                              <img src={toProxyUrl(bz.coverImageUrl, 100) || bz.coverImageUrl} alt={bz.titel} className="w-full h-full object-cover" />
                             ) : bz.titel.charAt(0).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -907,7 +908,7 @@ function NachrichtenPageInner() {
                     {/* Avatar-Kreis */}
                     <div className="w-10 h-10 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold flex-shrink-0 uppercase overflow-hidden">
                       {conv.profileImage ? (
-                        <img src={conv.profileImage} alt={conv.partner} className="w-full h-full object-cover" />
+                        <img src={toProxyUrl(conv.profileImage, 100) || conv.profileImage} alt={conv.partner} className="w-full h-full object-cover" />
                       ) : (
                         conv.partner.charAt(0)
                       )}
@@ -970,7 +971,7 @@ function NachrichtenPageInner() {
                   </button>
                   <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center text-base font-bold flex-shrink-0 overflow-hidden">
                     {activeBzCover ? (
-                      <img src={activeBzCover} alt={activeBzTitel} className="w-full h-full object-cover" />
+                      <img src={toProxyUrl(activeBzCover, 100) || activeBzCover} alt={activeBzTitel} className="w-full h-full object-cover" />
                     ) : activeBzTitel.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex flex-col flex-1 min-w-0">
@@ -1059,7 +1060,7 @@ function NachrichtenPageInner() {
                   </button>
                   <div className="w-9 h-9 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold uppercase overflow-hidden font-sans">
                     {activePartnerImage ? (
-                      <img src={activePartnerImage} alt={activePartner} className="w-full h-full object-cover" />
+                      <img src={toProxyUrl(activePartnerImage, 100) || activePartnerImage} alt={activePartner} className="w-full h-full object-cover" />
                     ) : (
                       activePartner.charAt(0)
                     )}

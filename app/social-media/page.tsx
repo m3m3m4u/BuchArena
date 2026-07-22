@@ -39,7 +39,7 @@ type Submission = {
   contact: string;
   instagram?: string;
   fileName: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "done";
   createdAt: string;
 };
 
@@ -47,6 +47,7 @@ const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
   pending: { label: "Ausstehend", cls: "bg-yellow-100 text-yellow-800" },
   approved: { label: "Genehmigt", cls: "bg-green-100 text-green-800" },
   rejected: { label: "Abgelehnt", cls: "bg-red-100 text-red-800" },
+  done: { label: "Erledigt", cls: "bg-blue-100 text-blue-800" },
 };
 
 type WizardStep = "start" | "video-tools" | "content-tools" | "admin";

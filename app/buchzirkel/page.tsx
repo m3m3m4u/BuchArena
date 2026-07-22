@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
 import { BookOpenIcon } from "@heroicons/react/24/outline";
+import { ProgressiveImg } from "@/app/components/progressive-image";
 
 type Zirkel = {
   _id: string;
@@ -317,7 +318,7 @@ function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirk
         {/* Cover */}
         <div className="flex-shrink-0 w-[62px] h-[88px] rounded-lg overflow-hidden bg-arena-border-light flex items-center justify-center">
           {zirkel.coverImageUrl ? (
-            <img src={zirkel.coverImageUrl} alt={zirkel.titel} className="w-full h-full object-cover" />
+            <ProgressiveImg src={zirkel.coverImageUrl} alt={zirkel.titel} className="w-full h-full object-cover" />
           ) : (
             <BookOpenIcon className="h-8 w-8 text-arena-muted" />
           )}

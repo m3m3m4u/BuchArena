@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { sanitizeHtml } from "@/lib/sanitize-html";
+import { ProgressiveImg } from "@/app/components/progressive-image";
 
 type NewsLayout = "text-only" | "image-left" | "image-right";
 
@@ -102,8 +103,7 @@ export default function NewsBar() {
               <div className="flex gap-5 items-start flex-wrap sm:flex-nowrap">
                 <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="max-sm:flex-none max-sm:w-full max-sm:max-w-full min-w-0">
                   {post.imageUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" loading="lazy" />
+                    <ProgressiveImg src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" />
                   )}
                 </div>
                 <div
@@ -121,8 +121,7 @@ export default function NewsBar() {
                 />
                 <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="max-sm:flex-none max-sm:w-full max-sm:max-w-full min-w-0">
                   {post.imageUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" loading="lazy" />
+                    <ProgressiveImg src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" />
                   )}
                 </div>
               </div>

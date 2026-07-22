@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
+import { ProgressiveImg } from "@/app/components/progressive-image";
 import Image from "next/image";
 
 type Buch = { id: string; title: string; coverImageUrl?: string; genre?: string };
@@ -282,7 +283,7 @@ export default function AutorGewinnspielPage() {
             <div key={g._id} className="border rounded-lg p-4" style={{ borderColor: "var(--color-arena-border)" }}>
               <div className="flex gap-3">
                 {g.coverImageUrl && (
-                  <img src={g.coverImageUrl} alt={g.buchTitel} className="w-12 h-16 object-cover rounded flex-shrink-0" />
+                  <ProgressiveImg src={g.coverImageUrl} alt={g.buchTitel} className="w-12 h-16 object-cover rounded flex-shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">

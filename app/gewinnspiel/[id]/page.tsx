@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
+import { ProgressiveImg } from "@/app/components/progressive-image";
 
 type GewinnspielDetail = {
   _id: string;
@@ -129,7 +130,7 @@ export default function GewinnspielDetailPage() {
           <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
             <div className="flex gap-4 items-start">
               {g.coverImageUrl && (
-                <img src={g.coverImageUrl} alt={g.buchTitel} className="w-24 rounded shadow-md flex-shrink-0 object-cover" style={{ aspectRatio: "2/3" }} />
+                <ProgressiveImg src={g.coverImageUrl} alt={g.buchTitel} className="w-24 rounded shadow-md flex-shrink-0 object-cover" style={{ aspectRatio: "2/3" }} />
               )}
               <div>
                 <h1 className="text-2xl font-bold" style={{ color: "var(--color-arena-blue)" }}>{g.buchTitel}</h1>

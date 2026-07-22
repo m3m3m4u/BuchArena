@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
+import { ProgressiveImg } from "@/app/components/progressive-image";
 
 type Gewinnspiel = {
   _id: string;
@@ -280,7 +281,7 @@ export default function AdminGewinnspielePage() {
                       className="flex gap-3 items-start bg-white border border-arena-border-light rounded-xl p-3 no-underline text-arena-text transition-all hover:shadow-md hover:border-arena-blue"
                     >
                       {g.coverImageUrl ? (
-                        <img
+                        <ProgressiveImg
                           src={g.coverImageUrl}
                           alt={g.buchTitel}
                           className="w-16 h-24 object-cover rounded-lg flex-shrink-0 border border-arena-border-light"
@@ -356,7 +357,7 @@ export default function AdminGewinnspielePage() {
               <div key={g._id} className="border border-arena-border-light rounded-xl p-4 font-sans bg-white hover:shadow-xs transition-shadow">
                 <div className="flex gap-4 items-start flex-wrap sm:flex-nowrap font-sans">
                   {g.coverImageUrl && (
-                    <img src={g.coverImageUrl} alt={g.buchTitel} className="w-16 h-24 object-cover rounded-lg shadow-sm flex-shrink-0 border border-arena-border-light" />
+                    <ProgressiveImg src={g.coverImageUrl} alt={g.buchTitel} className="w-16 h-24 object-cover rounded-lg shadow-sm flex-shrink-0 border border-arena-border-light" />
                   )}
                   <div className="flex-1 min-w-0 font-sans">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5 font-sans">
