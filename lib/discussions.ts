@@ -67,6 +67,7 @@ export const GENRE_TOPICS = [
   "Kochbuch",
   "Humor",
   "Ratgeber",
+  "Queere Literatur",
 ] as const;
 
 export type GenreTopic = (typeof GENRE_TOPICS)[number];

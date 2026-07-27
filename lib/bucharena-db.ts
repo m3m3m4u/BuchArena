@@ -206,6 +206,7 @@ export const GENRE_OPTIONS = [
   "Gedichte / Lyrik",
   "Kurzgeschichten",
   "Spirituelles",
+  "Queere Literatur",
   "Sonstiges",
 ];
 

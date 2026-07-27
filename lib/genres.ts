@@ -40,6 +40,7 @@ export const GENRE_OPTIONS = [
   "New Adult",
   "Philosophie",
   "Psychothriller",
+  "Queere Literatur",
   "Ratgeber / Selbsthilfe",
   "Reisebericht / Reiseführer",
   "Romantasy",

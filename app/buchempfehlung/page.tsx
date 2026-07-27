@@ -64,6 +64,7 @@ const GENRE_CHOICES = [
   "Mystery",
   "Drama",
   "Spirituelles",
+  "Queere Literatur",
 ];
 
 const AGE_CHOICES = [
