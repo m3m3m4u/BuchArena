@@ -477,17 +477,20 @@ select.input-base {
 
 @utility segmented-control {
   display: flex;
-  gap: 0.25rem;
-  padding: 0.25rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.35rem;
   background-color: color-mix(in srgb, var(--color-arena-blue) 5%, transparent);
   border-radius: 12px;
-  overflow-x: auto;
 }
 
 @utility segmented-control-btn {
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   white-space: nowrap;
-  padding: 0.625rem 1.25rem;
+  padding: 0.5rem 0.875rem;
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 700;
@@ -510,9 +513,12 @@ select.input-base {
 }
 
 @utility segmented-control-btn-primary {
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   white-space: nowrap;
-  padding: 0.625rem 1.25rem;
+  padding: 0.5rem 0.875rem;
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 700;
