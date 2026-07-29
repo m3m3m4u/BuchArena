@@ -279,6 +279,33 @@ function ProfilPageInner() {
     loadProfile();
   }, [account, targetUsername]);
 
+  async function saveSlugInternal(): Promise<boolean> {
+    const cleanSlug = profileSlug.trim().toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/^-+|-+$/g, "");
+    try {
+      const res = await fetch("/api/profile/slug", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: cleanSlug,
+          ...(requestedUser ? { username: requestedUser } : {}),
+        }),
+      });
+      const data = (await res.json()) as { message?: string; slug?: string };
+      if (!res.ok) {
+        setIsError(true);
+        setMessage(data.message ?? "Profil-URL konnte nicht gespeichert werden.");
+        return false;
+      }
+      setProfileSlug(data.slug ?? "");
+      setSlugAvailable(null);
+      return true;
+    } catch (err) {
+      setIsError(true);
+      setMessage(err instanceof Error ? err.message : "Profil-URL konnte nicht gespeichert werden.");
+      return false;
+    }
+  }
+
   async function saveProfile() {
     if (!account || !targetUsername) {
       return;
@@ -289,6 +316,9 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
+      const slugOk = await saveSlugInternal();
+      if (!slugOk) return;
+
       const response = await fetch("/api/profile/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -320,6 +350,9 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
+      const slugOk = await saveSlugInternal();
+      if (!slugOk) return;
+
       const response = await fetch("/api/speakers/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -352,6 +385,9 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
+      const slugOk = await saveSlugInternal();
+      if (!slugOk) return;
+
       const response = await fetch("/api/bloggers/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -384,6 +420,9 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
+      const slugOk = await saveSlugInternal();
+      if (!slugOk) return;
+
       const response = await fetch("/api/testleser/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -420,6 +459,9 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
+      const slugOk = await saveSlugInternal();
+      if (!slugOk) return;
+
       const response = await fetch("/api/lektoren/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -457,6 +499,9 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
+      const slugOk = await saveSlugInternal();
+      if (!slugOk) return;
+
       const response = await fetch("/api/verlage/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1502,12 +1547,12 @@ function ProfilPageInner() {
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/autor/</span>
-                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
               {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
               {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const ok = await saveSlugInternal(); if (ok) { setMessage("Profil-URL gespeichert."); setIsError(false); } } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 
@@ -1847,12 +1892,12 @@ function ProfilPageInner() {
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/sprecher/</span>
-                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
               {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
               {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const ok = await saveSlugInternal(); if (ok) { setMessage("Profil-URL gespeichert."); setIsError(false); } } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 
@@ -2172,12 +2217,12 @@ function ProfilPageInner() {
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/blogger/</span>
-                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
               {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
               {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const ok = await saveSlugInternal(); if (ok) { setMessage("Profil-URL gespeichert."); setIsError(false); } } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 
@@ -2339,12 +2384,12 @@ function ProfilPageInner() {
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/testleser/</span>
-                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
               {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
               {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const ok = await saveSlugInternal(); if (ok) { setMessage("Profil-URL gespeichert."); setIsError(false); } } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 
@@ -2487,12 +2532,12 @@ function ProfilPageInner() {
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/lektoren/</span>
-                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
               {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
               {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const ok = await saveSlugInternal(); if (ok) { setMessage("Profil-URL gespeichert."); setIsError(false); } } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 
@@ -2654,12 +2699,12 @@ function ProfilPageInner() {
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="font-sans text-arena-muted text-sm whitespace-nowrap">/verlage/</span>
-                <input type="text" className="input-base font-normal flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim(); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <input type="text" className="input-base font-normal flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
               {slugAvailable === true && <span className="font-sans text-xs text-green-600 font-semibold">✓ Verfügbar</span>}
               {slugAvailable === false && <span className="font-sans text-xs text-red-600 font-semibold">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary font-sans" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const res = await fetch("/api/profile/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: profileSlug, ...(requestedUser ? { username: requestedUser } : {}) }) }); const data = (await res.json()) as { message?: string; slug?: string }; if (!res.ok) throw new Error(data.message ?? "Fehler"); setProfileSlug(data.slug ?? ""); setSlugAvailable(null); setMessage(data.message ?? "Profil-URL gespeichert."); setIsError(false); } catch (err) { setIsError(true); setMessage(err instanceof Error ? err.message : "Fehler"); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary font-sans" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const ok = await saveSlugInternal(); if (ok) { setMessage("Profil-URL gespeichert."); setIsError(false); } } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 

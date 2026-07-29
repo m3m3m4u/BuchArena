@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 
-/** Erlaubte Zeichen: Kleinbuchstaben, Ziffern, Bindestriche. 3–40 Zeichen. */
-const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/;
+/** Erlaubte Zeichen: Kleinbuchstaben, Ziffern, Bindestriche. 1–40 Zeichen. */
+const SLUG_REGEX = /^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$/;
 
 /** Reservierte Slugs, die nicht vergeben werden dürfen. */
 const RESERVED_SLUGS = new Set([
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
     if (!SLUG_REGEX.test(rawSlug)) {
       return NextResponse.json(
-        { message: "Nur Kleinbuchstaben, Ziffern und Bindestriche erlaubt (3–40 Zeichen, kein Bindestrich am Anfang/Ende)." },
+        { message: "Nur Kleinbuchstaben, Ziffern und Bindestriche erlaubt (1–40 Zeichen, kein Bindestrich am Anfang/Ende)." },
         { status: 400 },
       );
     }
