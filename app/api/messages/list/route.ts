@@ -247,6 +247,7 @@ export async function GET(request: Request) {
         id: c.latestMessageId.toHexString(),
         senderUsername: c.latestSender,
         recipientUsername: c.latestRecipient,
+        latestSender: c.latestSender,
         partner,
         displayName: displayNameMap.get(partner) ?? "",
         profileImage: profileImageMap.get(partner) ?? "",

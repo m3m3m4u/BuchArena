@@ -35,6 +35,7 @@ type DiscussionDetail = {
   replyCount: number;
   lastActivityAt: string;
   createdAt: string;
+  readAt?: string | null;
   replies: ReplyItem[];
   reactions: ReactionItem[];
   hasProfile?: boolean;
@@ -185,11 +186,13 @@ function ReactionBar({
     grouped.set(r.emoji, list);
   }
 
+  const userLower = username.trim().toLowerCase();
+
   return (
     <div className="flex flex-wrap gap-1.5 mt-2.5 items-center">
       {/* Existing reactions */}
       {[...grouped.entries()].map(([emoji, users]) => {
-        const active = users.includes(username);
+        const active = userLower !== "" && users.some((u) => u.trim().toLowerCase() === userLower);
         return (
           <button
             key={emoji}
@@ -197,7 +200,7 @@ function ReactionBar({
             title={users.join(", ")}
             className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm border cursor-pointer transition-colors ${
               active
-                ? "bg-arena-blue/10 border-arena-blue text-arena-blue"
+                ? "bg-arena-blue/10 border-arena-blue text-arena-blue font-semibold"
                 : "bg-gray-50 border-arena-border-light text-arena-text hover:bg-gray-100"
             }`}
           >
@@ -292,15 +295,17 @@ export default function DiskussionDetailPage() {
   async function handleReact(emoji: string, replyId?: string) {
     if (!username || !discussion) return;
 
+    const uname = username.trim().toLowerCase();
+
     // Optimistic update: toggle the reaction in local state immediately
     setDiscussion((prev) => {
       if (!prev) return prev;
       const toggle = (reactions: ReactionItem[]) => {
         const existing = reactions.find(
-          (r) => r.username === username && r.emoji === emoji
+          (r) => r.username.trim().toLowerCase() === uname && r.emoji === emoji
         );
         if (existing) {
-          return reactions.filter((r) => !(r.username === username && r.emoji === emoji));
+          return reactions.filter((r) => !(r.username.trim().toLowerCase() === uname && r.emoji === emoji));
         }
         return [...reactions, { username, emoji }];
       };
@@ -354,9 +359,9 @@ export default function DiskussionDetailPage() {
     }
     setMessage("");
 
-    // Letzten Lesezeitpunkt aus localStorage holen, bevor wir als gelesen markieren
+    // Letzten Lesezeitpunkt aus localStorage holen als Fallback
     const stored = typeof window !== "undefined" ? localStorage.getItem(`discussion-read-${discussionId}`) : null;
-    const prevReadAt = stored ? new Date(stored) : null;
+    const localReadAt = stored ? new Date(stored) : null;
 
     try {
       const response = await fetch("/api/discussions/get", {
@@ -373,6 +378,9 @@ export default function DiskussionDetailPage() {
       if (!response.ok) {
         throw new Error(data.message ?? "Fehler beim Laden.");
       }
+
+      const dbReadAt = data.discussion?.readAt ? new Date(data.discussion.readAt) : null;
+      const prevReadAt = dbReadAt || localReadAt;
 
       setLastReadAt(prevReadAt);
       setDiscussion(data.discussion ?? null);

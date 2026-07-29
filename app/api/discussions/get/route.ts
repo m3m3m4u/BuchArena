@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import { getDiscussionsCollection, getUsersCollection } from "@/lib/mongodb";
+import { getDiscussionsCollection, getUsersCollection, getDiscussionReadsCollection } from "@/lib/mongodb";
+import { getServerAccount } from "@/lib/server-auth";
 import { getProfileDisplayName } from "@/lib/profile";
 
 export async function POST(request: Request) {
@@ -23,6 +24,16 @@ export async function POST(request: Request) {
         { message: "Diskussion nicht gefunden." },
         { status: 404 }
       );
+    }
+
+    const account = await getServerAccount();
+    let readAt: string | null = null;
+    if (account?.username) {
+      const readsCol = await getDiscussionReadsCollection();
+      const userReadDoc = await readsCol.findOne({ username: account.username, discussionId: id });
+      if (userReadDoc?.readAt) {
+        readAt = new Date(userReadDoc.readAt).toISOString();
+      }
     }
 
     // Collect all unique author usernames (discussion + replies)
@@ -81,6 +92,7 @@ export async function POST(request: Request) {
         replyCount: doc.replyCount ?? 0,
         lastActivityAt: doc.lastActivityAt,
         createdAt: doc.createdAt,
+        readAt,
         replies,
         reactions: doc.reactions ?? [],
         hasProfile: authorProfiles?.hasProfile ?? false,

@@ -16,6 +16,7 @@ type ConversationItem = {
   body: string;
   unreadCount: number;
   createdAt: string;
+  latestSender?: string;
 };
 
 type ChatMessage = {
@@ -935,6 +936,9 @@ function NachrichtenPageInner() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-[0.8rem] text-arena-muted truncate flex-1">
+                          {conv.latestSender === username && (
+                            <strong className="text-gray-600 font-semibold">Du: </strong>
+                          )}
                           {conv.body.length > 40
                             ? conv.body.slice(0, 40) + "…"
                             : conv.body}
@@ -1053,10 +1057,11 @@ function NachrichtenPageInner() {
                 {/* Chat-Header */}
                 <div className="flex items-center gap-3 px-4 py-3 border-b border-arena-border-light bg-white">
                   <button
-                    className="min-[641px]:hidden btn btn-sm font-sans !p-1"
+                    className="min-[641px]:hidden btn btn-sm font-sans !px-2.5 !py-1 text-xs font-bold flex items-center gap-1 bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200"
                     onClick={() => setMobileShowChat(false)}
+                    title="Zurück zur Liste"
                   >
-                    ←
+                    ← Chats
                   </button>
                   <div className="w-9 h-9 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold uppercase overflow-hidden font-sans">
                     {activePartnerImage ? (
