@@ -123,6 +123,13 @@ function ProfilPageInner() {
   const [profileSlug, setProfileSlug] = useState("");
   const [isSavingSlug, setIsSavingSlug] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  const [slugModal, setSlugModal] = useState<{
+    type: "success" | "error";
+    title: string;
+    message: string;
+    slug?: string;
+    url?: string;
+  } | null>(null);
   const dragStateRef = useRef<{
     pointerId: number;
     startX: number;
@@ -151,6 +158,50 @@ function ProfilPageInner() {
   const savedTestleserSnap = useRef("");
   const savedLektorenSnap = useRef("");
   const savedVerlageSnap = useRef("");
+
+  function getRolePathForTab(tab: ProfileTab, slug: string): string {
+    const clean = encodeURIComponent(slug);
+    switch (tab) {
+      case "sprecher":
+        return `/sprecher/${clean}`;
+      case "blogger":
+        return `/blogger/${clean}`;
+      case "testleser":
+        return `/testleser/${clean}`;
+      case "lektoren":
+        return `/lektoren/${clean}`;
+      case "verlage":
+        return `/verlage/${clean}`;
+      case "autor":
+      default:
+        return `/autor/${clean}`;
+    }
+  }
+
+  function handleSlugChange(rawInput: string) {
+    const rawLower = rawInput.toLowerCase();
+    const hasForbidden = /[^a-z0-9-]/i.test(rawInput);
+    const cleaned = rawLower
+      .replace(/[ä]/g, "ae")
+      .replace(/[ö]/g, "oe")
+      .replace(/[ü]/g, "ue")
+      .replace(/[ß]/g, "ss")
+      .replace(/[\s_]+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/--+/g, "-");
+
+    setProfileSlug(cleaned);
+    setSlugAvailable(null);
+
+    if (hasForbidden) {
+      setSlugModal({
+        type: "error",
+        title: "Ungültige Zeichen eingegeben",
+        message:
+          "In der Profil-URL sind nur Kleinbuchstaben (a-z), Ziffern (0-9) und Bindestriche (-) erlaubt. Umlaute, Leerzeichen und Sonderzeichen sind nicht zulässig.",
+      });
+    }
+  }
 
   function isCurrentTabDirty(): boolean {
     switch (activeTab) {
@@ -279,8 +330,18 @@ function ProfilPageInner() {
     loadProfile();
   }, [account, targetUsername]);
 
-  async function saveSlugInternal(): Promise<boolean> {
+  async function saveSlugInternal(showSuccessModal = false): Promise<boolean> {
     const cleanSlug = profileSlug.trim().toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/^-+|-+$/g, "");
+
+    if (profileSlug.trim() && !/^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$/.test(cleanSlug)) {
+      setSlugModal({
+        type: "error",
+        title: "Ungültiges Format für Profil-URL",
+        message: "Nur Kleinbuchstaben, Ziffern und Bindestriche erlaubt (1–40 Zeichen, kein Bindestrich am Anfang/Ende).",
+      });
+      return false;
+    }
+
     try {
       const res = await fetch("/api/profile/slug", {
         method: "POST",
@@ -293,15 +354,42 @@ function ProfilPageInner() {
       const data = (await res.json()) as { message?: string; slug?: string };
       if (!res.ok) {
         setIsError(true);
-        setMessage(data.message ?? "Profil-URL konnte nicht gespeichert werden.");
+        const errMsg = data.message ?? "Profil-URL konnte nicht gespeichert werden.";
+        setMessage(errMsg);
+        setSlugModal({
+          type: "error",
+          title: "Profil-URL konnte nicht gespeichert werden",
+          message: errMsg,
+        });
         return false;
       }
-      setProfileSlug(data.slug ?? "");
+
+      const savedSlug = data.slug ?? "";
+      setProfileSlug(savedSlug);
       setSlugAvailable(null);
+
+      if (savedSlug && showSuccessModal) {
+        const origin = typeof window !== "undefined" ? window.location.origin : "https://bucharena.org";
+        const rolePath = getRolePathForTab(activeTab, savedSlug);
+        const fullUrl = `${origin}${rolePath}`;
+        setSlugModal({
+          type: "success",
+          title: "Profil-URL erfolgreich gespeichert!",
+          message: "Dein Profil ist jetzt unter folgender URL erreichbar:",
+          slug: savedSlug,
+          url: fullUrl,
+        });
+      }
       return true;
     } catch (err) {
       setIsError(true);
-      setMessage(err instanceof Error ? err.message : "Profil-URL konnte nicht gespeichert werden.");
+      const errMsg = err instanceof Error ? err.message : "Profil-URL konnte nicht gespeichert werden.";
+      setMessage(errMsg);
+      setSlugModal({
+        type: "error",
+        title: "Fehler beim Speichern der Profil-URL",
+        message: errMsg,
+      });
       return false;
     }
   }
@@ -316,7 +404,7 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal();
+      const slugOk = await saveSlugInternal(true);
       if (!slugOk) return;
 
       const response = await fetch("/api/profile/save", {
@@ -350,7 +438,7 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal();
+      const slugOk = await saveSlugInternal(true);
       if (!slugOk) return;
 
       const response = await fetch("/api/speakers/save", {
@@ -385,7 +473,7 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal();
+      const slugOk = await saveSlugInternal(true);
       if (!slugOk) return;
 
       const response = await fetch("/api/bloggers/save", {
@@ -420,7 +508,7 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal();
+      const slugOk = await saveSlugInternal(true);
       if (!slugOk) return;
 
       const response = await fetch("/api/testleser/save", {
@@ -459,7 +547,7 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal();
+      const slugOk = await saveSlugInternal(true);
       if (!slugOk) return;
 
       const response = await fetch("/api/lektoren/save", {
@@ -499,7 +587,7 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal();
+      const slugOk = await saveSlugInternal(true);
       if (!slugOk) return;
 
       const response = await fetch("/api/verlage/save", {
@@ -1547,12 +1635,12 @@ function ProfilPageInner() {
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/autor/</span>
-                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => handleSlugChange(e.target.value)} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
               {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
               {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const ok = await saveSlugInternal(); if (ok) { setMessage("Profil-URL gespeichert."); setIsError(false); } } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { await saveSlugInternal(true); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 
@@ -2217,12 +2305,12 @@ function ProfilPageInner() {
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/blogger/</span>
-                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => handleSlugChange(e.target.value)} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
               {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
               {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const ok = await saveSlugInternal(); if (ok) { setMessage("Profil-URL gespeichert."); setIsError(false); } } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { await saveSlugInternal(true); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 
@@ -2384,12 +2472,12 @@ function ProfilPageInner() {
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/testleser/</span>
-                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => handleSlugChange(e.target.value)} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
               {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
               {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const ok = await saveSlugInternal(); if (ok) { setMessage("Profil-URL gespeichert."); setIsError(false); } } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { await saveSlugInternal(true); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 
@@ -2532,12 +2620,12 @@ function ProfilPageInner() {
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/lektoren/</span>
-                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => handleSlugChange(e.target.value)} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
               {slugAvailable === true && <span className="text-xs text-green-600">✓ Verfügbar</span>}
               {slugAvailable === false && <span className="text-xs text-red-600">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const ok = await saveSlugInternal(); if (ok) { setMessage("Profil-URL gespeichert."); setIsError(false); } } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { await saveSlugInternal(true); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 
@@ -2699,12 +2787,12 @@ function ProfilPageInner() {
             <div className="flex-1 grid gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="font-sans text-arena-muted text-sm whitespace-nowrap">/verlage/</span>
-                <input type="text" className="input-base font-normal flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
+                <input type="text" className="input-base font-normal flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => handleSlugChange(e.target.value)} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
               {slugAvailable === true && <span className="font-sans text-xs text-green-600 font-semibold">✓ Verfügbar</span>}
               {slugAvailable === false && <span className="font-sans text-xs text-red-600 font-semibold">✗ Bereits vergeben</span>}
             </div>
-            <button type="button" className="btn btn-primary font-sans" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { const ok = await saveSlugInternal(); if (ok) { setMessage("Profil-URL gespeichert."); setIsError(false); } } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
+            <button type="button" className="btn btn-primary font-sans" disabled={isSavingSlug} onClick={async () => { setIsSavingSlug(true); setMessage(""); setIsError(false); try { await saveSlugInternal(true); } finally { setIsSavingSlug(false); } }}>{isSavingSlug ? "…" : "Speichern"}</button>
           </div>
         </div>
 
@@ -3408,6 +3496,83 @@ function ProfilPageInner() {
               </label>
             </div>
             <button type="button" className="btn font-sans" onClick={() => setIsVerlageImageOverlayOpen(false)}>Fertig</button>
+          </section>
+        </div>
+      )}
+
+      {/* ── Overlay für Slug-Fehler oder Erfolg ── */}
+      {slugModal && (
+        <div className="overlay-backdrop" onClick={() => setSlugModal(null)}>
+          <section
+            className="w-[min(500px,95%)] bg-white rounded-2xl p-6 box-border flex flex-col items-center text-center shadow-xl font-sans"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {slugModal.type === "error" ? (
+              <>
+                <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-2xl mb-3 font-bold">
+                  ⚠️
+                </div>
+                <h2 className="font-sans text-xl font-bold text-gray-900 tracking-tight m-0 mb-2">
+                  {slugModal.title}
+                </h2>
+                <p className="font-sans text-sm text-gray-600 m-0 mb-5 leading-relaxed">
+                  {slugModal.message}
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-primary font-sans w-full py-2.5 text-sm font-semibold cursor-pointer"
+                  onClick={() => setSlugModal(null)}
+                >
+                  Verstanden
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-2xl mb-3 font-bold">
+                  🎉
+                </div>
+                <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0 mb-2">
+                  {slugModal.title}
+                </h2>
+                <p className="font-sans text-sm text-gray-600 m-0 mb-3 leading-relaxed">
+                  Dein Profil ist jetzt unter folgender URL erreichbar:
+                </p>
+                <div className="w-full bg-blue-50/60 border border-blue-200 rounded-xl p-3 mb-5 text-center break-all font-mono text-sm text-arena-blue font-bold">
+                  <a
+                    href={slugModal.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-arena-blue hover:underline"
+                  >
+                    {slugModal.url}
+                  </a>
+                </div>
+                <div className="flex gap-2 w-full">
+                  <button
+                    type="button"
+                    className="btn flex-1 py-2.5 text-xs sm:text-sm font-semibold bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                    onClick={() => {
+                      if (slugModal.url) {
+                        void navigator.clipboard.writeText(slugModal.url);
+                        setMessage("Link in die Zwischenablage kopiert.");
+                      }
+                      setSlugModal(null);
+                    }}
+                  >
+                    📋 Link kopieren
+                  </button>
+                  <a
+                    href={slugModal.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-primary flex-1 py-2.5 text-xs sm:text-sm font-semibold no-underline text-center flex items-center justify-center gap-1 cursor-pointer"
+                    onClick={() => setSlugModal(null)}
+                  >
+                    Profil öffnen ↗
+                  </a>
+                </div>
+              </>
+            )}
           </section>
         </div>
       )}
