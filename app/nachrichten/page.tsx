@@ -84,7 +84,8 @@ function formatDateSeparator(dateString: string): string {
 /* ── Hauptseite ── */
 function NachrichtenPageInner() {
   const searchParams = useSearchParams();
-  const toParam = searchParams.get("to");
+  const toParam = searchParams.get("to") || searchParams.get("an");
+  const betreffParam = searchParams.get("betreff");
   const [username, setUsername] = useState("");
   const [accountRole, setAccountRole] = useState<AccountRole>("USER");
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
@@ -163,13 +164,14 @@ function NachrichtenPageInner() {
     }
   }, []);
 
-  /* Auto-open new chat from ?to= query param */
+  /* Auto-open new chat from ?to= or ?an= query param */
   useEffect(() => {
     if (toParam) {
       setNewRecipient(toParam);
+      if (betreffParam) setNewSubject(betreffParam);
       setShowNewChat(true);
     }
-  }, [toParam]);
+  }, [toParam, betreffParam]);
 
   /* ── Konversationen laden ── */
   const router = useRouter();
