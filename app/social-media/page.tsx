@@ -27,7 +27,10 @@ import {
   ChevronLeftIcon,
   PlayIcon,
   StarIcon,
+  HeartIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
+import BuchMatchSection from "@/app/social-media/components/buch-match-section";
 
 type Submission = {
   _id: string;
@@ -50,7 +53,7 @@ const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
   done: { label: "Erledigt", cls: "bg-blue-100 text-blue-800" },
 };
 
-type WizardStep = "start" | "video-tools" | "content-tools" | "admin";
+type WizardStep = "start" | "video-tools" | "content-tools" | "admin" | "buch-match";
 
 export default function SocialMediaPage() {
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
@@ -182,13 +185,34 @@ export default function SocialMediaPage() {
             </p>
 
             <div className="grid gap-2.5">
+              {/* 0) Buch-Match: Autoren Cross-Promotion */}
+              <button
+                type="button"
+                className={`${optionCls} border-arena-yellow/40 bg-arena-yellow/5 hover:border-arena-yellow hover:bg-arena-yellow/10`}
+                onClick={() => setWizardStep("buch-match")}
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-yellow/15 text-arena-blue font-bold">
+                  <HeartIcon className="size-6 text-arena-blue" />
+                </div>
+                <div className="grid gap-0.5 flex-1">
+                  <div className="flex items-center gap-2">
+                    <strong className="text-[0.95rem] text-arena-blue">Buch-Match: Autoren Cross-Promotion &amp; SEO-Boost</strong>
+                    <span className="text-[0.65rem] font-bold uppercase px-2 py-0.5 rounded-full bg-arena-yellow text-arena-blue">NEU</span>
+                  </div>
+                  <span className="text-sm text-arena-muted">
+                    Finde Partner-Autoren für gegenseitige Buch-Vorstellungen auf Instagram, TikTok, Blogs &amp; Podcasts.
+                  </span>
+                </div>
+                <span className="text-arena-blue font-bold self-center shrink-0">→</span>
+              </button>
+
               {/* a) Reel / Video-Vorlage */}
               <button
                 type="button"
                 className={optionCls}
                 onClick={() => setWizardStep("video-tools")}
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-arena-blue">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <FilmIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
@@ -204,7 +228,7 @@ export default function SocialMediaPage() {
                 className={optionCls}
                 onClick={() => setWizardStep("content-tools")}
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <PencilSquareIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
@@ -219,7 +243,7 @@ export default function SocialMediaPage() {
                 href="/social-media/beitrag-tool"
                 className={`${optionCls} no-underline text-inherit`}
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <PhotoIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
@@ -233,7 +257,7 @@ export default function SocialMediaPage() {
                 href="/social-media/fertige-inhalte"
                 className={`${optionCls} no-underline text-inherit`}
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-pink-50 text-pink-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <ArrowDownTrayIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
@@ -248,7 +272,7 @@ export default function SocialMediaPage() {
                 href="/social-media/videos"
                 className={`${optionCls} no-underline text-inherit`}
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-yellow-50 text-yellow-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <PlayIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
@@ -263,7 +287,7 @@ export default function SocialMediaPage() {
                 href="/sprecher-texte"
                 className={`${optionCls} no-underline text-inherit`}
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <MicrophoneIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
@@ -277,17 +301,17 @@ export default function SocialMediaPage() {
               {(account?.role === "ADMIN" || account?.role === "SUPERADMIN") && (
                 <button
                   type="button"
-                  className={`${optionCls} border-amber-300 bg-amber-50 hover:border-amber-500 hover:bg-amber-100/50`}
+                  className={optionCls}
                   onClick={() => setWizardStep("admin")}
                 >
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                     <Cog6ToothIcon className="size-6" />
                   </div>
                   <div className="grid gap-0.5 flex-1">
                     <strong className="text-[0.95rem]">Admin-Bereich</strong>
-                    <span className="text-sm text-amber-700">Einreichungen, Reels, Rezensionen und Schnipsel verwalten.</span>
+                    <span className="text-sm text-arena-muted">Einreichungen, Reels, Rezensionen und Schnipsel verwalten.</span>
                   </div>
-                  <span className="text-amber-600 self-center shrink-0">→</span>
+                  <span className="text-arena-muted self-center shrink-0">→</span>
                 </button>
               )}
             </div>
@@ -729,7 +753,19 @@ export default function SocialMediaPage() {
           </div>
         )}
 
-        <div className="pt-2">
+        {wizardStep === "buch-match" && (
+          <div className="pt-2">
+            <BuchMatchSection account={account} />
+          </div>
+        )}
+
+        {wizardStep === "start" && (
+          <div className="pt-6 border-t mt-6">
+            <BuchMatchSection account={account} />
+          </div>
+        )}
+
+        <div className="pt-4">
           <Link href="/" className="text-arena-link text-sm no-underline hover:underline">
             ← Zurück zur Startseite
           </Link>

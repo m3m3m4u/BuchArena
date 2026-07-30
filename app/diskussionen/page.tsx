@@ -376,6 +376,9 @@ export default function DiskussionenPage() {
             <Link href="/diskussionen/genre" className="btn text-sm sm:text-base">Genre-Treffpunkt</Link>
             <Link href="/quiz" className="btn text-sm sm:text-base">Quiz</Link>
             <Link href="/tauschboerse" className="btn text-sm sm:text-base">Tauschbörse</Link>
+            <Link href="/social-media" className="btn btn-sm text-sm sm:text-base no-underline flex items-center gap-1.5">
+              <span>Buch-Match</span>
+            </Link>
             <button className="btn text-sm sm:text-base" onClick={() => setShowPollOverlay(true)}>
               Neue Abstimmung
             </button>
@@ -391,6 +394,8 @@ export default function DiskussionenPage() {
         <p className="text-sm text-arena-muted -mt-1">
           Der Treffpunkt dient dem gegenseitigen Austausch aller BuchArena-Mitglieder. Reine Werbeposts sind nicht vorgesehen. Wir freuen uns aber, wenn du durch kompetente Beiträge auf dich aufmerksam machst und so die Diskussion bereicherst.
         </p>
+
+
 
         {selectedGenres.length > 0 && (
           <div className="rounded-xl border border-arena-border p-3 flex flex-col gap-2">

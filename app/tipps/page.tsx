@@ -16,7 +16,7 @@ const socialIcons: Record<string, React.ReactNode> = {
 };
 
 type Platform = "intro" | "instagram" | "youtube" | "reddit" | "tiktok" | "facebook" | "pinterest" | "linkedin";
-type MainTab = "social" | "musik" | "glossar" | "beitrag-tool" | "social-media-planer";
+type MainTab = "social" | "buch-match" | "musik" | "glossar" | "beitrag-tool" | "social-media-planer";
 
 type GlossarEntry = { begriff: string; erklaerung: string; bereich: string };
 
@@ -135,9 +135,10 @@ export default function TippsPage() {
       <section className="w-full max-w-[1100px] rounded-2xl border border-arena-border-light bg-white p-12 max-sm:px-4 max-sm:py-6 shadow-xs">
         {/* Haupt-Tabs */}
         <div className="segmented-control mb-8">
-          {(["social", "musik", "glossar", "beitrag-tool", "social-media-planer"] as const).map((tabKey) => {
+          {(["social", "buch-match", "musik", "glossar", "beitrag-tool", "social-media-planer"] as const).map((tabKey) => {
             const labels: Record<MainTab, string> = {
               social: "Social Media Tipps",
+              "buch-match": "Buch-Match",
               musik: "Hintergrundmusik",
               glossar: "Glossar",
               "beitrag-tool": "Beitrag-Tool",
@@ -158,7 +159,7 @@ export default function TippsPage() {
         </div>
 
         <h1 className="font-sans mb-2 text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight">
-          {mainTab === "musik" ? "Hintergrundmusik" : mainTab === "glossar" ? "Glossar für Autoren" : mainTab === "beitrag-tool" ? "Beitrag-Tool" : mainTab === "social-media-planer" ? "Social-Media-Planer" : "Support-Tipps für Autoren"}
+          {mainTab === "musik" ? "Hintergrundmusik" : mainTab === "glossar" ? "Glossar für Autoren" : mainTab === "beitrag-tool" ? "Beitrag-Tool" : mainTab === "social-media-planer" ? "Social-Media-Planer" : mainTab === "buch-match" ? "Buch-Match: Autoren Cross-Promotion" : "Support-Tipps für Autoren"}
         </h1>
         <p className="font-sans text-[0.95rem] text-arena-muted leading-relaxed mb-8">
           {mainTab === "musik"
@@ -169,6 +170,8 @@ export default function TippsPage() {
             ? "Erstelle Social-Media-Posts und Videos direkt im Browser – mit Bild, Text, Rahmen, Animationen und Musik. Wir stellen euch frei nutzbare Bilder und Musik zur Verfügung."
             : mainTab === "social-media-planer"
             ? "Tool-Tipps und Empfehlungen für die Planung und Verwaltung deiner Social-Media-Inhalte."
+            : mainTab === "buch-match"
+            ? "Wie du mit gegenseitigen Buchvorstellungen deinen SEO-Score verbesserst und in KI-Suchergebnissen sichtbar wirst."
             : "Wir übernehmen die Video-Erstellung, das Design und den Upload. Dein Job ist es, den \u201EMotor\u201C zu starten. Hier erfährst du, wie du das Beste aus jeder Plattform herausholst."}
         </p>
 
@@ -227,8 +230,8 @@ export default function TippsPage() {
               </div>
             </div>
 
-            <div className="card-base">
-              <h2 className="font-sans text-lg font-bold text-arena-blue m-0 mb-4">Wichtige Links</h2>
+            <div className="card-info">
+              <h2 className="font-sans text-lg font-bold text-arena-blue m-0 mb-3">Unsere offiziellen Kanäle</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <a href="https://www.youtube.com/@BuchArena" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors">
                   <span className="shrink-0 text-arena-blue [&>svg]:h-5 [&>svg]:w-5">{socialIcons.youtube}</span>
@@ -263,6 +266,103 @@ export default function TippsPage() {
                   <span className="font-sans font-semibold text-[0.95rem]">LinkedIn-Seite</span>
                 </a>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Buch-Match Tab ── */}
+        {mainTab === "buch-match" && (
+          <div className="space-y-5">
+            <div className="card-info">
+              <h2 className="font-sans text-lg font-bold text-arena-blue m-0 mb-3">Warum reicht Eigenwerbung nicht?</h2>
+              <p className="font-sans text-[0.95rem] leading-relaxed m-0">
+                Suchmaschinen (Google, Bing) und KI-Assistenten (Perplexity, ChatGPT, Google AI Overviews) bewerten ein Buch dann am höchsten,
+                wenn es <strong>von verschiedenen, unabhängigen Quellen</strong> erwähnt, rezensiert und verlinkt wird.
+                Wer nur auf den eigenen Kanälen postet, existiert für die KI kaum.
+              </p>
+            </div>
+
+            <div className="card-tip">
+              <h2 className="font-sans text-base font-bold text-arena-blue m-0 mb-3">Die drei Säulen der KI-Auffindbarkeit</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <p className="font-sans font-semibold text-arena-blue text-[0.9rem] m-0 mb-1">1. Co-Erwähnung</p>
+                  <p className="font-sans text-[0.9rem] text-arena-muted m-0">
+                    Wenn ein anderer Autor dein Buch auf seinem Blog oder Kanal nennt, lernt die KI: Dieses Buch gehört in einen echten literarischen Kontext.
+                  </p>
+                </div>
+                <div>
+                  <p className="font-sans font-semibold text-arena-blue text-[0.9rem] m-0 mb-1">2. Authentische Backlinks</p>
+                  <p className="font-sans text-[0.9rem] text-arena-muted m-0">
+                    Links von Buchblogs und Autorenseiten auf dein BuchArena-Profil sind für Google wertvolle Empfehlungssignale.
+                  </p>
+                </div>
+                <div>
+                  <p className="font-sans font-semibold text-arena-blue text-[0.9rem] m-0 mb-1">3. Multi-Kanal Reichweite</p>
+                  <p className="font-sans text-[0.9rem] text-arena-muted m-0">
+                    Durch gegenseitige Vorstellungen erreichst du direkt die Leserschaft von Kollegen mit ähnlichen Genres.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card-base">
+              <h2 className="font-sans text-lg font-bold text-arena-blue m-0 mb-4">So funktioniert Buch-Match</h2>
+              <div className="space-y-4">
+                <div className="flex gap-3 items-start">
+                  <span className="font-sans text-xl flex-shrink-0 text-arena-blue font-bold">1.</span>
+                  <div>
+                    <p className="font-sans font-semibold text-arena-blue m-0">Gesuch anlegen</p>
+                    <p className="font-sans text-[0.9rem] text-arena-muted m-0">
+                      Gehe zu <Link href="/social-media" className="text-arena-link underline font-bold">Social Media → Buch-Match</Link>, wähle dein Buch aus deinen angelegten Büchern und gib an, auf welchem Kanal du ein Partnerbuch vorstellen kannst (z. B. Instagram Reel, Blog-Rezension, TikTok).
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3 items-start">
+                  <span className="font-sans text-xl flex-shrink-0 text-arena-blue font-bold">2.</span>
+                  <div>
+                    <p className="font-sans font-semibold text-arena-blue m-0">Match finden</p>
+                    <p className="font-sans text-[0.9rem] text-arena-muted m-0">
+                      Durchstöbere offene Inserate anderer Autoren oder erhalte Bewerbungen auf deinen eigenen Eintrag. Ein Klick auf <em>Match</em> startet den Austausch.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3 items-start">
+                  <span className="font-sans text-xl flex-shrink-0 text-arena-blue font-bold">3.</span>
+                  <div>
+                    <p className="font-sans font-semibold text-arena-blue m-0">Direkter Austausch</p>
+                    <p className="font-sans text-[0.9rem] text-arena-muted m-0">
+                      Nach dem Match öffnet sich automatisch ein Direktchat in deinen <Link href="/nachrichten" className="text-arena-link underline">Nachrichten</Link>. Tauscht Klappentexte, Rezensionsexemplare und Wunschtermine aus.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3 items-start">
+                  <span className="font-sans text-xl flex-shrink-0 text-arena-blue font-bold">4.</span>
+                  <div>
+                    <p className="font-sans font-semibold text-arena-blue m-0">Veröffentlichen &amp; Nachweis</p>
+                    <p className="font-sans text-[0.9rem] text-arena-muted m-0">
+                      Tragt den Link eurer fertigen Veröffentlichung ins Match ein. Beide Beiträge werden als gegenseitige Empfehlungssignale für SEO und KI-Sichtbarkeit gesichert.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <ChecklistItem title="Tipps für eine gute Buchvorstellung">
+              <p className="m-0"><strong>Erwähne den Autornamen und Buchtitel direkt im Text</strong> – nicht nur im Bild. Suchmaschinen indexieren Text, nicht Bilder.</p>
+              <p className="m-0"><strong>Verlinke das BuchArena-Profil und ggf. die Kaufseite</strong> – das erzeugt den wertvollen Backlink.</p>
+              <p className="m-0"><strong>Kennzeichne Kooperationen transparent</strong> als "Buchvorstellung in Zusammenarbeit mit @...“ oder „Rezensionsexemplar erhalten“.</p>
+              <p className="m-0"><strong>Nutze Hashtags mit Genre und Buchtitel</strong> – das verbessert die Auffindbarkeit auf der Plattform und in KI-Trainingsdaten.</p>
+            </ChecklistItem>
+
+            <div className="card-base flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <p className="font-sans font-bold text-arena-blue m-0">Jetzt starten</p>
+                <p className="font-sans text-[0.9rem] text-arena-muted m-0">Inserat erstellen und den ersten Buch-Match finden.</p>
+              </div>
+              <Link href="/social-media" className="btn btn-primary text-sm no-underline shrink-0">
+                Zum Buch-Match
+              </Link>
             </div>
           </div>
         )}
