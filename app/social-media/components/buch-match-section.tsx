@@ -17,6 +17,30 @@ import {
 import { PLATFORM_LABELS, type MatchPlatform } from "@/lib/buchmatch";
 import type { LoggedInAccount } from "@/lib/client-account";
 
+const PLATFORM_BADGE_STYLES: Record<MatchPlatform, { label: string; badgeCls: string }> = {
+  instagram: { label: "Instagram", badgeCls: "bg-pink-100 text-pink-800 border-pink-200" },
+  tiktok: { label: "TikTok", badgeCls: "bg-slate-900 text-cyan-300 border-slate-700" },
+  blog: { label: "Blog", badgeCls: "bg-blue-100 text-blue-800 border-blue-200" },
+  youtube: { label: "YouTube", badgeCls: "bg-red-100 text-red-800 border-red-200" },
+  newsletter: { label: "Newsletter", badgeCls: "bg-purple-100 text-purple-800 border-purple-200" },
+  podcast: { label: "Podcast", badgeCls: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+  egal: { label: "Egal / Flexibel", badgeCls: "bg-amber-100 text-amber-800 border-amber-200" },
+  andere: { label: "Andere Plattform", badgeCls: "bg-gray-100 text-gray-800 border-gray-200" },
+};
+
+function PlatformBadge({ platform, labelPrefix }: { platform: MatchPlatform; labelPrefix?: string }) {
+  const style = PLATFORM_BADGE_STYLES[platform] || {
+    label: PLATFORM_LABELS[platform] || platform,
+    badgeCls: "bg-gray-100 text-gray-800 border-gray-200",
+  };
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded-md border shrink-0 ${style.badgeCls}`}>
+      {labelPrefix && <span className="opacity-75 font-normal">{labelPrefix}:</span>}
+      <span>{style.label}</span>
+    </span>
+  );
+}
+
 type UserBook = {
   id: string;
   title: string;
@@ -309,12 +333,12 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
       </div>
 
       {/* Sub-Tabs */}
-      <div className="segmented-control">
+      <div className="segmented-control max-sm:flex-nowrap max-sm:overflow-x-auto no-scrollbar max-sm:py-1 max-sm:px-1">
         {SUB_TABS.map((t) => (
           <button
             key={t.key}
             type="button"
-            className={`segmented-control-btn ${subTab === t.key ? "active" : ""}`}
+            className={`segmented-control-btn max-sm:shrink-0 max-sm:px-3 max-sm:py-2.5 max-sm:text-xs ${subTab === t.key ? "active" : ""}`}
             onClick={() => setSubTab(t.key)}
           >
             {t.label}
@@ -326,15 +350,15 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
       {subTab === "market" && (
         <div className="grid gap-4">
           {/* Filter */}
-          <div className="card-base flex flex-wrap items-center gap-3 py-3">
-            <span className="font-sans text-xs font-semibold text-arena-muted flex items-center gap-1.5">
+          <div className="card-base flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 py-2.5 px-3 sm:px-4">
+            <span className="font-sans text-xs font-bold text-arena-muted flex items-center gap-1.5 shrink-0">
               <FunnelIcon className="h-4 w-4 text-arena-blue" />
-              Plattform:
+              Plattform-Filter:
             </span>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex overflow-x-auto no-scrollbar gap-1.5 py-1 w-full -mx-1 px-1">
               <button
                 onClick={() => setPlatformFilter("all")}
-                className={`btn btn-sm ${platformFilter === "all" ? "btn-primary" : ""}`}
+                className={`btn btn-sm shrink-0 min-h-[36px] max-sm:text-xs px-3 ${platformFilter === "all" ? "btn-primary" : ""}`}
               >
                 Alle
               </button>
@@ -342,7 +366,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
                 <button
                   key={p}
                   onClick={() => setPlatformFilter(p)}
-                  className={`btn btn-sm ${platformFilter === p ? "btn-primary" : ""}`}
+                  className={`btn btn-sm shrink-0 min-h-[36px] max-sm:text-xs px-3 ${platformFilter === p ? "btn-primary" : ""}`}
                 >
                   {PLATFORM_LABELS[p]}
                 </button>
@@ -361,59 +385,65 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
               <p className="font-sans font-bold text-arena-blue m-0">Noch keine Inserate vorhanden</p>
               <p className="font-sans text-sm text-arena-muted m-0">Erstelle das erste Buch-Match-Inserat!</p>
               {account && (
-                <button onClick={() => setSubTab("create")} className="btn btn-primary mx-auto mt-1 text-sm">
+                <button onClick={() => setSubTab("create")} className="btn btn-primary mx-auto mt-1 text-sm min-h-[40px] px-4">
                   <PlusIcon className="h-4 w-4 mr-1" /> Inserat erstellen
                 </button>
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
               {offers.map((offer) => (
-                <div key={offer.id} className="card-base flex flex-col justify-between gap-3 hover:border-arena-blue transition-colors">
+                <div key={offer.id} className="card-base flex flex-col justify-between gap-3 p-3.5 sm:p-4 hover:border-arena-blue transition-colors">
                   <div className="flex items-start gap-3">
                     {offer.bookCoverUrl ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={offer.bookCoverUrl} alt={offer.bookTitle} className="w-14 h-20 object-cover rounded border border-arena-border-light flex-shrink-0" />
+                      <img src={offer.bookCoverUrl} alt={offer.bookTitle} className="w-16 h-22 sm:w-14 sm:h-20 object-cover rounded-md border border-arena-border-light flex-shrink-0 shadow-xs" />
                     ) : (
-                      <div className="w-14 h-20 bg-arena-bg rounded border border-arena-border-light flex items-center justify-center text-arena-muted flex-shrink-0">
+                      <div className="w-16 h-22 sm:w-14 sm:h-20 bg-arena-bg rounded-md border border-arena-border-light flex items-center justify-center text-arena-muted flex-shrink-0">
                         <BookOpenIcon className="h-6 w-6" />
                       </div>
                     )}
-                    <div className="grid gap-1 min-w-0">
-                      <span className="font-sans text-xs font-semibold text-arena-muted">@{offer.authorUsername}</span>
-                      <h3 className="font-serif text-base font-bold text-arena-blue m-0 leading-tight">{offer.bookTitle}</h3>
-                      <p className="font-sans text-xs text-arena-muted m-0">
-                        Bietet: <strong>{PLATFORM_LABELS[offer.offeredPlatform]}</strong> ({offer.offeredFormat})
-                      </p>
-                      <p className="font-sans text-xs text-arena-muted m-0">
-                        Sucht: <strong>{PLATFORM_LABELS[offer.requestedPlatform]}</strong>
-                      </p>
+                    <div className="grid gap-1.5 min-w-0 flex-1">
+                      <span className="font-sans text-xs font-bold text-arena-blue/80">@{offer.authorUsername}</span>
+                      <h3 className="font-serif text-base sm:text-lg font-bold text-arena-blue m-0 leading-snug break-words">{offer.bookTitle}</h3>
+                      <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                        <PlatformBadge platform={offer.offeredPlatform} labelPrefix="Bietet" />
+                        {offer.offeredFormat && (
+                          <span className="font-sans text-xs text-arena-muted truncate max-w-full">({offer.offeredFormat})</span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <PlatformBadge platform={offer.requestedPlatform} labelPrefix="Sucht" />
+                        {offer.requestedFormat && (
+                          <span className="font-sans text-xs text-arena-muted truncate max-w-full">({offer.requestedFormat})</span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   {offer.notes && (
-                    <p className="font-sans text-xs text-arena-muted italic border-t border-arena-border-light pt-2 m-0">
+                    <p className="font-sans text-xs text-arena-muted italic p-2.5 rounded-lg bg-arena-bg/60 border border-arena-border-light/60 m-0">
                       &quot;{offer.notes}&quot;
                     </p>
                   )}
 
-                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-arena-border-light">
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-arena-border-light">
                     <span className="font-sans text-xs text-arena-muted">
                       {new Date(offer.createdAt).toLocaleDateString("de-DE")}
                     </span>
                     {account ? (
                       offer.authorUsername === account.username ? (
-                        <span className="font-sans text-xs text-arena-muted italic">Dein Inserat</span>
+                        <span className="font-sans text-xs text-arena-muted italic px-2 py-1 bg-arena-bg rounded">Dein Inserat</span>
                       ) : (
                         <button
                           onClick={() => { setSelectedOfferForApply(offer); setApplyError(""); setApplySuccess(""); }}
-                          className="btn btn-primary btn-sm"
+                          className="btn btn-primary btn-sm min-h-[38px] px-3.5"
                         >
                           Bewerben
                         </button>
                       )
                     ) : (
-                      <Link href="/auth" className="btn btn-sm text-xs no-underline">Anmelden</Link>
+                      <Link href="/auth" className="btn btn-sm min-h-[36px] text-xs no-underline flex items-center">Anmelden</Link>
                     )}
                   </div>
                 </div>
@@ -501,9 +531,9 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
                 <textarea value={createNotes} onChange={(e) => setCreateNotes(e.target.value)} rows={3} placeholder="Vorlaufzeit, bevorzugte Genres, sonstiges …" className="input-base" />
               </label>
 
-              <div className="flex justify-end gap-3 pt-1">
-                <button type="button" onClick={() => setSubTab("market")} className="btn btn-sm">Abbrechen</button>
-                <button type="submit" disabled={createLoading} className="btn btn-primary">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 pt-2">
+                <button type="button" onClick={() => setSubTab("market")} className="btn btn-sm min-h-[40px] justify-center">Abbrechen</button>
+                <button type="submit" disabled={createLoading} className="btn btn-primary min-h-[44px] justify-center max-sm:w-full">
                   {createLoading ? <ArrowPathIcon className="h-4 w-4 animate-spin mr-1" /> : <PlusIcon className="h-4 w-4 mr-1" />}
                   Inserat veröffentlichen
                 </button>
@@ -516,17 +546,17 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
       {/* BEWERBUNGEN */}
       {subTab === "applications" && account && (
         <div className="grid gap-4">
-          <div className="segmented-control">
+          <div className="segmented-control max-sm:flex-nowrap max-sm:overflow-x-auto no-scrollbar max-sm:py-1 max-sm:px-1">
             <button
               type="button"
-              className={`segmented-control-btn ${appRole === "incoming" ? "active" : ""}`}
+              className={`segmented-control-btn max-sm:shrink-0 max-sm:px-3 max-sm:py-2.5 max-sm:text-xs ${appRole === "incoming" ? "active" : ""}`}
               onClick={() => setAppRole("incoming")}
             >
               Eingehende Bewerbungen
             </button>
             <button
               type="button"
-              className={`segmented-control-btn ${appRole === "outgoing" ? "active" : ""}`}
+              className={`segmented-control-btn max-sm:shrink-0 max-sm:px-3 max-sm:py-2.5 max-sm:text-xs ${appRole === "outgoing" ? "active" : ""}`}
               onClick={() => setAppRole("outgoing")}
             >
               Meine Bewerbungen
@@ -534,7 +564,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
           </div>
 
           {loadingApps ? (
-            <div className="card-base py-8 text-center text-arena-muted flex items-center justify-center gap-2">
+            <div className="card-base py-8 text-center text-arena-muted font-sans flex items-center justify-center gap-2">
               <ArrowPathIcon className="h-5 w-5 animate-spin text-arena-blue" />
               <span>Lade Bewerbungen …</span>
             </div>
@@ -545,18 +575,18 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
           ) : (
             <div className="grid gap-3">
               {applications.map((app) => (
-                <div key={app.id} className="card-base grid gap-3">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
+                <div key={app.id} className="card-base grid gap-3 p-3.5 sm:p-4">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 w-full sm:w-auto min-w-0">
                       {app.applicantBookCoverUrl ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={app.applicantBookCoverUrl} alt={app.applicantBookTitle} className="w-12 h-17 object-cover rounded border border-arena-border-light flex-shrink-0" />
+                        <img src={app.applicantBookCoverUrl} alt={app.applicantBookTitle} className="w-14 h-20 object-cover rounded-md border border-arena-border-light flex-shrink-0 shadow-xs" />
                       ) : (
-                        <div className="w-12 h-17 bg-arena-bg border rounded flex items-center justify-center text-arena-muted flex-shrink-0">
+                        <div className="w-14 h-20 bg-arena-bg border border-arena-border-light rounded-md flex items-center justify-center text-arena-muted flex-shrink-0">
                           <BookOpenIcon className="h-5 w-5" />
                         </div>
                       )}
-                      <div className="grid gap-1">
+                      <div className="grid gap-1 min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-sans text-xs font-bold text-arena-blue">
                             {appRole === "incoming" ? `@${app.applicantUsername}` : `→ @${app.offerAuthorUsername}`}
@@ -564,33 +594,36 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
                           <span className={`badge ${
                             app.status === "matched" ? "bg-green-100 text-green-800" :
                             app.status === "declined" ? "bg-red-100 text-red-700" :
-                            "bg-arena-bg text-arena-muted"
+                            "bg-amber-100 text-amber-800"
                           }`}>
                             {app.status === "matched" ? "Gematcht" : app.status === "declined" ? "Abgelehnt" : "Ausstehend"}
                           </span>
                         </div>
-                        <p className="font-serif font-bold text-arena-text text-sm m-0">{app.applicantBookTitle}</p>
-                        <p className="font-sans text-xs text-arena-muted m-0">
-                          {PLATFORM_LABELS[app.applicantPlatform]} – {app.applicantFormat}
-                          {app.applicantChannelHandle && ` (${app.applicantChannelHandle})`}
-                        </p>
+                        <p className="font-serif font-bold text-arena-text text-base m-0 leading-snug">{app.applicantBookTitle}</p>
+                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                          <PlatformBadge platform={app.applicantPlatform} />
+                          <span className="font-sans text-xs text-arena-muted">{app.applicantFormat}</span>
+                          {app.applicantChannelHandle && (
+                            <span className="font-sans text-xs font-semibold text-arena-muted">({app.applicantChannelHandle})</span>
+                          )}
+                        </div>
                         {app.offerBookTitle && (
-                          <p className="font-sans text-xs text-arena-muted m-0">Inserat: „{app.offerBookTitle}"</p>
+                          <p className="font-sans text-xs text-arena-muted m-0 mt-0.5">Inserat: „{app.offerBookTitle}"</p>
                         )}
                       </div>
                     </div>
 
                     {appRole === "incoming" && app.status === "pending" && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-arena-border-light">
                         <button
                           onClick={() => handleApplicationAction(app.id, "decline")}
-                          className="btn btn-sm btn-danger"
+                          className="btn btn-sm btn-danger min-h-[40px] flex-1 sm:flex-initial justify-center"
                         >
                           <XMarkIcon className="h-4 w-4 mr-1" /> Ablehnen
                         </button>
                         <button
                           onClick={() => handleApplicationAction(app.id, "match")}
-                          className="btn btn-sm btn-primary"
+                          className="btn btn-sm btn-primary min-h-[40px] flex-1 sm:flex-initial justify-center bg-green-600 hover:bg-green-700 border-green-600"
                         >
                           <CheckCircleIcon className="h-4 w-4 mr-1" /> Match!
                         </button>
@@ -599,7 +632,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
                   </div>
 
                   {app.message && (
-                    <p className="font-sans text-xs text-arena-muted italic border-t border-arena-border-light pt-2 m-0">
+                    <p className="font-sans text-xs text-arena-muted italic p-2.5 rounded-lg bg-arena-bg/60 border border-arena-border-light/60 m-0">
                       „{app.message}"
                     </p>
                   )}
@@ -615,7 +648,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
         <div className="grid gap-4">
           <div className="card-info flex items-start gap-3">
             <InformationCircleIcon className="h-5 w-5 text-arena-blue shrink-0 mt-0.5" />
-            <p className="font-sans text-xs text-arena-text m-0">
+            <p className="font-sans text-xs sm:text-sm text-arena-text m-0 leading-relaxed">
               Nach dem Match öffnet sich ein Chat in deinen{" "}
               <Link href="/nachrichten" className="text-arena-link underline font-bold">Nachrichten</Link>.
               Tauscht dort Buchexemplare und Termine aus und tragt hier den Link zu eurer Veröffentlichung ein.
@@ -623,7 +656,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
           </div>
 
           {loadingMatches ? (
-            <div className="card-base py-8 text-center text-arena-muted flex items-center justify-center gap-2">
+            <div className="card-base py-8 text-center text-arena-muted font-sans flex items-center justify-center gap-2">
               <ArrowPathIcon className="h-5 w-5 animate-spin text-arena-blue" />
               <span>Lade Matches …</span>
             </div>
@@ -634,70 +667,74 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
           ) : (
             <div className="grid gap-4">
               {matches.map((m) => (
-                <div key={m.id} className="card-base grid gap-4 border-arena-blue/20">
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-arena-border-light pb-3">
+                <div key={m.id} className="card-base grid gap-4 p-3.5 sm:p-5 border-arena-blue/30 shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-arena-border-light pb-3">
                     <div>
-                      <h3 className="font-serif text-base font-bold text-arena-blue m-0">Match mit @{m.partnerUsername}</h3>
+                      <h3 className="font-serif text-base sm:text-lg font-bold text-arena-blue m-0">Match mit @{m.partnerUsername}</h3>
                       <p className="font-sans text-xs text-arena-muted m-0">
                         Seit {m.matchedAt ? new Date(m.matchedAt).toLocaleDateString("de-DE") : "kürzlich"}
                       </p>
                     </div>
-                    <Link href={`/nachrichten?user=${m.partnerUsername}`} className="btn btn-sm btn-primary no-underline flex items-center gap-1.5">
+                    <Link href={`/nachrichten?user=${m.partnerUsername}`} className="btn btn-sm btn-primary no-underline flex items-center justify-center gap-1.5 min-h-[40px] px-4 w-full sm:w-auto">
                       <ChatBubbleLeftRightIcon className="h-4 w-4" /> Chat öffnen
                     </Link>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="card-info grid gap-2">
-                      <span className="font-sans text-xs font-bold text-arena-muted uppercase">Dein Buch</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+                    <div className="card-info grid gap-2 p-3">
+                      <span className="font-sans text-xs font-bold text-arena-muted uppercase tracking-wider">Dein Buch</span>
                       <div className="flex items-center gap-3">
                         {m.myBookCoverUrl ? (
                           /* eslint-disable-next-line @next/next/no-img-element */
-                          <img src={m.myBookCoverUrl} alt={m.myBookTitle} className="w-10 h-14 object-cover rounded border" />
+                          <img src={m.myBookCoverUrl} alt={m.myBookTitle} className="w-10 h-14 object-cover rounded border border-arena-border-light shrink-0" />
                         ) : (
-                          <div className="w-10 h-14 bg-arena-bg rounded border flex items-center justify-center text-arena-muted">
+                          <div className="w-10 h-14 bg-arena-bg rounded border border-arena-border-light flex items-center justify-center text-arena-muted shrink-0">
                             <BookOpenIcon className="h-4 w-4" />
                           </div>
                         )}
-                        <div>
-                          <p className="font-serif font-bold text-arena-blue text-sm m-0">{m.myBookTitle}</p>
-                          <p className="font-sans text-xs text-arena-muted m-0">Partner stellt vor auf: {PLATFORM_LABELS[m.partnerPlatform]}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-serif font-bold text-arena-blue text-sm m-0 truncate">{m.myBookTitle}</p>
+                          <div className="mt-1">
+                            <PlatformBadge platform={m.partnerPlatform} labelPrefix="Partner stellt vor auf" />
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="card-info grid gap-2">
-                      <span className="font-sans text-xs font-bold text-arena-muted uppercase">Buch von @{m.partnerUsername}</span>
+                    <div className="card-info grid gap-2 p-3">
+                      <span className="font-sans text-xs font-bold text-arena-muted uppercase tracking-wider">Buch von @{m.partnerUsername}</span>
                       <div className="flex items-center gap-3">
                         {m.partnerBookCoverUrl ? (
                           /* eslint-disable-next-line @next/next/no-img-element */
-                          <img src={m.partnerBookCoverUrl} alt={m.partnerBookTitle} className="w-10 h-14 object-cover rounded border" />
+                          <img src={m.partnerBookCoverUrl} alt={m.partnerBookTitle} className="w-10 h-14 object-cover rounded border border-arena-border-light shrink-0" />
                         ) : (
-                          <div className="w-10 h-14 bg-arena-bg rounded border flex items-center justify-center text-arena-muted">
+                          <div className="w-10 h-14 bg-arena-bg rounded border border-arena-border-light flex items-center justify-center text-arena-muted shrink-0">
                             <BookOpenIcon className="h-4 w-4" />
                           </div>
                         )}
-                        <div>
-                          <p className="font-serif font-bold text-arena-blue text-sm m-0">{m.partnerBookTitle}</p>
-                          <p className="font-sans text-xs text-arena-muted m-0">Du stellst vor auf: {PLATFORM_LABELS[m.myPlatform]}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-serif font-bold text-arena-blue text-sm m-0 truncate">{m.partnerBookTitle}</p>
+                          <div className="mt-1">
+                            <PlatformBadge platform={m.myPlatform} labelPrefix="Du stellst vor auf" />
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Veröffentlichungslinks */}
-                  <div className="card-base border-arena-border-light grid gap-3">
-                    <h4 className="font-sans text-xs font-bold text-arena-text m-0">Veröffentlichungsnachweis</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="card-base border-arena-border-light grid gap-3 p-3.5 sm:p-4 bg-arena-bg/40">
+                    <h4 className="font-sans text-xs font-bold text-arena-text uppercase tracking-wider m-0">Veröffentlichungsnachweis</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                       <div className="grid gap-1">
-                        <label className="font-sans text-xs font-semibold text-arena-muted">Dein Beitrags-Link:</label>
+                        <label className="font-sans text-xs font-bold text-arena-muted">Dein Beitrags-Link:</label>
                         {(m.isOwner ? m.publishedUrlOwner : m.publishedUrlApplicant) ? (
-                          <a href={m.isOwner ? m.publishedUrlOwner : m.publishedUrlApplicant} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-arena-link underline">
-                            <LinkIcon className="h-3.5 w-3.5" />
+                          <a href={m.isOwner ? m.publishedUrlOwner : m.publishedUrlApplicant} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-arena-link font-semibold underline break-all">
+                            <LinkIcon className="h-4 w-4 shrink-0" />
                             <span className="truncate">{m.isOwner ? m.publishedUrlOwner : m.publishedUrlApplicant}</span>
                           </a>
                         ) : (
-                          <div className="flex gap-2">
+                          <div className="flex flex-col sm:flex-row gap-2">
                             <input
                               type="url"
                               placeholder="https://..."
@@ -708,7 +745,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
                             <button
                               onClick={() => handleSavePublishUrl(m.id)}
                               disabled={publishingId === m.id}
-                              className="btn btn-primary btn-sm shrink-0"
+                              className="btn btn-primary btn-sm min-h-[40px] shrink-0 justify-center w-full sm:w-auto px-4"
                             >
                               {publishingId === m.id ? "…" : "Speichern"}
                             </button>
@@ -717,14 +754,14 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
                       </div>
 
                       <div className="grid gap-1">
-                        <label className="font-sans text-xs font-semibold text-arena-muted">Link von @{m.partnerUsername}:</label>
+                        <label className="font-sans text-xs font-bold text-arena-muted">Link von @{m.partnerUsername}:</label>
                         {(m.isOwner ? m.publishedUrlApplicant : m.publishedUrlOwner) ? (
-                          <a href={m.isOwner ? m.publishedUrlApplicant : m.publishedUrlOwner} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-arena-link underline">
-                            <LinkIcon className="h-3.5 w-3.5" />
+                          <a href={m.isOwner ? m.publishedUrlApplicant : m.publishedUrlOwner} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-arena-link font-semibold underline break-all">
+                            <LinkIcon className="h-4 w-4 shrink-0" />
                             <span className="truncate">{m.isOwner ? m.publishedUrlApplicant : m.publishedUrlOwner}</span>
                           </a>
                         ) : (
-                          <span className="font-sans text-xs text-arena-muted italic">Noch nicht eingetragen</span>
+                          <span className="font-sans text-xs text-arena-muted italic py-1">Noch nicht eingetragen</span>
                         )}
                       </div>
                     </div>
@@ -738,21 +775,24 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
 
       {/* APPLY MODAL */}
       {selectedOfferForApply && account && (
-        <div className="overlay-backdrop">
-          <div className="card grid gap-4 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="overlay-backdrop flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
+          <div className="card grid gap-4 max-w-lg w-full max-h-[92vh] sm:max-h-[85vh] rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between border-b border-arena-border-light pb-3">
-              <h3 className="font-serif text-base font-bold text-arena-blue m-0">Jetzt bewerben</h3>
-              <button onClick={() => setSelectedOfferForApply(null)} className="btn btn-sm p-1">
+              <h3 className="font-serif text-base sm:text-lg font-bold text-arena-blue m-0">Jetzt bewerben</h3>
+              <button onClick={() => setSelectedOfferForApply(null)} className="btn btn-sm p-1 min-h-[38px] min-w-[38px] flex items-center justify-center">
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="card-info text-sm">
-              <p className="font-sans font-semibold text-arena-blue m-0">@{selectedOfferForApply.authorUsername}:</p>
-              <p className="font-serif font-bold text-arena-text text-base m-0">{selectedOfferForApply.bookTitle}</p>
-              <p className="font-sans text-xs text-arena-muted m-0">
-                Bietet: {PLATFORM_LABELS[selectedOfferForApply.offeredPlatform]} ({selectedOfferForApply.offeredFormat})
-              </p>
+            <div className="card-info text-sm p-3">
+              <p className="font-sans text-xs font-bold text-arena-blue m-0">@{selectedOfferForApply.authorUsername}:</p>
+              <p className="font-serif font-bold text-arena-text text-base m-0 leading-tight">{selectedOfferForApply.bookTitle}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                <PlatformBadge platform={selectedOfferForApply.offeredPlatform} labelPrefix="Bietet" />
+                {selectedOfferForApply.offeredFormat && (
+                  <span className="font-sans text-xs text-arena-muted">({selectedOfferForApply.offeredFormat})</span>
+                )}
+              </div>
             </div>
 
             {myBooks.length === 0 ? (
@@ -796,9 +836,9 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
                   <textarea value={applyMessage} onChange={(e) => setApplyMessage(e.target.value)} rows={3} placeholder="Kurze Vorstellung …" className="input-base" />
                 </label>
 
-                <div className="flex justify-end gap-3 pt-1">
-                  <button type="button" onClick={() => setSelectedOfferForApply(null)} className="btn btn-sm">Abbrechen</button>
-                  <button type="submit" disabled={applyLoading} className="btn btn-primary">
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 pt-2">
+                  <button type="button" onClick={() => setSelectedOfferForApply(null)} className="btn btn-sm min-h-[40px] justify-center">Abbrechen</button>
+                  <button type="submit" disabled={applyLoading} className="btn btn-primary min-h-[44px] justify-center max-sm:w-full">
                     {applyLoading ? <ArrowPathIcon className="h-4 w-4 animate-spin mr-1" /> : null}
                     Bewerbung absenden
                   </button>
