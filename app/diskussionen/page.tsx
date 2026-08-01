@@ -424,16 +424,16 @@ export default function DiskussionenPage() {
 
         {/* ═══ Such- und Filterleiste ═══ */}
         <div className="grid gap-2">
-          <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+          <div className="grid gap-2 sm:flex sm:items-center">
             <input
               type="text"
-              className="input-base text-sm"
+              className="input-base text-sm sm:flex-1"
               placeholder="Diskussionen durchsuchen …"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <select
-              className="input-base text-sm"
+              className="input-base text-sm w-full sm:w-auto"
               value={filterTopic}
               onChange={(e) => setFilterTopic(e.target.value)}
             >

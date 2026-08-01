@@ -134,7 +134,7 @@ export default function TippsPage() {
     <main className="centered-main">
       <section className="w-full max-w-[1100px] rounded-2xl border border-arena-border-light bg-white p-12 max-sm:px-4 max-sm:py-6 shadow-xs">
         {/* Haupt-Tabs */}
-        <div className="segmented-control mb-8">
+        <div className="segmented-control mb-8 max-sm:flex-nowrap max-sm:overflow-x-auto no-scrollbar">
           {(["social", "buch-match", "musik", "glossar", "beitrag-tool", "social-media-planer"] as const).map((tabKey) => {
             const labels: Record<MainTab, string> = {
               social: "Social Media Tipps",
@@ -149,7 +149,7 @@ export default function TippsPage() {
               <button
                 key={tabKey}
                 type="button"
-                className={`segmented-control-btn ${isActive ? "active" : ""}`}
+                className={`segmented-control-btn max-sm:shrink-0 ${isActive ? "active" : ""}`}
                 onClick={() => setMainTab(tabKey)}
               >
                 {labels[tabKey]}
@@ -177,7 +177,7 @@ export default function TippsPage() {
 
         {/* Plattform-Tabs (nur bei Social Media) */}
         {mainTab === "social" && (
-          <div className="segmented-control mb-8">
+          <div className="segmented-control mb-8 max-sm:flex-nowrap max-sm:overflow-x-auto no-scrollbar">
             {TABS.map((t) => {
               const isActive = tab === t.key;
               return (

@@ -350,12 +350,12 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
       {subTab === "market" && (
         <div className="grid gap-4">
           {/* Filter */}
-          <div className="card-base flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 py-2.5 px-3 sm:px-4">
+          <div className="card-base flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 py-2.5 px-3 sm:px-4 overflow-hidden">
             <span className="font-sans text-xs font-bold text-arena-muted flex items-center gap-1.5 shrink-0">
               <FunnelIcon className="h-4 w-4 text-arena-blue" />
               Plattform-Filter:
             </span>
-            <div className="flex overflow-x-auto no-scrollbar gap-1.5 py-1 w-full -mx-1 px-1">
+            <div className="flex overflow-x-auto no-scrollbar gap-1.5 py-1 w-full">
               <button
                 onClick={() => setPlatformFilter("all")}
                 className={`btn btn-sm shrink-0 min-h-[36px] max-sm:text-xs px-3 ${platformFilter === "all" ? "btn-primary" : ""}`}
