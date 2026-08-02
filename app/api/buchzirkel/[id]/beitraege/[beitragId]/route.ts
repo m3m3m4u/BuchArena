@@ -196,9 +196,10 @@ export async function PATCH(
       replyId?: string;
     };
 
-    // Beitrag bearbeiten (nur eigener)
+    // Beitrag bearbeiten (nur eigener oder Admin)
     if (body.action === "edit-beitrag") {
-      if (beitrag.autorUsername !== account.username) {
+      const isAdmin = account.role === "ADMIN" || account.role === "SUPERADMIN";
+      if (!isAdmin && beitrag.autorUsername.toLowerCase() !== account.username.toLowerCase()) {
         return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
       }
       const newBody = body.body?.trim();
@@ -212,7 +213,7 @@ export async function PATCH(
       return NextResponse.json({ ok: true });
     }
 
-    // Antwort bearbeiten (nur eigene)
+    // Antwort bearbeiten (nur eigene oder Admin)
     if (body.action === "edit-reply") {
       const replyId = body.replyId;
       if (!replyId) return NextResponse.json({ message: "replyId erforderlich." }, { status: 400 });
@@ -221,7 +222,8 @@ export async function PATCH(
         (r) => r._id?.toString() === replyId
       );
       if (!reply) return NextResponse.json({ message: "Antwort nicht gefunden." }, { status: 404 });
-      if (reply.autorUsername !== account.username) {
+      const isAdmin = account.role === "ADMIN" || account.role === "SUPERADMIN";
+      if (!isAdmin && reply.autorUsername.toLowerCase() !== account.username.toLowerCase()) {
         return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
       }
 

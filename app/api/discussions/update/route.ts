@@ -44,9 +44,17 @@ export async function POST(request: Request) {
     }
 
     const discussions = await getDiscussionsCollection();
+    const isAdmin = account.role === "ADMIN" || account.role === "SUPERADMIN";
+
+    const filter = isAdmin
+      ? { _id: new ObjectId(id) }
+      : {
+          _id: new ObjectId(id),
+          authorUsername: { $regex: new RegExp(`^${authorUsername.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+        };
 
     const result = await discussions.updateOne(
-      { _id: new ObjectId(id), authorUsername },
+      filter,
       { $set: { title, body: postBody } }
     );
 

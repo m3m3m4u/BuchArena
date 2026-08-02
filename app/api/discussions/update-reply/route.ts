@@ -42,12 +42,39 @@ export async function POST(request: Request) {
     }
 
     const discussions = await getDiscussionsCollection();
+    const isAdmin = account.role === "ADMIN" || account.role === "SUPERADMIN";
+
+    const doc = await discussions.findOne({
+      _id: new ObjectId(discussionId),
+      "replies._id": new ObjectId(replyId),
+    });
+
+    if (!doc) {
+      return NextResponse.json(
+        { message: "Antwort nicht gefunden." },
+        { status: 404 }
+      );
+    }
+
+    const reply = doc.replies?.find((r) => r._id?.toString() === replyId);
+    if (!reply) {
+      return NextResponse.json(
+        { message: "Antwort nicht gefunden." },
+        { status: 404 }
+      );
+    }
+
+    if (!isAdmin && reply.authorUsername.toLowerCase() !== authorUsername.toLowerCase()) {
+      return NextResponse.json(
+        { message: "Keine Berechtigung zum Bearbeiten dieser Antwort." },
+        { status: 403 }
+      );
+    }
 
     const result = await discussions.updateOne(
       {
         _id: new ObjectId(discussionId),
         "replies._id": new ObjectId(replyId),
-        "replies.authorUsername": authorUsername,
       },
       {
         $set: { "replies.$.body": replyBody },
@@ -56,7 +83,7 @@ export async function POST(request: Request) {
 
     if (result.matchedCount === 0) {
       return NextResponse.json(
-        { message: "Antwort nicht gefunden oder keine Berechtigung." },
+        { message: "Antwort konnte nicht aktualisiert werden." },
         { status: 404 }
       );
     }

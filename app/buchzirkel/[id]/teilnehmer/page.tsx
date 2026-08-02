@@ -80,6 +80,7 @@ export default function TeilnehmerBereichPage() {
   const [chatInput, setChatInput] = useState("");
   const [chatSending, setChatSending] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
 
   // Thema hinzufügen (nur Veranstalter)
   const [neuesTopicTitel, setNeuesTopicTitel] = useState("");
@@ -142,10 +143,20 @@ export default function TeilnehmerBereichPage() {
     }
   }, [tab, loadChat]);
 
-  // Auto-scroll bei neuen Chat-Nachrichten
+  // Auto-scroll bei Chat-Nachrichten direkt nach unten
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
+    if (tab !== "chat" || chatMessages.length === 0) return;
+    const doScroll = () => {
+      if (chatScrollRef.current) chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+      chatEndRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
+    };
+    doScroll();
+    requestAnimationFrame(() => {
+      doScroll();
+      setTimeout(doScroll, 40);
+      setTimeout(doScroll, 150);
+    });
+  }, [chatMessages, tab]);
 
   async function postBeitrag(e: React.FormEvent) {
     e.preventDefault();
@@ -443,7 +454,7 @@ export default function TeilnehmerBereichPage() {
       {tab === "chat" && (
         <section className="mt-3 w-full border border-arena-border rounded-xl overflow-hidden flex flex-col bg-white" style={{ minHeight: 420 }}>
           {/* Nachrichten-Bereich */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-0" style={{ minHeight: 300, maxHeight: "55vh" }}>
+          <div ref={chatScrollRef} className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-0" style={{ minHeight: 300, maxHeight: "55vh" }}>
             {chatMessages.length === 0 ? (
               <p className="text-arena-muted text-sm text-center my-auto py-8">
                 Noch keine Nachrichten. Schreib etwas!

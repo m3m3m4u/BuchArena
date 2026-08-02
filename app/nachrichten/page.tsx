@@ -286,25 +286,76 @@ function NachrichtenPageInner() {
     }
   }, [activePartner, loadingOlder, hasMoreMessages, chatMessages]);
 
-  /* Scroll zum Ende nur wenn nicht beim Nachladen älterer Nachrichten */
+  /* Scroll-Hilfsfunktion für zuverlässiges Scrollen zum Chat-Ende */
+  const scrollToBottom = useCallback(
+    (container: HTMLDivElement | null, endEl: HTMLDivElement | null, smooth = false) => {
+      if (!container && !endEl) return;
+      const doScroll = () => {
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+        if (endEl) {
+          endEl.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "end" });
+        }
+      };
+      doScroll();
+      requestAnimationFrame(() => {
+        doScroll();
+        setTimeout(doScroll, 40);
+        setTimeout(doScroll, 150);
+      });
+    },
+    [],
+  );
+
+  /* DM-Chat Auto-Scroll */
+  const prevPartnerRef = useRef<string | null>(null);
   const prevMessageCountRef = useRef(0);
-  useEffect(() => {
-    const prevCount = prevMessageCountRef.current;
-    prevMessageCountRef.current = chatMessages.length;
-    // Nur scrollen, wenn neue Nachricht am Ende oder erste Ladung — nicht beim Prepend
-    if (loadingOlder) return;
-    if (chatMessages.length > prevCount && prevCount > 0) {
-      // Neue Nachricht am Ende
-      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    } else if (prevCount === 0 && chatMessages.length > 0) {
-      // Initiales Laden — instant zum Ende
-      chatEndRef.current?.scrollIntoView({ behavior: "auto" });
-    }
-  }, [chatMessages, loadingOlder]);
 
   useEffect(() => {
-    bzEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [bzMessages]);
+    if (!activePartner) return;
+
+    const isPartnerChanged = prevPartnerRef.current !== activePartner;
+    if (isPartnerChanged) {
+      prevPartnerRef.current = activePartner;
+      prevMessageCountRef.current = 0;
+    }
+
+    if (loadingOlder || chatLoading) return;
+
+    const prevCount = prevMessageCountRef.current;
+    prevMessageCountRef.current = chatMessages.length;
+
+    if (chatMessages.length > 0) {
+      const isNewMessage = !isPartnerChanged && prevCount > 0 && chatMessages.length > prevCount;
+      scrollToBottom(chatScrollRef.current, chatEndRef.current, isNewMessage);
+    }
+  }, [activePartner, chatMessages, chatLoading, loadingOlder, scrollToBottom]);
+
+  /* BZ-Chat Auto-Scroll */
+  const bzScrollRef = useRef<HTMLDivElement>(null);
+  const prevBzIdRef = useRef<string | null>(null);
+  const prevBzCountRef = useRef(0);
+
+  useEffect(() => {
+    if (!activeBzId) return;
+
+    const isBzChanged = prevBzIdRef.current !== activeBzId;
+    if (isBzChanged) {
+      prevBzIdRef.current = activeBzId;
+      prevBzCountRef.current = 0;
+    }
+
+    if (bzLoading) return;
+
+    const prevCount = prevBzCountRef.current;
+    prevBzCountRef.current = bzMessages.length;
+
+    if (bzMessages.length > 0) {
+      const isNewMessage = !isBzChanged && prevCount > 0 && bzMessages.length > prevCount;
+      scrollToBottom(bzScrollRef.current, bzEndRef.current, isNewMessage);
+    }
+  }, [activeBzId, bzMessages, bzLoading, scrollToBottom]);
 
   /* ── BZ-Chat öffnen ── */
   async function openBzChat(item: BuchzirkelChatItem) {
@@ -994,7 +1045,7 @@ function NachrichtenPageInner() {
                 </div>
 
                 {/* BZ-Nachrichten */}
-                <div className="flex-1 overflow-y-auto px-4 py-3">
+                <div ref={bzScrollRef} className="flex-1 overflow-y-auto px-4 py-3">
                   {bzLoading ? (
                     <p className="font-sans text-sm text-arena-muted text-center mt-8">Lade …</p>
                   ) : bzMessages.length === 0 ? (
