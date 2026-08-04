@@ -107,28 +107,28 @@ export default function HomePage() {
         </section>
 
         {/* Quick Stats */}
-        <section className="w-full max-w-[1100px] grid grid-cols-3 gap-3 mt-3 max-sm:grid-cols-1 overflow-x-clip">
+        <section className="w-full max-w-[1100px] grid grid-cols-3 gap-3 mt-3 overflow-x-clip">
           <Link href="/lesezeichen" className="no-underline text-inherit group">
-            <div className="card-base p-5 flex flex-col items-center dashboard-stat-card hover:border-arena-blue">
-              <BookmarkIcon className="h-6 w-6 text-arena-blue mb-2 transition-transform group-hover:scale-110" />
-              <p className="font-sans text-2xl font-bold m-0 text-arena-blue">{lesezeichen?.total ?? "–"}</p>
-              <p className="font-sans text-arena-muted text-xs font-semibold uppercase tracking-wider mt-1.5 m-0">Lesezeichen</p>
+            <div className="card-base p-3 sm:p-5 flex flex-col items-center dashboard-stat-card hover:border-arena-blue">
+              <BookmarkIcon className="h-5 w-5 sm:h-6 sm:w-6 text-arena-blue mb-1.5 sm:mb-2 transition-transform group-hover:scale-110" />
+              <p className="font-sans text-xl sm:text-2xl font-bold m-0 text-arena-blue">{lesezeichen?.total ?? "–"}</p>
+              <p className="font-sans text-arena-muted text-[0.65rem] sm:text-xs font-semibold uppercase tracking-wider mt-1 m-0 text-center">Lesezeichen</p>
             </div>
           </Link>
           <Link href="/nachrichten" className="no-underline text-inherit group">
-            <div className="card-base p-5 flex flex-col items-center dashboard-stat-card hover:border-arena-blue">
-              <EnvelopeIcon className="h-6 w-6 text-arena-blue mb-2 transition-transform group-hover:scale-110" />
-              <p className="font-sans text-2xl font-bold m-0 text-arena-blue">{unreadMessages}</p>
-              <p className="font-sans text-arena-muted text-xs font-semibold uppercase tracking-wider mt-1.5 m-0">
-                {unreadMessages === 1 ? "Neue Nachricht" : "Neue Nachrichten"}
+            <div className="card-base p-3 sm:p-5 flex flex-col items-center dashboard-stat-card hover:border-arena-blue">
+              <EnvelopeIcon className="h-5 w-5 sm:h-6 sm:w-6 text-arena-blue mb-1.5 sm:mb-2 transition-transform group-hover:scale-110" />
+              <p className="font-sans text-xl sm:text-2xl font-bold m-0 text-arena-blue">{unreadMessages}</p>
+              <p className="font-sans text-arena-muted text-[0.65rem] sm:text-xs font-semibold uppercase tracking-wider mt-1 m-0 text-center">
+                {unreadMessages === 1 ? "Nachricht" : "Nachrichten"}
               </p>
             </div>
           </Link>
           <Link href="/lesezeichen" className="no-underline text-inherit group">
-            <div className="card-base p-5 flex flex-col items-center dashboard-stat-card hover:border-arena-blue">
-              <CalendarIcon className="h-6 w-6 text-arena-blue mb-2 transition-transform group-hover:scale-110" />
-              <p className="font-sans text-2xl font-bold m-0 text-arena-blue">{lesezeichen?.loginDays ?? "–"}</p>
-              <p className="font-sans text-arena-muted text-xs font-semibold uppercase tracking-wider mt-1.5 m-0">Login-Tage</p>
+            <div className="card-base p-3 sm:p-5 flex flex-col items-center dashboard-stat-card hover:border-arena-blue">
+              <CalendarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-arena-blue mb-1.5 sm:mb-2 transition-transform group-hover:scale-110" />
+              <p className="font-sans text-xl sm:text-2xl font-bold m-0 text-arena-blue">{lesezeichen?.loginDays ?? "–"}</p>
+              <p className="font-sans text-arena-muted text-[0.65rem] sm:text-xs font-semibold uppercase tracking-wider mt-1 m-0 text-center">Login-Tage</p>
             </div>
           </Link>
         </section>
@@ -250,7 +250,7 @@ export default function HomePage() {
               {bdw.youtubeUrl && (() => {
                 const ytId = extractYouTubeId(bdw.youtubeUrl);
                 return ytId ? (
-                  <div className="mt-3 mx-auto relative w-full" style={{ maxWidth: "80%", paddingBottom: "45%" }}>
+                  <div className="mt-3 mx-auto relative w-full sm:w-4/5 max-w-[1100px]" style={{ paddingBottom: "45%" }}>
                     <iframe
                       className="absolute inset-0 w-full h-full rounded-lg"
                       src={`https://www.youtube-nocookie.com/embed/${ytId}`}
@@ -397,7 +397,7 @@ export default function HomePage() {
 
       {/* Buch der Woche */}
       {bdw && bdw.title && (
-        <section className="mx-auto px-4 py-10 text-center" style={{ width: "80%", maxWidth: "1100px" }}>
+        <section className="mx-auto w-full max-w-[1100px] sm:w-4/5 px-4 py-10 text-center">
           <p className="font-sans text-xl m-0 flex items-center justify-center gap-2 flex-wrap text-arena-blue font-bold">
             <span>Buch der Woche:</span>
             <span className="font-normal">{bdw.bookId ? <Link href={`/buch/${bdw.bookId}`} className="font-sans hover:underline text-arena-blue font-bold">{bdw.title}</Link> : bdw.title} <span className="font-normal text-arena-muted">von {bdw.authorUsername ? <Link href={`/autor/${bdw.authorUsername}`} className="hover:underline text-arena-text font-semibold">{bdw.author}</Link> : bdw.author}</span>{bdw.speaker && <span className="font-normal text-arena-muted"> · Sprecher: {bdw.speakerUsername ? <Link href={`/sprecher/${bdw.speakerUsername}`} className="hover:underline text-arena-text font-semibold">{bdw.speaker}</Link> : bdw.speaker}</span>}</span>

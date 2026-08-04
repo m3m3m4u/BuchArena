@@ -132,7 +132,7 @@ export default function TippsPage() {
 
   return (
     <main className="centered-main">
-      <section className="w-full max-w-[1100px] rounded-2xl border border-arena-border-light bg-white p-12 max-sm:px-4 max-sm:py-6 shadow-xs">
+      <section className="w-full max-w-[1100px] rounded-2xl border border-arena-border-light bg-white p-4 sm:p-6 md:p-8 lg:p-12 shadow-xs">
         {/* Haupt-Tabs */}
         <div className="segmented-control mb-8 max-sm:flex-nowrap max-sm:overflow-x-auto no-scrollbar">
           {(["social", "buch-match", "musik", "glossar", "beitrag-tool", "social-media-planer"] as const).map((tabKey) => {

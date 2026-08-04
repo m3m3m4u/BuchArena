@@ -279,17 +279,17 @@ export default function QuizPage() {
                       {highscores.map((hs, i) => (
                         <div
                           key={`${hs.username}-${hs.date}-${i}`}
-                          className={`flex items-center gap-3 rounded-lg border border-arena-border-light px-4 py-2 font-sans ${
+                          className={`flex items-center gap-2 sm:gap-3 rounded-lg border border-arena-border-light px-3 sm:px-4 py-2 font-sans ${
                             i === 0 ? "bg-yellow-50 border-yellow-300" : i === 1 ? "bg-gray-50" : i === 2 ? "bg-orange-50" : "bg-white"
                           }`}
                         >
                           <span className="font-sans font-bold text-lg w-8 text-center flex-shrink-0">
                             {i === 0 ? <TrophyIcon className="h-5 w-5 text-amber-500 mx-auto" /> : i === 1 ? <TrophyIcon className="h-5 w-5 text-slate-400 mx-auto" /> : i === 2 ? <TrophyIcon className="h-5 w-5 text-amber-700 mx-auto" /> : `${i + 1}.`}
                           </span>
-                          <span className="font-sans flex-1 font-medium truncate">{hs.username}</span>
-                          <span className="font-sans font-bold text-arena-blue">{hs.score} Pkt.</span>
-                          <span className="font-sans text-xs text-arena-muted">({hs.total} Fragen)</span>
-                          <span className="font-sans text-xs text-arena-muted flex-shrink-0">
+                          <span className="font-sans flex-1 font-medium truncate min-w-0">{hs.username}</span>
+                          <span className="font-sans font-bold text-arena-blue shrink-0">{hs.score} Pkt.</span>
+                          <span className="font-sans text-xs text-arena-muted hidden sm:inline">({hs.total} Fragen)</span>
+                          <span className="font-sans text-xs text-arena-muted flex-shrink-0 hidden sm:inline">
                             {new Date(hs.date).toLocaleDateString("de-AT")}
                           </span>
                         </div>

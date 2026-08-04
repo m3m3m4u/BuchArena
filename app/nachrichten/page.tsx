@@ -820,9 +820,9 @@ function NachrichtenPageInner() {
                     </span>
                   )}
                 </div>
-                {/* Löschen bei Hover */}
+                {/* Löschen bei Hover (Desktop) / immer sichtbar (Mobile) */}
                 <button
-                  className={`absolute top-1 ${isMine ? "-left-7" : "-right-7"} sm:opacity-0 sm:group-hover:opacity-100 opacity-60 transition-opacity text-[11px] border-none bg-transparent cursor-pointer text-arena-muted hover:text-arena-danger p-1.5 -m-1`}
+                  className={`absolute top-1 ${isMine ? "-left-7" : "-right-7"} sm:opacity-0 sm:group-hover:opacity-100 hidden sm:block opacity-60 transition-opacity text-[11px] border-none bg-transparent cursor-pointer text-arena-muted hover:text-arena-danger p-1.5 -m-1`}
                   onClick={() => handleDelete(msg.id)}
                   title="Löschen"
                 >
