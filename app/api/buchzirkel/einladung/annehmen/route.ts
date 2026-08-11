@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
     }
 
-    const body = (await request.json()) as { buchzirkelId?: string };
+    const body = (await request.json()) as { buchzirkelId?: string; agbAkzeptiert?: boolean };
     const buchzirkelId = body.buchzirkelId?.trim();
     if (!buchzirkelId || !ObjectId.isValid(buchzirkelId)) {
       return NextResponse.json({ message: "Ungültige Buchzirkel-ID." }, { status: 400 });
@@ -90,7 +90,8 @@ export async function POST(request: Request) {
         bewerberUsername: account.username,
         status: "angenommen",
         antworten: [],
-        agbAkzeptiert: false,
+        agbAkzeptiert: Boolean(body.agbAkzeptiert),
+        agbAkzeptiertAt: body.agbAkzeptiert ? now : undefined,
         bewirbtSichAm: now,
         entschiedenAm: now,
       });

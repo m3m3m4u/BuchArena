@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
-import { ALLOWED_BEITRAG_EMOJIS } from "@/lib/buchzirkel";
+import { ALLOWED_BEITRAG_EMOJIS, STANDARD_AGB_TEXT } from "@/lib/buchzirkel";
 import { CommentToolbar } from "@/app/components/comment-toolbar";
 import dynamic from "next/dynamic";
 
@@ -91,6 +91,13 @@ export default function TeilnehmerBereichPage() {
   const [rlUrl, setRlUrl] = useState("");
   const [rlSaving, setRlSaving] = useState(false);
 
+  // Verschwiegenheitserklärung (AGB/NDA) Status
+  const [agbPflicht, setAgbPflicht] = useState(false);
+  const [agbAkzeptiert, setAgbAkzeptiert] = useState(true);
+  const [agbText, setAgbText] = useState("");
+  const [agbChecked, setAgbChecked] = useState(false);
+  const [agbConfirming, setAgbConfirming] = useState(false);
+
   const load = useCallback(async () => {
     const [zRes, tRes, lpRes] = await Promise.all([
       fetch(`/api/buchzirkel/${params.id}`),
@@ -98,10 +105,18 @@ export default function TeilnehmerBereichPage() {
       fetch(`/api/buchzirkel/${params.id}/leseposition`),
     ]);
     const zData = await zRes.json() as { zirkel?: Zirkel };
-    const tData = await tRes.json() as { teilnahme?: Teilnahme };
+    const tData = await tRes.json() as {
+      teilnahme?: Teilnahme;
+      agbPflicht?: boolean;
+      agbAkzeptiert?: boolean;
+      agbText?: string;
+    };
     const lpData = await lpRes.json() as { lesePositionen?: Record<string, LesePosition> };
     setZirkel(zData.zirkel ?? null);
     setTeilnahme(tData.teilnahme ?? null);
+    if (tData.agbPflicht !== undefined) setAgbPflicht(tData.agbPflicht);
+    if (tData.agbAkzeptiert !== undefined) setAgbAkzeptiert(tData.agbAkzeptiert);
+    if (tData.agbText) setAgbText(tData.agbText);
     setLesePositionen(lpData.lesePositionen ?? {});
     if (zData.zirkel?.diskussionsTopics?.[0]) {
       setActiveTopic(zData.zirkel.diskussionsTopics[0].id);
@@ -307,6 +322,59 @@ export default function TeilnehmerBereichPage() {
         <section className="card text-center py-8">
           <p className="text-arena-muted">Du hast keinen Zugang zu diesem Buchzirkel.</p>
           <Link href={`/buchzirkel/${params.id}`} className="text-arena-blue hover:underline text-sm mt-2 block">← Zur Zirkel-Seite</Link>
+        </section>
+      </main>
+    );
+  }
+
+  const requiresAgbConfirmation = !zirkel.isVeranstalter && agbPflicht && !agbAkzeptiert;
+
+  if (requiresAgbConfirmation) {
+    return (
+      <main className="top-centered-main">
+        <section className="card border border-red-300 bg-red-50/40 p-6 rounded-2xl max-w-2xl mx-auto my-8 shadow-sm">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-2xl">🔒</span>
+            <div>
+              <h2 className="text-lg font-bold text-red-900 m-0">Verschwiegenheitserklärung (Pflicht)</h2>
+              <p className="text-xs text-red-700 m-0">Buchzirkel: {zirkel.titel}</p>
+            </div>
+          </div>
+          <p className="text-sm text-arena-text mb-3">
+            Um an diesem Buchzirkel teilzunehmen und Zugang zu Manuskripten, Dateien und Diskussionen zu erhalten, musst du der folgenden Verschwiegenheitserklärung zustimmen:
+          </p>
+          <div className="bg-white border border-arena-border rounded-xl p-4 text-xs font-mono text-arena-text max-h-60 overflow-y-auto mb-4 whitespace-pre-wrap leading-relaxed shadow-inner">
+            {agbText || STANDARD_AGB_TEXT}
+          </div>
+          <label className="flex items-start gap-2.5 cursor-pointer mb-4">
+            <input
+              type="checkbox"
+              checked={agbChecked}
+              onChange={(e) => setAgbChecked(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span className="text-xs text-arena-text font-medium">
+              Ich habe die Verschwiegenheitserklärung gelesen und akzeptiere sie. Mir ist bewusst, dass alle Dateien mit meinem persönlichen Wasserzeichen versehen sind.
+            </span>
+          </label>
+          <button
+            onClick={async () => {
+              if (!agbChecked || agbConfirming) return;
+              setAgbConfirming(true);
+              try {
+                const res = await fetch(`/api/buchzirkel/${params.id}/agb-akzeptieren`, { method: "POST" });
+                if (res.ok) {
+                  setAgbAkzeptiert(true);
+                }
+              } catch { /* ignore */ } finally {
+                setAgbConfirming(false);
+              }
+            }}
+            disabled={!agbChecked || agbConfirming}
+            className="btn btn-primary w-full py-2.5 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {agbConfirming ? "Wird gespeichert…" : "Verschwiegenheitserklärung jetzt akzeptieren"}
+          </button>
         </section>
       </main>
     );
