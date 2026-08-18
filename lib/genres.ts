@@ -72,6 +72,18 @@ export type Genre = (typeof GENRE_OPTIONS)[number];
  * are treated as one.  Builds a case-insensitive lookup once; all subsequent
  * calls are O(1).
  */
+const GENRE_ALIAS_ENTRIES: [string, string][] = [
+  ["high fantasy",    "Fantasy – High Fantasy"],
+  ["high-fantasy",    "Fantasy – High Fantasy"],
+  ["dark fantasy",    "Fantasy – Dark Fantasy"],
+  ["dark-fantasy",    "Fantasy – Dark Fantasy"],
+  ["urban fantasy",   "Fantasy – Urban Fantasy"],
+  ["urban-fantasy",   "Fantasy – Urban Fantasy"],
+  ["science fiction", "Science-Fiction"],
+  ["space opera",     "Science-Fiction – Space Opera"],
+  ["space-opera",     "Science-Fiction – Space Opera"],
+];
+
 const GENRE_ALIAS_MAP: Record<string, string> = (() => {
   const map: Record<string, string> = {};
 
@@ -81,19 +93,7 @@ const GENRE_ALIAS_MAP: Record<string, string> = (() => {
   }
 
   // Explicit short-form / hyphenated aliases → canonical form
-  const aliases: [string, string][] = [
-    ["high fantasy",   "Fantasy – High Fantasy"],
-    ["high-fantasy",   "Fantasy – High Fantasy"],
-    ["dark fantasy",   "Fantasy – Dark Fantasy"],
-    ["dark-fantasy",   "Fantasy – Dark Fantasy"],
-    ["urban fantasy",  "Fantasy – Urban Fantasy"],
-    ["urban-fantasy",  "Fantasy – Urban Fantasy"],
-    ["science fiction", "Science-Fiction"],
-    ["space opera",    "Science-Fiction – Space Opera"],
-    ["space-opera",    "Science-Fiction – Space Opera"],
-  ];
-
-  for (const [alias, canonical] of aliases) {
+  for (const [alias, canonical] of GENRE_ALIAS_ENTRIES) {
     map[alias] = canonical;
   }
 
@@ -104,6 +104,24 @@ export function normalizeGenre(g: string): string {
   const trimmed = g.trim();
   if (!trimmed) return trimmed;
   return GENRE_ALIAS_MAP[trimmed.toLowerCase()] ?? trimmed;
+}
+
+/**
+ * Returns all raw strings (canonical name + known aliases) that normalize to
+ * the given canonical genre.  Used by server-side DB queries to match books
+ * regardless of which format their genre field was stored in.
+ *
+ * Example: getGenreVariants("Fantasy – High Fantasy")
+ *   → ["Fantasy – High Fantasy", "high fantasy", "high-fantasy"]
+ */
+export function getGenreVariants(canonical: string): string[] {
+  const variants: string[] = [canonical];
+  for (const [alias, target] of GENRE_ALIAS_ENTRIES) {
+    if (target === canonical) {
+      variants.push(alias);
+    }
+  }
+  return variants;
 }
 
 /**

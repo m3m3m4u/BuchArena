@@ -78,6 +78,12 @@ export async function PATCH(req: Request, { params }: Params) {
     if (body.anmeldungVon) allowed.anmeldungVon = new Date(body.anmeldungVon as string);
     if (body.anmeldungBis) allowed.anmeldungBis = new Date(body.anmeldungBis as string);
     if (body.ziehungAm) allowed.ziehungAm = new Date(body.ziehungAm as string);
+
+    const von = (allowed.anmeldungVon as Date) ?? doc.anmeldungVon;
+    const bis = (allowed.anmeldungBis as Date) ?? doc.anmeldungBis;
+    if (von && bis && bis <= von) {
+      return NextResponse.json({ message: "Das Enddatum der Anmeldephase muss nach dem Startdatum liegen." }, { status: 400 });
+    }
   }
   // Vorschlag → anmeldung: Admin oder Autor (anmeldungVon + anmeldungBis genügen)
   if (body.status === "anmeldung" && doc.status === "vorschlag" && (isAdmin || isAutor)) {

@@ -127,3 +127,17 @@ export type TauschDocument = {
   status: TauschStatus;
   createdAt: Date;
 };
+
+export type TauschBewerbungStatus = "ausstehend" | "angenommen" | "abgelehnt" | "zurueckgezogen";
+
+export type TauschBewerbungDocument = {
+  _id?: ObjectId;
+  tauschId: ObjectId;
+  tauschAuthorUsername: string;
+  bewerberUsername: string;
+  nachricht: string;
+  status: TauschBewerbungStatus;
+  createdAt: Date;
+  updatedAt: Date;
+};
+

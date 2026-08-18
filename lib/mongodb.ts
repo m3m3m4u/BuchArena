@@ -4,7 +4,7 @@ import type { BookDocument } from "@/lib/books";
 import type { ProfileData, SpeakerProfileData, BloggerProfileData, TestleserProfileData, LektorenProfileData, VerlageProfileData } from "@/lib/profile";
 import type { SupportPost } from "@/lib/support";
 import type { DiscussionDocument } from "@/lib/discussions";
-import type { PollDocument, TauschDocument } from "@/lib/discussions";
+import type { PollDocument, TauschDocument, TauschBewerbungDocument } from "@/lib/discussions";
 import type { MessageDocument } from "@/lib/messages";
 
 export type MessageConversationDocument = {
@@ -292,6 +292,10 @@ async function initializeDatabase(db: Db) {
     gewinnspiele.createIndex({ ziehungAm: 1, status: 1 }),
     gewinnspielteilnahmen.createIndex({ gewinnspielId: 1, username: 1 }, { unique: true }),
     gewinnspielteilnahmen.createIndex({ username: 1, angemeldetAt: -1 }),
+    db.collection("tausch_bewerbungen").createIndex({ tauschId: 1, bewerberUsername: 1 }, { unique: true }),
+    db.collection("tausch_bewerbungen").createIndex({ tauschId: 1, status: 1 }),
+    db.collection("tausch_bewerbungen").createIndex({ bewerberUsername: 1, createdAt: -1 }),
+    db.collection("tausch_bewerbungen").createIndex({ tauschAuthorUsername: 1, createdAt: -1 }),
   ]);
 
   // Superadmin beim Serverstart anlegen / Passwort synchronisieren
@@ -410,6 +414,11 @@ export async function getMessageConversationsCollection(): Promise<Collection<Me
 export async function getTauschCollection(): Promise<Collection<TauschDocument>> {
   const db = await getDatabase();
   return db.collection<TauschDocument>("tausch");
+}
+
+export async function getTauschBewerbungenCollection(): Promise<Collection<TauschBewerbungDocument>> {
+  const db = await getDatabase();
+  return db.collection<TauschBewerbungDocument>("tausch_bewerbungen");
 }
 
 export async function getKalenderCollection(): Promise<Collection<KalenderEvent>> {

@@ -29,14 +29,15 @@ export async function POST(req: Request, { params }: Params) {
     return NextResponse.json({ message: "Dieses Gewinnspiel kann nicht mehr verlost werden." }, { status: 400 });
   }
 
-  // Ziehung darf erst ab ziehungAm durchgeführt werden (nur bei erster Ziehung)
-  if (doc.status === "anmeldung" && doc.ziehungAm && new Date() < doc.ziehungAm) {
-    const datum = doc.ziehungAm.toLocaleString("de-DE", {
+  // Ziehung darf erst ab ziehungAm bzw. anmeldungBis durchgeführt werden (nur bei erster Ziehung)
+  const drawMinTime = doc.ziehungAm ?? doc.anmeldungBis;
+  if (doc.status === "anmeldung" && drawMinTime && new Date() < drawMinTime) {
+    const datum = drawMinTime.toLocaleString("de-DE", {
       day: "2-digit", month: "2-digit", year: "numeric",
       hour: "2-digit", minute: "2-digit",
     });
     return NextResponse.json(
-      { message: `Die Ziehung kann erst ab ${datum} Uhr durchgeführt werden.` },
+      { message: `Die Ziehung kann erst ab ${datum} Uhr (nach Ende der Anmeldephase) durchgeführt werden.` },
       { status: 400 }
     );
   }
@@ -88,12 +89,15 @@ export async function POST(req: Request, { params }: Params) {
   // E-Mail an Gewinner
   try {
     const isEbook = doc.format === "ebook";
-    const isPrint = doc.format === "print" || doc.format === "both";
+    const isPrint = doc.format === "print";
+    const isBoth = doc.format === "both";
     const versandInfo = isEbook
       ? `<p>Das E-Book wird dir vom Autor an diese E-Mail-Adresse zugeschickt.</p>`
-      : isPrint
-        ? `<p>Deine Versandadresse wurde dem Autor übermittelt. Er sendet dir das Buch per Post.</p>`
-        : "";
+      : isBoth
+        ? `<p>Das E-Book wird an deine E-Mail-Adresse und das gedruckte Exemplar an deine Versandadresse gesendet.</p>`
+        : isPrint
+          ? `<p>Deine Versandadresse wurde dem Autor übermittelt. Er sendet dir das Buch per Post.</p>`
+          : "";
     await sendMail(
       gewinner.email,
       `🎉 Du hast gewonnen! – ${doc.buchTitel}`,
@@ -113,14 +117,25 @@ export async function POST(req: Request, { params }: Params) {
     const autorUser = await usersCol.findOne({ username: doc.autorUsername }, { projection: { email: 1 } });
     if (autorUser?.email) {
       const isEbook = doc.format === "ebook";
-      const kontaktHtml = isEbook
-        ? `<p><strong>E-Mail-Adresse für E-Book-Versand:</strong> <a href="mailto:${gewinner.email}">${gewinner.email}</a></p>`
-        : gewinner.adresse
-          ? `<p><strong>Versandadresse:</strong><br>${gewinner.name ? gewinner.name + "<br>" : ""}${gewinner.adresse}${gewinner.ort ? ", " + gewinner.ort : ""}${gewinner.land ? ", " + gewinner.land : ""}</p>`
-          : `<p><strong>E-Mail:</strong> ${gewinner.email}</p>`;
-      const anweisung = isEbook
-        ? "Bitte sende das E-Book direkt an die oben genannte E-Mail-Adresse."
-        : "Bitte sende das Buch per Post an die oben genannte Adresse.";
+      const isBoth = doc.format === "both";
+
+      const emailBlock = `<p><strong>E-Mail-Adresse für E-Book-Versand:</strong> <a href="mailto:${gewinner.email}">${gewinner.email}</a></p>`;
+      const adresseBlock = gewinner.adresse
+        ? `<p><strong>Versandadresse:</strong><br>${gewinner.name ? gewinner.name + "<br>" : ""}${gewinner.adresse}${gewinner.ort ? ", " + gewinner.ort : ""}${gewinner.land ? ", " + gewinner.land : ""}</p>`
+        : "";
+
+      const kontaktHtml = isBoth
+        ? `${emailBlock}${adresseBlock}`
+        : isEbook
+          ? emailBlock
+          : `${adresseBlock}${emailBlock}`;
+
+      const anweisung = isBoth
+        ? "Bitte sende das E-Book per E-Mail und das gedruckte Buch per Post."
+        : isEbook
+          ? "Bitte sende das E-Book direkt an die oben genannte E-Mail-Adresse."
+          : "Bitte sende das Buch per Post an die oben genannte Adresse.";
+
       await sendMail(
         autorUser.email,
         `Gewinnspiel-Ergebnis: ${doc.buchTitel}`,

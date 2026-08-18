@@ -2,7 +2,7 @@ import type { ObjectId } from "mongodb";
 
 // ── Status-Zustände eines Gewinnspiels ──────────────────────────────────────
 
-export type GewinnspielhStatus =
+export type GewinnspielStatus =
   | "vorschlag"   // Vom Autor eingereicht – Admin muss noch Zeiträume setzen
   | "anmeldung"   // Anmeldephase aktiv
   | "verlost"     // Ziehung erfolgt, Gewinner benachrichtigt
@@ -38,7 +38,7 @@ export type GewinnspielDocument = {
   /** Wann findet die Ziehung statt (UTC) */
   ziehungAm?: Date;
 
-  status: GewinnspielhStatus;
+  status: GewinnspielStatus;
 
   /** Gewinner-Username – nur nach Ziehung gesetzt */
   gewinnerUsername?: string;

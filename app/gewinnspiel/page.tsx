@@ -44,6 +44,22 @@ function fmtDate(iso: string): string {
   return new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+function getDynamicStatusBadge(g: Gewinnspiel): { label: string; className: string } {
+  if (g.status === "anmeldung") {
+    const now = new Date();
+    if (g.anmeldungVon && now < new Date(g.anmeldungVon)) {
+      return { label: "Demnächst", className: "bg-blue-50 text-blue-700 border-blue-200" };
+    }
+    if (g.anmeldungBis && now > new Date(g.anmeldungBis)) {
+      return { label: "Anmeldung beendet", className: "bg-amber-50 text-amber-800 border-amber-200" };
+    }
+    return { label: "Anmeldung läuft", className: "bg-green-50 text-green-700 border-green-200" };
+  }
+  if (g.status === "verlost") return { label: "Gewinner gezogen", className: "bg-yellow-50 text-yellow-800 border-yellow-200" };
+  if (g.status === "versendet") return { label: "Versendet", className: "bg-blue-50 text-blue-800 border-blue-200" };
+  return { label: STATUS_LABEL[g.status] ?? g.status, className: "bg-slate-50 text-slate-700 border border-slate-200" };
+}
+
 export default function GewinnspielUebersichtPage() {
   const [aktive, setAktive] = useState<Gewinnspiel[]>([]);
   const [archiv, setArchiv] = useState<Gewinnspiel[]>([]);
@@ -168,13 +184,14 @@ export default function GewinnspielUebersichtPage() {
                 <div className="p-4 flex flex-col flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h3 className="font-sans font-bold text-base leading-snug line-clamp-2 text-arena-blue">{g.buchTitel}</h3>
-                    <span className={`font-sans shrink-0 text-xs px-2.5 py-0.5 rounded-full font-medium border ${
-                      g.status === "anmeldung" ? "bg-green-50 text-green-700 border-green-200" :
-                      g.status === "verlost" ? "bg-yellow-50 text-yellow-800 border-yellow-200" :
-                      "bg-slate-50 text-slate-700 border border-slate-200"
-                    }`}>
-                      {STATUS_LABEL[g.status]}
-                    </span>
+                    {(() => {
+                      const badge = getDynamicStatusBadge(g);
+                      return (
+                        <span className={`font-sans shrink-0 text-xs px-2.5 py-0.5 rounded-full font-medium border ${badge.className}`}>
+                          {badge.label}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <p className="font-sans text-sm text-arena-muted mb-2">von {g.autorName}</p>
 

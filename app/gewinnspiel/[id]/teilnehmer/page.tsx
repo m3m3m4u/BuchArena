@@ -26,12 +26,11 @@ export default function TeilnehmerPage() {
   const [liste, setListe] = useState<Teilnehmer[]>([]);
   const [info, setInfo] = useState<GewinnspielInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [account, setAccount] = useState<ReturnType<typeof getStoredAccount>>(null);
 
   useEffect(() => {
     const acc = getStoredAccount();
-    if (!acc || (acc.role !== "ADMIN" && acc.role !== "SUPERADMIN")) {
-      // Autoren dürfen auch – API prüft das serverseitig
-    }
+    setAccount(acc);
 
     Promise.all([
       fetch(`/api/gewinnspiele/${id}`).then((r) => r.json()),
@@ -49,9 +48,16 @@ export default function TeilnehmerPage() {
 
   if (loading) return <main className="site-shell py-10 text-center text-sm opacity-60">Lade…</main>;
 
+  const isAdmin = account?.role === "ADMIN" || account?.role === "SUPERADMIN";
+
   return (
     <main className="site-shell py-8">
-      <Link href="/admin/gewinnspiele" className="text-sm opacity-60 hover:opacity-100 mb-4 inline-block">← Admin-Übersicht</Link>
+      <Link
+        href={isAdmin ? "/admin/gewinnspiele" : "/gewinnspiel/autor"}
+        className="text-sm opacity-60 hover:opacity-100 mb-4 inline-block"
+      >
+        ← {isAdmin ? "Admin-Übersicht" : "Meine Gewinnspiele"}
+      </Link>
 
       <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--color-arena-blue)" }}>Teilnehmer</h1>
       {info && (

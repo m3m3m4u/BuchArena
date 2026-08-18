@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBooksCollection, getUsersCollection, getDatabase } from "@/lib/mongodb";
+import { getBooksCollection, getDatabase } from "@/lib/mongodb";
 import { applyAmazonOverride } from "@/lib/books";
+import { normalizeGenre, getGenreVariants } from "@/lib/genres";
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,8 +45,15 @@ export async function GET(request: NextRequest) {
       });
     }
     if (genreParam) {
-      // Genre-Feld kann kommagetrennte Liste sein – prüfe ob genreParam darin enthalten ist
-      matchConditions.push({ genre: { $regex: genreParam, $options: "i" } });
+      // Normalize the incoming param (e.g. "High-Fantasy" → "Fantasy – High Fantasy"),
+      // then match any variant stored in the DB (canonical form OR legacy aliases).
+      const canonical = normalizeGenre(genreParam);
+      const variants = getGenreVariants(canonical);
+      // Each variant is matched as a whole "word" within the comma-separated genre field.
+      const variantConditions = variants.map((v) => ({
+        genre: { $regex: v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" },
+      }));
+      matchConditions.push(variantConditions.length === 1 ? variantConditions[0] : { $or: variantConditions });
     }
     if (matchConditions.length > 0) {
       pipeline.push({ $match: matchConditions.length === 1 ? matchConditions[0] : { $and: matchConditions } });

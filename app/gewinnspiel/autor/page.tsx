@@ -130,11 +130,15 @@ export default function AutorGewinnspielPage() {
 
   async function aktiviereZeitraum(id: string) {
     if (!ezVon || !ezBis) { setMsg({ text: "Bitte Anmeldungs-Von und -Bis ausfüllen.", ok: false }); return; }
+    if (new Date(ezBis) <= new Date(ezVon)) {
+      setMsg({ text: "Das Enddatum der Anmeldephase muss nach dem Startdatum liegen.", ok: false });
+      return;
+    }
     setEzSaving(true);
     const r = await fetch(`/api/gewinnspiele/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ anmeldungVon: ezVon, anmeldungBis: ezBis, status: "anmeldung" }),
+      body: JSON.stringify({ anmeldungVon: ezVon, anmeldungBis: ezBis, ziehungAm: ezBis, status: "anmeldung" }),
     });
     if (r.ok) {
       setMsg({ text: "Gewinnspiel gestartet! Anmeldephase ist aktiv.", ok: true });

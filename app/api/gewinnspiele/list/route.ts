@@ -71,6 +71,22 @@ export async function POST(req: Request) {
   const account = await getServerAccount();
   if (!account) return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
 
+  const isAdmin = account.role === "ADMIN" || account.role === "SUPERADMIN";
+
+  // Einreichung-Aktiv-Einstellung prüfen (außer für Admin)
+  if (!isAdmin) {
+    const { getDatabase } = await import("@/lib/mongodb");
+    const db = await getDatabase();
+    const settingsCol = db.collection<{ _id: string; value: boolean }>("site_settings");
+    const settingDoc = await settingsCol.findOne({ _id: "gewinnspiele_einreichung_aktiv" });
+    if (settingDoc && settingDoc.value === false) {
+      return NextResponse.json(
+        { message: "Die Einreichung neuer Gewinnspiele ist derzeit deaktiviert." },
+        { status: 403 }
+      );
+    }
+  }
+
   const body = (await req.json()) as CreateGewinnspielPayload;
 
   if (!body.buchId || !body.format) {
@@ -88,6 +104,19 @@ export async function POST(req: Request) {
   const buch = await booksCol.findOne({ _id: buchOid, ownerUsername: account.username });
   if (!buch) return NextResponse.json({ message: "Buch nicht gefunden oder nicht berechtigt." }, { status: 403 });
 
+  // Datumsüberprüfung falls übergeben
+  const hasDates = body.anmeldungVon && body.anmeldungBis;
+  if (hasDates) {
+    const von = new Date(body.anmeldungVon!);
+    const bis = new Date(body.anmeldungBis!);
+    if (isNaN(von.getTime()) || isNaN(bis.getTime())) {
+      return NextResponse.json({ message: "Ungültige Datumsangabe." }, { status: 400 });
+    }
+    if (bis <= von) {
+      return NextResponse.json({ message: "Das Enddatum der Anmeldephase muss nach dem Startdatum liegen." }, { status: 400 });
+    }
+  }
+
   // Autor-Displayname ermitteln
   const usersCol = await getUsersCollection();
   const user = await usersCol.findOne({ username: account.username }, { projection: { displayName: 1, profile: 1 } });
@@ -96,8 +125,6 @@ export async function POST(req: Request) {
   const col = await getGewinnspieleCollection();
   const now = new Date();
 
-  // Zeitraum optionaler Direktstart (nur anmeldungVon + anmeldungBis reichen)
-  const hasDates = body.anmeldungVon && body.anmeldungBis;
   const insertDoc: Record<string, unknown> = {
     buchTitel: buch.title,
     buchId: body.buchId,
