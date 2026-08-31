@@ -109,10 +109,10 @@ export default function GewinnspielUebersichtPage() {
         </div>
         <Link
           href="/gewinnspiel/autor"
-          className="btn btn-primary"
+          className="btn btn-primary text-sm sm:text-base font-bold px-5 py-2.5 sm:py-3 shadow-md hover:shadow-lg transition-all flex items-center gap-2 rounded-xl text-center justify-center max-sm:w-full"
         >
-          <PlusIcon className="h-4 w-4 mr-1.5" />
-          Buch verlosen (Autor)
+          <GiftIcon className="h-5 w-5 shrink-0" />
+          <span>Eigene Gewinnspiele verwalten</span>
         </Link>
       </div>
 
