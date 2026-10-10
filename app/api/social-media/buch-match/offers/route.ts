@@ -176,3 +176,54 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, message: "Fehler beim Löschen." }, { status: 500 });
   }
 }
+
+export async function PATCH(request: Request) {
+  try {
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ success: false, message: "Nicht angemeldet." }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { id, offeredPlatform, offeredFormat, offeredChannelHandle, requestedPlatform, requestedFormat, notes } = body;
+
+    if (!id || !offeredPlatform || !offeredFormat || !String(offeredFormat).trim()) {
+      return NextResponse.json(
+        { success: false, message: "Bitte angebotene Plattform und Format angeben." },
+        { status: 400 }
+      );
+    }
+
+    let objectId: ObjectId;
+    try {
+      objectId = new ObjectId(String(id));
+    } catch {
+      return NextResponse.json({ success: false, message: "Ungültige ID." }, { status: 400 });
+    }
+
+    const offersCol = await getBuchMatchOffersCollection();
+    const res = await offersCol.updateOne(
+      { _id: objectId, authorUsername: account.username },
+      {
+        $set: {
+          offeredPlatform: offeredPlatform as MatchPlatform,
+          offeredFormat: String(offeredFormat).trim(),
+          offeredChannelHandle: offeredChannelHandle ? String(offeredChannelHandle).trim() : undefined,
+          requestedPlatform: (requestedPlatform as MatchPlatform) || "egal",
+          requestedFormat: requestedFormat ? String(requestedFormat).trim() : undefined,
+          notes: notes ? String(notes).trim() : undefined,
+          updatedAt: new Date(),
+        },
+      }
+    );
+
+    if (res.matchedCount === 0) {
+      return NextResponse.json({ success: false, message: "Inserat nicht gefunden oder keine Berechtigung." }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: "Inserat aktualisiert." });
+  } catch (error) {
+    console.error("PATCH /api/social-media/buch-match/offers error:", error);
+    return NextResponse.json({ success: false, message: "Fehler beim Aktualisieren." }, { status: 500 });
+  }
+}

@@ -131,6 +131,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
   const [applyError, setApplyError] = useState("");
   const [applySuccess, setApplySuccess] = useState("");
 
+  const [editingOfferId, setEditingOfferId] = useState<string | null>(null);
   const [createBookId, setCreateBookId] = useState("");
   const [createOfferedPlatform, setCreateOfferedPlatform] = useState<MatchPlatform>("instagram");
   const [createOfferedFormat, setCreateOfferedFormat] = useState("Instagram Reel / Post");
@@ -212,6 +213,30 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
     if (subTab === "matches") loadMatches();
   }, [subTab, loadApplications, loadMatches]);
 
+  function startEditOffer(offer: Offer) {
+    setEditingOfferId(offer.id);
+    setCreateBookId(offer.bookId);
+    setCreateOfferedPlatform(offer.offeredPlatform);
+    setCreateOfferedFormat(offer.offeredFormat || "");
+    setCreateChannelHandle(offer.offeredChannelHandle || "");
+    setCreateRequestedPlatform(offer.requestedPlatform || "egal");
+    setCreateRequestedFormat(offer.requestedFormat || "");
+    setCreateNotes(offer.notes || "");
+    setCreateError("");
+    setCreateSuccess("");
+    setSubTab("create");
+  }
+
+  async function handleDeleteOffer(id: string) {
+    if (!confirm("Möchtest du dieses Inserat wirklich löschen?")) return;
+    try {
+      const res = await fetch(`/api/social-media/buch-match/offers?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) loadOffers();
+      else alert(data.message || "Fehler beim Löschen.");
+    } catch { alert("Netzwerkfehler."); }
+  }
+
   async function handleCreateOffer(e: React.FormEvent) {
     e.preventDefault();
     if (!account) return;
@@ -220,9 +245,10 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
     setCreateSuccess("");
     try {
       const res = await fetch("/api/social-media/buch-match/offers", {
-        method: "POST",
+        method: editingOfferId ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id: editingOfferId ?? undefined,
           bookId: createBookId,
           offeredPlatform: createOfferedPlatform,
           offeredFormat: createOfferedFormat,
@@ -234,10 +260,11 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
       });
       const data = await res.json();
       if (!data.success) {
-        setCreateError(data.message || "Fehler beim Erstellen.");
+        setCreateError(data.message || "Fehler beim Speichern.");
       } else {
-        setCreateSuccess(data.message || "Inserat erfolgreich erstellt!");
+        setCreateSuccess(data.message || "Inserat erfolgreich gespeichert!");
         setCreateNotes("");
+        setEditingOfferId(null);
         loadOffers();
         setTimeout(() => { setSubTab("market"); setCreateSuccess(""); }, 1500);
       }
@@ -339,7 +366,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
             key={t.key}
             type="button"
             className={`segmented-control-btn max-sm:shrink-0 max-sm:px-3 max-sm:py-2.5 max-sm:text-xs ${subTab === t.key ? "active" : ""}`}
-            onClick={() => setSubTab(t.key)}
+            onClick={() => { if (t.key !== subTab) setEditingOfferId(null); setSubTab(t.key); }}
           >
             {t.label}
           </button>
@@ -433,7 +460,10 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
                     </span>
                     {account ? (
                       offer.authorUsername === account.username ? (
-                        <span className="font-sans text-xs text-arena-muted italic px-2 py-1 bg-arena-bg rounded">Dein Inserat</span>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => startEditOffer(offer)} className="btn btn-sm min-h-[36px] px-3 text-xs">Bearbeiten</button>
+                          <button onClick={() => handleDeleteOffer(offer.id)} className="btn btn-sm btn-danger min-h-[36px] px-3 text-xs">Löschen</button>
+                        </div>
                       ) : (
                         <button
                           onClick={() => { setSelectedOfferForApply(offer); setApplyError(""); setApplySuccess(""); }}
@@ -457,7 +487,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
       {subTab === "create" && account && (
         <div className="card-base grid gap-4">
           <div className="border-b border-arena-border-light pb-3">
-            <h3 className="font-serif text-base font-bold text-arena-blue m-0">Neues Inserat erstellen</h3>
+            <h3 className="font-serif text-base font-bold text-arena-blue m-0">{editingOfferId ? "Inserat bearbeiten" : "Neues Inserat erstellen"}</h3>
             <p className="font-sans text-xs text-arena-muted m-0 mt-1">
               Wähle dein Buch und gib an, was du anbietest und was du dir wünschst.
             </p>
@@ -484,7 +514,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
 
               <label className="grid gap-1">
                 <span className="font-sans text-xs font-bold text-arena-text">Dein Buch *</span>
-                <select value={createBookId} onChange={(e) => setCreateBookId(e.target.value)} className="input-base" required>
+                <select value={createBookId} onChange={(e) => setCreateBookId(e.target.value)} className="input-base" required disabled={!!editingOfferId}>
                   {myBooks.map((b) => (
                     <option key={b.id} value={b.id}>{b.title}{b.genre ? ` (${b.genre})` : ""}</option>
                   ))}
@@ -532,10 +562,10 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
               </label>
 
               <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 pt-2">
-                <button type="button" onClick={() => setSubTab("market")} className="btn btn-sm min-h-[40px] justify-center">Abbrechen</button>
+                <button type="button" onClick={() => { setEditingOfferId(null); setSubTab("market"); }} className="btn btn-sm min-h-[40px] justify-center">Abbrechen</button>
                 <button type="submit" disabled={createLoading} className="btn btn-primary min-h-[44px] justify-center max-sm:w-full">
                   {createLoading ? <ArrowPathIcon className="h-4 w-4 animate-spin mr-1" /> : <PlusIcon className="h-4 w-4 mr-1" />}
-                  Inserat veröffentlichen
+                  {editingOfferId ? "Änderungen speichern" : "Inserat veröffentlichen"}
                 </button>
               </div>
             </form>
