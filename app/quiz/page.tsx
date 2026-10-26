@@ -104,6 +104,15 @@ export default function QuizPage() {
   const startRound = useCallback(
     (type: QuizType) => {
       setMode(type);
+      if (username) {
+        // Quiztag zählt für jede Quizart (serverseitig 1x pro Tag)
+        fetch("/api/quiz/tag", { method: "POST" })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d && d.lesezeichen) showLesezeichenToast(d.lesezeichen);
+          })
+          .catch(() => {});
+      }
       setShowSolution(false);
       setHintsShown(1);
       setScoreSaved(false);
@@ -125,7 +134,7 @@ export default function QuizPage() {
         setMcShuffledAnswers(shuffle(pool[0].answers));
       }
     },
-    [data, mcData],
+    [data, mcData, username],
   );
 
   const nextQuestion = useCallback(() => {

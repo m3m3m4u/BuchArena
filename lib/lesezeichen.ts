@@ -33,7 +33,8 @@ export type LesezeichenDocument = {
 /* ── Helpers ── */
 
 function todayKey(): string {
-  return new Date().toISOString().slice(0, 10);
+  // Tageswechsel nach deutscher Zeit (nicht UTC); en-CA liefert YYYY-MM-DD
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" }).format(new Date());
 }
 
 function getConsecutiveDays(days: string[]): number {

@@ -70,19 +70,35 @@ export function ProgressiveImage({
   priority = false,
 }: ProgressiveImageProps) {
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
   const mainWidth = targetWidth || width || 600;
   const thumbUrl = toProxyUrl(src, thumbWidth);
   const mainUrl = toProxyUrl(src, mainWidth) || src;
 
   const handleLoad = useCallback(() => setLoaded(true), []);
+  const handleError = useCallback(() => {
+    // Bei Ladefehler Thumb ausblenden, damit das Bild nicht dauerhaft unscharf bleibt
+    setFailed(true);
+    setLoaded(true);
+  }, []);
 
-  // reset on src change
-  useEffect(() => setLoaded(false), [src]);
+  // reset on src change & Cache-Check
+  useEffect(() => {
+    setLoaded(false);
+    setFailed(false);
+    if (typeof window !== "undefined" && mainUrl) {
+      const probe = new window.Image();
+      probe.src = mainUrl;
+      if (probe.complete && probe.naturalWidth > 0) {
+        setLoaded(true);
+      }
+    }
+  }, [src, mainUrl]);
 
   return (
     <div className="progressive-image-wrap" style={{ position: "relative", overflow: "hidden", width: fill ? "100%" : width, height: fill ? "100%" : height }}>
       {/* Tiny blurred placeholder */}
-      {thumbUrl && (
+      {thumbUrl && !failed && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           aria-hidden
@@ -101,6 +117,7 @@ export function ProgressiveImage({
             transition: "opacity .4s ease-out",
             pointerEvents: "none",
             zIndex: 1,
+            display: loaded ? "none" : undefined,
           }}
         />
       )}
@@ -121,6 +138,7 @@ export function ProgressiveImage({
         }}
         unoptimized
         onLoad={handleLoad}
+        onError={handleError}
         priority={priority}
         loading={priority ? undefined : "lazy"}
       />
@@ -144,14 +162,26 @@ export function ProgressiveImg({
   style,
   thumbWidth = 32,
   targetWidth = 600,
+  loading,
   ...rest
 }: ProgressiveImgProps) {
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const thumbUrl = typeof src === "string" ? toProxyUrl(src, thumbWidth) : null;
   const mainUrl = typeof src === "string" ? (toProxyUrl(src, targetWidth) || src) : src;
 
-  useEffect(() => setLoaded(false), [src]);
+  useEffect(() => {
+    setLoaded(false);
+    setFailed(false);
+    if (typeof window !== "undefined" && typeof mainUrl === "string") {
+      const probe = new window.Image();
+      probe.src = mainUrl;
+      if (probe.complete && probe.naturalWidth > 0) {
+        setLoaded(true);
+      }
+    }
+  }, [src, mainUrl]);
 
   useEffect(() => {
     // Bild ist evtl. schon aus dem Cache geladen
@@ -165,31 +195,34 @@ export function ProgressiveImg({
   // Kein Proxy möglich → normales lazy img
   if (!thumbUrl) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt} className={className} style={style} loading="lazy" {...rest} />;
+    return <img src={src} alt={alt} className={className} style={style} loading={loading ?? "lazy"} {...rest} />;
   }
 
   return (
-    <div className="progressive-image-wrap" style={{ position: "relative", overflow: "hidden" }}>
+    <div className="progressive-image-wrap" style={{ position: "relative", overflow: "hidden", width: "100%", height: "100%" }}>
       {/* Tiny blurred placeholder */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        aria-hidden
-        src={thumbUrl}
-        alt=""
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          filter: "blur(12px)",
-          transform: "scale(1.1)",
-          opacity: loaded ? 0 : 1,
-          transition: "opacity .4s ease-out",
-          pointerEvents: "none",
-          zIndex: 1,
-        }}
-      />
+      {!failed && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          aria-hidden
+          src={thumbUrl}
+          alt=""
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            filter: "blur(12px)",
+            transform: "scale(1.1)",
+            opacity: loaded ? 0 : 1,
+            transition: "opacity .4s ease-out",
+            pointerEvents: "none",
+            zIndex: 1,
+            display: loaded ? "none" : undefined,
+          }}
+        />
+      )}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imgRef}
@@ -201,8 +234,12 @@ export function ProgressiveImg({
           opacity: loaded ? 1 : 0,
           transition: "opacity .4s ease-in",
         }}
-        loading="lazy"
+        loading={loading}
         onLoad={() => setLoaded(true)}
+        onError={() => {
+          setFailed(true);
+          setLoaded(true);
+        }}
         {...rest}
       />
     </div>

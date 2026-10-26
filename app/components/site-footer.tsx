@@ -101,19 +101,25 @@ export default function SiteFooter() {
             </a>
           </div>
 
-          {/* Desktop: text links inline */}
+          {/* Desktop only links */}
           <div className="hidden sm:contents">
             {(account?.role === "SUPERADMIN" || account?.role === "ADMIN") && (
-              <Link href="/admin" className="btn">Admin</Link>
+              <Link href="/admin" className="btn whitespace-nowrap">Admin</Link>
             )}
             {account && (
-              <Link href="/profil" className="btn">Mein Profil</Link>
+              <Link href="/profil" className="btn whitespace-nowrap">Mein Profil</Link>
             )}
-            <Link href="/info" className="btn">FAQ</Link>
-            <Link href="/impressum" className="btn">Impressum &amp; Datenschutz</Link>
-            <button type="button" className="btn" onClick={openCookieSettings}>Cookies</button>
+            <Link href="/info" className="btn whitespace-nowrap">FAQ</Link>
+          </div>
+
+          {/* Always visible on mobile and desktop */}
+          <Link href="/impressum" className="btn whitespace-nowrap">Impressum &amp; Datenschutz</Link>
+
+          {/* Desktop only links */}
+          <div className="hidden sm:contents">
+            <button type="button" className="btn whitespace-nowrap" onClick={openCookieSettings}>Cookies</button>
             {account && (
-              <button type="button" className="btn" onClick={() => { setSupportMsg(""); setShowSupport(true); }}>Support</button>
+              <button type="button" className="btn whitespace-nowrap" onClick={() => { setSupportMsg(""); setShowSupport(true); }}>Support</button>
             )}
           </div>
 

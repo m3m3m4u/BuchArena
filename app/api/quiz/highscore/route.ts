@@ -52,7 +52,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Ungültige Daten." }, { status: 400 });
     }
 
-    if (score < 0 || score > total || total > 1000) {
+    // Falsche Antworten geben −3 Punkte, daher sind negative Scores gültig
+    if (score < -3 * total || score > total || total > 1000) {
       return NextResponse.json({ message: "Ungültige Punktzahl." }, { status: 400 });
     }
 

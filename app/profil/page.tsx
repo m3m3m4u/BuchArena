@@ -404,8 +404,13 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal(true);
-      if (!slugOk) return;
+      let slugNotice = "";
+      if (profileSlug.trim()) {
+        const slugOk = await saveSlugInternal(false);
+        if (!slugOk) {
+          slugNotice = " (Hinweis: Profil-URL konnte nicht aktualisiert werden)";
+        }
+      }
 
       const response = await fetch("/api/profile/save", {
         method: "POST",
@@ -422,9 +427,12 @@ function ProfilPageInner() {
       }
 
       if (data.lesezeichen) showLesezeichenToast(data.lesezeichen);
-      setMessage(data.message ?? "Profil gespeichert.");
+      setMessage((data.message ?? "Profil gespeichert.") + slugNotice);
       savedProfileSnap.current = JSON.stringify(profile);
-    } catch {
+    } catch (err) {
+      console.error("Profil speichern fehlgeschlagen:", err);
+      setIsError(true);
+      setMessage(err instanceof Error ? err.message : "Profil konnte nicht gespeichert werden.");
     } finally {
       setIsSaving(false);
     }
@@ -438,8 +446,13 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal(true);
-      if (!slugOk) return;
+      let slugNotice = "";
+      if (profileSlug.trim()) {
+        const slugOk = await saveSlugInternal(false);
+        if (!slugOk) {
+          slugNotice = " (Hinweis: Profil-URL konnte nicht aktualisiert werden)";
+        }
+      }
 
       const response = await fetch("/api/speakers/save", {
         method: "POST",
@@ -455,11 +468,12 @@ function ProfilPageInner() {
         throw new Error(data.message ?? "Sprecherprofil konnte nicht gespeichert werden.");
       }
 
-      setMessage(data.message ?? "Sprecherprofil gespeichert.");
+      setMessage((data.message ?? "Sprecherprofil gespeichert.") + slugNotice);
       savedSpeakerSnap.current = JSON.stringify(speakerProfile);
-    } catch {
+    } catch (err) {
+      console.error("Sprecherprofil speichern fehlgeschlagen:", err);
       setIsError(true);
-      setMessage("Sprecherprofil konnte nicht gespeichert werden.");
+      setMessage(err instanceof Error ? err.message : "Sprecherprofil konnte nicht gespeichert werden.");
     } finally {
       setIsSavingSpeaker(false);
     }
@@ -473,8 +487,13 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal(true);
-      if (!slugOk) return;
+      let slugNotice = "";
+      if (profileSlug.trim()) {
+        const slugOk = await saveSlugInternal(false);
+        if (!slugOk) {
+          slugNotice = " (Hinweis: Profil-URL konnte nicht aktualisiert werden)";
+        }
+      }
 
       const response = await fetch("/api/bloggers/save", {
         method: "POST",
@@ -490,11 +509,12 @@ function ProfilPageInner() {
         throw new Error(data.message ?? "Bloggerprofil konnte nicht gespeichert werden.");
       }
 
-      setMessage(data.message ?? "Bloggerprofil gespeichert.");
+      setMessage((data.message ?? "Bloggerprofil gespeichert.") + slugNotice);
       savedBloggerSnap.current = JSON.stringify(bloggerProfile);
-    } catch {
+    } catch (err) {
+      console.error("Bloggerprofil speichern fehlgeschlagen:", err);
       setIsError(true);
-      setMessage("Bloggerprofil konnte nicht gespeichert werden.");
+      setMessage(err instanceof Error ? err.message : "Bloggerprofil konnte nicht gespeichert werden.");
     } finally {
       setIsSavingBlogger(false);
     }
@@ -508,8 +528,13 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal(true);
-      if (!slugOk) return;
+      let slugNotice = "";
+      if (profileSlug.trim()) {
+        const slugOk = await saveSlugInternal(false);
+        if (!slugOk) {
+          slugNotice = " (Hinweis: Profil-URL konnte nicht aktualisiert werden)";
+        }
+      }
 
       const response = await fetch("/api/testleser/save", {
         method: "POST",
@@ -525,11 +550,12 @@ function ProfilPageInner() {
         throw new Error(data.message ?? "(Test)Leser-Profil konnte nicht gespeichert werden.");
       }
 
-      setMessage(data.message ?? "(Test)Leser-Profil gespeichert.");
+      setMessage((data.message ?? "(Test)Leser-Profil gespeichert.") + slugNotice);
       savedTestleserSnap.current = JSON.stringify(testleserProfile);
-    } catch {
+    } catch (err) {
+      console.error("Testleserprofil speichern fehlgeschlagen:", err);
       setIsError(true);
-      setMessage("(Test)Leser-Profil konnte nicht gespeichert werden.");
+      setMessage(err instanceof Error ? err.message : "(Test)Leser-Profil konnte nicht gespeichert werden.");
     } finally {
       setIsSavingTestleser(false);
     }
@@ -547,8 +573,13 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal(true);
-      if (!slugOk) return;
+      let slugNotice = "";
+      if (profileSlug.trim()) {
+        const slugOk = await saveSlugInternal(false);
+        if (!slugOk) {
+          slugNotice = " (Hinweis: Profil-URL konnte nicht aktualisiert werden)";
+        }
+      }
 
       const response = await fetch("/api/lektoren/save", {
         method: "POST",
@@ -564,7 +595,7 @@ function ProfilPageInner() {
         throw new Error(data.message ?? "Lektorenprofil konnte nicht gespeichert werden.");
       }
 
-      setMessage(data.message ?? "Lektorenprofil gespeichert.");
+      setMessage((data.message ?? "Lektorenprofil gespeichert.") + slugNotice);
       savedLektorenSnap.current = JSON.stringify(lektorenProfile);
     } catch (err) {
       console.error("Lektorenprofil speichern fehlgeschlagen:", err);
@@ -587,8 +618,13 @@ function ProfilPageInner() {
     setIsError(false);
 
     try {
-      const slugOk = await saveSlugInternal(true);
-      if (!slugOk) return;
+      let slugNotice = "";
+      if (profileSlug.trim()) {
+        const slugOk = await saveSlugInternal(false);
+        if (!slugOk) {
+          slugNotice = " (Hinweis: Profil-URL konnte nicht aktualisiert werden)";
+        }
+      }
 
       const response = await fetch("/api/verlage/save", {
         method: "POST",
@@ -604,7 +640,7 @@ function ProfilPageInner() {
         throw new Error(data.message ?? "Verlagsprofil konnte nicht gespeichert werden.");
       }
 
-      setMessage(data.message ?? "Verlagsprofil gespeichert.");
+      setMessage((data.message ?? "Verlagsprofil gespeichert.") + slugNotice);
       savedVerlageSnap.current = JSON.stringify(verlageProfile);
     } catch (err) {
       console.error("Verlagsprofil speichern fehlgeschlagen:", err);
@@ -1292,6 +1328,10 @@ function ProfilPageInner() {
         <button type="button" className="btn" onClick={saveProfile} disabled={isSaving}>
           {isSaving ? "Speichern ..." : "Profil speichern"}
         </button>
+
+        <p className="text-xs text-arena-muted m-0">
+          Hinweis: Angaben mit Sichtbarkeit <strong>„öffentlich“</strong> sind auf deiner Autorenseite für Besucher sichtbar. Angaben auf <strong>„intern“</strong> sind nur für eingeloggte Mitglieder sichtbar.
+        </p>
 
         <div className="grid justify-center items-start gap-4" style={{ gridTemplateColumns: "180px" }}>
           <button
