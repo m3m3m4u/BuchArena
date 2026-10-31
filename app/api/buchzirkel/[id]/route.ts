@@ -150,6 +150,12 @@ export async function PATCH(
     for (const key of allowed) {
       if (key in body) updates[key] = body[key];
     }
+    if (typeof updates.bewerbungBis === "string" && updates.bewerbungBis) {
+      const parsedDate = new Date(updates.bewerbungBis);
+      if (!Number.isNaN(parsedDate.getTime())) {
+        updates.bewerbungBis = parsedDate;
+      }
+    }
 
     await collection.updateOne({ _id: new ObjectId(id) }, { $set: updates });
 

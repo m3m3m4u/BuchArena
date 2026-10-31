@@ -202,14 +202,17 @@ export default function BuchzirkelDetailPage() {
             {/* Veranstalter-Links */}
             {zirkel.isVeranstalter && (
               <div className="flex gap-2 mt-3 flex-wrap">
-                <Link href={`/buchzirkel/${zirkel._id}/dashboard`} className="btn btn-primary btn-sm">
+                <Link href={`/buchzirkel/${zirkel._id}/teilnehmer`} className="btn btn-primary btn-sm">
+                  Zum Lesebereich →
+                </Link>
+                <Link href={`/buchzirkel/${zirkel._id}/dashboard`} className="btn btn-secondary btn-sm">
                   Dashboard öffnen →
                 </Link>
               </div>
             )}
 
             {/* Teilnehmer-Link */}
-            {zirkel.isTeilnehmer && (
+            {zirkel.isTeilnehmer && !zirkel.isVeranstalter && (
               <div className="mt-3">
                 <Link href={`/buchzirkel/${zirkel._id}/teilnehmer`} className="btn btn-primary btn-sm">
                   Zum Lesebereich →
@@ -267,9 +270,19 @@ export default function BuchzirkelDetailPage() {
           <h2 className="text-base font-semibold m-0 mb-1">Diskussionsbereiche</h2>
           <p className="text-sm text-arena-muted m-0 mb-3">Teilnehmer können in diesen Themenbereichen miteinander und mit dem Autor diskutieren. Beiträge sind nur für Teilnehmer sichtbar.</p>
           <div className="flex flex-wrap gap-2">
-            {zirkel.diskussionsTopics.map((t) => (
-              <span key={t.id} className="text-sm px-3 py-1 rounded-full bg-gray-100 text-arena-muted">{t.titel}</span>
-            ))}
+            {zirkel.diskussionsTopics.map((t) =>
+              zirkel.isTeilnehmer || zirkel.isVeranstalter ? (
+                <Link
+                  key={t.id}
+                  href={`/buchzirkel/${zirkel._id}/teilnehmer`}
+                  className="text-sm px-3 py-1 rounded-full bg-gray-100 text-arena-blue hover:bg-arena-blue hover:text-white transition-colors no-underline"
+                >
+                  {t.titel}
+                </Link>
+              ) : (
+                <span key={t.id} className="text-sm px-3 py-1 rounded-full bg-gray-100 text-arena-muted">{t.titel}</span>
+              )
+            )}
           </div>
           {!zirkel.isTeilnehmer && !zirkel.isVeranstalter && (
             <p className="text-xs text-arena-muted mt-2">Nur für Teilnehmer sichtbar.</p>

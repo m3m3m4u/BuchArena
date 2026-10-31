@@ -838,7 +838,23 @@ export default function BuchzirkelDashboardPage() {
                             {msg.senderUsername}{isAutorMsg ? " ✍️" : ""}
                           </p>
                         )}
-                        <p className="whitespace-pre-wrap m-0" style={{ lineHeight: 1.5 }}>{msg.body}</p>
+                        <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] m-0" style={{ lineHeight: 1.5 }}>
+                          {msg.body.split(/(https?:\/\/[^\s<]+)/g).map((part, i) =>
+                            /^https?:\/\//.test(part) ? (
+                              <a
+                                key={i}
+                                href={part}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`underline break-all ${isMine ? "text-white hover:text-white/80" : "text-arena-blue hover:opacity-80"}`}
+                              >
+                                {part}
+                              </a>
+                            ) : (
+                              part
+                            )
+                          )}
+                        </p>
                         <span className={`text-[10px] block mt-0.5 ${isMine ? "text-white/50 text-right" : "text-arena-muted"}`}>
                           {new Date(msg.createdAt).toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" })}
                         </span>

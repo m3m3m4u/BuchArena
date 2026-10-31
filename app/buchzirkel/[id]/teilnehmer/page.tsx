@@ -547,7 +547,23 @@ export default function TeilnehmerBereichPage() {
                           {msg.senderUsername}{isAutor ? " ✍️" : ""}
                         </p>
                       )}
-                      <p className="whitespace-pre-wrap m-0" style={{ lineHeight: 1.5 }}>{msg.body}</p>
+                      <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] m-0" style={{ lineHeight: 1.5 }}>
+                        {msg.body.split(/(https?:\/\/[^\s<]+)/g).map((part, i) =>
+                          /^https?:\/\//.test(part) ? (
+                            <a
+                              key={i}
+                              href={part}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`underline break-all ${isMine ? "text-white hover:text-white/80" : "text-arena-blue hover:opacity-80"}`}
+                            >
+                              {part}
+                            </a>
+                          ) : (
+                            part
+                          )
+                        )}
+                      </p>
                       <div className={`flex items-center gap-1 mt-1 ${isMine ? "justify-end" : "justify-start"}`}>
                         <span className={`text-[10px] ${isMine ? "text-white/50" : "text-arena-muted"}`}>
                           {timeAgo(msg.createdAt)}

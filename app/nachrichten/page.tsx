@@ -81,6 +81,28 @@ function formatDateSeparator(dateString: string): string {
   return d.toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+function renderMessageText(text: string, isMine: boolean): React.ReactNode {
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+  const parts = text.split(urlRegex);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) => {
+    if (/^https?:\/\//.test(part)) {
+      return (
+        <a
+          key={i}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`underline break-all ${isMine ? "text-white hover:text-white/80" : "text-arena-blue hover:opacity-80"}`}
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+}
+
 /* ── Hauptseite ── */
 function NachrichtenPageInner() {
   const searchParams = useSearchParams();
@@ -727,8 +749,8 @@ function NachrichtenPageInner() {
                     : "bg-white border border-gray-200 text-gray-900 rounded-bl-md"
                 }`}
               >
-                <p className="whitespace-pre-wrap m-0" style={{ lineHeight: 1.5 }}>
-                  {msg.body}
+                <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] m-0" style={{ lineHeight: 1.5 }}>
+                  {renderMessageText(msg.body, isMine)}
                 </p>
                 {/* Kooperations-Buttons direkt in der Nachricht */}
                 {msg.kooperationId && msg.recipientUsername === username && (() => {
@@ -1012,7 +1034,7 @@ function NachrichtenPageInner() {
 
           {/* ══ Rechte Seite: Chat-Bereich ══ */}
           <div
-            className={`flex flex-col min-h-0 ${
+            className={`flex flex-col min-h-0 min-w-0 overflow-hidden ${
               !mobileShowChat ? "max-sm:hidden" : ""
             }`}
           >
@@ -1063,7 +1085,7 @@ function NachrichtenPageInner() {
                             {!isMine && (
                               <p className="font-sans text-[11px] font-bold text-arena-blue m-0 mb-0.5">{msg.senderUsername}</p>
                             )}
-                            <p className="whitespace-pre-wrap m-0 font-sans" style={{ lineHeight: 1.5 }}>{msg.body}</p>
+                            <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] m-0 font-sans" style={{ lineHeight: 1.5 }}>{renderMessageText(msg.body, isMine)}</p>
                             <div className={`flex items-center gap-1.5 mt-1 font-sans ${isMine ? "justify-end" : "justify-start"}`}>
                               <span className={`text-[10px] font-sans ${isMine ? "text-white/60" : "text-arena-muted"}`}>
                                 {formatTime(msg.createdAt)}

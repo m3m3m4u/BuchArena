@@ -198,8 +198,23 @@ export function ProgressiveImg({
     return <img src={src} alt={alt} className={className} style={style} loading={loading ?? "lazy"} {...rest} />;
   }
 
+  const hasFullWidth = /\bw-full\b/.test(className ?? "");
+  const hasFullHeight = /\bh-full\b/.test(className ?? "");
+  const hasShrink0 = /\b(?:flex-)?shrink-0\b/.test(className ?? "");
+  const isContain = /\bobject-contain\b/.test(className ?? "");
+
   return (
-    <div className="progressive-image-wrap" style={{ position: "relative", overflow: "hidden", width: "100%", height: "100%" }}>
+    <div
+      className="progressive-image-wrap"
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        width: hasFullWidth ? "100%" : "fit-content",
+        height: hasFullHeight ? "100%" : "fit-content",
+        maxWidth: "100%",
+        flexShrink: hasShrink0 ? 0 : undefined,
+      }}
+    >
       {/* Tiny blurred placeholder */}
       {!failed && (
         // eslint-disable-next-line @next/next/no-img-element
@@ -212,7 +227,7 @@ export function ProgressiveImg({
             inset: 0,
             width: "100%",
             height: "100%",
-            objectFit: "contain",
+            objectFit: isContain ? "contain" : "cover",
             filter: "blur(12px)",
             transform: "scale(1.1)",
             opacity: loaded ? 0 : 1,
@@ -230,6 +245,7 @@ export function ProgressiveImg({
         alt={alt}
         className={className}
         style={{
+          display: "block",
           ...style,
           opacity: loaded ? 1 : 0,
           transition: "opacity .4s ease-in",
