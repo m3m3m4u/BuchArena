@@ -190,8 +190,10 @@ const bucharenaFaq: FaqItem[] = [
     question: "Was ist das Buch der Woche?",
     answer: (
       <p>
-        Jede Woche wird ein <strong>Buch der Woche</strong> auf der Startseite hervorgehoben. Das gibt
-        Autorinnen und Autoren besondere Sichtbarkeit und zeigt der Community interessante neue Titel.
+        Jede Woche wird ein <strong>Buch der Woche</strong> ausgewählt und auf der Startseite sowie im Dashboard
+        mit Video hervorgehoben. Als Autor kannst du dich unter <strong>Lesezeichen</strong> mit deinen Büchern und einem
+        YouTube-Video oder Reel bewerben. Das System lost jeden Sonntag ab 18:00 Uhr automatisch aus – je mehr
+        Lesezeichen du gesammelt hast, desto höher sind deine Gewinnchancen!
       </p>
     ),
   },

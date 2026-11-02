@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT, type LoggedInAccount } from "@/lib/client-account";
-import { extractYouTubeId } from "@/lib/bucharena-types";
+import { extractYouTubeId, isYouTubeShort } from "@/lib/bucharena-types";
 import { fetchUnreadCountShared } from "@/lib/client-unread-count";
 import { 
   BookmarkIcon, 
@@ -237,20 +237,31 @@ export default function HomePage() {
         <section className="card mt-3">
           {bdw && bdw.title ? (
             <div>
-              <p className="font-sans text-lg font-bold text-arena-blue m-0 flex items-center gap-2 flex-wrap">
-                <span>Buch der Woche:</span>
-                <span className="font-normal">{bdw.bookId ? <Link href={`/buch/${bdw.bookId}`} className="font-sans hover:underline text-arena-blue font-bold">{bdw.title}</Link> : bdw.title} <span className="font-normal text-arena-muted">von {bdw.authorUsername ? <Link href={`/autor/${bdw.authorUsername}`} className="hover:underline text-arena-text font-semibold">{bdw.author}</Link> : bdw.author}</span>{bdw.speaker && <span className="font-normal text-arena-muted"> · Sprecher: {bdw.speakerUsername ? <Link href={`/sprecher/${bdw.speakerUsername}`} className="hover:underline text-arena-text font-semibold">{bdw.speaker}</Link> : bdw.speaker}</span>}</span>
-                {bdw.buyUrl && (
-                  <a href={bdw.buyUrl} target="_blank" rel="noopener noreferrer nofollow" className="btn btn-primary btn-sm inline-flex items-center">
-                    HIER ERHÄLTLICH *
-                  </a>
-                )}
-              </p>
-              {bdw.buyUrl && <p className="font-sans text-xs text-arena-muted mt-1.5">* Affiliate-Link</p>}
+              <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                <p className="font-sans text-lg font-bold text-arena-blue m-0 flex items-center gap-2 flex-wrap">
+                  <span>Buch der Woche:</span>
+                  <span className="font-normal">{bdw.bookId ? <Link href={`/buch/${bdw.bookId}`} className="font-sans hover:underline text-arena-blue font-bold">{bdw.title}</Link> : bdw.title} <span className="font-normal text-arena-muted">von {bdw.authorUsername ? <Link href={`/autor/${bdw.authorUsername}`} className="hover:underline text-arena-text font-semibold">{bdw.author}</Link> : bdw.author}</span>{bdw.speaker && <span className="font-normal text-arena-muted"> · Sprecher: {bdw.speakerUsername ? <Link href={`/sprecher/${bdw.speakerUsername}`} className="hover:underline text-arena-text font-semibold">{bdw.speaker}</Link> : bdw.speaker}</span>}</span>
+                  {bdw.buyUrl && (
+                    <a href={bdw.buyUrl} target="_blank" rel="noopener noreferrer nofollow" className="btn btn-primary btn-sm inline-flex items-center">
+                      HIER ERHÄLTLICH *
+                    </a>
+                  )}
+                </p>
+                <Link href="/lesezeichen#buch-der-woche" className="text-xs text-arena-blue hover:underline font-semibold ml-auto">
+                  Mit eigenem Buch bewerben →
+                </Link>
+              </div>
+              {bdw.buyUrl && <p className="font-sans text-xs text-arena-muted mt-1 m-0">* Affiliate-Link</p>}
               {bdw.youtubeUrl && (() => {
                 const ytId = extractYouTubeId(bdw.youtubeUrl);
+                const isShort = isYouTubeShort(bdw.youtubeUrl);
                 return ytId ? (
-                  <div className="mt-3 mx-auto relative w-full sm:w-4/5 max-w-[1100px]" style={{ paddingBottom: "45%" }}>
+                  <div
+                    className={`mt-3 mx-auto relative ${
+                      isShort ? "w-full max-w-[340px]" : "w-full sm:w-4/5 max-w-[1100px]"
+                    }`}
+                    style={{ paddingBottom: isShort ? "177.77%" : "45%" }}
+                  >
                     <iframe
                       className="absolute inset-0 w-full h-full rounded-lg"
                       src={`https://www.youtube-nocookie.com/embed/${ytId}`}
@@ -263,9 +274,14 @@ export default function HomePage() {
               })()}
             </div>
           ) : (
-            <div>
-              <h2 className="font-sans text-lg font-bold text-arena-blue m-0">Buch der Woche</h2>
-              <p className="font-sans font-semibold text-arena-muted m-0 mt-2">Bald verfügbar</p>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div>
+                <h2 className="font-sans text-lg font-bold text-arena-blue m-0">Buch der Woche</h2>
+                <p className="font-sans font-semibold text-arena-muted m-0 mt-1 text-sm">Wird jeden Sonntag ab 18 Uhr automatisch ausgelost!</p>
+              </div>
+              <Link href="/lesezeichen#buch-der-woche" className="btn btn-primary btn-sm inline-flex items-center">
+                Mit Buch bewerben →
+              </Link>
             </div>
           )}
         </section>
@@ -410,8 +426,14 @@ export default function HomePage() {
           {bdw.buyUrl && <p className="font-sans text-xs text-arena-muted mt-1.5">* Affiliate-Link</p>}
           {bdw.youtubeUrl && (() => {
             const ytId = extractYouTubeId(bdw.youtubeUrl);
+            const isShort = isYouTubeShort(bdw.youtubeUrl);
             return ytId ? (
-              <div className="mt-4 relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <div
+                className={`mt-4 relative mx-auto ${
+                  isShort ? "w-full max-w-[340px]" : "w-full"
+                }`}
+                style={{ paddingBottom: isShort ? "177.77%" : "56.25%" }}
+              >
                 <iframe
                   className="absolute inset-0 w-full h-full rounded-lg"
                   src={`https://www.youtube-nocookie.com/embed/${ytId}`}
@@ -422,6 +444,11 @@ export default function HomePage() {
               </div>
             ) : null;
           })()}
+          <div className="mt-4">
+            <Link href="/lesezeichen#buch-der-woche" className="text-xs text-arena-blue hover:underline font-semibold">
+              Du bist Autor? Sammle Lesezeichen und bewirb dein Buch für das „Buch der Woche“ →
+            </Link>
+          </div>
         </section>
       )}
 

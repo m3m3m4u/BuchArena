@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount } from "@/lib/client-account";
 import { LESEZEICHEN_RULES } from "@/lib/lesezeichen-rules";
+import BuchDerWocheSection from "./buch-der-woche-section";
 
 type HighscoreEntry = { username: string; displayName: string; total: number };
 
@@ -27,7 +28,7 @@ import {
   SparklesIcon,
   UserIcon,
   ClockIcon,
-  BookmarkIcon
+  BookmarkIcon,
 } from "@heroicons/react/24/outline";
 
 const REASON_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -88,8 +89,11 @@ export default function LesezeichenPage() {
         setMyStats({ ...myStats, hideFromHighscores: data.hideFromHighscores });
         loadHighscores();
       }
-    } catch { /* ignore */ }
-    finally { setHideSaving(false); }
+    } catch {
+      /* ignore */
+    } finally {
+      setHideSaving(false);
+    }
   }
 
   useEffect(() => {
@@ -127,13 +131,16 @@ export default function LesezeichenPage() {
           </section>
         )}
 
+        {/* ══ Buch der Woche: Bewerbung & Erklärung ══ */}
+        <BuchDerWocheSection loggedIn={loggedIn} userBookmarks={myStats?.total ?? 0} />
+
         {/* Regeln */}
         <section className="card flex-shrink-0">
           <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight flex items-center gap-2 m-0">
             So sammelst du Lesezeichen
           </h2>
           <p className="font-sans text-arena-muted text-sm m-0 mt-2">
-            Lesezeichen sind deine Belohnung für Aktivität auf BuchArena. Sammle so viele wie möglich!
+            Lesezeichen sind deine Belohnung für Aktivität auf BuchArena. Sammle so viele wie möglich – sie erhöhen auch deine Chancen beim Buch der Woche!
           </p>
           <div className="flex flex-col gap-2 mt-4">
             {LESEZEICHEN_RULES.map((rule) => {
@@ -180,9 +187,7 @@ export default function LesezeichenPage() {
             </label>
           )}
 
-          {isLoading && (
-            <p className="font-sans text-arena-muted text-sm">Lade Rangliste …</p>
-          )}
+          {isLoading && <p className="font-sans text-arena-muted text-sm">Lade Rangliste …</p>}
 
           {!isLoading && scores.length === 0 && (
             <p className="font-sans text-arena-muted text-sm">

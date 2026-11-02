@@ -48,17 +48,45 @@ export function isVideoPublished(publishDate?: string): boolean {
 export function extractYouTubeId(url: string): string | null {
   if (!url) return null;
 
+  try {
+    const trimmed = url.trim();
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+      return trimmed;
+    }
+    const parsed = new URL(trimmed.startsWith('http://') || trimmed.startsWith('https://') ? trimmed : 'https://' + trimmed);
+    if (parsed.hostname === 'youtu.be') {
+      const id = parsed.pathname.slice(1).split('/')[0].split('?')[0];
+      if (id) return id;
+    }
+    if (parsed.hostname.includes('youtube.com')) {
+      const v = parsed.searchParams.get('v');
+      if (v) return v;
+      const parts = parsed.pathname.split('/').filter(Boolean);
+      const idx = parts.findIndex((p) => p === 'embed' || p === 'shorts' || p === 'v');
+      if (idx >= 0 && parts[idx + 1]) {
+        return parts[idx + 1].split('?')[0];
+      }
+    }
+  } catch {
+    // Fallback to regex
+  }
+
   const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/,
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\s?#/]+)/,
     /^([a-zA-Z0-9_-]{11})$/,
   ];
 
   for (const pattern of patterns) {
     const match = url.match(pattern);
-    if (match) return match[1];
+    if (match && match[1]) return match[1];
   }
 
   return null;
+}
+
+export function isYouTubeShort(url: string): boolean {
+  if (!url) return false;
+  return url.toLowerCase().includes('/shorts/') || url.toLowerCase().includes('reel');
 }
 
 export function parseBuchArenaCSV(csvContent: string): Buch[] {

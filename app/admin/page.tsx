@@ -118,6 +118,24 @@ export default function AdminPage() {
   const [bdwBookId, setBdwBookId] = useState("");
   const [bdwAuthorUsername, setBdwAuthorUsername] = useState("");
   const [bdwSpeakerUsername, setBdwSpeakerUsername] = useState("");
+  type BdwSubItem = {
+    id: string;
+    username: string;
+    authorDisplayName: string;
+    title: string;
+    author: string;
+    speaker?: string;
+    youtubeUrl: string;
+    buyUrl?: string;
+    status: string;
+    timesSelected: number;
+    bookmarks: number;
+    weight: number;
+    createdAt: string;
+  };
+  const [bdwSubmissions, setBdwSubmissions] = useState<BdwSubItem[]>([]);
+  const [bdwCycleInfo, setBdwCycleInfo] = useState<{ formattedNextDraw?: string; currentCycleKey?: string } | null>(null);
+  const [bdwDrawing, setBdwDrawing] = useState(false);
 
   /* ── Buch-Suche (BdW) ── */
   type BookOption = { id: string; title: string; author: string; ownerUsername: string; buyLinks: string[] };
@@ -252,9 +270,7 @@ export default function AdminPage() {
   }, [account]);
 
   // Buch der Woche laden
-  useEffect(() => {
-    if (mainTab !== "bdw" || bdwLoaded) return;
-    setBdwLoaded(true);
+  const loadBdwData = useCallback(() => {
     fetch("/api/buch-der-woche?admin=1").then(r => r.json()).then(d => {
       if (d.buchDerWoche) {
         setBdwTitle(d.buchDerWoche.title ?? "");
@@ -267,7 +283,41 @@ export default function AdminPage() {
         setBdwAuthorUsername(d.buchDerWoche.authorUsername ?? "");
         setBdwSpeakerUsername(d.buchDerWoche.speakerUsername ?? "");
       }
+      if (d.cycleInfo) setBdwCycleInfo(d.cycleInfo);
+      if (Array.isArray(d.submissions)) setBdwSubmissions(d.submissions);
     }).catch(() => {});
+  }, []);
+
+  async function triggerBdwDraw(submissionId?: string) {
+    if (!submissionId && !window.confirm("Möchtest du jetzt die automatische Zufallsauslosung (nach Lesezeichen gewichtet) starten?")) {
+      return;
+    }
+    setBdwDrawing(true);
+    setBdwMsg("");
+    try {
+      const res = await fetch("/api/buch-der-woche", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "trigger-draw", submissionId }),
+      });
+      const d = await res.json();
+      if (res.ok) {
+        setBdwMsg(`✓ ${d.message}`);
+        loadBdwData();
+      } else {
+        setBdwMsg(`✗ ${d.error || "Fehler"}`);
+      }
+    } catch {
+      setBdwMsg("✗ Netzwerkfehler");
+    } finally {
+      setBdwDrawing(false);
+    }
+  }
+
+  useEffect(() => {
+    if (mainTab !== "bdw" || bdwLoaded) return;
+    setBdwLoaded(true);
+    loadBdwData();
     // Sprecher laden
     fetch("/api/speakers/discover").then(r => r.json()).then(d => {
       setBdwSpeakers((d.speakers ?? []).map((s: Record<string, unknown>) => ({
@@ -652,7 +702,92 @@ export default function AdminPage() {
 
         {/* ══ Tab: Buch der Woche ══ */}
         {mainTab === "bdw" && (
-          <div className="grid gap-2">
+          <div className="grid gap-4">
+            {/* Status-Banner Automatische Auslosung */}
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <p className="font-bold text-arena-blue text-sm m-0 flex items-center gap-2">
+                  <span>🏆 Automatische Auslosung</span>
+                  {bdwCycleInfo?.formattedNextDraw && (
+                    <span className="font-normal text-xs text-amber-900 bg-amber-100/80 px-2 py-0.5 rounded-full border border-amber-300">
+                      Nächste Ziehung: {bdwCycleInfo.formattedNextDraw}
+                    </span>
+                  )}
+                </p>
+                <p className="text-xs text-arena-muted m-0 mt-0.5">
+                  Gewichtung basiert automatisch auf den gesammelten Lesezeichen der Autoren. Bereits ausgewählte Bücher erhalten eine verringerte Chance.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => triggerBdwDraw()}
+                disabled={bdwDrawing || bdwSubmissions.length === 0}
+                className="btn btn-primary btn-sm inline-flex items-center gap-1.5 whitespace-nowrap"
+              >
+                {bdwDrawing ? "Loste aus …" : `🎲 Jetzt Zufallsauslosung starten (${bdwSubmissions.length} Bewerbungen)`}
+              </button>
+            </div>
+
+            {/* Bewerbungen-Liste */}
+            {bdwSubmissions.length > 0 && (
+              <div className="border border-arena-border-light rounded-xl p-3 bg-white">
+                <h4 className="font-bold text-sm text-arena-blue m-0 mb-2">
+                  Aktuelle Bewerbungen ({bdwSubmissions.length})
+                </h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-arena-muted uppercase text-[10px]">
+                      <tr>
+                        <th className="p-2">Titel & Autor</th>
+                        <th className="p-2">Autor-Username</th>
+                        <th className="p-2">Lesezeichen</th>
+                        <th className="p-2">Gewinnpunkte</th>
+                        <th className="p-2">Siege</th>
+                        <th className="p-2">YouTube</th>
+                        <th className="p-2 text-right">Aktion</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {bdwSubmissions.map((sub) => (
+                        <tr key={sub.id} className="hover:bg-slate-50">
+                          <td className="p-2">
+                            <strong className="text-arena-blue">{sub.title}</strong>
+                            <div className="text-arena-muted">von {sub.author}{sub.speaker ? ` · Sprecher: ${sub.speaker}` : ''}</div>
+                          </td>
+                          <td className="p-2 font-mono text-[11px]">@{sub.username}</td>
+                          <td className="p-2 font-bold text-arena-blue">{sub.bookmarks}</td>
+                          <td className="p-2 font-bold text-emerald-700">{sub.weight}</td>
+                          <td className="p-2">{sub.timesSelected > 0 ? <span className="badge bg-amber-100 text-amber-800 border-amber-300 font-bold">{sub.timesSelected}x</span> : '0'}</td>
+                          <td className="p-2">
+                            <a href={sub.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-arena-blue hover:underline">
+                              Video ↗
+                            </a>
+                          </td>
+                          <td className="p-2 text-right">
+                            <button
+                              type="button"
+                              onClick={() => triggerBdwDraw(sub.id)}
+                              disabled={bdwDrawing}
+                              className="btn btn-secondary btn-sm text-[11px] py-1 px-2"
+                              title="Direkt als Buch der Woche setzen"
+                            >
+                              Als Gewinner setzen
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            <div className="border-t border-slate-200 pt-3">
+              <h4 className="font-bold text-sm text-arena-blue m-0 mb-2">Manuelle Einstellungen / Bearbeitung</h4>
+            </div>
+
+            <div className="grid gap-2">
             <div className="flex items-center gap-3">
               <span className="text-sm font-semibold">Aktiv</span>
               <button
@@ -773,6 +908,7 @@ export default function AdminPage() {
               {bdwMsg && <span className="text-sm">{bdwMsg}</span>}
             </div>
           </div>
+        </div>
         )}
 
         {/* ══ Tab: Analytics ══ */}
