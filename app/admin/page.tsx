@@ -302,13 +302,13 @@ export default function AdminPage() {
       });
       const d = await res.json();
       if (res.ok) {
-        setBdwMsg(`✓ ${d.message}`);
+        setBdwMsg(d.message);
         loadBdwData();
       } else {
-        setBdwMsg(`✗ ${d.error || "Fehler"}`);
+        setBdwMsg(d.error || "Fehler");
       }
     } catch {
-      setBdwMsg("✗ Netzwerkfehler");
+      setBdwMsg("Netzwerkfehler");
     } finally {
       setBdwDrawing(false);
     }
@@ -394,7 +394,7 @@ export default function AdminPage() {
         body: JSON.stringify({ title: bdwTitle, author: bdwAuthor, speaker: bdwSpeaker, youtubeUrl: bdwYoutube, buyUrl: bdwBuyUrl, active: bdwActive, bookId: bdwBookId, authorUsername: bdwAuthorUsername, speakerUsername: bdwSpeakerUsername }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Fehler"); }
-      setBdwMsg("✅ Gespeichert!");
+      setBdwMsg("Gespeichert!");
     } catch (err) {
       setBdwMsg(err instanceof Error ? err.message : "Fehler beim Speichern.");
     } finally {
@@ -704,10 +704,10 @@ export default function AdminPage() {
         {mainTab === "bdw" && (
           <div className="grid gap-4">
             {/* Status-Banner Automatische Auslosung */}
-            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between flex-wrap gap-3">
+            <div className="card-tip p-3.5 flex items-center justify-between flex-wrap gap-3">
               <div>
                 <p className="font-bold text-arena-blue text-sm m-0 flex items-center gap-2">
-                  <span>🏆 Automatische Auslosung</span>
+                  <span>Automatische Auslosung</span>
                   {bdwCycleInfo?.formattedNextDraw && (
                     <span className="font-normal text-xs text-amber-900 bg-amber-100/80 px-2 py-0.5 rounded-full border border-amber-300">
                       Nächste Ziehung: {bdwCycleInfo.formattedNextDraw}
@@ -725,7 +725,7 @@ export default function AdminPage() {
                 disabled={bdwDrawing || bdwSubmissions.length === 0}
                 className="btn btn-primary btn-sm inline-flex items-center gap-1.5 whitespace-nowrap"
               >
-                {bdwDrawing ? "Loste aus …" : `🎲 Jetzt Zufallsauslosung starten (${bdwSubmissions.length} Bewerbungen)`}
+                {bdwDrawing ? "Loste aus …" : `Jetzt Zufallsauslosung starten (${bdwSubmissions.length} Bewerbungen)`}
               </button>
             </div>
 
