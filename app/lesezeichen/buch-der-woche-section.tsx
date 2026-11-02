@@ -52,7 +52,7 @@ export default function BuchDerWocheSection({ loggedIn, userBookmarks }: BuchDer
   }, [loggedIn, loadData]);
 
   async function handleDelete(id: string) {
-    if (!window.confirm("Moechtest du diese Bewerbung wirklich aus dem Lostopf zurueckziehen?")) {
+    if (!window.confirm("Möchtest du diese Bewerbung wirklich aus dem Lostopf zurückziehen?")) {
       return;
     }
 
@@ -82,29 +82,29 @@ export default function BuchDerWocheSection({ loggedIn, userBookmarks }: BuchDer
             </h2>
           </div>
           <p className="font-sans text-arena-muted text-sm m-0 mt-1">
-            Praesentiere dein Buch mit YouTube-Video oder Reel eine ganze Woche lang auf der Startseite und im Dashboard.
+            Präsentiere dein Buch mit YouTube-Video oder Reel eine ganze Woche lang auf der Startseite und im Dashboard.
           </p>
         </div>
 
         {cycleInfo && (
           <div className="badge flex items-center gap-1.5 py-1 px-3 text-xs">
             <CalendarDaysIcon className="h-4 w-4" />
-            <span>Naechste Ziehung: {cycleInfo.formattedNextDraw}</span>
+            <span>Nächste Ziehung: {cycleInfo.formattedNextDraw}</span>
           </div>
         )}
       </div>
 
-      {/* Erklaerung */}
+      {/* Erklärung */}
       <BdwExplanation loggedIn={loggedIn} userBookmarks={userBookmarks} />
 
       {/* Nicht eingeloggt: Hinweis */}
       {!loggedIn && (
         <div className="card-base p-4 text-center">
           <p className="font-sans font-semibold text-arena-blue m-0">
-            Moechtest du dein Buch als „Buch der Woche“ ins Rennen schicken?
+            Möchtest du dein Buch als „Buch der Woche“ ins Rennen schicken?
           </p>
           <p className="text-xs text-arena-muted m-0 mt-1">
-            Melde dich jetzt an oder registriere dich kostenlos, um deine Buecher einzureichen und Lesezeichen als Gewinnlose zu sammeln.
+            Melde dich jetzt an oder registriere dich kostenlos, um deine Bücher einzureichen und Lesezeichen als Gewinnlose zu sammeln.
           </p>
           <div className="mt-3">
             <Link href="/auth" className="btn btn-primary btn-sm inline-flex items-center">

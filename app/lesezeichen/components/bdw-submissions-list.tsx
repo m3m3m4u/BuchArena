@@ -43,7 +43,7 @@ export default function BdwSubmissionsList({
       <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
         <h4 className="font-sans font-bold text-base text-arena-blue m-0 flex items-center gap-1.5">
           <CheckCircleIcon className="h-5 w-5 text-arena-blue" />
-          Deine eingereichten Buecher ({submissions.length})
+          Deine eingereichten Bücher ({submissions.length})
         </h4>
         <button
           type="button"
@@ -51,7 +51,7 @@ export default function BdwSubmissionsList({
           className="btn btn-secondary btn-sm inline-flex items-center gap-1 text-xs"
         >
           <PlusIcon className="h-4 w-4" />
-          {showForm ? "Formular schliessen" : "Weiteres Buch bewerben"}
+          {showForm ? "Formular schließen" : "Weiteres Buch bewerben"}
         </button>
       </div>
 
@@ -97,7 +97,7 @@ export default function BdwSubmissionsList({
                       className="text-xs font-semibold text-arena-blue hover:underline inline-flex items-center gap-1"
                     >
                       <VideoCameraIcon className="h-4 w-4" />
-                      <span>YouTube-Video oeffnen</span>
+                      <span>YouTube-Video öffnen</span>
                       <ArrowTopRightOnSquareIcon className="h-3 w-3 opacity-60" />
                     </a>
                     {isYouTubeShort(sub.youtubeUrl) && (
@@ -120,7 +120,7 @@ export default function BdwSubmissionsList({
                   type="button"
                   onClick={() => onDelete(sub.id)}
                   className="text-arena-danger hover:underline inline-flex items-center gap-1 text-[11px] p-1 cursor-pointer"
-                  title="Bewerbung zurueckziehen"
+                  title="Bewerbung zurückziehen"
                 >
                   <TrashIcon className="h-3.5 w-3.5" />
                   <span>Entfernen</span>

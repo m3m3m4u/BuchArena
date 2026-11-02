@@ -77,7 +77,7 @@ export default function BdwSubmissionForm({
       return;
     }
     if (!youtubeUrl.trim() || !previewYtId) {
-      setErrorMsg("Bitte gib einen gueltigen YouTube-Link zu einem Video oder Reel/Short ein.");
+      setErrorMsg("Bitte gib einen gültigen YouTube-Link zu einem Video oder Reel/Short ein.");
       return;
     }
 
@@ -136,14 +136,14 @@ export default function BdwSubmissionForm({
       {myBooks.length > 0 && (
         <div className="mb-3">
           <label className="block text-xs font-semibold text-arena-text mb-1">
-            Aus deinen hochgeladenen Buechern uebernehmen (optional):
+            Aus deinen hochgeladenen Büchern übernehmen (optional):
           </label>
           <select
             className="input-base w-full text-sm"
             value={selectedBookId}
             onChange={(e) => handleSelectOwnBook(e.target.value)}
           >
-            <option value="">– Manuell eingeben oder Buch waehlen –</option>
+            <option value="">– Manuell eingeben oder Buch wählen –</option>
             {myBooks.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.title}
@@ -176,7 +176,7 @@ export default function BdwSubmissionForm({
             <input
               type="text"
               className="input-base w-full text-sm"
-              placeholder="z. B. Anna Mueller"
+              placeholder="z. B. Anna Müller"
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
               required
@@ -192,7 +192,7 @@ export default function BdwSubmissionForm({
             <input
               type="text"
               className="input-base w-full text-sm"
-              placeholder="Name des Hoerbuch-Sprechers (falls vorhanden)"
+              placeholder="Name des Hörbuch-Sprechers (falls vorhanden)"
               value={speaker}
               onChange={(e) => setSpeaker(e.target.value)}
             />
@@ -233,7 +233,7 @@ export default function BdwSubmissionForm({
           <div className="card-tip p-3">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-arena-blue mb-2">
               <CheckIcon className="h-4 w-4" />
-              <span>Gueltiges YouTube-{isShort ? "Reel / Short" : "Video"} erkannt</span>
+              <span>Gültiges YouTube-{isShort ? "Reel / Short" : "Video"} erkannt</span>
             </div>
 
             <div

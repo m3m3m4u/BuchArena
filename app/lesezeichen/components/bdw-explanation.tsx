@@ -37,7 +37,7 @@ export default function BdwExplanation({ loggedIn, userBookmarks }: BdwExplanati
             <div>
               <p className="font-bold text-arena-blue m-0">2. Immer Sonntag ab 18:00 Uhr</p>
               <p className="text-arena-muted text-xs m-0 mt-0.5">
-                Das System waehlt jeden Sonntag ab 18 Uhr vollautomatisch das neue Buch der Woche aus allen gueltigen Bewerbungen aus.
+                Das System wählt jeden Sonntag ab 18 Uhr vollautomatisch das neue Buch der Woche aus allen gültigen Bewerbungen aus.
               </p>
             </div>
           </div>
@@ -47,9 +47,9 @@ export default function BdwExplanation({ loggedIn, userBookmarks }: BdwExplanati
           <div className="flex items-start gap-2.5">
             <BookmarkIcon className="h-5 w-5 text-arena-blue shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-arena-blue m-0">3. Deine Lesezeichen zaehlen</p>
+              <p className="font-bold text-arena-blue m-0">3. Deine Lesezeichen zählen</p>
               <p className="text-arena-muted text-xs m-0 mt-0.5">
-                Je mehr Lesezeichen du hast, desto hoeher ist deine Chance. Hat eines deiner Buecher bereits gewonnen, greift eine Autoren-Bremse fuer alle deine Buecher, damit alle drankommen.
+                Je mehr Lesezeichen du hast, desto höher ist deine Chance. Hat eines deiner Bücher bereits gewonnen, greift eine Autoren-Bremse für alle deine Bücher, damit alle drankommen.
               </p>
             </div>
           </div>
@@ -63,7 +63,7 @@ export default function BdwExplanation({ loggedIn, userBookmarks }: BdwExplanati
             <span>Dein aktueller Stand: <strong>{userBookmarks} Lesezeichen</strong> im Lostopf</span>
           </div>
           <span className="text-arena-muted">
-            Tipp: Taeglich einloggen, Quiz spielen und im Treffpunkt mitmachen fuer zusaetzliche Lesezeichen.
+            Tipp: Täglich einloggen, Quiz spielen und im Treffpunkt mitmachen für zusätzliche Lesezeichen.
           </span>
         </div>
       )}

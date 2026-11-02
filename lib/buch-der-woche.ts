@@ -43,7 +43,7 @@ export async function runBuchDerWocheSelection(options?: {
   selected?: BuchDerWocheSettings;
 }> {
   if (isSelectingLock) {
-    return { success: false, message: "Auslosung laeuft bereits." };
+    return { success: false, message: "Auslosung läuft bereits." };
   }
   isSelectingLock = true;
 
@@ -100,7 +100,7 @@ export async function runBuchDerWocheSelection(options?: {
     if (options?.manualWinnerId) {
       const found = candidates.find((c) => String(c.sub._id) === options.manualWinnerId);
       if (!found) {
-        return { success: false, message: "Ausgewaehltes Buch nicht gefunden." };
+        return { success: false, message: "Ausgewähltes Buch nicht gefunden." };
       }
       chosenCandidate = found;
     } else {
@@ -188,8 +188,8 @@ export async function runBuchDerWocheSelection(options?: {
       await msgCol.insertOne({
         senderUsername: "BuchArena",
         recipientUsername: winner.username,
-        subject: "Dein Buch wurde als Buch der Woche ausgewaehlt!",
-        body: `Hallo ${winner.authorDisplayName || winner.author},\n\ndein eingereichtes Buch „${winner.title}“ wurde vom System fuer den aktuellen Wochenzyklus (${cycleInfo.cycleStartDateStr}) als Buch der Woche ausgewaehlt.\n\nEs wird ab sofort auf der Startseite und auf dem Dashboard aller Mitglieder mit Video praesentiert.\n\nVielen Dank fuer deine Aktivitaet in der BuchArena!`,
+        subject: "Dein Buch wurde als Buch der Woche ausgewählt!",
+        body: `Hallo ${winner.authorDisplayName || winner.author},\n\ndein eingereichtes Buch „${winner.title}“ wurde vom System für den aktuellen Wochenzyklus (${cycleInfo.cycleStartDateStr}) als Buch der Woche ausgewählt.\n\nEs wird ab sofort auf der Startseite und auf dem Dashboard aller Mitglieder mit Video präsentiert.\n\nVielen Dank für deine Aktivität in der BuchArena!`,
         read: false,
         deletedBySender: false,
         deletedByRecipient: false,
@@ -201,7 +201,7 @@ export async function runBuchDerWocheSelection(options?: {
 
     return {
       success: true,
-      message: `"${winner.title}" wurde als Buch der Woche ausgewaehlt.`,
+      message: `"${winner.title}" wurde als Buch der Woche ausgewählt.`,
       selected: bdwSetting,
     };
   } finally {
@@ -210,7 +210,7 @@ export async function runBuchDerWocheSelection(options?: {
 }
 
 /**
- * Automatische Pruefung der Sonntags-Auslosung ab 18:00 Uhr
+ * Automatische Prüfung der Sonntags-Auslosung ab 18:00 Uhr
  */
 export async function ensureBuchDerWocheSelection(): Promise<BuchDerWocheSettings | null> {
   try {
