@@ -67,9 +67,24 @@ export async function GET(request: NextRequest) {
         const lzMap = new Map<string, number>();
         for (const d of lzDocs) lzMap.set(d.username, d.total ?? 0);
 
+        // Autorenweite Statistik (Option B)
+        const authorStatsMap = new Map<string, { timesWon: number; lastSelectedAt?: Date }>();
+        for (const s of rawSubs) {
+          const existing = authorStatsMap.get(s.username) || { timesWon: 0, lastSelectedAt: undefined };
+          existing.timesWon += (s.timesSelected || 0);
+          if (s.lastSelectedAt) {
+            const sDate = new Date(s.lastSelectedAt);
+            if (!existing.lastSelectedAt || sDate > existing.lastSelectedAt) {
+              existing.lastSelectedAt = sDate;
+            }
+          }
+          authorStatsMap.set(s.username, existing);
+        }
+
         submissions = rawSubs.map((s) => {
           const bkm = lzMap.get(s.username) ?? 0;
-          const { weight } = calculateBdwWeight(bkm, s.timesSelected, s.lastSelectedAt);
+          const aStat = authorStatsMap.get(s.username) || { timesWon: 0 };
+          const { weight } = calculateBdwWeight(bkm, aStat.timesWon, aStat.lastSelectedAt);
           return {
             id: String(s._id),
             username: s.username,
@@ -81,6 +96,7 @@ export async function GET(request: NextRequest) {
             buyUrl: s.buyUrl,
             status: s.status,
             timesSelected: s.timesSelected ?? 0,
+            authorTimesWon: aStat.timesWon,
             lastSelectedAt: s.lastSelectedAt,
             createdAt: s.createdAt,
             bookmarks: bkm,

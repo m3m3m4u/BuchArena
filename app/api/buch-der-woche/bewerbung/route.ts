@@ -49,8 +49,21 @@ export async function GET() {
     const lzDoc = await getOrCreateDoc(account.username);
     const myBookmarks = lzDoc.total ?? 0;
 
+    // Autorenweite Statistik (Option B)
+    let authorTimesWon = 0;
+    let authorLastSelectedAt: Date | undefined = undefined;
+    for (const s of rawSubmissions) {
+      authorTimesWon += (s.timesSelected || 0);
+      if (s.lastSelectedAt) {
+        const sDate = new Date(s.lastSelectedAt);
+        if (!authorLastSelectedAt || sDate > authorLastSelectedAt) {
+          authorLastSelectedAt = sDate;
+        }
+      }
+    }
+
     const mySubmissions = rawSubmissions.map((s) => {
-      const { weight } = calculateBdwWeight(myBookmarks, s.timesSelected, s.lastSelectedAt);
+      const { weight } = calculateBdwWeight(myBookmarks, authorTimesWon, authorLastSelectedAt);
       return {
         id: String(s._id),
         title: s.title,
@@ -61,6 +74,7 @@ export async function GET() {
         bookId: s.bookId,
         status: s.status,
         timesSelected: s.timesSelected ?? 0,
+        authorTimesWon,
         lastSelectedAt: s.lastSelectedAt,
         createdAt: s.createdAt,
         weight,

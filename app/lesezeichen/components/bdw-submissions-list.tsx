@@ -17,6 +17,7 @@ export type BdwSubmissionItem = {
   bookId?: string;
   status: string;
   timesSelected: number;
+  authorTimesWon?: number;
   lastSelectedAt?: string;
   createdAt: string;
   weight: number;
@@ -71,6 +72,10 @@ export default function BdwSubmissionsList({
                     <span className="badge bg-amber-100 text-amber-900 border border-amber-300">
                       {sub.timesSelected}x gewonnen
                     </span>
+                  ) : (sub.authorTimesWon ?? 0) > 0 ? (
+                    <span className="badge bg-amber-50 text-amber-800 border border-amber-200">
+                      Autoren-Pause
+                    </span>
                   ) : (
                     <span className="badge bg-slate-100 text-slate-700">
                       Im Lostopf
@@ -107,7 +112,9 @@ export default function BdwSubmissionsList({
               <div className="mt-3 pt-2.5 border-t border-arena-border-light flex items-center justify-between text-xs">
                 <div className="text-[11px] text-arena-muted">
                   Gewinn-Punkte: <strong className="text-arena-blue">{sub.weight}</strong>
-                  {isWon && <span className="text-arena-muted text-[10px] ml-1">(reduziert)</span>}
+                  {(isWon || (sub.authorTimesWon ?? 0) > 0) && (
+                    <span className="text-arena-muted text-[10px] ml-1">(Autoren-Bremse aktiv)</span>
+                  )}
                 </div>
                 <button
                   type="button"

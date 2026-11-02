@@ -129,6 +129,7 @@ export default function AdminPage() {
     buyUrl?: string;
     status: string;
     timesSelected: number;
+    authorTimesWon?: number;
     bookmarks: number;
     weight: number;
     createdAt: string;
@@ -758,7 +759,7 @@ export default function AdminPage() {
                           <td className="p-2 font-mono text-[11px]">@{sub.username}</td>
                           <td className="p-2 font-bold text-arena-blue">{sub.bookmarks}</td>
                           <td className="p-2 font-bold text-emerald-700">{sub.weight}</td>
-                          <td className="p-2">{sub.timesSelected > 0 ? <span className="badge bg-amber-100 text-amber-800 border-amber-300 font-bold">{sub.timesSelected}x</span> : '0'}</td>
+                          <td className="p-2">{(sub.authorTimesWon ?? sub.timesSelected) > 0 ? <span className="badge bg-amber-100 text-amber-800 border-amber-300 font-bold">{sub.authorTimesWon ?? sub.timesSelected}x (Autor)</span> : '0'}</td>
                           <td className="p-2">
                             <a href={sub.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-arena-blue hover:underline">
                               Video ↗

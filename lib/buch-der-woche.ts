@@ -29,7 +29,7 @@ export async function getBdwHistoryCollection(): Promise<Collection<BdwHistoryEn
   return db.collection<BdwHistoryEntry>("buch_der_woche_history");
 }
 
-/* ── Auslosung durchführen ── */
+/* ── Auslosung durchführen (Option B: Autorenweite Bremse) ── */
 
 let isSelectingLock = false;
 
@@ -68,6 +68,20 @@ export async function runBuchDerWocheSelection(options?: {
       lzMap.set(doc.username, doc.total ?? 0);
     }
 
+    // Autorenweite Statistik (Option B): Wie oft hat der gesamte Autor bisher gewonnen und wann zuletzt?
+    const authorStatsMap = new Map<string, { timesWon: number; lastSelectedAt?: Date }>();
+    for (const s of activeSubmissions) {
+      const existing = authorStatsMap.get(s.username) || { timesWon: 0, lastSelectedAt: undefined };
+      existing.timesWon += (s.timesSelected || 0);
+      if (s.lastSelectedAt) {
+        const sDate = new Date(s.lastSelectedAt);
+        if (!existing.lastSelectedAt || sDate > existing.lastSelectedAt) {
+          existing.lastSelectedAt = sDate;
+        }
+      }
+      authorStatsMap.set(s.username, existing);
+    }
+
     type Candidate = {
       sub: BdwSubmissionDocument;
       bookmarks: number;
@@ -76,7 +90,8 @@ export async function runBuchDerWocheSelection(options?: {
 
     const candidates: Candidate[] = activeSubmissions.map((sub) => {
       const bkm = lzMap.get(sub.username) ?? 0;
-      const { weight } = calculateBdwWeight(bkm, sub.timesSelected, sub.lastSelectedAt);
+      const aStat = authorStatsMap.get(sub.username) || { timesWon: 0 };
+      const { weight } = calculateBdwWeight(bkm, aStat.timesWon, aStat.lastSelectedAt);
       return { sub, bookmarks: bkm, weight };
     });
 
@@ -168,7 +183,6 @@ export async function runBuchDerWocheSelection(options?: {
       isAutomatic: !options?.manualWinnerId,
     });
 
-    // In-App-Nachricht (ohne Emojis)
     try {
       const msgCol = await db.collection("messages");
       await msgCol.insertOne({

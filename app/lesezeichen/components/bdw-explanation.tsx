@@ -49,7 +49,7 @@ export default function BdwExplanation({ loggedIn, userBookmarks }: BdwExplanati
             <div>
               <p className="font-bold text-arena-blue m-0">3. Deine Lesezeichen zaehlen</p>
               <p className="text-arena-muted text-xs m-0 mt-0.5">
-                Je mehr Lesezeichen du hast, desto hoeher ist deine Gewinnchance. Bereits ausgewaehlte Buecher erhalten eine verringerte Chance.
+                Je mehr Lesezeichen du hast, desto hoeher ist deine Chance. Hat eines deiner Buecher bereits gewonnen, greift eine Autoren-Bremse fuer alle deine Buecher, damit alle drankommen.
               </p>
             </div>
           </div>
