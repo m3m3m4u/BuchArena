@@ -238,12 +238,12 @@ export default function BdwSubmissionForm({
 
             <div
               className={`mx-auto relative rounded overflow-hidden ${
-                isShort ? "w-[200px]" : "w-full max-w-[360px]"
+                isShort ? "w-[180px] max-w-full" : "w-full max-w-[360px]"
               }`}
-              style={{ paddingBottom: isShort ? "355px" : "200px" }}
+              style={{ aspectRatio: isShort ? "9/16" : "16/9" }}
             >
               <iframe
-                className="absolute inset-0 w-full h-full rounded"
+                className="w-full h-full rounded"
                 src={`https://www.youtube-nocookie.com/embed/${previewYtId}`}
                 title="Vorschau"
                 allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"

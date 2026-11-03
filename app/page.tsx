@@ -257,13 +257,13 @@ export default function HomePage() {
                 const isShort = isYouTubeShort(bdw.youtubeUrl);
                 return ytId ? (
                   <div
-                    className={`mt-3 mx-auto relative ${
-                      isShort ? "w-full max-w-[340px]" : "w-full sm:w-4/5 max-w-[1100px]"
+                    className={`mt-3 mx-auto relative overflow-hidden rounded-lg ${
+                      isShort ? "w-full max-w-[280px] sm:max-w-[300px]" : "w-full sm:w-4/5 max-w-[1100px]"
                     }`}
-                    style={{ paddingBottom: isShort ? "177.77%" : "45%" }}
+                    style={{ aspectRatio: isShort ? "9/16" : "16/9", maxHeight: isShort ? "540px" : undefined }}
                   >
                     <iframe
-                      className="absolute inset-0 w-full h-full rounded-lg"
+                      className="w-full h-full rounded-lg"
                       src={`https://www.youtube-nocookie.com/embed/${ytId}`}
                       title={bdw.title}
                       allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
@@ -429,13 +429,13 @@ export default function HomePage() {
             const isShort = isYouTubeShort(bdw.youtubeUrl);
             return ytId ? (
               <div
-                className={`mt-4 relative mx-auto ${
-                  isShort ? "w-full max-w-[340px]" : "w-full"
+                className={`mt-4 relative mx-auto overflow-hidden rounded-lg ${
+                  isShort ? "w-full max-w-[280px] sm:max-w-[300px]" : "w-full"
                 }`}
-                style={{ paddingBottom: isShort ? "177.77%" : "56.25%" }}
+                style={{ aspectRatio: isShort ? "9/16" : "16/9", maxHeight: isShort ? "540px" : undefined }}
               >
                 <iframe
-                  className="absolute inset-0 w-full h-full rounded-lg"
+                  className="w-full h-full rounded-lg"
                   src={`https://www.youtube-nocookie.com/embed/${ytId}`}
                   title={bdw.title}
                   allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
