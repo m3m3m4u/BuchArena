@@ -36,12 +36,12 @@ export async function GET(request: Request) {
     const rawBooks = await books
       .find(
         { ownerUsername: user.username },
-        { projection: { _id: 1, title: 1, genre: 1, ageFrom: 1, ageTo: 1, coverImageUrl: 1 } }
+        { projection: { _id: 1, title: 1, subtitle: 1, genre: 1, ageFrom: 1, ageTo: 1, coverImageUrl: 1 } }
       )
       .sort({ createdAt: -1 })
       .toArray();
 
-    const authorBooks = rawBooks.map((b) => ({ ...b, id: b._id.toString(), _id: undefined }));
+    const authorBooks = rawBooks.map((b) => ({ ...b, id: b._id.toString(), _id: undefined, subtitle: b.subtitle ?? "" }));
 
     const profile = user.profile ?? createDefaultProfile();
 

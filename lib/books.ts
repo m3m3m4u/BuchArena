@@ -23,6 +23,7 @@ export type BookDocument = {
   ownerUsername: string;
   coverImageUrl: string;
   title: string;
+  subtitle?: string;
   publicationYear: number;
   genre: string;
   ageFrom: number;
@@ -45,6 +46,7 @@ export type CreateBookPayload = {
   ownerUsername?: string;
   coverImageUrl?: string;
   title?: string;
+  subtitle?: string;
   publicationYear?: number;
   genre?: string;
   ageFrom?: number;

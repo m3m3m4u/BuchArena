@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     const ownerUsername = account.username;
     const coverImageUrl = body.coverImageUrl?.trim() ?? "";
     const title = body.title?.trim();
+    const subtitle = body.subtitle?.trim() ?? "";
     const publicationYear = toNumber(body.publicationYear, 0);
     const genre = body.genre?.trim();
     const ageFrom = toNumber(body.ageFrom, 0);
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
       ownerUsername,
       coverImageUrl: coverImageUrl.slice(0, 1000),
       title,
+      subtitle: subtitle.slice(0, 500),
       publicationYear,
       genre,
       ageFrom,

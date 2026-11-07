@@ -32,6 +32,7 @@ export async function POST(request: Request) {
         ownerUsername: book.ownerUsername,
         coverImageUrl: book.coverImageUrl ?? "",
         title: book.title,
+        subtitle: book.subtitle ?? "",
         publicationYear: book.publicationYear,
         genre: book.genre,
         ageFrom: book.ageFrom,

@@ -26,6 +26,7 @@ export async function POST(request: Request) {
     const bookId = body.bookId?.trim();
     const coverImageUrl = body.coverImageUrl?.trim() ?? "";
     const title = body.title?.trim();
+    const subtitle = body.subtitle?.trim() ?? "";
     const publicationYear = toNumber(body.publicationYear, 0);
     const genre = body.genre?.trim();
     const ageFrom = toNumber(body.ageFrom, 0);
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
       {
         $set: {
           title,
+          subtitle: subtitle.slice(0, 500),
           coverImageUrl: coverImageUrl.slice(0, 1000),
           publicationYear,
           genre,

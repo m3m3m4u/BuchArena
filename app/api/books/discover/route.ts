@@ -3,17 +3,19 @@ import { getBooksCollection, getDatabase } from "@/lib/mongodb";
 import { applyAmazonOverride } from "@/lib/books";
 import { normalizeGenre, getGenreVariants } from "@/lib/genres";
 
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export async function GET(request: NextRequest) {
   try {
     const books = await getBooksCollection();
     const db = await getDatabase();
     const empfCol = db.collection("buchempfehlungen");
 
-    // Optional: Server-seitige Suche per ?q= und Genre-Filter per ?genre=
+    // Server-seitige Suche per ?q= und Genre-Filter per ?genre=
     const q = request.nextUrl.searchParams.get("q")?.trim();
     const genreParam = request.nextUrl.searchParams.get("genre")?.trim();
-
-    const hasFilter = !!q || !!genreParam;
 
     // Bücher laden – Lookup zuerst, damit Anzeigename für Suche verfügbar ist
     const pipeline: object[] = [
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
           localField: "ownerUsername",
           foreignField: "username",
           as: "_owner",
-          pipeline: [{ $project: { status: 1, username: 1, "profile.name.value": 1, "profile.deaktiviert": 1 } }],
+          pipeline: [{ $project: { status: 1, username: 1, displayName: 1, "profile.name.value": 1, "profile.deaktiviert": 1 } }],
         },
       },
       { $unwind: { path: "$_owner", preserveNullAndEmptyArrays: true } },
@@ -31,18 +33,26 @@ export async function GET(request: NextRequest) {
       { $match: { "_owner.status": { $ne: "deactivated" }, "_owner.profile.deaktiviert": { $ne: true } } },
     ];
 
-    // Suchfilter nach Lookup anwenden, damit _owner.profile.name.value verfügbar ist
+    // Suchfilter nach Lookup anwenden, damit _owner.profile.name.value und _owner.displayName verfügbar sind
     const matchConditions: object[] = [];
     if (q) {
-      matchConditions.push({
-        $or: [
-          { title: { $regex: q, $options: "i" } },
-          { publisher: { $regex: q, $options: "i" } },
-          { isbn: { $regex: q, $options: "i" } },
-          { ownerUsername: { $regex: q, $options: "i" } },
-          { "_owner.profile.name.value": { $regex: q, $options: "i" } },
-        ],
-      });
+      // Zerlege Suchbegriff in einzelne Wörter (Token), damit z. B. "Autor Titel" oder mehrere Suchwörter gleichzeitig matchen
+      const tokens = q.split(/\s+/).filter(Boolean);
+      for (const token of tokens) {
+        const escaped = escapeRegex(token);
+        matchConditions.push({
+          $or: [
+            { title: { $regex: escaped, $options: "i" } },
+            { subtitle: { $regex: escaped, $options: "i" } },
+            { publisher: { $regex: escaped, $options: "i" } },
+            { isbn: { $regex: escaped, $options: "i" } },
+            { ownerUsername: { $regex: escaped, $options: "i" } },
+            { "_owner.profile.name.value": { $regex: escaped, $options: "i" } },
+            { "_owner.displayName": { $regex: escaped, $options: "i" } },
+            { "coAuthors.username": { $regex: escaped, $options: "i" } },
+          ],
+        });
+      }
     }
     if (genreParam) {
       // Normalize the incoming param (e.g. "High-Fantasy" → "Fantasy – High Fantasy"),
@@ -51,7 +61,7 @@ export async function GET(request: NextRequest) {
       const variants = getGenreVariants(canonical);
       // Each variant is matched as a whole "word" within the comma-separated genre field.
       const variantConditions = variants.map((v) => ({
-        genre: { $regex: v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" },
+        genre: { $regex: escapeRegex(v), $options: "i" },
       }));
       matchConditions.push(variantConditions.length === 1 ? variantConditions[0] : { $or: variantConditions });
     }
@@ -61,7 +71,29 @@ export async function GET(request: NextRequest) {
 
     pipeline.push(
       { $sort: { createdAt: -1 as const } },
-      ...(hasFilter ? [] : [{ $limit: 500 }]),
+      {
+        $project: {
+          _id: 1,
+          ownerUsername: 1,
+          coverImageUrl: 1,
+          title: 1,
+          subtitle: 1,
+          publicationYear: 1,
+          genre: 1,
+          ageFrom: 1,
+          ageTo: 1,
+          publisher: 1,
+          isbn: 1,
+          pageCount: 1,
+          language: 1,
+          description: 1,
+          buyLinks: 1,
+          amazonOverrideUrl: 1,
+          presentationVideoUrl: 1,
+          createdAt: 1,
+          _owner: 1,
+        },
+      },
     );
     const raw = await books.aggregate(pipeline).toArray();
 
@@ -74,13 +106,14 @@ export async function GET(request: NextRequest) {
     const countMap = new Map(empfCounts.map((e) => [e._id, e.count]));
 
     const list = raw.map((b) => {
-      const owner = b._owner as { username?: string; profile?: { name?: { value?: string } } } | undefined;
-      const displayName = owner?.profile?.name?.value || owner?.username || b.ownerUsername;
+      const owner = b._owner as { username?: string; displayName?: string; profile?: { name?: { value?: string } } } | undefined;
+      const displayName = owner?.profile?.name?.value || owner?.displayName || owner?.username || b.ownerUsername || "";
       return {
         ...b,
         id: b._id.toString(),
         _id: undefined,
         _owner: undefined,
+        subtitle: b.subtitle ?? "",
         buyLinks: applyAmazonOverride(b.buyLinks, b.amazonOverrideUrl),
         authorDisplayName: displayName,
         empfehlungenCount: countMap.get(b._id.toString()) ?? 0,

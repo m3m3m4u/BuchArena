@@ -32,6 +32,7 @@ type Book = {
   ownerUsername: string;
   coverImageUrl: string;
   title: string;
+  subtitle?: string;
   publicationYear: number;
   genre: string;
   ageFrom: number;
@@ -56,6 +57,7 @@ type MeineBuecherTabProps = {
 export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
   const [books, setBooks] = useState<Book[]>([]);
   const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
   const [coverImageUrl, setCoverImageUrl] = useState("");
   const [publicationYear, setPublicationYear] = useState("");
   const [genre, setGenre] = useState("");
@@ -173,6 +175,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     setEditingBookId(null);
     setCoverImageUrl("");
     setTitle("");
+    setSubtitle("");
     setPublicationYear("");
     setGenre("");
     setAgeFrom("");
@@ -203,6 +206,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     setEditingBookId(null);
     setCoverImageUrl("");
     setTitle("");
+    setSubtitle("");
     setPublicationYear("");
     setGenre("");
     setAgeFrom("");
@@ -246,6 +250,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
           ownerUsername: username,
           coverImageUrl,
           title,
+          subtitle,
           publicationYear: Number(publicationYear),
           genre,
           ageFrom: Number(ageFrom),
@@ -298,6 +303,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
     setEditingBookId(book.id);
     setCoverImageUrl(book.coverImageUrl ?? "");
     setTitle(book.title);
+    setSubtitle(book.subtitle ?? "");
     setPublicationYear(String(book.publicationYear));
     setGenre(book.genre);
     setAgeFrom(String(book.ageFrom));
@@ -614,6 +620,9 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                     </div>
                     <div className="min-w-0 font-sans">
                       <h3 className="font-sans text-base font-bold text-arena-blue mb-1 mt-0 truncate">{book.title}</h3>
+                      {book.subtitle && (
+                        <p className="font-sans text-xs italic text-arena-muted -mt-0.5 mb-1 truncate">{book.subtitle}</p>
+                      )}
                       {!isOwner && (
                         <span className="inline-block mb-1 text-xs bg-arena-blue/10 text-arena-blue px-2 py-0.5 rounded-full font-semibold font-sans">Mitautor*in</span>
                       )}
@@ -676,6 +685,11 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
                 <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                   Titel
                   <input className="input-base font-normal mt-1" value={title} onChange={(event) => setTitle(event.target.value)} />
+                </label>
+
+                <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
+                  Untertitel <span className="font-normal text-xs text-arena-muted">(optional)</span>
+                  <input className="input-base font-normal mt-1" value={subtitle} onChange={(event) => setSubtitle(event.target.value)} placeholder="z. B. Band 1: Der Anfang" />
                 </label>
 
                 <div className="grid grid-cols-2 max-[400px]:grid-cols-1 gap-2 font-sans">

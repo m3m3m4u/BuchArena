@@ -23,7 +23,7 @@ const socialIcons: Record<string, React.ReactNode> = {
   Mailadresse: (<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2Zm-.4 4.25-7.07 4.42a1 1 0 0 1-1.06 0L4.4 8.25a.85.85 0 1 1 .9-1.44L12 11l6.7-4.19a.85.85 0 1 1 .9 1.44Z"/></svg>),
 };
 
-type AuthorBook = { id: string; title: string; genre: string; ageFrom: number; ageTo: number; coverImageUrl?: string };
+type AuthorBook = { id: string; title: string; subtitle?: string; genre: string; ageFrom: number; ageTo: number; coverImageUrl?: string };
 type AuthorProfilePayload = { author: { username: string; profile: ProfileData; books: AuthorBook[] } };
 type PageProps = { params: Promise<{ username: string }> };
 
@@ -272,6 +272,9 @@ export default function AuthorProfilePage({ params }: PageProps) {
                         </div>
                         <div className="min-w-0">
                           <h3 className="font-sans text-base font-bold text-arena-blue mb-1 mt-0 truncate">{book.title}</h3>
+                          {book.subtitle && (
+                            <p className="font-sans text-xs italic text-arena-muted -mt-0.5 mb-1 truncate">{book.subtitle}</p>
+                          )}
                           <p className="font-sans text-sm text-arena-muted my-0.5">{book.genre}</p>
                           {(book.ageFrom > 0 || book.ageTo > 0) && <p className="font-sans text-sm text-arena-muted my-0.5">Alter: {book.ageFrom} bis {book.ageTo}</p>}
                         </div>

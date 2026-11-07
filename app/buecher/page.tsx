@@ -34,6 +34,7 @@ type DiscoverBook = {
   authorDisplayName: string;
   coverImageUrl: string;
   title: string;
+  subtitle?: string;
   publicationYear: number;
   genre: string;
   ageFrom: number;
@@ -104,19 +105,23 @@ function BuecherContent() {
     const age = Number(ageFilter);
     const hasAge = Number.isFinite(age) && ageFilter.trim() !== "";
     const q = searchQuery.trim().toLowerCase();
+    const tokens = q.split(/\s+/).filter(Boolean);
     const filtered = books.filter((book) => {
       const genreList = (book.genre ?? "").split(",").map((g) => normalizeGenre(g.trim()));
       const matchesGenre = !genreFilter || genreList.includes(genreFilter);
       const matchesAge = !hasAge || (book.ageFrom <= age && age <= book.ageTo);
       // Bei Server-seitiger Suche wurde bereits gefiltert; nur Genre + Alter client-seitig anwenden.
-      // Ohne aktive Server-Suche (Erst-Laden): Volltext client-seitig prüfen.
+      // Ohne aktive Server-Suche (beim schnellen Tippen vor dem Debounce): Volltext client-seitig prüfen.
       const matchesSearch = debouncedQuery
         ? true
-        : !q ||
-          book.title.toLowerCase().includes(q) ||
-          book.authorDisplayName.toLowerCase().includes(q) ||
-          (book.publisher ?? "").toLowerCase().includes(q) ||
-          (book.isbn ?? "").toLowerCase().includes(q);
+        : tokens.length === 0 ||
+          tokens.every((token) =>
+            (book.title ?? "").toLowerCase().includes(token) ||
+            (book.subtitle ?? "").toLowerCase().includes(token) ||
+            (book.authorDisplayName ?? "").toLowerCase().includes(token) ||
+            (book.publisher ?? "").toLowerCase().includes(token) ||
+            (book.isbn ?? "").toLowerCase().includes(token)
+          );
       return matchesGenre && matchesAge && matchesSearch;
     });
     return weightedShuffleBooks(filtered, seed);
@@ -153,7 +158,7 @@ function BuecherContent() {
         <div className="grid gap-3 w-full">
           <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-4">
             Suche
-            <input className="input-base font-normal" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Titel, Autor, Verlag oder ISBN …" />
+            <input className="input-base font-normal" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Titel, Untertitel, Autor, Verlag oder ISBN …" />
           </label>
 
           <div className="grid grid-cols-[1fr_220px] items-end gap-3 max-sm:grid-cols-1">
@@ -196,7 +201,12 @@ function BuecherContent() {
                       )}
                     </div>
                     <div className="min-w-0 flex flex-col justify-between h-full">
-                      <h3 className="font-sans mb-2 mt-0 truncate text-base font-bold text-arena-blue">{book.title}</h3>
+                      <div>
+                        <h3 className="font-sans mb-1 mt-0 truncate text-base font-bold text-arena-blue">{book.title}</h3>
+                        {book.subtitle && (
+                          <p className="font-sans text-xs italic text-arena-muted -mt-0.5 mb-2 truncate">{book.subtitle}</p>
+                        )}
+                      </div>
                       <div className="grid gap-0.5">
                         {(() => {
                           const lines: { label: string; value: string }[] = [];

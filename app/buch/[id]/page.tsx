@@ -67,6 +67,7 @@ type BookDetail = {
   ownerUsername: string;
   coverImageUrl: string;
   title: string;
+  subtitle?: string;
   publicationYear: number;
   genre: string;
   ageFrom: number;
@@ -251,6 +252,7 @@ export default function BookDetailPage({ params }: PageProps) {
                   "@context": "https://schema.org",
                   "@type": "Book",
                   name: book.title,
+                  ...(book.subtitle && { alternativeHeadline: book.subtitle }),
                   ...(author && { author: coAuthors.length > 0
                     ? [{ "@type": "Person", name: author.name || author.username }, ...coAuthors.map((ca) => ({ "@type": "Person", name: ca.name || ca.username }))]
                     : { "@type": "Person", name: author.name || author.username } }),
@@ -279,6 +281,11 @@ export default function BookDetailPage({ params }: PageProps) {
               <div>
                 <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight mb-2.5">
                   {book.title}
+                  {book.subtitle && (
+                    <span className="block text-xl font-semibold text-arena-blue/80 mt-1 font-sans">
+                      {book.subtitle}
+                    </span>
+                  )}
                   {author && (
                     <span className="block text-base font-normal text-arena-muted mt-1 font-sans">
                       von {author.name || author.username}
