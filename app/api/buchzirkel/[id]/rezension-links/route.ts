@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import {
-  getBuchzirkelCollection,
   getBuchzirkelTeilnahmenCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
@@ -61,7 +60,45 @@ export async function POST(
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("buchzirkel/[id]/rezension-links:", err);
+    console.error("buchzirkel/[id]/rezension-links POST:", err);
+    return NextResponse.json({ message: "Serverfehler." }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ message: "Ungültige ID." }, { status: 400 });
+    }
+
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
+    const body = (await request.json()) as { url?: string };
+    const url = body.url?.trim();
+    if (!url) {
+      return NextResponse.json({ message: "URL fehlt." }, { status: 400 });
+    }
+
+    const teilnahmen = await getBuchzirkelTeilnahmenCollection();
+    await teilnahmen.updateOne(
+      { buchzirkelId: new ObjectId(id), teilnehmerUsername: account.username },
+      {
+        $pull: {
+          rezensionsLinks: { url },
+        },
+      }
+    );
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("buchzirkel/[id]/rezension-links DELETE:", err);
     return NextResponse.json({ message: "Serverfehler." }, { status: 500 });
   }
 }

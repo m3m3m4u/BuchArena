@@ -6,9 +6,15 @@ import {
   getBuchzirkelTeilnahmenCollection,
   getUsersCollection,
 } from "@/lib/mongodb";
+import { requireAdmin } from "@/lib/server-auth";
 
 export async function GET() {
   try {
+    const admin = await requireAdmin();
+    if (!admin) {
+      return NextResponse.json({ error: "Keine Berechtigung." }, { status: 403 });
+    }
+
     const collection = await getBuchzirkelCollection();
     const docs = await collection
       .find({})
@@ -105,6 +111,11 @@ const VALID_STATUSES = ["entwurf", "bewerbung", "aktiv", "abgeschlossen", "archi
 
 export async function PATCH(request: Request) {
   try {
+    const admin = await requireAdmin();
+    if (!admin) {
+      return NextResponse.json({ error: "Keine Berechtigung." }, { status: 403 });
+    }
+
     const body = await request.json() as { id?: string; status?: string };
     const { id, status } = body;
     if (!id || !status || !VALID_STATUSES.includes(status as typeof VALID_STATUSES[number])) {

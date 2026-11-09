@@ -67,12 +67,15 @@ export default function BuchzirkelDashboardPage() {
   const params = useParams<{ id: string }>();
   const account = getStoredAccount();
 
-  const [tab, setTab] = useState<"bewerber" | "teilnehmer" | "beitraege" | "chat" | "dateien" | "werbung" | "einstellungen">("bewerber");
+  const [tab, setTab] = useState<"bewerber" | "teilnehmer" | "fragebogen" | "beitraege" | "chat" | "dateien" | "werbung" | "einstellungen">("bewerber");
   const [zirkel, setZirkel] = useState<Zirkel | null>(null);
   const [bewerber, setBewerber] = useState<Bewerber[]>([]);
   const [teilnahmen, setTeilnahmen] = useState<Teilnahme[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState("");
+  const [expandedFragebogenUser, setExpandedFragebogenUser] = useState<Record<string, boolean>>({});
+  const [uploadAbschnittId, setUploadAbschnittId] = useState<string>("");
+  const [copyFeedbackSuccess, setCopyFeedbackSuccess] = useState(false);
 
   // Bewertungs-State
   const [bewertungSterne, setBewertungSterne] = useState<Record<string, number>>({});
@@ -286,6 +289,36 @@ export default function BuchzirkelDashboardPage() {
     await loadBeitraege(activeBeitragTopic);
   }
 
+  async function deleteBeitrag(beitragId: string, replyId?: string) {
+    if (!confirm(replyId ? "Antwort wirklich löschen?" : "Beitrag wirklich löschen?")) return;
+    const qs = replyId ? `?replyId=${replyId}` : "";
+    const res = await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}${qs}`, { method: "DELETE" });
+    if (res.ok) {
+      await loadBeitraege(activeBeitragTopic);
+    }
+  }
+
+  function handleCopyAllFeedback() {
+    if (!zirkel) return;
+    const lines: string[] = [`Feedback für „${zirkel.titel}" (${new Date().toLocaleDateString("de-AT")}):\n`];
+    for (const f of zirkel.fragebogen) {
+      lines.push(`### ${f.frage}`);
+      const ants = teilnahmen
+        .map((t) => {
+          const ant = t.fragebogenAntworten?.find((a) => a.frageId === f.id);
+          return ant ? `• ${t.teilnehmerUsername}: ${ant.antwort}` : null;
+        })
+        .filter((x): x is string => x !== null);
+      if (ants.length === 0) lines.push("  (Noch keine Antworten)");
+      else lines.push(...ants);
+      lines.push("");
+    }
+    navigator.clipboard.writeText(lines.join("\n")).then(() => {
+      setCopyFeedbackSuccess(true);
+      setTimeout(() => setCopyFeedbackSuccess(false), 2500);
+    }).catch(() => {});
+  }
+
   async function sendChat(e: React.FormEvent) {
     e.preventDefault();
     if (!chatInput.trim() || chatSending) return;
@@ -410,7 +443,7 @@ export default function BuchzirkelDashboardPage() {
       });
       const data = await res.json() as { message?: string };
       if (!res.ok) { setUploadError(data.message ?? "Upload fehlgeschlagen."); }
-      else { await load(); }
+      else { setUploadAbschnittId(""); await load(); }
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         setUploadError("Der Upload hat zu lange gedauert. Bitte prüfe deine Verbindung und versuche es erneut.");
@@ -489,6 +522,19 @@ export default function BuchzirkelDashboardPage() {
 
   const ausstehend = bewerber.filter((b) => b.status === "ausstehend");
   const angenommen = bewerber.filter((b) => b.status === "angenommen");
+  // Alle aktiven Teilnehmer (sowohl aus Bewerbungen als auch direkt aus Teilnahmen)
+  const teilnehmerUsernames = Array.from(
+    new Set([
+      ...angenommen.map((b) => b.bewerberUsername),
+      ...teilnahmen.filter((t) => !t.abgebrochen).map((t) => t.teilnehmerUsername),
+    ])
+  );
+  const fragebogenAntwortenGesamt = teilnahmen.reduce(
+    (acc, t) => acc + (t.fragebogenAntworten?.length ?? 0),
+    0
+  );
+  const istVoll = teilnehmerUsernames.length >= zirkel.maxTeilnehmer;
+  const freiePlaetze = Math.max(0, zirkel.maxTeilnehmer - teilnehmerUsernames.length);
 
   return (
     <main className="top-centered-main">
@@ -498,8 +544,15 @@ export default function BuchzirkelDashboardPage() {
             <Link href={`/buchzirkel/${zirkel._id}`} className="text-arena-muted text-xs hover:underline">← Zurück zur Zirkel-Seite</Link>
             <h1 className="text-xl font-bold m-0 mt-1">📊 Dashboard: {zirkel.titel}</h1>
             <p className="text-sm text-arena-muted m-0">
-              Status: <strong className="text-arena-text">{zirkel.status}</strong> ·
-              {" "}{angenommen.length}/{zirkel.maxTeilnehmer} Teilnehmer
+              Status: <strong className="text-arena-text">{zirkel.status}</strong> ·{" "}
+              <span className={istVoll ? "font-semibold text-amber-700" : "text-arena-text"}>
+                {teilnehmerUsernames.length}/{zirkel.maxTeilnehmer} Plätze belegt
+              </span>
+              {freiePlaetze > 0 ? (
+                <span className="text-xs text-green-700 ml-1.5 font-medium">({freiePlaetze} frei)</span>
+              ) : (
+                <span className="text-xs text-amber-700 ml-1.5 font-medium">(voll)</span>
+              )}
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -537,7 +590,10 @@ export default function BuchzirkelDashboardPage() {
       <nav className="sticky top-0 z-20 flex gap-1 mt-3 border-b border-arena-border-light pb-0 overflow-x-auto bg-arena-bg -mx-0">
         {[
           { key: "bewerber" as const, label: `Bewerber (${ausstehend.length})` },
-          { key: "teilnehmer" as const, label: `Teilnehmer (${angenommen.length})` },
+          { key: "teilnehmer" as const, label: `Teilnehmer (${teilnehmerUsernames.length})` },
+          ...(zirkel.fragebogen && zirkel.fragebogen.length > 0
+            ? [{ key: "fragebogen" as const, label: `Fragebogen (${fragebogenAntwortenGesamt})` }]
+            : []),
           { key: "beitraege" as const, label: "Beiträge" },
           { key: "chat" as const, label: "Gruppen-Chat" },
           { key: "dateien" as const, label: `Dateien (${zirkel.dateien.length})` },
@@ -572,6 +628,7 @@ export default function BuchzirkelDashboardPage() {
                   fragen={zirkel.bewerbungsFragen}
                   coverImageUrl={zirkel.coverImageUrl}
                   onEntscheidung={entscheidung}
+                  voll={istVoll}
                 />
               ))}
             </div>
@@ -657,31 +714,34 @@ export default function BuchzirkelDashboardPage() {
       {tab === "teilnehmer" && (
         <section className="card mt-3">
           <p className="text-sm text-arena-muted m-0 mb-3">Verfolge den Lesefortschritt deiner Teilnehmer und sieh dir ihre Rezensionslinks an. Nach dem Lesen kannst du jeden Teilnehmer mit 1–5 Sternen bewerten.</p>
-          {angenommen.length === 0 ? (
+          {teilnehmerUsernames.length === 0 ? (
             <p className="text-arena-muted text-sm">Noch keine Teilnehmer.</p>
           ) : (
             <div className="flex flex-col gap-2">
-              {angenommen.map((b) => {
-                const t = teilnahmen.find((t) => t.teilnehmerUsername === b.bewerberUsername);
+              {teilnehmerUsernames.map((username) => {
+                const t = teilnahmen.find((t) => t.teilnehmerUsername === username);
                 const abgeschlossen = t?.abgeschlosseneAbschnitte.length ?? 0;
                 const gesamt = zirkel.leseabschnitte.length;
                 const bestehendeBewertung = t?.veranstalterBewertung;
-                const username = b.bewerberUsername;
                 // init Bewertungs-State aus DB wenn noch nicht gesetzt
                 const aktiveSterne = bewertungSterne[username] ?? bestehendeBewertung?.sterne ?? 0;
                 const aktiverKommentar = bewertungKommentar[username] !== undefined ? bewertungKommentar[username] : (bestehendeBewertung?.kommentar ?? "");
                 return (
-                  <div key={b._id} className="flex flex-col gap-2 p-3 rounded-lg border border-arena-border-light">
+                  <div key={username} className="flex flex-col gap-2 p-3 rounded-lg border border-arena-border-light">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div>
                         <Link href={`/testleser/${username}`} className="font-medium text-sm hover:underline">
                           {username}
                         </Link>
-                        {t?.rezensionsLinks.map((r, i) => (
-                          <a key={i} href={r.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-xs text-arena-blue hover:underline">
-                            {r.plattform}
-                          </a>
-                        ))}
+                        {t?.rezensionsLinks && t.rezensionsLinks.length > 0 && (
+                          <span className="ml-2 inline-flex items-center gap-1.5 flex-wrap">
+                            {t.rezensionsLinks.map((r, i) => (
+                              <a key={i} href={r.url} target="_blank" rel="noopener noreferrer" className="text-xs text-arena-blue hover:underline">
+                                🔗 {r.plattform}
+                              </a>
+                            ))}
+                          </span>
+                        )}
                       </div>
                       {gesamt > 0 && (
                         <div className="flex items-center gap-2">
@@ -695,6 +755,33 @@ export default function BuchzirkelDashboardPage() {
                         </div>
                       )}
                     </div>
+
+                    {/* Fragebogen-Antworten des Teilnehmers */}
+                    {t?.fragebogenAntworten && t.fragebogenAntworten.length > 0 && (
+                      <div className="border-t border-arena-border-light pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedFragebogenUser((p) => ({ ...p, [username]: !p[username] }))}
+                          className="text-xs font-semibold text-arena-blue hover:underline flex items-center gap-1.5"
+                        >
+                          <span>{expandedFragebogenUser[username] ? "▲" : "▼"}</span>
+                          <span>📝 Fragebogen ausgefüllt ({t.fragebogenAntworten.length} Antwort{t.fragebogenAntworten.length > 1 ? "en" : ""})</span>
+                        </button>
+                        {expandedFragebogenUser[username] && (
+                          <div className="mt-2 flex flex-col gap-2 pl-3 border-l-2 border-arena-blue/30 bg-gray-50/70 p-2.5 rounded-r-lg">
+                            {t.fragebogenAntworten.map((ant, idx) => {
+                              const frageText = zirkel.fragebogen.find((f) => f.id === ant.frageId)?.frage ?? `Frage ${idx + 1}`;
+                              return (
+                                <div key={ant.frageId || idx} className="text-xs">
+                                  <p className="font-semibold text-arena-text m-0">{frageText}</p>
+                                  <p className="m-0 mt-0.5 text-arena-muted whitespace-pre-wrap">{ant.antwort}</p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Bewertung */}
                     <div className="border-t border-arena-border-light pt-2">
@@ -737,6 +824,74 @@ export default function BuchzirkelDashboardPage() {
                         )}
                       </div>
                     </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Fragebogen Gesamtübersicht */}
+      {tab === "fragebogen" && zirkel.fragebogen && zirkel.fragebogen.length > 0 && (
+        <section className="card mt-3 flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <h2 className="text-base font-semibold m-0">📝 Antworten zum Abschluss-Fragebogen</h2>
+              <p className="text-sm text-arena-muted m-0 mt-0.5">
+                Gesammelte Antworten aller Teilnehmer auf deine Fragen.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyAllFeedback}
+              disabled={fragebogenAntwortenGesamt === 0}
+              className="btn btn-secondary btn-sm flex items-center gap-1.5"
+            >
+              <span>{copyFeedbackSuccess ? "✅ Kopiert!" : "📋 Alle Antworten kopieren"}</span>
+            </button>
+          </div>
+
+          {fragebogenAntwortenGesamt === 0 ? (
+            <p className="text-arena-muted text-sm my-4 text-center">
+              Es wurden noch keine Antworten von Teilnehmern eingereicht.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {zirkel.fragebogen.map((f, fIdx) => {
+                const antwortenZuFrage = teilnahmen
+                  .map((t) => {
+                    const ant = t.fragebogenAntworten?.find((a) => a.frageId === f.id);
+                    return ant ? { username: t.teilnehmerUsername, antwort: ant.antwort } : null;
+                  })
+                  .filter((x): x is { username: string; antwort: string } => x !== null);
+
+                return (
+                  <div key={f.id || fIdx} className="rounded-lg border border-arena-border-light p-3.5 bg-gray-50/50">
+                    <h3 className="text-sm font-semibold text-arena-text m-0 mb-2 flex items-baseline justify-between gap-2">
+                      <span>{fIdx + 1}. {f.frage}</span>
+                      <span className="text-xs font-normal text-arena-muted whitespace-nowrap">
+                        {antwortenZuFrage.length} Antwort{antwortenZuFrage.length !== 1 ? "en" : ""}
+                      </span>
+                    </h3>
+                    {antwortenZuFrage.length === 0 ? (
+                      <p className="text-xs text-arena-muted italic m-0">Noch keine Antwort.</p>
+                    ) : (
+                      <div className="flex flex-col gap-2 mt-2">
+                        {antwortenZuFrage.map((ant, aIdx) => (
+                          <div key={aIdx} className="bg-white rounded border border-arena-border-light p-2.5 text-xs">
+                            <div className="font-medium text-arena-blue mb-1">
+                              <Link href={`/testleser/${ant.username}`} className="hover:underline">
+                                @{ant.username}
+                              </Link>
+                            </div>
+                            <p className="m-0 whitespace-pre-wrap text-arena-text leading-relaxed">
+                              {ant.antwort}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -808,6 +963,7 @@ export default function BuchzirkelDashboardPage() {
                 veranstalterUsername={zirkel?.veranstalterUsername ?? ""}
                 onReact={(emoji) => reactBeitrag(b._id, emoji)}
                 onReply={(body) => replyBeitrag(b._id, body)}
+                onDelete={(replyId) => deleteBeitrag(b._id, replyId)}
               />
             ))}
           </div>
@@ -956,10 +1112,27 @@ export default function BuchzirkelDashboardPage() {
 
           {uploadError && <p className="text-red-600 text-sm mb-2">{uploadError}</p>}
 
+          {zirkel.leseabschnitte.length > 0 && (
+            <div className="mb-2 flex items-center gap-2 flex-wrap">
+              <label className="text-xs text-arena-muted font-medium">Leseabschnitt zuordnen (optional):</label>
+              <select
+                className="input-base text-xs py-1"
+                value={uploadAbschnittId}
+                onChange={(e) => setUploadAbschnittId(e.target.value)}
+                disabled={uploading}
+              >
+                <option value="">– Gesamtes Werk / Kein Abschnitt –</option>
+                {zirkel.leseabschnitte.map((a, i) => (
+                  <option key={a.id} value={a.id}>{i + 1}. {a.titel}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <label className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed transition-colors cursor-pointer ${uploading ? "opacity-50" : "hover:border-arena-blue"}`}>
             <span className="text-2xl">📄</span>
             <span className="text-sm font-medium">{uploading ? "Wird hochgeladen…" : "Datei auswählen (PDF/EPUB)"}</span>
-            <input type="file" accept=".pdf,.epub" className="hidden" disabled={uploading} onChange={(e) => handleUpload(e)} />
+            <input type="file" accept=".pdf,.epub" className="hidden" disabled={uploading} onChange={(e) => handleUpload(e, uploadAbschnittId || undefined)} />
           </label>
 
           {zirkel.dateien.length > 0 && (
@@ -1274,12 +1447,14 @@ function DashboardBeitragKarte({
   veranstalterUsername,
   onReact,
   onReply,
+  onDelete,
 }: {
   beitrag: Beitrag;
   username: string;
   veranstalterUsername: string;
   onReact: (emoji: string) => void;
   onReply: (body: string) => Promise<void>;
+  onDelete?: (replyId?: string) => Promise<void>;
 }) {
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [replyText, setReplyText] = useState("");
@@ -1309,7 +1484,19 @@ function DashboardBeitragKarte({
             <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">✍️ Autor</span>
           )}
         </div>
-        <span className="text-xs text-arena-muted">{timeAgo(beitrag.createdAt)}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-arena-muted">{timeAgo(beitrag.createdAt)}</span>
+          {(beitrag.autorUsername === username || isAutor(username)) && onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete()}
+              className="text-xs text-red-500 hover:text-red-700 p-0.5 rounded"
+              title="Beitrag löschen"
+            >
+              🗑️
+            </button>
+          )}
+        </div>
       </div>
       {beitrag.titel && <p className="font-semibold text-sm m-0 mb-1">{beitrag.titel}</p>}
       <p className="text-[0.95rem] m-0 whitespace-pre-wrap leading-relaxed">{beitrag.body}</p>
@@ -1359,13 +1546,25 @@ function DashboardBeitragKarte({
         <div className="mt-3 pl-3 border-l-2 border-gray-100 flex flex-col gap-2">
           {beitrag.replies.map((r) => (
             <div key={r._id} className="text-sm">
-              <div className="flex items-center gap-2 mb-0.5">
-                <div className={`w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 ${isAutor(r.autorUsername) ? "bg-amber-500" : "bg-arena-blue"}`}>
-                  {r.autorUsername[0]?.toUpperCase()}
+              <div className="flex items-center gap-2 mb-0.5 justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 ${isAutor(r.autorUsername) ? "bg-amber-500" : "bg-arena-blue"}`}>
+                    {r.autorUsername[0]?.toUpperCase()}
+                  </div>
+                  <strong>{r.autorUsername}</strong>
+                  {isAutor(r.autorUsername) && <span className="text-xs bg-amber-100 text-amber-700 px-1 rounded">✍️</span>}
+                  <span className="text-xs text-arena-muted">{timeAgo(r.createdAt)}</span>
                 </div>
-                <strong>{r.autorUsername}</strong>
-                {isAutor(r.autorUsername) && <span className="text-xs bg-amber-100 text-amber-700 px-1 rounded">✍️</span>}
-                <span className="text-xs text-arena-muted">{timeAgo(r.createdAt)}</span>
+                {(r.autorUsername === username || isAutor(username)) && onDelete && (
+                  <button
+                    type="button"
+                    onClick={() => onDelete(r._id)}
+                    className="text-xs text-red-500 hover:text-red-700"
+                    title="Antwort löschen"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
               <p className="whitespace-pre-wrap m-0 pl-7 text-[0.9rem]">{r.body}</p>
             </div>
@@ -1381,11 +1580,13 @@ function BewerberKarte({
   fragen,
   coverImageUrl,
   onEntscheidung,
+  voll,
 }: {
   bewerber: Bewerber;
   fragen: string[];
   coverImageUrl?: string;
   onEntscheidung: (id: string, e: "angenommen" | "abgelehnt") => void;
+  voll?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -1422,8 +1623,14 @@ function BewerberKarte({
           </div>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={() => onEntscheidung(bewerber._id, "angenommen")} className="btn btn-primary btn-sm">
-            Annehmen
+          <button
+            type="button"
+            onClick={() => onEntscheidung(bewerber._id, "angenommen")}
+            disabled={voll}
+            className={`btn btn-primary btn-sm ${voll ? "opacity-50 cursor-not-allowed" : ""}`}
+            title={voll ? "Maximale Teilnehmerzahl bereits erreicht" : undefined}
+          >
+            {voll ? "Zirkel voll" : "Annehmen"}
           </button>
           <button type="button" onClick={() => onEntscheidung(bewerber._id, "abgelehnt")} className="btn btn-secondary btn-sm text-red-600">
             ✕ Ablehnen

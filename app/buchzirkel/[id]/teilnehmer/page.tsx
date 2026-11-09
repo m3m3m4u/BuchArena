@@ -212,6 +212,17 @@ export default function TeilnehmerBereichPage() {
     setRlSaving(false);
   }
 
+  async function deleteRezensionsLink(url: string) {
+    if (!confirm("Rezensions-Link wirklich entfernen?")) return;
+    const qs = new URLSearchParams({ url });
+    const res = await fetch(`/api/buchzirkel/${params.id}/rezension-links?${qs}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      await load();
+    }
+  }
+
   async function addTopic(e: React.FormEvent) {
     e.preventDefault();
     if (!neuesTopicTitel.trim() || !zirkel) return;
@@ -313,6 +324,17 @@ export default function TeilnehmerBereichPage() {
       body: JSON.stringify({ teilen: "treffpunkt" }),
     });
     await loadBeitraege(activeTopic);
+  }
+
+  async function deleteBeitrag(beitragId: string, replyId?: string) {
+    if (!confirm(replyId ? "Antwort wirklich löschen?" : "Beitrag wirklich löschen?")) return;
+    const qs = replyId ? `?replyId=${replyId}` : "";
+    const res = await fetch(`/api/buchzirkel/${params.id}/beitraege/${beitragId}${qs}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      await loadBeitraege(activeTopic);
+    }
   }
 
   if (loading || !account) return <main className="top-centered-main"><p className="text-arena-muted text-center py-8">Wird geladen…</p></main>;
@@ -506,11 +528,13 @@ export default function TeilnehmerBereichPage() {
                   username={account.username}
                   veranstalterUsername={zirkel.veranstalterUsername}
                   isVeranstalter={zirkel.isVeranstalter}
+                  isBetaleser={zirkel.typ === "betaleser"}
                   onReact={(emoji) => react(b._id, emoji)}
                   onTreffpunkt={() => treffpunktTeilen(b._id)}
                   onReply={(body) => reply(b._id, body)}
                   onEditBeitrag={(body, titel) => editBeitrag(b._id, body, titel)}
                   onEditReply={(replyId, body) => editReply(b._id, replyId, body)}
+                  onDelete={(replyId) => deleteBeitrag(b._id, replyId)}
                 />
               ))
             )}
@@ -670,6 +694,12 @@ export default function TeilnehmerBereichPage() {
                               value={pdfInput}
                               placeholder={String(savedPage)}
                               onChange={(e) => setPdfPageInput((prev) => ({ ...prev, [d.id]: e.target.value }))}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  const n = Number((e.target as HTMLInputElement).value);
+                                  if (n > 0) saveLeseposition(d.id, { pdfPage: n });
+                                }
+                              }}
                               onBlur={(e) => {
                                 const n = Number(e.target.value);
                                 if (n > 0) saveLeseposition(d.id, { pdfPage: n });
@@ -699,8 +729,8 @@ export default function TeilnehmerBereichPage() {
                     </div>
                     {isPdf && (
                       <iframe
-                        key={activePdfPage}
-                        src={`${dateiUrl}#page=${activePdfPage}`}
+                        key={d.id}
+                        src={`${dateiUrl}#page=${savedPage}`}
                         className="w-full"
                         style={{ height: "70vh" }}
                         title={d.originalName}
@@ -762,12 +792,28 @@ export default function TeilnehmerBereichPage() {
         <section className="card mt-3">
           <h2 className="text-base font-semibold m-0 mb-1">Rezensions-Links</h2>
           <p className="text-sm text-arena-muted m-0 mb-3">Hast du eine Rezension auf Amazon, Goodreads oder einer anderen Plattform veröffentlicht? Trage den Link hier ein – der Autor kann die Links im Dashboard einsehen.</p>
-          {teilnahme?.rezensionsLinks.map((r, i) => (
-            <div key={i} className="flex items-center gap-2 mb-2 text-sm">
-              <span className="font-medium">{r.plattform}:</span>
-              <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-arena-blue hover:underline truncate">{r.url}</a>
+          {teilnahme?.rezensionsLinks && teilnahme.rezensionsLinks.length > 0 ? (
+            <div className="flex flex-col gap-2 mb-3">
+              {teilnahme.rezensionsLinks.map((r, i) => (
+                <div key={i} className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-gray-50 border border-arena-border-light text-sm">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-semibold text-xs text-arena-text bg-white px-2 py-0.5 rounded border border-arena-border-light">{r.plattform}</span>
+                    <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-arena-blue hover:underline truncate text-xs">{r.url}</a>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => deleteRezensionsLink(r.url)}
+                    className="text-xs text-red-500 hover:text-red-700 px-1.5 py-0.5 rounded hover:bg-red-50 transition-colors"
+                    title="Link entfernen"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            <p className="text-arena-muted text-sm mb-3">Noch keine Rezensions-Links hinterlegt.</p>
+          )}
           <form onSubmit={addRezensionsLink} className="flex gap-2 mt-3 flex-wrap">
             <input
               className="input w-36"
@@ -824,21 +870,25 @@ function BeitragKarte({
   username,
   veranstalterUsername,
   isVeranstalter,
+  isBetaleser,
   onReact,
   onTreffpunkt,
   onReply,
   onEditBeitrag,
   onEditReply,
+  onDelete,
 }: {
   beitrag: Beitrag;
   username: string;
   veranstalterUsername: string;
   isVeranstalter: boolean;
+  isBetaleser?: boolean;
   onReact: (emoji: string) => void;
   onTreffpunkt: () => void;
   onReply: (body: string) => Promise<void>;
   onEditBeitrag: (body: string, titel?: string) => Promise<void>;
   onEditReply: (replyId: string, body: string) => Promise<void>;
+  onDelete?: (replyId?: string) => Promise<void>;
 }) {
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [replyText, setReplyText] = useState("");
@@ -903,7 +953,19 @@ function BeitragKarte({
             <span className="text-xs bg-arena-yellow/20 text-arena-blue px-1.5 py-0.5 rounded">Im Treffpunkt</span>
           )}
         </div>
-        <span className="text-xs text-arena-muted flex-shrink-0">{timeAgo(beitrag.createdAt)}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-arena-muted flex-shrink-0">{timeAgo(beitrag.createdAt)}</span>
+          {(beitrag.autorUsername === username || isVeranstalter) && onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete()}
+              className="text-xs text-red-500 hover:text-red-700 p-0.5 rounded"
+              title="Beitrag löschen"
+            >
+              🗑️
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Body (oder Edit-Formular) */}
@@ -980,7 +1042,7 @@ function BeitragKarte({
             Bearbeiten
           </button>
         )}
-        {isVeranstalter && !beitrag.imTreffpunktGeteilt && (
+        {isVeranstalter && !isBetaleser && !beitrag.imTreffpunktGeteilt && (
           <button type="button" onClick={onTreffpunkt} className="btn btn-sm text-xs">
             Im Treffpunkt teilen
           </button>
@@ -1047,6 +1109,16 @@ function BeitragKarte({
                         className="btn btn-sm text-xs"
                       >
                         Bearbeiten
+                      </button>
+                    )}
+                    {(r.autorUsername === username || isVeranstalter) && onDelete && (
+                      <button
+                        type="button"
+                        onClick={() => onDelete(r._id)}
+                        className="text-xs text-red-500 hover:text-red-700"
+                        title="Antwort löschen"
+                      >
+                        ✕
                       </button>
                     )}
                   </div>

@@ -1,3 +1,16 @@
+import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+import {
+  getBuchzirkelCollection,
+  getBuchzirkelTeilnahmenCollection,
+  getBuchzirkelBewerbungenCollection,
+  getBuchzirkelBeitraegeCollection,
+  getBuchzirkelChatCollection,
+  getUsersCollection,
+} from "@/lib/mongodb";
+import { getServerAccount } from "@/lib/server-auth";
+import { davDelete } from "@/lib/bucharena-webdav";
+
 export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -22,22 +35,40 @@ export async function DELETE(
       return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
     }
 
-    await collection.deleteOne({ _id: new ObjectId(id) });
+    const zirkelObjectId = new ObjectId(id);
+
+    // Kaskadierendes Löschen aller zugehörigen Daten
+    const [bewerbungenCol, teilnahmenCol, beitraegeCol, chatCol] = await Promise.all([
+      getBuchzirkelBewerbungenCollection(),
+      getBuchzirkelTeilnahmenCollection(),
+      getBuchzirkelBeitraegeCollection(),
+      getBuchzirkelChatCollection(),
+    ]);
+
+    await Promise.all([
+      bewerbungenCol.deleteMany({ buchzirkelId: zirkelObjectId }).catch(() => {}),
+      teilnahmenCol.deleteMany({ buchzirkelId: zirkelObjectId }).catch(() => {}),
+      beitraegeCol.deleteMany({ buchzirkelId: zirkelObjectId }).catch(() => {}),
+      chatCol.deleteMany({ buchzirkelId: zirkelObjectId }).catch(() => {}),
+    ]);
+
+    // WebDAV-Dateien bereinigen
+    if (Array.isArray(doc.dateien)) {
+      for (const d of doc.dateien) {
+        if (d.webdavPath) {
+          await davDelete(d.webdavPath).catch(() => {});
+        }
+      }
+    }
+    await davDelete(`buchzirkel/${id}`).catch(() => {});
+
+    await collection.deleteOne({ _id: zirkelObjectId });
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("buchzirkel/[id] DELETE:", err);
     return NextResponse.json({ message: "Serverfehler." }, { status: 500 });
   }
 }
-import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
-import {
-  getBuchzirkelCollection,
-  getBuchzirkelTeilnahmenCollection,
-  getBuchzirkelBewerbungenCollection,
-  getUsersCollection,
-} from "@/lib/mongodb";
-import { getServerAccount } from "@/lib/server-auth";
 
 export async function GET(
   _req: Request,

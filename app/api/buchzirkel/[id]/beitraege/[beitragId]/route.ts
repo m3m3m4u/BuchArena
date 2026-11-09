@@ -246,6 +246,12 @@ export async function PATCH(
     }
 
     if (body.teilen === "treffpunkt" && !beitrag.imTreffpunktGeteilt) {
+      if (zirkel.typ === "betaleser") {
+        return NextResponse.json({
+          message: "Beiträge aus vertraulichen Betaleser-Zirkeln (Verschwiegenheitspflicht) können nicht öffentlich im Treffpunkt geteilt werden.",
+        }, { status: 400 });
+      }
+
       // Automatisch Diskussion im Treffpunkt erstellen
       const discussions = await getDiscussionsCollection();
       const discussionResult = await discussions.insertOne({
@@ -283,6 +289,63 @@ export async function PATCH(
     return NextResponse.json({ message: "Ungültige Aktion." }, { status: 400 });
   } catch (err) {
     console.error("buchzirkel beitrag PATCH:", err);
+    return NextResponse.json({ message: "Serverfehler." }, { status: 500 });
+  }
+}
+
+// DELETE: Beitrag oder Antwort löschen (Autor, Veranstalter oder Admin)
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string; beitragId: string }> }
+) {
+  try {
+    const { id, beitragId } = await params;
+    if (!ObjectId.isValid(id) || !ObjectId.isValid(beitragId)) {
+      return NextResponse.json({ message: "Ungültige ID." }, { status: 400 });
+    }
+
+    const account = await getServerAccount();
+    if (!account) {
+      return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
+    }
+
+    const beitraege = await getBuchzirkelBeitraegeCollection();
+    const beitrag = await beitraege.findOne({ _id: new ObjectId(beitragId) });
+    if (!beitrag || beitrag.buchzirkelId.toString() !== id) {
+      return NextResponse.json({ message: "Beitrag nicht gefunden." }, { status: 404 });
+    }
+
+    const zirkelCol = await getBuchzirkelCollection();
+    const zirkel = await zirkelCol.findOne({ _id: new ObjectId(id) }, { projection: { veranstalterUsername: 1 } });
+    const isVeranstalter = zirkel?.veranstalterUsername === account.username;
+    const isAdmin = account.role === "SUPERADMIN" || account.role === "ADMIN";
+    const isAutor = beitrag.autorUsername.toLowerCase() === account.username.toLowerCase();
+
+    const url = new URL(request.url);
+    const replyId = url.searchParams.get("replyId");
+
+    if (replyId) {
+      const reply = beitrag.replies.find((r) => r._id?.toString() === replyId);
+      if (!reply) return NextResponse.json({ message: "Antwort nicht gefunden." }, { status: 404 });
+      const isReplyAutor = reply.autorUsername.toLowerCase() === account.username.toLowerCase();
+      if (!isReplyAutor && !isVeranstalter && !isAdmin) {
+        return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
+      }
+      await beitraege.updateOne(
+        { _id: new ObjectId(beitragId) },
+        { $pull: { replies: { _id: new ObjectId(replyId) } } }
+      );
+      return NextResponse.json({ ok: true });
+    }
+
+    if (!isAutor && !isVeranstalter && !isAdmin) {
+      return NextResponse.json({ message: "Keine Berechtigung." }, { status: 403 });
+    }
+
+    await beitraege.deleteOne({ _id: new ObjectId(beitragId) });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("buchzirkel beitrag DELETE:", err);
     return NextResponse.json({ message: "Serverfehler." }, { status: 500 });
   }
 }

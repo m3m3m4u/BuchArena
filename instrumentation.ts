@@ -17,5 +17,8 @@ export async function register() {
 
     const { startBuchDerWocheWorker } = await import("@/lib/buch-der-woche-worker");
     startBuchDerWocheWorker();
+
+    const { startBuchzirkelReminderWorker } = await import("@/lib/buchzirkel-reminder");
+    startBuchzirkelReminderWorker();
   }
 }

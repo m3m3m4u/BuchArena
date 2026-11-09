@@ -6,6 +6,7 @@ import {
   getUsersCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { sendMail } from "@/lib/mail";
 
 export async function POST(
   request: Request,
@@ -25,7 +26,7 @@ export async function POST(
     const collection = await getBuchzirkelCollection();
     const zirkel = await collection.findOne(
       { _id: new ObjectId(id) },
-      { projection: { status: 1, veranstalterUsername: 1, agbPflicht: 1, bewerbungsFragen: 1 } }
+      { projection: { titel: 1, status: 1, veranstalterUsername: 1, agbPflicht: 1, bewerbungsFragen: 1 } }
     );
 
     if (!zirkel) {
@@ -91,6 +92,38 @@ export async function POST(
       kontaktEmail: rawEmail || undefined,
       bewirbtSichAm: now,
     });
+
+    // E-Mail-Benachrichtigung an den Veranstalter
+    const veranstalter = await users.findOne(
+      { username: zirkel.veranstalterUsername },
+      { projection: { email: 1 } }
+    );
+    if (veranstalter?.email) {
+      const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "https://bucharena.org").replace(/\/+$/, "");
+      sendMail(
+        veranstalter.email,
+        `📬 Neue Bewerbung für deinen Buchzirkel „${zirkel.titel}"`,
+        `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
+          <h2 style="color: #1d4ed8;">📬 Neue Bewerbung eingegangen</h2>
+          <p>Hallo ${zirkel.veranstalterUsername},</p>
+          <p><strong>${account.username}</strong> hat sich soeben für deinen Buchzirkel <strong>„${zirkel.titel}"</strong> beworben.</p>
+          <p>Im Dashboard kannst du die Antworten auf deine Bewerbungsfragen einsehen und entscheiden, wer teilnehmen darf.</p>
+          <p style="margin-top: 24px;">
+            <a href="${baseUrl}/buchzirkel/${id}/dashboard"
+               style="background: #1d4ed8; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Zum Dashboard →
+            </a>
+          </p>
+          <p style="font-size: 12px; color: #666; margin-top: 32px;">
+            Diese E-Mail wurde automatisch von BuchArena gesendet.
+          </p>
+        </div>
+        `
+      ).catch((mailErr) => {
+        console.error("Fehler beim Senden der Bewerbungs-Benachrichtigung:", mailErr);
+      });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {

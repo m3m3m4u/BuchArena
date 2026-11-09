@@ -112,19 +112,28 @@ export async function PATCH(
     }
 
     const now = new Date();
-    await bewerbungen.updateOne(
-      { _id: new ObjectId(body.bewerbungId) },
-      { $set: { status: body.entscheidung, entschiedenAm: now } }
-    );
 
-    // Bei Annahme: Teilnahme anlegen
+    // Bei Annahme: Obergrenze prüfen & Teilnahme anlegen
     if (body.entscheidung === "angenommen") {
       const teilnahmen = await getBuchzirkelTeilnahmenCollection();
       const existing = await teilnahmen.findOne({
         buchzirkelId: new ObjectId(id),
         teilnehmerUsername: bewerbung.bewerberUsername,
       });
+
       if (!existing) {
+        const anzahlTeilnehmer = await teilnahmen.countDocuments({
+          buchzirkelId: new ObjectId(id),
+          abgebrochen: { $ne: true },
+        });
+
+        if (anzahlTeilnehmer >= zirkel.maxTeilnehmer) {
+          return NextResponse.json(
+            { message: `Die maximale Teilnehmerzahl von ${zirkel.maxTeilnehmer} ist bereits erreicht.` },
+            { status: 400 }
+          );
+        }
+
         await teilnahmen.insertOne({
           buchzirkelId: new ObjectId(id),
           teilnehmerUsername: bewerbung.bewerberUsername,
@@ -137,6 +146,11 @@ export async function PATCH(
         });
       }
     }
+
+    await bewerbungen.updateOne(
+      { _id: new ObjectId(body.bewerbungId) },
+      { $set: { status: body.entscheidung, entschiedenAm: now } }
+    );
 
     // E-Mail-Benachrichtigung
     const users = await getUsersCollection();

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import { getBuchzirkelTeilnahmenCollection } from "@/lib/mongodb";
+import { getBuchzirkelCollection, getBuchzirkelTeilnahmenCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 
 /** GET – liefert alle gespeicherten Lesepositionen des angemeldeten Nutzers für diesen Zirkel */
@@ -55,14 +55,24 @@ export async function POST(
       return NextResponse.json({ message: "dateiId fehlt." }, { status: 400 });
     }
 
+    const zirkelCol = await getBuchzirkelCollection();
+    const zirkel = await zirkelCol.findOne(
+      { _id: new ObjectId(id) },
+      { projection: { veranstalterUsername: 1 } }
+    );
+    if (!zirkel) {
+      return NextResponse.json({ message: "Buchzirkel nicht gefunden." }, { status: 404 });
+    }
+
+    const isVeranstalter = zirkel.veranstalterUsername === account.username;
     const teilnahmen = await getBuchzirkelTeilnahmenCollection();
 
-    // Prüfen ob der Nutzer überhaupt Teilnehmer ist
     const existing = await teilnahmen.findOne({
       buchzirkelId: new ObjectId(id),
       teilnehmerUsername: account.username,
     });
-    if (!existing) {
+
+    if (!existing && !isVeranstalter && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
       return NextResponse.json({ message: "Keine Teilnahme gefunden." }, { status: 403 });
     }
 
@@ -77,7 +87,18 @@ export async function POST(
     if (Object.keys(update).length > 0) {
       await teilnahmen.updateOne(
         { buchzirkelId: new ObjectId(id), teilnehmerUsername: account.username },
-        { $set: update }
+        {
+          $set: update,
+          $setOnInsert: {
+            abgeschlosseneAbschnitte: [],
+            persoenlicheDateien: [],
+            rezensionsLinks: [],
+            fragebogenAntworten: [],
+            abgebrochen: false,
+            beigetreten: new Date(),
+          },
+        },
+        { upsert: true }
       );
     }
 
