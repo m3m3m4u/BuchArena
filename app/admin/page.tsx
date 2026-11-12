@@ -21,6 +21,10 @@ type UserListEntry = {
   hasTestleserProfile?: boolean;
   hasLektorenProfile?: boolean;
   bookCount?: number;
+  distinctRecipients?: number;
+  spamReportCount?: number;
+  spamFlagged?: boolean;
+  isSpamSuspect?: boolean;
   createdAt?: string | null;
   lastOnline?: string | null;
   newsletterOptIn?: boolean;
@@ -90,6 +94,7 @@ export default function AdminPage() {
 
   /* ── User-Suche & Paginierung ── */
   const [userSearch, setUserSearch] = useState("");
+  const [spamFilterOnly, setSpamFilterOnly] = useState(false);
   const [userPage, setUserPage] = useState(1);
   const usersPerPage = 25;
 
@@ -453,6 +458,38 @@ export default function AdminPage() {
       }
     } catch {
       setMessage("Aktion fehlgeschlagen.");
+    } finally {
+      setBusyUser(null);
+    }
+  }
+
+  async function handleBanAndPurge(targetUsername: string) {
+    if (
+      !confirm(
+        `ACHTUNG: Möchtest du „${targetUsername}“ wirklich als Spammer sperren und ALLE von ihm gesendeten Nachrichten aus allen Postfächern unwiderruflich löschen?`
+      )
+    ) {
+      return;
+    }
+    setBusyUser(targetUsername);
+    try {
+      const res = await fetch("/api/admin/users/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUsername, action: "ban_and_purge" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message ?? "Fehler beim Bereinigen.");
+      setMessage(data.message);
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.username === targetUsername
+            ? { ...u, status: "deactivated", spamFlagged: true, isSpamSuspect: false }
+            : u
+        )
+      );
+    } catch (err) {
+      setMessage((err as Error).message || "Fehler beim Bereinigen.");
     } finally {
       setBusyUser(null);
     }
@@ -1311,16 +1348,20 @@ export default function AdminPage() {
           <p className="text-red-700">Nur Admins dürfen diese Seite sehen.</p>
         ) : (() => {
           const searchLower = userSearch.toLowerCase();
-          const filteredUsers = searchLower
+          let filteredUsers = searchLower
             ? users.filter((u) => u.username.toLowerCase().includes(searchLower) || u.email.toLowerCase().includes(searchLower) || (u.profileName ?? "").toLowerCase().includes(searchLower))
             : users;
+          if (spamFilterOnly) {
+            filteredUsers = filteredUsers.filter((u) => u.isSpamSuspect);
+          }
           const totalPages = Math.max(1, Math.ceil(filteredUsers.length / usersPerPage));
           const clampedPage = Math.min(userPage, totalPages);
           const pagedUsers = filteredUsers.slice((clampedPage - 1) * usersPerPage, clampedPage * usersPerPage);
+          const spamSuspectCount = users.filter((u) => u.isSpamSuspect).length;
 
           return (
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            {/* Suchfeld */}
+            {/* Suchfeld & Spam-Filter */}
             <div className="mb-3 flex gap-2 items-center flex-wrap">
               <input
                 type="text"
@@ -1330,6 +1371,14 @@ export default function AdminPage() {
                 onChange={(e) => { setUserSearch(e.target.value); setUserPage(1); }}
                 style={{ minWidth: 200, maxWidth: 400 }}
               />
+              <button
+                type="button"
+                onClick={() => { setSpamFilterOnly(!spamFilterOnly); setUserPage(1); }}
+                className={`btn btn-sm ${spamFilterOnly ? "btn-danger font-bold" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                title="Nur verdächtige Konten filtern"
+              >
+                ⚠️ Spam-Verdacht ({spamSuspectCount})
+              </button>
               <span className="text-xs text-arena-muted">{filteredUsers.length} von {users.length} Benutzern</span>
             </div>
 
@@ -1355,9 +1404,21 @@ export default function AdminPage() {
                   return (
                     <tr key={user.username} className={`hover:bg-[#f5f5f5] ${isDeactivated ? "opacity-50" : ""}`}>
                       <td className="p-2 border-b border-arena-border-light">
-                        <div className="font-medium">{user.username}</div>
+                        <div className="font-medium flex items-center gap-1.5">
+                          {user.username}
+                          {user.spamFlagged && (
+                            <span className="text-[10px] bg-red-600 text-white font-bold px-1.5 py-0.5 rounded">GESPERRT</span>
+                          )}
+                        </div>
                         {user.profileName && <div className="text-xs text-arena-muted">{user.profileName}</div>}
                         <div className="text-xs text-arena-muted break-all">{user.email}</div>
+                        {user.isSpamSuspect && (
+                          <div className="mt-1">
+                            <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-200">
+                              ⚠️ Spam-Verdacht {user.spamReportCount ? `(${user.spamReportCount}x gemeldet)` : user.distinctRecipients ? `(${user.distinctRecipients} Kontakte)` : ""}
+                            </span>
+                          </div>
+                        )}
                       </td>
                       <td className="p-2 border-b border-arena-border-light whitespace-nowrap">
                         {isSuperAdmin
@@ -1522,6 +1583,17 @@ export default function AdminPage() {
                               >
                                 Löschen
                               </button>
+                              {(user.isSpamSuspect || user.spamFlagged || (user.distinctRecipients && user.distinctRecipients > 0)) && (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm !bg-red-700 !text-white hover:!bg-red-800"
+                                  disabled={isBusy}
+                                  onClick={() => void handleBanAndPurge(user.username)}
+                                  title="Spammer sperren & alle gesendeten Nachrichten sofort löschen"
+                                >
+                                  🧹 Spam-Purge
+                                </button>
+                              )}
                             </>
                           )}
                         </div>
@@ -1543,7 +1615,17 @@ export default function AdminPage() {
                 return (
                   <div key={user.username} className={`rounded-lg border border-arena-border p-3 ${isDeactivated ? "opacity-50" : ""}`}>
                     <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <strong className="text-[0.95rem]">{user.username}</strong>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <strong className="text-[0.95rem]">{user.username}</strong>
+                        {user.spamFlagged && (
+                          <span className="text-[10px] bg-red-600 text-white font-bold px-1.5 py-0.2 rounded">GESPERRT</span>
+                        )}
+                        {user.isSpamSuspect && (
+                          <span className="text-[10px] bg-red-100 text-red-700 border border-red-200 font-bold px-1.5 py-0.2 rounded">
+                            ⚠️ Spam-Verdacht
+                          </span>
+                        )}
+                      </div>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                         isSuperAdmin ? "bg-purple-100 text-purple-800"
                         : isAdmin ? "bg-blue-100 text-blue-800"
@@ -1697,6 +1779,17 @@ export default function AdminPage() {
                           >
                             Löschen
                           </button>
+                          {(user.isSpamSuspect || user.spamFlagged || (user.distinctRecipients && user.distinctRecipients > 0)) && (
+                            <button
+                              type="button"
+                              className="btn btn-sm !bg-red-700 !text-white hover:!bg-red-800"
+                              disabled={isBusy}
+                              onClick={() => void handleBanAndPurge(user.username)}
+                              title="Spammer sperren & alle Nachrichten bereinigen"
+                            >
+                              🧹 Spam-Purge
+                            </button>
+                          )}
                         </>
                       )}
                     </div>

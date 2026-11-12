@@ -369,9 +369,23 @@ export async function buildShortsVorlagePptx(vorlage: BucharenaVorlageDoc): Prom
   return zip.generateAsync({ type: "nodebuffer" }) as Promise<Buffer>;
 }
 
+export type KurzVideoOptions = {
+  version?: "v1" | "v2" | "02" | "1" | "2";
+  templateFile?: string;
+};
+
 /** Generate the Kurzvideo (Reel, portrait 9:16) PPTX from the Kurzvideo template */
-export async function buildKurzVideoPptx(vorlage: BucharenaReelVorlageDoc): Promise<Buffer> {
-  const templatePath = path.join(process.cwd(), "public", "Kurzvideo.pptx");
+export async function buildKurzVideoPptx(
+  vorlage: BucharenaReelVorlageDoc,
+  options?: KurzVideoOptions
+): Promise<Buffer> {
+  const isV2 =
+    options?.version === "v2" ||
+    options?.version === "02" ||
+    options?.version === "2" ||
+    options?.templateFile === "Kurzvideo2.pptx";
+  const templateFileName = options?.templateFile || (isV2 ? "Kurzvideo2.pptx" : "Kurzvideo.pptx");
+  const templatePath = path.join(process.cwd(), "public", templateFileName);
   const templateBytes = await fs.readFile(templatePath);
   const zip = await JSZip.loadAsync(templateBytes);
 
@@ -416,8 +430,24 @@ export async function buildKurzVideoPptx(vorlage: BucharenaReelVorlageDoc): Prom
   zip.file("ppt/slides/slide3.xml", s3);
 
   /* Images: cover → image2.jpeg, author → image6.jpeg */
-  if (vorlage.coverImg) zip.file("ppt/media/image2.jpeg", await imageToBytes(vorlage.coverImg));
-  if (vorlage.autorImg) zip.file("ppt/media/image6.jpeg", await cropToSquare(vorlage.autorImg));
+  if (vorlage.coverImg) {
+    try {
+      zip.file("ppt/media/image2.jpeg", await imageToBytes(vorlage.coverImg));
+    } catch (err) {
+      console.warn("Cover image insertion failed:", err);
+    }
+  }
+  if (vorlage.autorImg) {
+    try {
+      zip.file("ppt/media/image6.jpeg", await cropToSquare(vorlage.autorImg));
+    } catch {
+      try {
+        zip.file("ppt/media/image6.jpeg", await imageToBytes(vorlage.autorImg));
+      } catch (err) {
+        console.warn("Author image insertion failed:", err);
+      }
+    }
+  }
 
   return zip.generateAsync({ type: "nodebuffer" }) as Promise<Buffer>;
 }

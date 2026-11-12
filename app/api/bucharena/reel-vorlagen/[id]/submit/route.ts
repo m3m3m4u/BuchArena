@@ -47,7 +47,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ success: false, error: "Diese Vorlage wurde bereits eingereicht" }, { status: 400 });
     }
 
-    const pptxBuffer = await buildKurzVideoPptx(vorlage);
+    const pptxBuffer = await buildKurzVideoPptx(vorlage, { version: "v2" });
 
     const timestamp = Date.now();
     const autorFull = vorlage.autorName?.trim() || "Unbekannt";

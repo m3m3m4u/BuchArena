@@ -118,6 +118,7 @@ function NachrichtenPageInner() {
   const [activePartner, setActivePartner] = useState<string | null>(null);
   const [activePartnerDisplayName, setActivePartnerDisplayName] = useState<string>("");
   const [activePartnerImage, setActivePartnerImage] = useState<string>("");
+  const [isPartnerBlocked, setIsPartnerBlocked] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
@@ -243,6 +244,11 @@ function NachrichtenPageInner() {
       setMobileShowChat(true);
       setChatLoading(true);
       setInputText("");
+      // Block-Status prüfen
+      fetch(`/api/messages/block?target=${encodeURIComponent(partner)}`)
+        .then((r) => r.json())
+        .then((d) => setIsPartnerBlocked(Boolean(d.isBlocked)))
+        .catch(() => {});
       try {
         const res = await fetch(`/api/messages/list?partner=${encodeURIComponent(partner)}&limit=${MESSAGES_PAGE_SIZE}`);
         const data = (await res.json()) as { messages?: ChatMessage[]; hasMore?: boolean };
@@ -445,15 +451,61 @@ function NachrichtenPageInner() {
         }),
       });
       const data = (await res.json()) as { message?: string };
-      if (!res.ok) throw new Error(data.message ?? "Fehler");
+      if (!res.ok) throw new Error(data.message ?? "Fehler beim Senden");
       setInputText("");
       // Chat neu laden
       await openChat(activePartner);
       void loadConversations();
-    } catch {
-      /* ignore */
+    } catch (err) {
+      alert((err as Error).message || "Fehler beim Senden.");
     } finally {
       setIsSending(false);
+    }
+  }
+
+  /* ── Spam melden ── */
+  async function handleReportSpam(messageId?: string) {
+    if (!activePartner) return;
+    if (!confirm(`Möchtest du diese Unterhaltung mit „${activePartner}“ als Spam melden?`)) {
+      return;
+    }
+    try {
+      const res = await fetch("/api/messages/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportedUsername: activePartner, messageId }),
+      });
+      const data = await res.json();
+      alert(data.message ?? "Meldung übermittelt.");
+    } catch {
+      alert("Fehler beim Senden der Meldung.");
+    }
+  }
+
+  /* ── Benutzer blockieren / entblockieren ── */
+  async function handleToggleBlock() {
+    if (!activePartner) return;
+    const newAction = isPartnerBlocked ? "unblock" : "block";
+    if (
+      newAction === "block" &&
+      !confirm(
+        `Möchtest du „${activePartnerDisplayName || activePartner}“ wirklich blockieren? Er kann dir dann keine Nachrichten mehr senden.`
+      )
+    ) {
+      return;
+    }
+    try {
+      const res = await fetch("/api/messages/block", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUsername: activePartner, action: newAction }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message ?? "Fehler.");
+      setIsPartnerBlocked(Boolean(data.isBlocked));
+      alert(data.message);
+    } catch (err) {
+      alert((err as Error).message || "Fehler bei der Blockierung.");
     }
   }
 
@@ -850,6 +902,15 @@ function NachrichtenPageInner() {
                 >
                   ✕
                 </button>
+                {!isMine && (
+                  <button
+                    className="absolute top-1 -right-13 sm:opacity-0 sm:group-hover:opacity-100 hidden sm:block opacity-60 transition-opacity text-[11px] border-none bg-transparent cursor-pointer text-arena-muted hover:text-amber-600 p-1.5 -m-1"
+                    onClick={() => void handleReportSpam(msg.id)}
+                    title="Diese Nachricht als Spam melden"
+                  >
+                    🚩
+                  </button>
+                )}
               </div>
             </div>
             {/* Emoji-Reaktionen */}
@@ -1158,16 +1219,36 @@ function NachrichtenPageInner() {
                       </span>
                     )}
                   </div>
-                  {/* Admin: Unterhaltung löschen */}
-                  {isAdmin && (
+                  {/* Aktionen: Spam melden, Blockieren, Admin Löschen */}
+                  <div className="ml-auto flex items-center gap-1.5 flex-wrap">
                     <button
-                      className="ml-auto btn btn-sm font-sans !py-1 !px-2 text-arena-danger bg-arena-danger/10 border-arena-danger/20 hover:bg-arena-danger hover:text-white transition-colors"
-                      onClick={() => void handleDeleteConversation()}
-                      title="Gesamte Unterhaltung löschen"
+                      className="btn btn-sm font-sans !py-1 !px-2 text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100 transition-colors text-xs"
+                      onClick={() => void handleReportSpam()}
+                      title="Diesen Benutzer als Spam melden"
                     >
-                      Unterhaltung löschen
+                      🚩 Spam melden
                     </button>
-                  )}
+                    <button
+                      className={`btn btn-sm font-sans !py-1 !px-2 text-xs transition-colors ${
+                        isPartnerBlocked
+                          ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                          : "text-arena-danger bg-red-50 border-red-200 hover:bg-red-100"
+                      }`}
+                      onClick={() => void handleToggleBlock()}
+                      title={isPartnerBlocked ? "Blockierung aufheben" : "Benutzer blockieren"}
+                    >
+                      {isPartnerBlocked ? "✓ Entblockieren" : "🚫 Blockieren"}
+                    </button>
+                    {isAdmin && (
+                      <button
+                        className="btn btn-sm font-sans !py-1 !px-2 text-arena-danger bg-arena-danger/10 border-arena-danger/20 hover:bg-arena-danger hover:text-white transition-colors text-xs"
+                        onClick={() => void handleDeleteConversation()}
+                        title="Gesamte Unterhaltung löschen"
+                      >
+                        Unterhaltung löschen
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Nachrichten-Bereich */}
@@ -1199,31 +1280,43 @@ function NachrichtenPageInner() {
 
                 {/* Eingabefeld */}
                 <div className="border-t border-arena-border-light px-4 py-3 bg-white">
-                  <div className="flex gap-2 items-end">
-                    <textarea
-                      ref={inputRef}
-                      className="input-base font-normal flex-1 resize-none font-sans"
-                      rows={1}
-                      value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
-                      placeholder="Nachricht schreiben …"
-                      maxLength={5000}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          void handleSend();
-                        }
-                      }}
-                      style={{ minHeight: 40, maxHeight: 120 }}
-                    />
-                    <button
-                      className="btn btn-primary btn-sm font-sans !py-2 !px-4 font-bold text-base"
-                      disabled={isSending || !inputText.trim()}
-                      onClick={() => void handleSend()}
-                    >
-                      {isSending ? "…" : "↑"}
-                    </button>
-                  </div>
+                  {isPartnerBlocked ? (
+                    <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-center text-sm text-arena-muted flex items-center justify-between gap-3">
+                      <span>Du hast diesen Benutzer blockiert.</span>
+                      <button
+                        className="btn btn-sm"
+                        onClick={() => void handleToggleBlock()}
+                      >
+                        Blockierung aufheben
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 items-end">
+                      <textarea
+                        ref={inputRef}
+                        className="input-base font-normal flex-1 resize-none font-sans"
+                        rows={1}
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        placeholder="Nachricht schreiben …"
+                        maxLength={5000}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            void handleSend();
+                          }
+                        }}
+                        style={{ minHeight: 40, maxHeight: 120 }}
+                      />
+                      <button
+                        className="btn btn-primary btn-sm font-sans !py-2 !px-4 font-bold text-base"
+                        disabled={isSending || !inputText.trim()}
+                        onClick={() => void handleSend()}
+                      >
+                        {isSending ? "…" : "↑"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </>
             ) : (

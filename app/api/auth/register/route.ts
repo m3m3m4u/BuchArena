@@ -8,6 +8,7 @@ type RegisterPayload = {
   email?: string;
   password?: string;
   newsletterOptIn?: boolean;
+  website?: string; // Honeypot-Feld: Wenn ausgefüllt, ist es ein Bot
 };
 
 export async function POST(request: Request) {
@@ -21,6 +22,14 @@ export async function POST(request: Request) {
     }
 
     const body = (await request.json()) as RegisterPayload;
+
+    // Honeypot: Wenn ausgefüllt, lautlos erfolgreichen Status vortäuschen, aber nichts anlegen
+    if (body.website && body.website.trim().length > 0) {
+      return NextResponse.json(
+        { message: "Registrierung erfolgreich. Du kannst dich jetzt einloggen." },
+        { status: 201 }
+      );
+    }
     const username = body.username?.trim();
     const email = body.email?.trim().toLowerCase();
     const password = body.password?.trim();

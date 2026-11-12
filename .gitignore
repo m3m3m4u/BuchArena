@@ -44,3 +44,6 @@ backup_db.py
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated outputs
+/output/

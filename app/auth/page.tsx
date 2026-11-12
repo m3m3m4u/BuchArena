@@ -25,6 +25,7 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [newsletterOptIn, setNewsletterOptIn] = useState(false);
+  const [website, setWebsite] = useState(""); // Honeypot gegen Spambots
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -36,7 +37,7 @@ export default function AuthPage() {
     const payload =
       mode === "login"
         ? { identifier: username, password }
-        : { username, email, password, newsletterOptIn };
+        : { username, email, password, newsletterOptIn, website };
 
     try {
       const response = await fetch(endpoint, {
@@ -113,10 +114,28 @@ export default function AuthPage() {
               </label>
 
               {mode === "register" && (
-                <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
-                  E-Mail
-                  <input className="input-base font-normal" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </label>
+                <>
+                  <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
+                    E-Mail
+                    <input className="input-base font-normal" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  </label>
+                  {/* Honeypot-Feld: für menschliche Nutzer unsichtbar, fängt Bots ab */}
+                  <div
+                    style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0, width: 0, overflow: "hidden" }}
+                    aria-hidden="true"
+                  >
+                    <label htmlFor="auth-website-field">Website</label>
+                    <input
+                      id="auth-website-field"
+                      type="text"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                    />
+                  </div>
+                </>
               )}
 
               <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">

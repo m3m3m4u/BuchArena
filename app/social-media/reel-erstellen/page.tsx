@@ -298,7 +298,7 @@ export default function ReelErstellenPage() {
     if (step !== 3 || origMusikDuration !== null) return;
     (async () => {
       try {
-        const resp = await fetch("/Kurzvideo.pptx");
+        const resp = await fetch("/Kurzvideo2.pptx");
         const ab = await resp.arrayBuffer();
         const { default: JSZip } = await import("jszip");
         const zip = await JSZip.loadAsync(ab);
@@ -502,7 +502,7 @@ export default function ReelErstellenPage() {
         return new XMLSerializer().serializeToString(doc);
       }
 
-      const resp = await fetch("/Kurzvideo.pptx");
+      const resp = await fetch("/Kurzvideo2.pptx");
       const arrayBuffer = await resp.arrayBuffer();
       const zip = await JSZip.loadAsync(arrayBuffer);
 
@@ -690,14 +690,14 @@ export default function ReelErstellenPage() {
     );
   }
 
-  function SlideFrame({ children }: { children: React.ReactNode }) {
+  function SlideFrame({ children, showBar = false }: { children: React.ReactNode; showBar?: boolean }) {
     return (
       <div
         className="relative w-full aspect-[9/16] rounded-lg overflow-hidden select-none shadow-md"
         style={{ background: "#F5F0E8", fontFamily: "'Book Antiqua', 'Palatino Linotype', Georgia, serif" }}
       >
         {children}
-        <KurzvideoBar />
+        {showBar && <KurzvideoBar />}
       </div>
     );
   }
@@ -712,7 +712,7 @@ export default function ReelErstellenPage() {
           ? "Coverdesign: " + truncate(form.coverDesign, 40)
           : geschlecht + " & Coverdesign: " + truncate(autorFull, 30);
         return (
-          <SlideFrame>
+          <SlideFrame showBar>
             <div className="absolute inset-[3%] rounded-[0.4em] bg-white border border-gray-200">
               {/* Cover image */}
               <div className="absolute flex items-center justify-center" style={{ left: "15%", top: "8%", width: "70%", height: "35%" }}>

@@ -18,14 +18,27 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const submission = await col.findOne({ _id: new ObjectId(id) });
     if (!submission) return NextResponse.json({ success: false, error: "Einreichung nicht gefunden" }, { status: 404 });
 
+    const { searchParams } = new URL(request.url);
+    const versionParam = searchParams.get("v") || searchParams.get("version");
+    const isV2 = versionParam === "2" || versionParam === "v2" || versionParam === "02";
+
     // For reel submissions: regenerate PPTX from vorlage data on-the-fly
     if (submission.type === "reel") {
       try {
         const vorlagenCol = await getBucharenaReelVorlagenCollection();
         const vorlage = await vorlagenCol.findOne({ submissionId: id });
         if (vorlage) {
-          const pptxBuffer = await buildKurzVideoPptx(vorlage);
-          const fileName = submission.fileName || `Reel.pptx`;
+          const pptxBuffer = await buildKurzVideoPptx(vorlage, { version: isV2 ? "v2" : "v1" });
+          const safeTitle = (submission.bookTitle || vorlage.buchtitel || "Reel")
+            .replace(/[<>:"/\\|?*]/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+          const safeAuthor = (submission.author || vorlage.autorName || "")
+            .replace(/[<>:"/\\|?*]/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+          const suffix = isV2 ? " (v2)" : "";
+          const fileName = `Reel ${safeTitle}${safeAuthor ? ` von ${safeAuthor}` : ""}${suffix}.pptx`;
           return new NextResponse(Buffer.from(pptxBuffer) as unknown as BodyInit, {
             headers: {
               "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -40,7 +53,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     }
 
     // Support downloading a specific file by index (?file=0, ?file=1)
-    const { searchParams } = new URL(request.url);
     const fileIdx = searchParams.get("file");
 
     let filePath: string;

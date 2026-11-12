@@ -146,6 +146,9 @@ export type UserDocument = {
   emailNotifyFailCount?: number;
   lastSettingsCheckAt?: Date;
   genreTreffpunktFilter?: string[];
+  blockedUsers?: string[];
+  spamFlagged?: boolean;
+  spamReportCount?: number;
 };
 
 const dbName = process.env.MONGODB_DB_NAME ?? "bucharena";
@@ -214,6 +217,7 @@ async function initializeDatabase(db: Db) {
   const buchzirkelChat = db.collection("buchzirkel_chat");
   const gewinnspiele = db.collection("gewinnspiele");
   const gewinnspielteilnahmen = db.collection("gewinnspielteilnahmen");
+  const messageReports = db.collection("message_reports");
 
   // Alle Indizes parallel anlegen — MongoDB legt vorhandene Indizes idempotent als No-op an.
   // Das ist ~10-20x schneller als serielle await-Calls beim Cold-Start.
@@ -296,6 +300,8 @@ async function initializeDatabase(db: Db) {
     db.collection("tausch_bewerbungen").createIndex({ tauschId: 1, status: 1 }),
     db.collection("tausch_bewerbungen").createIndex({ bewerberUsername: 1, createdAt: -1 }),
     db.collection("tausch_bewerbungen").createIndex({ tauschAuthorUsername: 1, createdAt: -1 }),
+    messageReports.createIndex({ reportedUsername: 1, createdAt: -1 }),
+    messageReports.createIndex({ reporterUsername: 1, reportedUsername: 1 }, { unique: true }),
   ]);
 
   // Superadmin beim Serverstart anlegen / Passwort synchronisieren
@@ -494,6 +500,21 @@ export async function getGewinnspieleCollection(): Promise<Collection<Gewinnspie
 export async function getGewinnspielteilnahmenCollection(): Promise<Collection<GewinnspielteilnahmeDocument>> {
   const db = await getDatabase();
   return db.collection<GewinnspielteilnahmeDocument>("gewinnspielteilnahmen");
+}
+
+export type MessageReportDocument = {
+  _id?: ObjectId;
+  reporterUsername: string;
+  reportedUsername: string;
+  messageId?: ObjectId;
+  reason?: string;
+  createdAt: Date;
+  status?: "pending" | "resolved" | "dismissed";
+};
+
+export async function getMessageReportsCollection(): Promise<Collection<MessageReportDocument>> {
+  const db = await getDatabase();
+  return db.collection<MessageReportDocument>("message_reports");
 }
 
 export function isDuplicateKeyError(error: unknown) {

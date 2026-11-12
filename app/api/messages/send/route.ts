@@ -5,6 +5,12 @@ import { getUsersCollection, getMessagesCollection, getMessageConversationsColle
 import type { SendMessagePayload } from "@/lib/messages";
 import { invalidateUnreadCountCacheMany } from "@/lib/messages-unread-cache";
 import { checkRateLimit } from "@/lib/rate-limit";
+import {
+  isSenderTrusted,
+  containsUrl,
+  getColdOutreachCount24h,
+  hasPriorConversation,
+} from "@/lib/spam-protection";
 
 export async function POST(request: Request) {
   try {
@@ -13,8 +19,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
     }
 
-    // Rate-Limit: max 30 Nachrichten pro Minute pro Account.
-    if (!checkRateLimit(`messages:send:${account.username}`, 30, 60_000)) {
+    // Rate-Limit: max 15 Nachrichten pro Minute pro Account (gesenkt von 30).
+    if (!checkRateLimit(`messages:send:${account.username}`, 15, 60_000)) {
       return NextResponse.json(
         { message: "Zu viele Nachrichten in kurzer Zeit. Bitte kurz warten." },
         { status: 429 },
@@ -47,14 +53,101 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Du kannst dir selbst keine Nachricht senden." }, { status: 400 });
     }
 
-    // Prüfe ob Empfänger existiert
+    // Absender und Empfänger aus DB laden
     const users = await getUsersCollection();
-    const recipient = await users.findOne(
-      { username: recipientUsername, status: { $ne: "deactivated" } },
-      { projection: { _id: 1 } }
-    );
+    const [senderUser, recipient] = await Promise.all([
+      users.findOne(
+        { username: account.username },
+        {
+          projection: {
+            role: 1,
+            status: 1,
+            spamFlagged: 1,
+            blockedUsers: 1,
+            profile: 1,
+            speakerProfile: 1,
+            bloggerProfile: 1,
+            testleserProfile: 1,
+            lektorenProfile: 1,
+            verlageProfile: 1,
+          },
+        }
+      ),
+      users.findOne(
+        { username: recipientUsername, status: { $ne: "deactivated" } },
+        { projection: { _id: 1, blockedUsers: 1 } }
+      ),
+    ]);
+
     if (!recipient) {
-      return NextResponse.json({ message: "Empfänger nicht gefunden." }, { status: 404 });
+      return NextResponse.json({ message: "Empfänger nicht gefunden oder deaktiviert." }, { status: 404 });
+    }
+
+    // Prüfe ob Absender wegen Spam gesperrt oder deaktiviert ist
+    if (senderUser?.status === "deactivated" || senderUser?.spamFlagged) {
+      return NextResponse.json(
+        { message: "Dein Konto ist für den Nachrichtenversand gesperrt." },
+        { status: 403 }
+      );
+    }
+
+    // Prüfe ob der Empfänger den Absender blockiert hat
+    if (recipient.blockedUsers?.includes(account.username)) {
+      return NextResponse.json(
+        { message: "Dieser Benutzer empfängt derzeit keine Nachrichten von dir." },
+        { status: 403 }
+      );
+    }
+
+    // Prüfe ob der Absender den Empfänger selbst blockiert hat
+    if (senderUser?.blockedUsers?.includes(recipientUsername)) {
+      return NextResponse.json(
+        { message: "Du hast diesen Benutzer blockiert. Hebe die Blockierung zuerst auf." },
+        { status: 400 }
+      );
+    }
+
+    // ── SPAM-SCHUTZ: Erstkontakt (Cold Outreach) prüfen ──
+    const hasPrior = await hasPriorConversation(account.username, recipientUsername);
+    if (!hasPrior && !rawThreadId) {
+      const isTrusted = await isSenderTrusted(account.username, senderUser);
+
+      if (!isTrusted) {
+        // Nicht-vertrauenswürdiger / neuer Account ohne Profil oder Buch:
+        // 1. Keine externen Links erlaubt
+        if (containsUrl(subject) || containsUrl(body)) {
+          return NextResponse.json(
+            {
+              message:
+                "Aus Sicherheitsgründen dürfen Konten ohne ausgefülltes Profil oder Bücher keine Web-Links versenden.",
+            },
+            { status: 400 }
+          );
+        }
+
+        // 2. Strenges Limit für neue Kontakte: max 3 pro 24 Stunden
+        const coldCount = await getColdOutreachCount24h(account.username);
+        if (coldCount >= 3) {
+          return NextResponse.json(
+            {
+              message:
+                "Sicherheitslimit erreicht: Konten ohne Profil können maximal 3 neue Kontakte pro 24 Stunden anschreiben. Bitte vervollständige dein Profil oder warte bis morgen.",
+            },
+            { status: 429 }
+          );
+        }
+      } else {
+        // Auch für etablierte Accounts: Massenanschreiben begrenzen (max 20 neue Kontakte pro 24h)
+        const coldCount = await getColdOutreachCount24h(account.username);
+        if (coldCount >= 20) {
+          return NextResponse.json(
+            {
+              message: "Tageslimit für neue Konversationen erreicht (maximal 20 neue Kontakte pro Tag).",
+            },
+            { status: 429 }
+          );
+        }
+      }
     }
 
     const messages = await getMessagesCollection();
