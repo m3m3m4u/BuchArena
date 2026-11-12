@@ -249,7 +249,7 @@ export async function GET(request: Request) {
         recipientUsername: c.latestRecipient,
         latestSender: c.latestSender,
         partner,
-        displayName: displayNameMap.get(partner) ?? "",
+        displayName: displayNameMap.get(partner) || (partner === "BuchArena" ? "BuchArena Redaktion" : ""),
         profileImage: profileImageMap.get(partner) ?? "",
         subject: c.latestSubject,
         body: c.latestBody,

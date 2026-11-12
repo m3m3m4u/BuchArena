@@ -1207,12 +1207,18 @@ function NachrichtenPageInner() {
                     )}
                   </div>
                   <div className="flex flex-col font-sans">
-                    <Link
-                      href={`/autor/${activePartner}`}
-                      className="font-sans font-bold text-sm no-underline text-arena-blue hover:underline"
-                    >
-                      {activePartner}
-                    </Link>
+                    {activePartner === "BuchArena" ? (
+                      <span className="font-sans font-bold text-sm text-arena-blue">
+                        BuchArena Redaktion
+                      </span>
+                    ) : (
+                      <Link
+                        href={`/autor/${activePartner}`}
+                        className="font-sans font-bold text-sm no-underline text-arena-blue hover:underline"
+                      >
+                        {activePartner}
+                      </Link>
+                    )}
                     {activePartnerDisplayName && activePartnerDisplayName !== activePartner && (
                       <span className="font-sans text-xs text-arena-muted leading-tight">
                         {activePartnerDisplayName}
@@ -1220,35 +1226,37 @@ function NachrichtenPageInner() {
                     )}
                   </div>
                   {/* Aktionen: Spam melden, Blockieren, Admin Löschen */}
-                  <div className="ml-auto flex items-center gap-1.5 flex-wrap">
-                    <button
-                      className="btn btn-sm font-sans !py-1 !px-2 text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100 transition-colors text-xs"
-                      onClick={() => void handleReportSpam()}
-                      title="Diesen Benutzer als Spam melden"
-                    >
-                      🚩 Spam melden
-                    </button>
-                    <button
-                      className={`btn btn-sm font-sans !py-1 !px-2 text-xs transition-colors ${
-                        isPartnerBlocked
-                          ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                          : "text-arena-danger bg-red-50 border-red-200 hover:bg-red-100"
-                      }`}
-                      onClick={() => void handleToggleBlock()}
-                      title={isPartnerBlocked ? "Blockierung aufheben" : "Benutzer blockieren"}
-                    >
-                      {isPartnerBlocked ? "✓ Entblockieren" : "🚫 Blockieren"}
-                    </button>
-                    {isAdmin && (
+                  {activePartner !== "BuchArena" && (
+                    <div className="ml-auto flex items-center gap-1.5 flex-wrap">
                       <button
-                        className="btn btn-sm font-sans !py-1 !px-2 text-arena-danger bg-arena-danger/10 border-arena-danger/20 hover:bg-arena-danger hover:text-white transition-colors text-xs"
-                        onClick={() => void handleDeleteConversation()}
-                        title="Gesamte Unterhaltung löschen"
+                        className="btn btn-sm font-sans !py-1 !px-2 text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100 transition-colors text-xs"
+                        onClick={() => void handleReportSpam()}
+                        title="Diesen Benutzer als Spam melden"
                       >
-                        Unterhaltung löschen
+                        🚩 Spam melden
                       </button>
-                    )}
-                  </div>
+                      <button
+                        className={`btn btn-sm font-sans !py-1 !px-2 text-xs transition-colors ${
+                          isPartnerBlocked
+                            ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            : "text-arena-danger bg-red-50 border-red-200 hover:bg-red-100"
+                        }`}
+                        onClick={() => void handleToggleBlock()}
+                        title={isPartnerBlocked ? "Blockierung aufheben" : "Benutzer blockieren"}
+                      >
+                        {isPartnerBlocked ? "✓ Entblockieren" : "🚫 Blockieren"}
+                      </button>
+                      {isAdmin && (
+                        <button
+                          className="btn btn-sm font-sans !py-1 !px-2 text-arena-danger bg-arena-danger/10 border-arena-danger/20 hover:bg-arena-danger hover:text-white transition-colors text-xs"
+                          onClick={() => void handleDeleteConversation()}
+                          title="Gesamte Unterhaltung löschen"
+                        >
+                          Unterhaltung löschen
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Nachrichten-Bereich */}
@@ -1289,6 +1297,10 @@ function NachrichtenPageInner() {
                       >
                         Blockierung aufheben
                       </button>
+                    </div>
+                  ) : activePartner === "BuchArena" ? (
+                    <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-center text-xs text-arena-blue font-sans">
+                      ℹ️ Dies ist ein offizieller Benachrichtigungskanal der BuchArena. Antworten sind hier nicht möglich.
                     </div>
                   ) : (
                     <div className="flex gap-2 items-end">

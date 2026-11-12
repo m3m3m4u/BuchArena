@@ -344,6 +344,22 @@ async function initializeDatabase(db: Db) {
     // Mindestens Rolle korrigieren, auch ohne Env-Variable
     await users.updateOne({ username: "Kopernikus" }, { $set: { role: "SUPERADMIN" } });
   }
+
+  // System-Account "BuchArena" für offizielle Benachrichtigungen sicherstellen
+  const existingBuchArena = await users.findOne(
+    { username: "BuchArena" },
+    { projection: { _id: 1 } }
+  );
+  if (!existingBuchArena) {
+    await users.insertOne({
+      username: "BuchArena",
+      email: "noreply@bucharena.org",
+      displayName: "BuchArena Redaktion",
+      passwordHash: "!SYSTEM_LOCKED_ACCOUNT!",
+      role: "ADMIN",
+      createdAt: new Date(),
+    });
+  }
 }
 
 export async function getDatabase(): Promise<Db> {
