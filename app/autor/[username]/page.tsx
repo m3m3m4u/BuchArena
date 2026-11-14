@@ -214,18 +214,20 @@ export default function AuthorProfilePage({ params }: PageProps) {
           <p className="font-sans text-red-700 text-sm mt-4">{message}</p>
         ) : (
           <>
-            <div className="grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
-              <div
-                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light bg-gradient-to-br from-arena-blue/10 to-indigo-100 text-arena-blue font-bold text-xl select-none shadow-inner"
-                style={profileImageUrl ? {
-                  backgroundImage: `url(${profileImageUrl})`,
-                  backgroundPosition: `${profileCrop?.x ?? 50}% ${profileCrop?.y ?? 50}%`,
-                  backgroundSize: `${(profileCrop?.zoom ?? 1) * 100}%`,
-                  backgroundRepeat: "no-repeat",
-                } : undefined}
-              >
-                {!profileImageUrl && <span className="font-sans tracking-wider">{getInitials(visibleName)}</span>}
-              </div>
+            <div className={!isUnclaimed ? "grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center" : ""}>
+              {!isUnclaimed && (
+                <div
+                  className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light bg-gradient-to-br from-arena-blue/10 to-indigo-100 text-arena-blue font-bold text-xl select-none shadow-inner"
+                  style={profileImageUrl ? {
+                    backgroundImage: `url(${profileImageUrl})`,
+                    backgroundPosition: `${profileCrop?.x ?? 50}% ${profileCrop?.y ?? 50}%`,
+                    backgroundSize: `${(profileCrop?.zoom ?? 1) * 100}%`,
+                    backgroundRepeat: "no-repeat",
+                  } : undefined}
+                >
+                  {!profileImageUrl && <span className="font-sans tracking-wider">{getInitials(visibleName)}</span>}
+                </div>
+              )}
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">{visibleName}</h1>
