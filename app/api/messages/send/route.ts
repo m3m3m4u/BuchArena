@@ -75,12 +75,19 @@ export async function POST(request: Request) {
       ),
       users.findOne(
         { username: recipientUsername, status: { $ne: "deactivated" } },
-        { projection: { _id: 1, blockedUsers: 1 } }
+        { projection: { _id: 1, blockedUsers: 1, isUnclaimed: 1 } }
       ),
     ]);
 
     if (!recipient) {
       return NextResponse.json({ message: "Empfänger nicht gefunden oder deaktiviert." }, { status: 404 });
+    }
+
+    if (recipient.isUnclaimed) {
+      return NextResponse.json(
+        { message: "Dieser Katalogeintrag wurde noch nicht vom Autor beansprucht und kann keine Nachrichten empfangen." },
+        { status: 400 }
+      );
     }
 
     // Prüfe ob Absender wegen Spam gesperrt oder deaktiviert ist

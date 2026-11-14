@@ -279,7 +279,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
               </div>
             )}
 
-            {loggedInUsername && loggedInUsername !== username && (
+            {!isUnclaimed && loggedInUsername && loggedInUsername !== username && (
               <div className="my-3">
                 <button className="btn font-sans" onClick={() => { setShowCompose(true); setComposeMsg(""); }}>
                   Nachricht senden
@@ -287,7 +287,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
               </div>
             )}
 
-            {showCompose && (
+            {!isUnclaimed && showCompose && (
               <div className="overlay-backdrop" onClick={() => setShowCompose(false)}>
                 <div className="card gap-4" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-between">
@@ -431,7 +431,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
               </div>
             )}
 
-            <KooperationenAnzeige username={username} isAutor={true} />
+            {!isUnclaimed && <KooperationenAnzeige username={username} isAutor={true} />}
 
             <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mt-6 mb-3">Bücher von {visibleName}</h2>
             {books.length === 0 ? (
