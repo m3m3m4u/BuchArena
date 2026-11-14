@@ -7,6 +7,7 @@ import { getStoredAccount } from "@/lib/client-account";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 import { GENRE_TOPICS, type GenreTopic } from "@/lib/discussions";
 import { CommentToolbar } from "@/app/components/comment-toolbar";
+import PinIcon from "@/app/components/pin-icon";
 
 type PollVoteItem = { username: string; optionIndex: number };
 type PollReplyItem = { id: string; authorUsername: string; displayName?: string; body: string; createdAt: string };
@@ -495,7 +496,8 @@ export default function GenreDiskussionenPage() {
                       <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                         {d.isPinned && (
                           <span className="inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">
-                            📌 Angepinnt
+                            <PinIcon className="w-3 h-3 text-amber-800" filled />
+                            Angepinnt
                           </span>
                         )}
                         {d.unread && (
@@ -513,7 +515,7 @@ export default function GenreDiskussionenPage() {
                         <span className="text-xs text-arena-muted">zuletzt aktiv {timeAgo(d.lastActivityAt)}</span>
                         {(isAdmin || d.authorUsername === username) && (
                           <button
-                            className={`text-xs px-2 py-0.5 rounded font-medium transition-colors ${
+                            className={`text-xs px-2 py-0.5 rounded font-medium transition-colors inline-flex items-center gap-1 ${
                               d.isPinned
                                 ? "text-amber-800 hover:text-amber-950 bg-amber-100/70 hover:bg-amber-200"
                                 : "text-gray-600 hover:text-arena-blue hover:bg-gray-100"
@@ -524,7 +526,8 @@ export default function GenreDiskussionenPage() {
                               void handleTogglePin(d.id, !d.isPinned);
                             }}
                           >
-                            {d.isPinned ? "📌 Lösen" : "📌 Anpinnen"}
+                            <PinIcon className="w-3 h-3" filled={d.isPinned} />
+                            {d.isPinned ? "Lösen" : "Anpinnen"}
                           </button>
                         )}
                         {isAdmin && (

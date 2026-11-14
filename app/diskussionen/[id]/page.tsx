@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 import { CommentToolbar } from "@/app/components/comment-toolbar";
+import PinIcon from "@/app/components/pin-icon";
 
 type ReactionItem = {
   username: string;
@@ -663,8 +664,9 @@ export default function DiskussionDetailPage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="m-0">{discussion.title}</h1>
                   {discussion.isPinned && (
-                    <span className="font-sans inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap">
-                      📌 Oben angepinnt
+                    <span className="font-sans inline-flex items-center gap-1.5 text-xs bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap">
+                      <PinIcon className="w-3 h-3 text-amber-800" filled />
+                      Oben angepinnt
                     </span>
                   )}
                 </div>
@@ -689,14 +691,15 @@ export default function DiskussionDetailPage() {
               <div className="flex flex-wrap gap-2 mt-3 items-center">
                 {(isAdmin || discussion.authorUsername === username) && (
                   <button
-                    className={`btn btn-sm ${
+                    className={`btn btn-sm inline-flex items-center gap-1.5 ${
                       discussion.isPinned
                         ? "bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200"
                         : "btn-secondary"
                     }`}
                     onClick={handleTogglePin}
                   >
-                    {discussion.isPinned ? "📌 Oben lösen" : "📌 Oben anpinnen"}
+                    <PinIcon className="w-3.5 h-3.5" filled={discussion.isPinned} />
+                    {discussion.isPinned ? "Oben lösen" : "Oben anpinnen"}
                   </button>
                 )}
 
