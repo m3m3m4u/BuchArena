@@ -172,8 +172,8 @@ export default function AutorenPage() {
                   className="block no-underline text-inherit h-full"
                 >
                   <article className="member-card font-sans">
-                    <div className={!author.isUnclaimed ? "grid grid-cols-[72px_1fr] items-start gap-3" : ""}>
-                      {!author.isUnclaimed && (
+                    <div className={author.profileImageUrl ? "grid grid-cols-[72px_1fr] items-start gap-3" : ""}>
+                      {author.profileImageUrl && (
                       <div
                         className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full border border-arena-border bg-arena-bg text-xs text-arena-muted"
                         style={author.profileImageUrl ? {
@@ -183,7 +183,7 @@ export default function AutorenPage() {
                           backgroundRepeat: "no-repeat",
                         } : undefined}
                       >
-                        {!author.profileImageUrl && <span>{getInitials(author.displayName)}</span>}
+
                       </div>
                       )}
                       <div className="min-w-0">

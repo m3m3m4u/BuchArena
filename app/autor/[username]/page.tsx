@@ -214,19 +214,17 @@ export default function AuthorProfilePage({ params }: PageProps) {
           <p className="font-sans text-red-700 text-sm mt-4">{message}</p>
         ) : (
           <>
-            <div className={!isUnclaimed ? "grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center" : ""}>
-              {!isUnclaimed && (
+            <div className={profileImageUrl ? "grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center" : ""}>
+              {profileImageUrl && (
                 <div
-                  className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light bg-gradient-to-br from-arena-blue/10 to-indigo-100 text-arena-blue font-bold text-xl select-none shadow-inner"
-                  style={profileImageUrl ? {
+                  className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light text-arena-blue font-bold text-xl select-none shadow-inner"
+                  style={{
                     backgroundImage: `url(${profileImageUrl})`,
                     backgroundPosition: `${profileCrop?.x ?? 50}% ${profileCrop?.y ?? 50}%`,
                     backgroundSize: `${(profileCrop?.zoom ?? 1) * 100}%`,
                     backgroundRepeat: "no-repeat",
-                  } : undefined}
-                >
-                  {!profileImageUrl && <span className="font-sans tracking-wider">{getInitials(visibleName)}</span>}
-                </div>
+                  }}
+                />
               )}
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -242,7 +240,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
                 {visibleMotto && <p className="font-sans mt-1 text-sm italic text-arena-muted">„{visibleMotto}"</p>}
                 {isUnclaimed && (
                   <p className="font-sans mt-2 text-xs text-arena-muted">
-                    Automatisch erstellter Katalogeintrag.{" "}
+                    Katalogeintrag.{" "}
                     <button
                       type="button"
                       onClick={() => { setShowClaimModal(true); setClaimMsg(""); setClaimSuccess(false); }}
@@ -338,7 +336,6 @@ export default function AuthorProfilePage({ params }: PageProps) {
 
                   {claimSuccess ? (
                     <div className="py-4 text-center">
-                      <div className="text-4xl mb-2">🎉</div>
                       <h3 className="text-base font-bold text-emerald-800 mb-2">Antrag erfolgreich eingereicht!</h3>
                       <p className="text-sm text-arena-muted leading-relaxed">
                         Vielen Dank! Deine Anfrage zur Übernahme des Profils von <strong>{visibleName}</strong> wurde gespeichert. Unser Team prüft deine Angaben und schaltet das Profil nach Verifizierung frei.
