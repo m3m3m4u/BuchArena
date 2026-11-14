@@ -14,6 +14,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import Youtube from "@tiptap/extension-youtube";
 import { useEffect, useState, useCallback, useRef } from "react";
+import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import { extractYoutubeId } from "@/lib/podcast-utils";
 
@@ -514,7 +515,14 @@ export default function PodcastAdminPage() {
 
   return (
     <div className="w-[min(1100px,100%)] mx-auto px-4 py-8 flex flex-col gap-5">
-      <h1 className="text-xl font-bold">Podcast-Verwaltung</h1>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2.5">
+          <Link href="/admin" className="btn btn-sm font-sans" title="Zurück zur Admin-Zentrale">
+            ← Admin
+          </Link>
+          <h1 className="text-xl font-bold m-0">Podcast-Verwaltung</h1>
+        </div>
+      </div>
 
       {/* Tab-Switcher */}
       <div className="flex gap-2 border-b border-gray-200 pb-0">

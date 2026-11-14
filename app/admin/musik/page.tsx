@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 
 type Track = {
@@ -163,7 +164,12 @@ export default function AdminMusikPage() {
   return (
     <main className="top-centered-main">
       <div className="w-full">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">🎵 Musik für Social Media</h1>
+        <div className="flex items-center gap-3 mb-6">
+          <Link href="/admin" className="btn btn-sm font-sans" title="Zurück zur Admin-Zentrale">
+            ← Admin
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900 m-0">🎵 Musik für Social Media</h1>
+        </div>
 
       {/* Upload-Formular */}
       <div className="mb-8 p-5 bg-white rounded-xl border border-gray-200 shadow-sm">

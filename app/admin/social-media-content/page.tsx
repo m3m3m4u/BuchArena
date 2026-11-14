@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import { ProgressiveImg } from "@/app/components/progressive-image";
 
@@ -182,11 +183,16 @@ export default function AdminSocialMediaContentPage() {
   return (
     <main className="top-centered-main">
       <section className="card grid gap-6">
-        <div>
-          <h1 className="text-xl font-bold mb-1">Fertige Inhalte für Social Media</h1>
-          <p className="text-sm text-arena-muted">
-            Hier lädst du Bilder und Videos hoch, die Mitglieder im Tipps-Bereich direkt herunterladen und mit Caption-Vorschlägen nutzen können.
-          </p>
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
+          <div>
+            <h1 className="text-xl font-bold mb-1">Fertige Inhalte für Social Media</h1>
+            <p className="text-sm text-arena-muted">
+              Hier lädst du Bilder und Videos hoch, die Mitglieder im Tipps-Bereich direkt herunterladen und mit Caption-Vorschlägen nutzen können.
+            </p>
+          </div>
+          <Link href="/admin" className="btn btn-sm font-sans" title="Zurück zur Admin-Zentrale">
+            ← Admin
+          </Link>
         </div>
 
         <form onSubmit={handleUpload} className="rounded-xl border border-arena-border p-4 grid gap-3 bg-white">

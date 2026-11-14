@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Zeigt den Kopernikus-User und prüft das Passwort
+// Nutzung: node scripts/check-kopernikus.mjs <passwort>
 
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
@@ -8,7 +9,12 @@ import bcrypt from "bcryptjs";
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || "bucharena";
-const password = process.argv[2] || "12345";
+const password = process.argv[2];
+
+if (!password) {
+  console.error("Bitte das zu prüfende Passwort als Argument übergeben: node scripts/check-kopernikus.mjs <passwort>");
+  process.exit(1);
+}
 
 if (!uri) {
   console.error("MONGODB_URI fehlt!");

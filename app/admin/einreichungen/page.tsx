@@ -183,7 +183,15 @@ export default function BucharenaAdminSubmissions() {
   return (
     <main className="top-centered-main">
       <section className="card" style={{ gap: "1rem" }}>
-        <div><h1>BuchArena – Einreichungen</h1><p className="text-arena-muted mt-1">Verwaltung der eingesendeten PowerPoint-Präsentationen</p></div>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h1>BuchArena – Einreichungen</h1>
+            <p className="text-arena-muted mt-1">Verwaltung der eingesendeten PowerPoint-Präsentationen</p>
+          </div>
+          <Link href="/admin" className="btn btn-sm font-sans" title="Zurück zur Admin-Zentrale">
+            ← Admin
+          </Link>
+        </div>
 
         {/* Filter */}
         <div className="flex items-center gap-2 flex-wrap">

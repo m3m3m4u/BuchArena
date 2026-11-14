@@ -8,6 +8,12 @@ import {
   getStoredAccount,
   type LoggedInAccount,
 } from "@/lib/client-account";
+import {
+  AdminNav,
+  AdminOverviewDashboard,
+  type AdminTab,
+  type AdminCategory,
+} from "./AdminNav";
 
 type UserListEntry = {
   username: string;
@@ -25,6 +31,7 @@ type UserListEntry = {
   spamReportCount?: number;
   spamFlagged?: boolean;
   isSpamSuspect?: boolean;
+  spamWhitelisted?: boolean;
   createdAt?: string | null;
   lastOnline?: string | null;
   newsletterOptIn?: boolean;
@@ -88,9 +95,41 @@ export default function AdminPage() {
   const [message, setMessage] = useState("");
   const [busyUser, setBusyUser] = useState<string | null>(null);
 
-  /* ── Haupt-Reiter ── */
+  /* ── Haupt-Reiter & Navigation ── */
   const router = useRouter();
-  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "nachrichten" | "users" | "buchzirkel" | "katalog">("bdw");
+  const [mainTab, setMainTab] = useState<AdminTab>("overview");
+  const [activeCategory, setActiveCategory] = useState<AdminCategory>("overview");
+
+  const handleSelectTab = useCallback((tab: AdminTab) => {
+    setMainTab(tab);
+    if (tab === "overview") setActiveCategory("overview");
+    else if (tab === "users" || tab === "buchzirkel" || tab === "nachrichten") setActiveCategory("community");
+    else if (tab === "bdw" || tab === "katalog") setActiveCategory("actions");
+    else if (tab === "analytics") setActiveCategory("analytics");
+
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (tab === "overview") {
+        url.searchParams.delete("tab");
+      } else {
+        url.searchParams.set("tab", tab);
+      }
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (
+        tabParam &&
+        ["overview", "bdw", "analytics", "nachrichten", "users", "buchzirkel", "katalog"].includes(tabParam)
+      ) {
+        handleSelectTab(tabParam as AdminTab);
+      }
+    }
+  }, [handleSelectTab]);
 
   /* ── Katalog & Unbeanspruchte Einträge ── */
   const [catalogSettings, setCatalogSettings] = useState<{ hideUnclaimedBooks: boolean; hideUnclaimedAuthors: boolean }>({
@@ -350,7 +389,7 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
-    if (mainTab !== "bdw" || bdwLoaded) return;
+    if ((mainTab !== "bdw" && mainTab !== "overview") || bdwLoaded) return;
     setBdwLoaded(true);
     loadBdwData();
     // Sprecher laden
@@ -360,7 +399,7 @@ export default function AdminPage() {
         displayName: s.displayName as string,
       })));
     }).catch(() => {});
-  }, [mainTab, bdwLoaded]);
+  }, [mainTab, bdwLoaded, loadBdwData]);
 
   // Bücher server-seitig suchen (debounced)
   useEffect(() => {
@@ -402,14 +441,14 @@ export default function AdminPage() {
   }, [analyticsDays]);
 
   useEffect(() => {
-    if (mainTab !== "analytics") return;
+    if ((mainTab !== "analytics" && mainTab !== "overview") || analyticsLoaded) return;
     if (!account || (account.role !== "ADMIN" && account.role !== "SUPERADMIN")) return;
     loadAnalytics();
     setAnalyticsLoaded(true);
-  }, [mainTab, account, loadAnalytics]);
+  }, [mainTab, account, loadAnalytics, analyticsLoaded]);
 
   useEffect(() => {
-    if (mainTab !== "buchzirkel" || buchzirkelLoaded) return;
+    if ((mainTab !== "buchzirkel" && mainTab !== "overview") || buchzirkelLoaded) return;
     setBuchzirkelLoaded(true);
     setBuchzirkelLoading(true);
     fetch("/api/admin/buchzirkel")
@@ -587,12 +626,52 @@ export default function AdminPage() {
       setUsers((prev) =>
         prev.map((u) =>
           u.username === targetUsername
-            ? { ...u, status: "deactivated", spamFlagged: true, isSpamSuspect: false }
+            ? { ...u, status: "deactivated", spamFlagged: true, isSpamSuspect: false, spamWhitelisted: false }
             : u
         )
       );
     } catch (err) {
       setMessage((err as Error).message || "Fehler beim Bereinigen.");
+    } finally {
+      setBusyUser(null);
+    }
+  }
+
+  /* ── Vom Spam-Verdacht freisprechen ── */
+  async function handleClearSpam(targetUsername: string) {
+    if (
+      !confirm(
+        `Möchtest du „${targetUsername}“ vom Spamverdacht freisprechen? Alle Meldungen werden beigelegt, der Verdacht wird aufgehoben und der Account wieder freigegeben.`
+      )
+    ) {
+      return;
+    }
+    setBusyUser(targetUsername);
+    try {
+      const res = await fetch("/api/admin/users/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUsername, action: "clear_spam" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message ?? "Fehler beim Freisprechen.");
+      setMessage(data.message);
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.username === targetUsername
+            ? {
+                ...u,
+                status: "active",
+                spamFlagged: false,
+                isSpamSuspect: false,
+                spamReportCount: 0,
+                spamWhitelisted: true,
+              }
+            : u
+        )
+      );
+    } catch (err) {
+      setMessage((err as Error).message || "Fehler beim Freisprechen.");
     } finally {
       setBusyUser(null);
     }
@@ -760,87 +839,31 @@ export default function AdminPage() {
   return (
     <main className="centered-main font-sans">
       <section className="card font-sans">
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-4 font-sans">
-          <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">Admin</h1>
-        </div>
+        <AdminNav
+          currentTab={mainTab}
+          onSelectTab={handleSelectTab}
+          activeCategory={activeCategory}
+          onSelectCategory={setActiveCategory}
+          account={account}
+        />
 
-        {/* ── Haupt-Reiter ── */}
-        <div className="segmented-control font-sans w-full max-w-4xl mb-4">
-          {([
-            { key: "bdw" as const, label: "Buch der Woche" },
-            { key: "analytics" as const, label: "Analyse" },
-            { key: "nachrichten" as const, label: "Nachrichten" },
-            { key: "buchzirkel" as const, label: "Buchzirkel" },
-            { key: "users" as const, label: "User-Übersicht" },
-            { key: "katalog" as const, label: "Katalog & KI" },
-          ] as { key: "bdw" | "analytics" | "nachrichten" | "buchzirkel" | "users" | "katalog"; label: string }[]).map((t) => (
-            <button
-              key={t.key}
-              className={`segmented-control-btn font-sans ${mainTab === t.key ? "active" : ""}`}
-              onClick={() => setMainTab(t.key)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap gap-2 pt-3 border-t border-arena-border-light font-sans mb-6">
-          <span className="font-sans text-xs text-arena-muted w-full font-bold mb-1">Verwaltung & Inhalte:</span>
-          <button
-            className="btn btn-sm font-sans"
-            onClick={() => router.push("/admin/news")}
-          >
-            News
-          </button>
-          <button
-            className="btn btn-sm font-sans"
-            onClick={() => router.push("/admin/blog")}
-          >
-            Blog
-          </button>
-          <button
-            className="btn btn-sm font-sans"
-            onClick={() => router.push("/admin/podcast")}
-          >
-            Podcast
-          </button>
-          <button
-            className="btn btn-sm font-sans"
-            onClick={() => router.push("/admin/newsletter")}
-          >
-            Newsletter
-          </button>
-          <button
-            className="btn btn-sm font-sans"
-            onClick={() => router.push("/admin/musik")}
-          >
-            Musik
-          </button>
-          <button
-            className="btn btn-sm font-sans"
-            onClick={() => router.push("/admin/einreichungen")}
-          >
-            Einreichungen
-          </button>
-          <button
-            className="btn btn-sm font-sans"
-            onClick={() => router.push("/admin/social-media")}
-          >
-            Social-Media-Galerie
-          </button>
-          <button
-            className="btn btn-sm font-sans"
-            onClick={() => router.push("/admin/social-media-content")}
-          >
-            Fertige Inhalte
-          </button>
-          <button
-            className="btn btn-sm font-sans"
-            onClick={() => router.push("/admin/gewinnspiele")}
-          >
-            Gewinnspiele
-          </button>
-        </div>
+        {/* ══ Tab: Übersicht / Dashboard ══ */}
+        {mainTab === "overview" && (
+          <AdminOverviewDashboard
+            onSelectTab={handleSelectTab}
+            onSelectCategory={setActiveCategory}
+            account={account}
+            stats={{
+              totalUsers: users.length,
+              authorsCount: users.filter((u) => u.role === "AUTOR").length,
+              totalBuchzirkel: buchzirkelList.length,
+              nextDraw: bdwCycleInfo?.formattedNextDraw,
+              bdwTitle: bdwTitle,
+              todayViews: analyticsData?.todayViews,
+              spamCount: users.filter((u) => u.spamFlagged || u.isSpamSuspect).length,
+            }}
+          />
+        )}
 
         {/* ══ Tab: Buch der Woche ══ */}
         {mainTab === "bdw" && (
@@ -1508,19 +1531,33 @@ export default function AdminPage() {
                   return (
                     <tr key={user.username} className={`hover:bg-[#f5f5f5] ${isDeactivated ? "opacity-50" : ""}`}>
                       <td className="p-2 border-b border-arena-border-light">
-                        <div className="font-medium flex items-center gap-1.5">
-                          {user.username}
+                        <div className="font-medium flex items-center gap-1.5 flex-wrap">
+                          <span>{user.username}</span>
                           {user.spamFlagged && (
                             <span className="text-[10px] bg-red-600 text-white font-bold px-1.5 py-0.5 rounded">GESPERRT</span>
+                          )}
+                          {user.spamWhitelisted && !user.isSpamSuspect && (
+                            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded border border-emerald-200" title="Account wurde geprüft und freigesprochen">
+                              ✓ Freigesprochen
+                            </span>
                           )}
                         </div>
                         {user.profileName && <div className="text-xs text-arena-muted">{user.profileName}</div>}
                         <div className="text-xs text-arena-muted break-all">{user.email}</div>
                         {user.isSpamSuspect && (
-                          <div className="mt-1">
+                          <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                             <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-200">
                               ⚠️ Spam-Verdacht {user.spamReportCount ? `(${user.spamReportCount}x gemeldet)` : user.distinctRecipients ? `(${user.distinctRecipients} Kontakte)` : ""}
                             </span>
+                            <button
+                              type="button"
+                              onClick={() => void handleClearSpam(user.username)}
+                              disabled={isBusy}
+                              className="text-[10px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded transition-colors cursor-pointer"
+                              title="Account vom Spam-Verdacht freisprechen"
+                            >
+                              🛡️ Freisprechen
+                            </button>
                           </div>
                         )}
                       </td>
@@ -1687,6 +1724,17 @@ export default function AdminPage() {
                               >
                                 Löschen
                               </button>
+                              {(user.isSpamSuspect || user.spamFlagged || (user.spamReportCount && user.spamReportCount > 0)) && (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm !bg-emerald-600 !text-white hover:!bg-emerald-700 font-medium"
+                                  disabled={isBusy}
+                                  onClick={() => void handleClearSpam(user.username)}
+                                  title="Account vom Spam-Verdacht freisprechen"
+                                >
+                                  🛡️ Freisprechen
+                                </button>
+                              )}
                               {(user.isSpamSuspect || user.spamFlagged || (user.distinctRecipients && user.distinctRecipients > 0)) && (
                                 <button
                                   type="button"
@@ -1723,6 +1771,11 @@ export default function AdminPage() {
                         <strong className="text-[0.95rem]">{user.username}</strong>
                         {user.spamFlagged && (
                           <span className="text-[10px] bg-red-600 text-white font-bold px-1.5 py-0.2 rounded">GESPERRT</span>
+                        )}
+                        {user.spamWhitelisted && !user.isSpamSuspect && (
+                          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded border border-emerald-200" title="Account wurde geprüft und freigesprochen">
+                            ✓ Freigesprochen
+                          </span>
                         )}
                         {user.isSpamSuspect && (
                           <span className="text-[10px] bg-red-100 text-red-700 border border-red-200 font-bold px-1.5 py-0.2 rounded">
@@ -1883,6 +1936,17 @@ export default function AdminPage() {
                           >
                             Löschen
                           </button>
+                          {(user.isSpamSuspect || user.spamFlagged || (user.spamReportCount && user.spamReportCount > 0)) && (
+                            <button
+                              type="button"
+                              className="btn btn-sm !bg-emerald-600 !text-white hover:!bg-emerald-700 font-medium"
+                              disabled={isBusy}
+                              onClick={() => void handleClearSpam(user.username)}
+                              title="Account vom Spam-Verdacht freisprechen"
+                            >
+                              🛡️ Freisprechen
+                            </button>
+                          )}
                           {(user.isSpamSuspect || user.spamFlagged || (user.distinctRecipients && user.distinctRecipients > 0)) && (
                             <button
                               type="button"

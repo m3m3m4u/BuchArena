@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
  * Setzt das Kopernikus-Superadmin-Passwort in der DB auf den Wert
- * aus SUPERADMIN_PASSWORD (oder "12345" als Fallback).
+ * aus SUPERADMIN_PASSWORD in der Umgebungsvariable oder .env.local.
  *
- * Nutzung:  node reset-superadmin.mjs
+ * Nutzung:  SUPERADMIN_PASSWORD="MeinSicheresPasswort" node reset-superadmin.mjs
  */
 import { readFileSync } from "fs";
 import { MongoClient } from "mongodb";
@@ -25,7 +25,12 @@ try {
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME ?? "bucharena";
-const newPassword = process.env.SUPERADMIN_PASSWORD ?? "12345";
+const newPassword = process.env.SUPERADMIN_PASSWORD;
+
+if (!newPassword || newPassword.length < 8) {
+  console.error("FEHLER: SUPERADMIN_PASSWORD muss gesetzt sein und mindestens 8 Zeichen lang sein.");
+  process.exit(1);
+}
 
 if (!uri) {
   console.error("MONGODB_URI ist nicht gesetzt.");

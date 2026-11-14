@@ -623,7 +623,12 @@ export default function BlogAdminPage() {
     <main className="centered-main font-sans">
       <div className="card font-sans">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-4 font-sans">
-          <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">Blog-Verwaltung</h1>
+          <div className="flex items-center gap-2.5">
+            <Link href="/admin" className="btn btn-sm font-sans" title="Zurück zur Admin-Zentrale">
+              ← Admin
+            </Link>
+            <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">Blog-Verwaltung</h1>
+          </div>
           <button type="button" className="btn btn-primary btn-sm font-sans" onClick={openNew}>
             Neuer Beitrag
           </button>

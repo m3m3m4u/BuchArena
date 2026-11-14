@@ -18,11 +18,22 @@
 /data/*.db-wal
 /data/*.db-shm
 
-# misc
+# misc & OS
 .DS_Store
-*.pem
+Thumbs.db
+[Dd]esktop.ini
+ehthumbs.db
 
-# debug
+# security / keys & certificates
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+
+# debug & logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -30,6 +41,15 @@ pnpm-debug.log*
 
 # env files
 .env*
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
 
 # backup
 backup_db.py

@@ -513,7 +513,12 @@ export default function NewsAdminPage() {
     <main className="centered-main font-sans">
       <div className="card font-sans">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-4 font-sans border-b border-arena-border-light pb-3">
-          <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">📰 News-Beiträge</h1>
+          <div className="flex items-center gap-2.5">
+            <Link href="/admin" className="btn btn-sm font-sans" title="Zurück zur Admin-Zentrale">
+              ← Admin
+            </Link>
+            <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">📰 News-Beiträge</h1>
+          </div>
           {view === "list" ? (
             <button type="button" onClick={openNew} className="btn btn-sm btn-primary font-sans">
               + Neuer Beitrag

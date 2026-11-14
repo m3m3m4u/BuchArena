@@ -64,6 +64,7 @@ export async function POST() {
             newsletterOptIn: 1,
             spamFlagged: 1,
             spamReportCount: 1,
+            spamWhitelisted: 1,
           },
         }
       )
@@ -117,15 +118,18 @@ export async function POST() {
       const distinctRecipients = recipientCountMap.get(u.username) ?? 0;
       const spamReportCount = ((u as Record<string, unknown>).spamReportCount as number | undefined) ?? 0;
       const spamFlagged = !!(u as Record<string, unknown>).spamFlagged;
+      const spamWhitelisted = !!(u as Record<string, unknown>).spamWhitelisted;
 
       // Verdachtskriterien:
+      // - Nicht bereits freigesprochen
       // - Bereist als Spammer markiert
       // - Oder von Nutzern gemeldet
       // - Oder kein einziges Profil & keine Bücher, aber hat >= 2 unterschiedliche Nutzer angeschrieben
       const isSpamSuspect =
-        spamFlagged ||
-        spamReportCount > 0 ||
-        (!hasAnyProfile && bookCount === 0 && distinctRecipients >= 2);
+        !spamWhitelisted &&
+        (spamFlagged ||
+          spamReportCount > 0 ||
+          (!hasAnyProfile && bookCount === 0 && distinctRecipients >= 2));
 
       return {
         username: u.username,
@@ -144,6 +148,7 @@ export async function POST() {
         distinctRecipients,
         spamReportCount,
         spamFlagged,
+        spamWhitelisted,
         isSpamSuspect,
         newsletterOptIn: !!(u as Record<string, unknown>).newsletterOptIn,
       };

@@ -13,7 +13,7 @@ import { invalidateUnreadCountCacheMany } from "@/lib/messages-unread-cache";
 
 type StatusPayload = {
   targetUsername?: string;
-  action?: "activate" | "deactivate" | "delete" | "ban_and_purge";
+  action?: "activate" | "deactivate" | "delete" | "ban_and_purge" | "clear_spam";
 };
 
 export async function POST(request: Request) {
@@ -58,11 +58,37 @@ export async function POST(request: Request) {
       );
     }
 
+    if (action === "clear_spam") {
+      // 1. Account vom Spam-Verdacht freisprechen, Zähler zurücksetzen und Whitelist aktivieren
+      await users.updateOne(
+        { username: targetUsername },
+        {
+          $set: {
+            status: "active",
+            spamFlagged: false,
+            spamReportCount: 0,
+            spamWhitelisted: true,
+          },
+        }
+      );
+
+      // 2. Offene Meldungen als erledigt/abgewiesen markieren
+      const reportsCol = await getMessageReportsCollection();
+      await reportsCol.updateMany(
+        { reportedUsername: targetUsername },
+        { $set: { status: "dismissed" } }
+      );
+
+      return NextResponse.json({
+        message: `Benutzer „${targetUsername}“ wurde vom Spam-Verdacht freigesprochen und ist wieder aktiv.`,
+      });
+    }
+
     if (action === "ban_and_purge") {
       // 1. Account dauerhaft deaktivieren und als Spammer markieren
       await users.updateOne(
         { username: targetUsername },
-        { $set: { status: "deactivated", spamFlagged: true } }
+        { $set: { status: "deactivated", spamFlagged: true, spamWhitelisted: false } }
       );
 
       // 2. Alle vom Spammer versendeten Nachrichten finden und löschen

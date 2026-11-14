@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 
 interface GalleryItem {
@@ -126,7 +127,12 @@ export default function AdminSocialMediaGalleryPage() {
   return (
     <main className="top-centered-main">
       <section className="card">
-        <h1 className="text-xl font-bold mb-1">Bildgalerie &ndash; Social-Media-Editor</h1>
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
+          <h1 className="text-xl font-bold m-0">Bildgalerie &ndash; Social-Media-Editor</h1>
+          <Link href="/admin" className="btn btn-sm font-sans" title="Zurück zur Admin-Zentrale">
+            ← Admin
+          </Link>
+        </div>
         <p className="text-sm text-arena-muted mb-5">
           Diese Bilder stehen den Nutzern im Beitrags-Editor als Vorlagen zur Verf&uuml;gung.
         </p>

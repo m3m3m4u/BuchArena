@@ -6,4 +6,14 @@ node_modules
 Dockerfile
 docker-compose.yml
 .dockerignore
-.env*.local
+.env*
+__pycache__
+*.py[cod]
+.venv
+venv
+backups
+docs
+scripts
+.vscode
+output
+*.log

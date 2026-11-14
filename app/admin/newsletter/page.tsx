@@ -9,6 +9,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import Youtube from "@tiptap/extension-youtube";
 import { useEffect, useState, useCallback, useRef } from "react";
+import NextLink from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 
 /* ══════════════════════════════════════════════════════════════
@@ -829,7 +830,12 @@ export default function NewsletterAdminPage() {
 
   return (
     <main className="w-[min(1100px,100%)] mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Newsletter</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <NextLink href="/admin" className="btn btn-sm font-sans" title="Zurück zur Admin-Zentrale">
+          ← Admin
+        </NextLink>
+        <h1 className="text-2xl font-bold text-gray-900 m-0">Newsletter</h1>
+      </div>
 
       <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto">
         {tabs.map((t) => (
