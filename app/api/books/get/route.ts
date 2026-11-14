@@ -85,7 +85,14 @@ export async function GET(request: Request) {
         pageCount: book.pageCount ?? 0,
         language: book.language ?? "",
         description: book.description,
-        buyLinks: applyAmazonOverride(book.buyLinks, book.amazonOverrideUrl),
+        buyLinks: applyAmazonOverride(
+          Array.isArray(book.buyLinks) && book.buyLinks.length > 0
+            ? book.buyLinks
+            : book.amazonAffiliateUrl
+              ? [book.amazonAffiliateUrl]
+              : [],
+          book.amazonOverrideUrl
+        ),
         presentationVideoUrl: book.presentationVideoUrl,
         presentationVideoInternal: book.presentationVideoInternal,
         excerpts: book.excerpts ?? [],

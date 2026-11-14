@@ -34,6 +34,7 @@ export type BookDocument = {
   language: string;
   description: string;
   buyLinks: string[];
+  amazonAffiliateUrl?: string;
   amazonOverrideUrl?: string;
   presentationVideoUrl: string;
   presentationVideoInternal: boolean;
