@@ -13,7 +13,6 @@ __pycache__
 venv
 backups
 docs
-scripts
 .vscode
 output
 *.log
