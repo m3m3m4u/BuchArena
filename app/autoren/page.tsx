@@ -188,7 +188,7 @@ export default function AutorenPage() {
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <h2 className="font-sans m-0 text-base font-bold text-arena-blue truncate">{author.displayName}</h2>
                           {author.isUnclaimed && (
-                            <span className="text-[0.65rem] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                            <span className="text-[0.65rem] font-medium tracking-wide px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
                               Katalog
                             </span>
                           )}

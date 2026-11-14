@@ -214,29 +214,6 @@ export default function AuthorProfilePage({ params }: PageProps) {
           <p className="font-sans text-red-700 text-sm mt-4">{message}</p>
         ) : (
           <>
-            {/* ── Hinweis bei unbeanspruchten KI-/Katalog-Profilen ── */}
-            {isUnclaimed && (
-              <div className="card-tip p-4 mb-5 bg-amber-50/90 border border-amber-200/90 rounded-xl text-amber-950 font-sans shadow-sm">
-                <div className="flex items-start justify-between flex-wrap gap-3">
-                  <div className="flex items-start gap-3 max-w-xl">
-                    <div>
-                      <h3 className="text-sm font-bold text-amber-950 m-0">Katalogeintrag &bull; Noch nicht vom Autor verifiziert</h3>
-                      <p className="text-xs text-amber-900/90 mt-1 leading-relaxed">
-                        Dieses Autorenprofil wurde automatisch für den Buchkatalog angelegt und bisher <strong>nicht von der Autorin / dem Autor persönlich erstellt oder beansprucht</strong>.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => { setShowClaimModal(true); setClaimMsg(""); setClaimSuccess(false); }}
-                    className="btn btn-sm font-sans bg-amber-600 hover:bg-amber-700 text-white border-none shadow-sm whitespace-nowrap"
-                  >
-                    Dieses Profil beanspruchen
-                  </button>
-                </div>
-              </div>
-            )}
-
             <div className="grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
               <div
                 className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light bg-gradient-to-br from-arena-blue/10 to-indigo-100 text-arena-blue font-bold text-xl select-none shadow-inner"
@@ -253,14 +230,26 @@ export default function AuthorProfilePage({ params }: PageProps) {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">{visibleName}</h1>
                   {isUnclaimed && (
-                    <span className="inline-block text-[0.7rem] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
-                      Unbeansprucht
+                    <span className="inline-block text-[0.7rem] font-medium tracking-wide px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                      Katalogeintrag
                     </span>
                   )}
                 </div>
                 {visibleBeruf && <p className="font-sans mt-1 text-sm text-arena-muted">{visibleBeruf}</p>}
                 {visibleCityCountry && <p className="font-sans mt-1 text-sm text-arena-text">{visibleCityCountry}</p>}
                 {visibleMotto && <p className="font-sans mt-1 text-sm italic text-arena-muted">„{visibleMotto}"</p>}
+                {isUnclaimed && (
+                  <p className="font-sans mt-2 text-xs text-arena-muted">
+                    Automatisch erstellter Katalogeintrag.{" "}
+                    <button
+                      type="button"
+                      onClick={() => { setShowClaimModal(true); setClaimMsg(""); setClaimSuccess(false); }}
+                      className="text-xs text-arena-link hover:underline bg-transparent border-none p-0 cursor-pointer font-medium"
+                    >
+                      Bist du dieser Autor? Profil beanspruchen
+                    </button>
+                  </p>
+                )}
               </div>
             </div>
 
