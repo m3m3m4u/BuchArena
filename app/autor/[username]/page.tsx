@@ -24,8 +24,15 @@ const socialIcons: Record<string, React.ReactNode> = {
 };
 
 type AuthorBook = { id: string; title: string; subtitle?: string; genre: string; ageFrom: number; ageTo: number; coverImageUrl?: string };
-type AuthorProfilePayload = { author: { username: string; profile: ProfileData; books: AuthorBook[] } };
+type AuthorProfilePayload = { author: { username: string; displayName?: string; isUnclaimed?: boolean; profile: ProfileData; books: AuthorBook[] } };
 type PageProps = { params: Promise<{ username: string }> };
+
+function getInitials(name: string): string {
+  if (!name) return "A";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 /** Wandelt Social-Media-Handles/-Werte in vollständige URLs um. */
 function toSocialUrl(platform: string, raw: string): string {
@@ -67,11 +74,21 @@ function toSocialUrl(platform: string, raw: string): string {
 export default function AuthorProfilePage({ params }: PageProps) {
   const [username, setUsername] = useState("");
   const [actualUsername, setActualUsername] = useState("");
+  const [isUnclaimed, setIsUnclaimed] = useState(false);
   const [profile, setProfile] = useState<ProfileData>(createDefaultProfile());
   const [books, setBooks] = useState<AuthorBook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [loggedInUsername, setLoggedInUsername] = useState("");
+
+  // Claim modal state
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [claimName, setClaimName] = useState("");
+  const [claimEmail, setClaimEmail] = useState("");
+  const [claimNote, setClaimNote] = useState("");
+  const [claimBusy, setClaimBusy] = useState(false);
+  const [claimMsg, setClaimMsg] = useState("");
+  const [claimSuccess, setClaimSuccess] = useState(false);
 
   // Compose message state
   const [showCompose, setShowCompose] = useState(false);
@@ -97,6 +114,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
         const data = (await res.json()) as AuthorProfilePayload & { message?: string };
         if (!res.ok) throw new Error(data.message ?? "Autorprofil konnte nicht geladen werden.");
         setActualUsername(data.author.username);
+        setIsUnclaimed(Boolean(data.author.isUnclaimed));
         setProfile({ ...createDefaultProfile(), ...data.author.profile });
         setBooks(data.author.books ?? []);
       } catch {
@@ -136,7 +154,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
     ].filter((e) => e.field?.visibility === "public" && e.field?.value);
   }, [profile]);
 
-  const profileImageUrl = (!profile.profileImage.visibility || profile.profileImage.visibility === "public") ? profile.profileImage.value : "";
+  const profileImageUrl = (!isUnclaimed && (!profile.profileImage.visibility || profile.profileImage.visibility === "public")) ? profile.profileImage.value : "";
   const profileCrop = profile.profileImage.crop;
 
   async function handleSendMessage() {
@@ -161,6 +179,32 @@ export default function AuthorProfilePage({ params }: PageProps) {
     }
   }
 
+  async function handleClaimSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setClaimBusy(true);
+    setClaimMsg("");
+    try {
+      const res = await fetch("/api/authors/claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          authorUsername: actualUsername || username,
+          requesterName: claimName,
+          requesterEmail: claimEmail,
+          note: claimNote,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Fehler beim Absenden.");
+      setClaimSuccess(true);
+      setClaimMsg(data.message);
+    } catch (err) {
+      setClaimMsg(err instanceof Error ? err.message : "Fehler beim Absenden der Beanspruchung.");
+    } finally {
+      setClaimBusy(false);
+    }
+  }
+
   return (
     <main className="top-centered-main">
       <section className="card">
@@ -170,9 +214,32 @@ export default function AuthorProfilePage({ params }: PageProps) {
           <p className="font-sans text-red-700 text-sm mt-4">{message}</p>
         ) : (
           <>
+            {/* ── Hinweis bei unbeanspruchten KI-/Katalog-Profilen ── */}
+            {isUnclaimed && (
+              <div className="card-tip p-4 mb-5 bg-amber-50/90 border border-amber-200/90 rounded-xl text-amber-950 font-sans shadow-sm">
+                <div className="flex items-start justify-between flex-wrap gap-3">
+                  <div className="flex items-start gap-3 max-w-xl">
+                    <div>
+                      <h3 className="text-sm font-bold text-amber-950 m-0">Katalogeintrag &bull; Noch nicht vom Autor verifiziert</h3>
+                      <p className="text-xs text-amber-900/90 mt-1 leading-relaxed">
+                        Dieses Autorenprofil wurde automatisch für den Buchkatalog angelegt und bisher <strong>nicht von der Autorin / dem Autor persönlich erstellt oder beansprucht</strong>.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setShowClaimModal(true); setClaimMsg(""); setClaimSuccess(false); }}
+                    className="btn btn-sm font-sans bg-amber-600 hover:bg-amber-700 text-white border-none shadow-sm whitespace-nowrap"
+                  >
+                    Dieses Profil beanspruchen
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
               <div
-                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light bg-arena-bg text-xs text-arena-muted"
+                className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light bg-gradient-to-br from-arena-blue/10 to-indigo-100 text-arena-blue font-bold text-xl select-none shadow-inner"
                 style={profileImageUrl ? {
                   backgroundImage: `url(${profileImageUrl})`,
                   backgroundPosition: `${profileCrop?.x ?? 50}% ${profileCrop?.y ?? 50}%`,
@@ -180,10 +247,17 @@ export default function AuthorProfilePage({ params }: PageProps) {
                   backgroundRepeat: "no-repeat",
                 } : undefined}
               >
-                {!profileImageUrl && <span className="font-sans">Kein Bild</span>}
+                {!profileImageUrl && <span className="font-sans tracking-wider">{getInitials(visibleName)}</span>}
               </div>
               <div>
-                <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">{visibleName}</h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">{visibleName}</h1>
+                  {isUnclaimed && (
+                    <span className="inline-block text-[0.7rem] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                      Unbeansprucht
+                    </span>
+                  )}
+                </div>
                 {visibleBeruf && <p className="font-sans mt-1 text-sm text-arena-muted">{visibleBeruf}</p>}
                 {visibleCityCountry && <p className="font-sans mt-1 text-sm text-arena-text">{visibleCityCountry}</p>}
                 {visibleMotto && <p className="font-sans mt-1 text-sm italic text-arena-muted">„{visibleMotto}"</p>}
@@ -252,6 +326,107 @@ export default function AuthorProfilePage({ params }: PageProps) {
                     </button>
                     <button className="btn font-sans" onClick={() => setShowCompose(false)}>Abbrechen</button>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Modal: Profil beanspruchen ── */}
+            {showClaimModal && (
+              <div className="overlay-backdrop" onClick={() => setShowClaimModal(false)}>
+                <div className="card font-sans max-w-lg w-full p-6 bg-white shadow-xl rounded-2xl" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-between mb-3 border-b border-arena-border-light pb-3">
+                    <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0">Profil beanspruchen</h2>
+                    <button
+                      type="button"
+                      onClick={() => setShowClaimModal(false)}
+                      className="text-arena-muted hover:text-arena-text text-lg font-bold p-1"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {claimSuccess ? (
+                    <div className="py-4 text-center">
+                      <div className="text-4xl mb-2">🎉</div>
+                      <h3 className="text-base font-bold text-emerald-800 mb-2">Antrag erfolgreich eingereicht!</h3>
+                      <p className="text-sm text-arena-muted leading-relaxed">
+                        Vielen Dank! Deine Anfrage zur Übernahme des Profils von <strong>{visibleName}</strong> wurde gespeichert. Unser Team prüft deine Angaben und schaltet das Profil nach Verifizierung frei.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setShowClaimModal(false)}
+                        className="btn btn-primary font-sans mt-4"
+                      >
+                        Schließen
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleClaimSubmit} className="grid gap-4">
+                      <p className="text-xs text-arena-muted leading-relaxed m-0">
+                        Bist du <strong>{visibleName}</strong> oder vertrittst du die Autorin / den Autor offiziell (z. B. Verlag, Literaturagentur)? Reiche hier deinen Antrag ein, um das Profil eigenständig zu verwalten.
+                      </p>
+
+                      <div>
+                        <label className="block text-xs font-bold text-arena-blue mb-1">Dein vollständiger Name *</label>
+                        <input
+                          type="text"
+                          required
+                          value={claimName}
+                          onChange={(e) => setClaimName(e.target.value)}
+                          placeholder="z. B. Max Mustermann"
+                          className="input-base w-full text-sm font-sans"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-arena-blue mb-1">Deine geschäftliche E-Mail-Adresse *</label>
+                        <input
+                          type="email"
+                          required
+                          value={claimEmail}
+                          onChange={(e) => setClaimEmail(e.target.value)}
+                          placeholder="z. B. autor@verlag.de oder kontakt@autor.de"
+                          className="input-base w-full text-sm font-sans"
+                        />
+                        <span className="text-[0.7rem] text-arena-muted mt-0.5 block">Bitte nutze idealerweise eine E-Mail deiner offiziellen Domain oder Verlagsadresse zur schnellen Verifizierung.</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-arena-blue mb-1">Nachweis / Bemerkung</label>
+                        <textarea
+                          rows={3}
+                          value={claimNote}
+                          onChange={(e) => setClaimNote(e.target.value)}
+                          placeholder="z. B. Link zu deiner offiziellen Website, Impressum oder Social-Media-Kanal..."
+                          className="input-base w-full text-sm font-sans"
+                        />
+                      </div>
+
+                      {claimMsg && (
+                        <div className="text-xs font-semibold p-2.5 rounded bg-red-50 text-red-700">
+                          {claimMsg}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-arena-border-light">
+                        <button
+                          type="button"
+                          onClick={() => setShowClaimModal(false)}
+                          className="btn btn-sm font-sans"
+                          disabled={claimBusy}
+                        >
+                          Abbrechen
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={claimBusy}
+                          className="btn btn-sm btn-primary font-sans"
+                        >
+                          {claimBusy ? "Wird eingereicht..." : "Beanspruchung absenden"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               </div>
             )}

@@ -81,10 +81,11 @@ type BookDetail = {
   presentationVideoUrl: string;
   presentationVideoInternal: boolean;
   excerpts: BookExcerpt[];
+  isUnclaimed?: boolean;
   createdAt: string;
 };
 
-type AuthorInfo = { username: string; name: string; imageUrl: string };
+type AuthorInfo = { username: string; name: string; imageUrl: string; isUnclaimed?: boolean };
 type CoAuthorInfo = { username: string; name: string; imageUrl: string };
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -265,10 +266,27 @@ export default function BookDetailPage({ params }: PageProps) {
                   )}
                   {author && (
                     <span className="block text-base font-normal text-arena-muted mt-1 font-sans">
-                      von {author.name || author.username}
+                      von{" "}
+                      <Link href={`/autor/${author.username}`} className="text-arena-link hover:underline">
+                        {author.name || author.username}
+                      </Link>
+                      {author.isUnclaimed && (
+                        <span className="ml-2 inline-block text-[0.7rem] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 align-middle">
+                          Katalogeintrag
+                        </span>
+                      )}
                     </span>
                   )}
                 </h1>
+                {book.isUnclaimed && (
+                  <div className="card-tip p-3 my-3 bg-amber-50/80 border border-amber-200 rounded-lg text-amber-900 text-xs font-sans">
+                    <span className="font-bold">Hinweis (Automatischer Katalogeintrag):</span> Dieses Buch wurde automatisch im BuchArena-Katalog erfasst. Du bist der Autor? Auf dem{" "}
+                    <Link href={`/autor/${book.ownerUsername}`} className="underline font-bold hover:text-amber-950">
+                      Autorenprofil
+                    </Link>{" "}
+                    kannst du diesen Eintrag beanspruchen.
+                  </div>
+                )}
                 {empfehlungen.length > 0 && (
                   <div className="mb-3 flex items-center gap-1.5" title={`${empfehlungen.length} Empfehlung${empfehlungen.length !== 1 ? "en" : ""}`}>
                     <HeartIcon className="h-5 w-5 text-red-500 flex-shrink-0" />

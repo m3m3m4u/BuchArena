@@ -25,6 +25,9 @@ export type DiscussionDocument = {
   lastActivityAt: Date;
   createdAt: Date;
   reactions?: Reaction[];
+  isPinned?: boolean;
+  pinnedAt?: Date;
+  pinnedBy?: string;
 };
 
 export const ALLOWED_EMOJIS = ["👍", "😊", "❤️", "😂", "🎉", "🤔", "👎"];

@@ -29,6 +29,9 @@ type DiscussionItem = {
   hasBloggerProfile?: boolean;
   isAdmin?: boolean;
   unread?: boolean;
+  isPinned?: boolean;
+  pinnedAt?: string;
+  pinnedBy?: string;
 };
 
 type PollVoteItem = { username: string; optionIndex: number };
@@ -310,6 +313,21 @@ export default function DiskussionenPage() {
     }
   }
 
+  async function handleTogglePin(id: string, pin: boolean) {
+    try {
+      const res = await fetch("/api/discussions/pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, pinned: pin }),
+      });
+      const data = (await res.json()) as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Fehler");
+      await loadDiscussions();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Thema konnte nicht angepinnt/gelöst werden.");
+    }
+  }
+
   async function handleCreate() {
 
     setIsSaving(true);
@@ -491,6 +509,11 @@ export default function DiskussionenPage() {
             ...filteredDiscussions.map((d) => ({ type: "discussion" as const, data: d })),
             ...filteredPolls.map((p) => ({ type: "poll" as const, data: p })),
           ].sort((a, b) => {
+            const aPinned = a.type === "discussion" && Boolean(a.data.isPinned);
+            const bPinned = b.type === "discussion" && Boolean(b.data.isPinned);
+            if (aPinned !== bPinned) {
+              return aPinned ? -1 : 1;
+            }
             if (sortBy === "newest") {
               return new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime();
             }
@@ -523,14 +546,26 @@ export default function DiskussionenPage() {
                     <div
                       key={`d-${d.id}`}
                       onClick={() => router.push(`/diskussionen/${d.id}`)}
-                      className={`flex gap-3 items-start p-4 cursor-pointer hover:shadow-xs transition-all duration-200 no-underline text-inherit ${d.unread ? "border border-arena-yellow bg-arena-yellow/5 hover:bg-arena-yellow/10 rounded-xl" : "card-base hover:border-gray-500"}`}
+                      className={`flex gap-3 items-start p-4 cursor-pointer hover:shadow-xs transition-all duration-200 no-underline text-inherit ${
+                        d.isPinned
+                          ? "border-2 border-amber-400/90 bg-amber-50/25 hover:bg-amber-50/45 rounded-xl shadow-xs"
+                          : d.unread
+                            ? "border border-arena-yellow bg-arena-yellow/5 hover:bg-arena-yellow/10 rounded-xl"
+                            : "card-base hover:border-gray-500"
+                      }`}
                     >
-                      <div className={`p-2.5 rounded-xl flex-shrink-0 mt-0.5 ${d.unread ? "bg-arena-yellow/20 text-arena-blue" : "bg-arena-blue/5 text-arena-blue"}`}>
+                      <div className={`p-2.5 rounded-xl flex-shrink-0 mt-0.5 ${
+                        d.isPinned
+                          ? "bg-amber-100 text-amber-800"
+                          : d.unread
+                            ? "bg-arena-yellow/20 text-arena-blue"
+                            : "bg-arena-blue/5 text-arena-blue"
+                      }`}>
                         <DocumentTextIcon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2 sm:gap-3">
-                          <span className={`font-sans text-sm sm:text-base line-clamp-2 min-w-0 flex-1 ${d.unread ? "font-bold" : "font-semibold"}`}>
+                          <span className={`font-sans text-sm sm:text-base line-clamp-2 min-w-0 flex-1 ${d.unread || d.isPinned ? "font-bold" : "font-semibold"}`}>
                             {d.title}
                           </span>
                           <span className="font-sans text-xs text-arena-muted whitespace-nowrap flex-shrink-0">
@@ -539,6 +574,11 @@ export default function DiskussionenPage() {
                         </div>
                         <div className="font-sans flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs sm:text-sm text-arena-muted mt-1.5">
                           <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                            {d.isPinned && (
+                              <span className="font-sans inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">
+                                📌 Angepinnt
+                              </span>
+                            )}
                             {d.unread && (
                               <span className="font-sans inline-flex items-center gap-1 text-xs bg-arena-yellow text-arena-blue px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0">
                                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-arena-blue/60" />
@@ -557,6 +597,22 @@ export default function DiskussionenPage() {
                             <span className="font-sans text-xs text-arena-muted">
                               zuletzt aktiv {timeAgo(d.lastActivityAt)}
                             </span>
+                            {(isAdmin || d.authorUsername === username) && (
+                              <button
+                                className={`font-sans text-xs px-2 py-0.5 rounded font-medium transition-colors ${
+                                  d.isPinned
+                                    ? "text-amber-800 hover:text-amber-950 bg-amber-100/70 hover:bg-amber-200"
+                                    : "text-gray-600 hover:text-arena-blue hover:bg-gray-100"
+                                }`}
+                                title={d.isPinned ? "Thema oben lösen" : "Thema oben anpinnen"}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void handleTogglePin(d.id, !d.isPinned);
+                                }}
+                              >
+                                {d.isPinned ? "📌 Lösen" : "📌 Anpinnen"}
+                              </button>
+                            )}
                             {isAdmin && (
                               <button
                                 className="font-sans text-xs text-red-500 hover:text-red-700 px-1.5 py-0.5 rounded hover:bg-red-50 transition-colors"

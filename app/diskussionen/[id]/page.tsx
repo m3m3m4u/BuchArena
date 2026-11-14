@@ -24,6 +24,9 @@ type ReplyItem = {
   hasSpeakerProfile?: boolean;
   hasBloggerProfile?: boolean;
   isAdmin?: boolean;
+  isPinned?: boolean;
+  pinnedAt?: string;
+  pinnedBy?: string;
 };
 
 type DiscussionDetail = {
@@ -42,6 +45,9 @@ type DiscussionDetail = {
   hasSpeakerProfile?: boolean;
   hasBloggerProfile?: boolean;
   isAdmin?: boolean;
+  isPinned?: boolean;
+  pinnedAt?: string;
+  pinnedBy?: string;
 };
 
 function formatBody(text: string) {
@@ -526,6 +532,30 @@ export default function DiskussionDetailPage() {
     }
   }
 
+  async function handleTogglePin() {
+    if (!discussion) return;
+    const targetState = !discussion.isPinned;
+    try {
+      const response = await fetch("/api/discussions/pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: discussionId,
+          pinned: targetState,
+        }),
+      });
+      const data = (await response.json()) as { message?: string; success?: boolean; isPinned?: boolean };
+      if (!response.ok) {
+        throw new Error(data.message ?? "Fehler beim Anpinnen/Lösen.");
+      }
+      setDiscussion((prev) => (prev ? { ...prev, isPinned: targetState } : null));
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Fehler beim Anpinnen/Lösen."
+      );
+    }
+  }
+
   function openEditReply(reply: ReplyItem) {
     setEditingReplyId(reply.id);
     setEditingReplyBody(reply.body);
@@ -630,7 +660,14 @@ export default function DiskussionDetailPage() {
             {/* Discussion topic */}
             <article className="grid gap-3">
               <div className="grid gap-1">
-                <h1>{discussion.title}</h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="m-0">{discussion.title}</h1>
+                  {discussion.isPinned && (
+                    <span className="font-sans inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap">
+                      📌 Oben angepinnt
+                    </span>
+                  )}
+                </div>
                 <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-arena-muted">
                   <span className="min-w-0">
                     von <strong>{discussion.displayName || discussion.authorUsername}</strong>{" "}
@@ -649,27 +686,38 @@ export default function DiskussionDetailPage() {
                 }}
               />
 
-              {isAdmin && (
-                <div className="flex gap-2 mt-3">
+              <div className="flex flex-wrap gap-2 mt-3 items-center">
+                {(isAdmin || discussion.authorUsername === username) && (
                   <button
-                    className="btn btn-sm btn-danger"
-                    onClick={handleDeleteDiscussion}
+                    className={`btn btn-sm ${
+                      discussion.isPinned
+                        ? "bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200"
+                        : "btn-secondary"
+                    }`}
+                    onClick={handleTogglePin}
                   >
-                    Löschen
+                    {discussion.isPinned ? "📌 Oben lösen" : "📌 Oben anpinnen"}
                   </button>
-                </div>
-              )}
+                )}
 
-              {discussion.authorUsername === username && (
-                <div className="flex gap-2 mt-3">
+                {discussion.authorUsername === username && (
                   <button
                     className="btn btn-sm"
                     onClick={openEditDiscussion}
                   >
                     Bearbeiten
                   </button>
-                </div>
-              )}
+                )}
+
+                {isAdmin && (
+                  <button
+                    className="btn btn-sm btn-danger"
+                    onClick={handleDeleteDiscussion}
+                  >
+                    Löschen
+                  </button>
+                )}
+              </div>
 
               {/* Reactions on the discussion */}
               <ReactionBar

@@ -99,6 +99,9 @@ export async function POST(request: Request) {
         hasSpeakerProfile: authorProfiles?.hasSpeakerProfile ?? false,
         hasBloggerProfile: authorProfiles?.hasBloggerProfile ?? false,
         isAdmin: authorProfiles?.isAdmin ?? false,
+        isPinned: Boolean(doc.isPinned),
+        pinnedAt: doc.pinnedAt ? new Date(doc.pinnedAt).toISOString() : undefined,
+        pinnedBy: doc.pinnedBy,
       },
     });
   } catch {

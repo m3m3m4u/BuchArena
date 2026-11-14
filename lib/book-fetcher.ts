@@ -20,12 +20,35 @@ export type BookLookupResult = {
 };
 
 /**
- * Erzeugt einen sauberen Amazon-Affiliate-Link mit dem konfigurierten Partner-Tag.
+ * Wandelt eine 13-stellige ISBN (beginnend mit 978) in die 10-stellige ISBN/ASIN um,
+ * die Amazon für direkte /dp/-Produktlinks verlangt.
+ */
+export function isbn13ToIsbn10(isbn13: string): string | null {
+  const clean = isbn13.replace(/[^0-9X]/gi, "");
+  if (clean.length === 10) return clean;
+  if (!clean.startsWith("978") || clean.length !== 13) return null;
+  const core = clean.substring(3, 12);
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(core[i], 10) * (10 - i);
+  }
+  const remainder = sum % 11;
+  const check = (11 - remainder) % 11;
+  const checkChar = check === 10 ? "X" : String(check);
+  return core + checkChar;
+}
+
+/**
+ * Erzeugt einen direkten Amazon-Produktlink (/dp/ASIN) mit deinem Partner-Tag.
  */
 export function buildAmazonAffiliateUrl(isbnOrAsin: string): string {
   const tag = process.env.AMAZON_PARTNER_TAG || "erklaerung-21";
   const cleanId = isbnOrAsin.replace(/[^0-9X]/gi, "");
-  return `https://www.amazon.de/dp/${cleanId}?tag=${tag}`;
+
+  // Wenn es 13-stellig ist, in 10-stellige ASIN/ISBN für den direkten Produkt-Link umrechnen
+  const asin = cleanId.length === 13 ? (isbn13ToIsbn10(cleanId) || cleanId) : cleanId;
+
+  return `https://www.amazon.de/dp/${asin}?tag=${tag}`;
 }
 
 /**

@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
     const books = await getBooksCollection();
 
-    const user = await findUserBySlugOrUsername(username, { username: 1, profile: 1 });
+    const user = await findUserBySlugOrUsername(username, { username: 1, profile: 1, isUnclaimed: 1, displayName: 1 });
 
     if (!user) {
       return NextResponse.json(
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     const rawBooks = await books
       .find(
         { ownerUsername: user.username },
-        { projection: { _id: 1, title: 1, subtitle: 1, genre: 1, ageFrom: 1, ageTo: 1, coverImageUrl: 1 } }
+        { projection: { _id: 1, title: 1, subtitle: 1, genre: 1, ageFrom: 1, ageTo: 1, coverImageUrl: 1, isUnclaimed: 1 } }
       )
       .sort({ createdAt: -1 })
       .toArray();
@@ -45,9 +45,16 @@ export async function GET(request: Request) {
 
     const profile = user.profile ?? createDefaultProfile();
 
+    // Bei unbeanspruchten KI-/Katalog-Profilen: Bild garantiert leer lassen
+    if (user.isUnclaimed && profile.profileImage) {
+      profile.profileImage.value = "";
+    }
+
     return NextResponse.json({
       author: {
         username: user.username,
+        displayName: user.displayName || user.profile?.name?.value || user.username,
+        isUnclaimed: Boolean(user.isUnclaimed),
         profile,
         books: authorBooks,
       },

@@ -104,6 +104,12 @@ export async function isRegisteredAuthorUser(): Promise<boolean> {
     const account = await getServerAccount();
     if (!account) return false;
 
+    // Admins und Superadmins werden nicht durch den Autorenfilter beschränkt,
+    // damit sie importierte Bücher im Frontend prüfen und verwalten können.
+    if (account.role === "ADMIN" || account.role === "SUPERADMIN") {
+      return false;
+    }
+
     const users = await getUsersCollection();
     const user = await users.findOne(
       { username: account.username },

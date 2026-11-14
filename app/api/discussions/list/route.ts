@@ -11,7 +11,7 @@ export async function GET() {
     const discussions = await getDiscussionsCollection();
     const docs = await discussions
       .find({})
-      .sort({ lastActivityAt: -1 })
+      .sort({ isPinned: -1, lastActivityAt: -1 })
       .project({
         authorUsername: 1,
         title: 1,
@@ -20,6 +20,9 @@ export async function GET() {
         replyCount: 1,
         lastActivityAt: 1,
         createdAt: 1,
+        isPinned: 1,
+        pinnedAt: 1,
+        pinnedBy: 1,
         "replies.authorUsername": 1,
       })
       .limit(500)
@@ -94,6 +97,9 @@ export async function GET() {
         hasSpeakerProfile: profiles?.hasSpeakerProfile ?? false,
         hasBloggerProfile: profiles?.hasBloggerProfile ?? false,
         isAdmin: profiles?.isAdmin ?? false,
+        isPinned: Boolean(d.isPinned),
+        pinnedAt: d.pinnedAt ? new Date(d.pinnedAt as Date).toISOString() : undefined,
+        pinnedBy: (d.pinnedBy as string) || undefined,
         unread,
       };
     });

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Leitfaden: Automatisierte Buch- & Autoren-Kataloge mit APIs, KI & Amazon Affiliate</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 1.8cm 1.6cm 2.0cm 1.6cm;
+      @bottom-right {
+        content: counter(page) " / " counter(pages);
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 10pt;
+      line-height: 1.55;
+      color: #1e293b;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Header & Cover Banner */
+    .doc-header {
+      border-bottom: 3px solid #1e3a8a;
+      padding-bottom: 20px;
+      margin-bottom: 25px;
+    }
+
+    .badge-top {
+      display: inline-block;
+      background: #eff6ff;
+      color: #1e40af;
+      font-size: 8pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid #bfdbfe;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: 21pt;
+      line-height: 1.25;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 8px 0;
+      letter-spacing: -0.5px;
+    }
+
+    .doc-subtitle {
+      font-size: 11pt;
+      color: #475569;
+      margin: 0 0 12px 0;
+      font-weight: 500;
+    }
+
+    .meta-bar {
+      display: flex;
+      gap: 20px;
+      font-size: 8.5pt;
+      color: #64748b;
+      background: #f8fafc;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .meta-bar span strong {
+      color: #334155;
+    }
+
+    /* Headings */
+    h2 {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #1e3a8a;
+      border-bottom: 1.5px solid #e2e8f0;
+      padding-bottom: 6px;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h3 {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 16px;
+      margin-bottom: 6px;
+    }
+
+    p {
+      margin: 0 0 10px 0;
+      text-align: justify;
+    }
+
+    ul, ol {
+      margin: 0 0 12px 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 4px;
+    }
+
+    /* Callout Boxes */
+    .callout {
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin: 14px 0;
+      font-size: 9.2pt;
+      page-break-inside: avoid;
+    }
+
+    .callout-legal {
+      background: #fffbeb;
+      border-left: 4px solid #d97706;
+      border-top: 1px solid #fef3c7;
+      border-right: 1px solid #fef3c7;
+      border-bottom: 1px solid #fef3c7;
+      color: #78350f;
+    }
+
+    .callout-tip {
+      background: #f0fdf4;
+      border-left: 4px solid #16a34a;
+      border-top: 1px solid #dcfce7;
+      border-right: 1px solid #dcfce7;
+      border-bottom: 1px solid #dcfce7;
+      color: #14532d;
+    }
+
+    .callout-warning {
+      background: #fef2f2;
+      border-left: 4px solid #dc2626;
+      border-top: 1px solid #fee2e2;
+      border-right: 1px solid #fee2e2;
+      border-bottom: 1px solid #fee2e2;
+      color: #7f1d1d;
+    }
+
+    .callout-info {
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      border-top: 1px solid #dbeafe;
+      border-right: 1px solid #dbeafe;
+      border-bottom: 1px solid #dbeafe;
+      color: #1e3a8a;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      font-size: 9.8pt;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 8.8pt;
+      page-break-inside: avoid;
+    }
+
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Code Blocks */
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 12px 14px;
+      border-radius: 6px;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 8.2pt;
+      line-height: 1.45;
+      overflow-x: auto;
+      margin: 12px 0;
+      page-break-inside: avoid;
+      border: 1px solid #334155;
+    }
+
+    code {
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 8.8pt;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 2px 5px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border: none;
+    }
+
+    .keyword { color: #f43f5e; font-weight: bold; }
+    .fn { color: #38bdf8; }
+    .str { color: #a3e635; }
+    .comment { color: #64748b; font-style: italic; }
+    .num { color: #fb923c; }
+
+    /* Page Breaks */
+    .page-break {
+      page-break-before: always;
+    }
+
+    .avoid-break {
+      page-break-inside: avoid;
+    }
+
+    /* Workflow Diagram Box */
+    .flow-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 26px;
+      height: 26px;
+      background: #1e3a8a;
+      color: #ffffff;
+      font-weight: 700;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9pt;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-content strong {
+      color: #0f172a;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- DOCUMENT HEADER -->
+  <div class="doc-header">
+    <div class="badge-top">Blueprint & Best Practices</div>
+    <h1>Automatisierte Buch- & Autoren-Kataloge</h1>
+    <div class="doc-subtitle">Praxis-Leitfaden für Webanwendungen: APIs, Amazon Affiliate, Cover-Handling, KI-Texte, Urheberrecht & Claim-System</div>
+    
+    <div class="meta-bar">
+      <span><strong>Autor:</strong> BuchArena Engineering</span>
+      <span><strong>Format:</strong> Universal-Architektur für Webprojekte</span>
+      <span><strong>Stand:</strong> November 2026</span>
+      <span><strong>Stack:</strong> Node.js / Next.js / TypeScript / REST-APIs</span>
+    </div>
+  </div>
+
+  <!-- KAPITEL 1 -->
+  <h2>1. Executive Summary & Die 4 Säulen des Systems</h2>
+  <p>
+    Beim Aufbau eines modernen Buchkatalogs mit automatischer Datenübernahme steht man vor drei großen Herausforderungen:
+    <strong>Rechtssicherheit</strong> (Urheberrecht auf Klappentexte, Persönlichkeitsrechte bei Autoren), 
+    <strong>API-Hürden</strong> (harte Amazon API-Sperren ohne Vorab-Umsätze, Rate-Limits bei Google Books) und 
+    <strong>Datenqualität</strong> (kaputte 13-stellige Amazon-Links, unscharfe oder fehlende Cover).
+  </p>
+  <p>
+    Dieser Leitfaden dokumentiert die praxiserprobte Architektur, mit der du auf <em>jeder</em> Website zuverlässig 
+    Buch- und Autorendaten importieren, Affiliate-Einnahmen generieren und die Plattform rechtlich einwandfrei betreiben kannst:
+  </p>
+
+  <div class="avoid-break" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin: 15px 0;">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Open Library REST-API als primäre Datenquelle:</strong> Vollständig kostenlos, unbeschränkt, liefert bibliografische Metadaten (Titel, Autoren, Seitenzahlen, Erscheinungsjahr, Genres) und hochauflösende Cover-IDs ohne API-Key.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Mathematische ISBN-13 zu ISBN-10 (ASIN) Konvertierung:</strong> Verhindert den berüchtigten Amazon-404-Fehler (<em>„Suchen Sie etwas? Tut uns leid...“</em>), da Amazon bei 13-stelligen ISBNs im direkten Pfad <code>/dp/</code> scheitert.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Direkte Affiliate-Link-Synthese:</strong> Umgeht die Hürde der <em>Amazon Creators / PA-API</em> (welche mind. 10 Verkäufe in 30 Tagen fordert), indem voll konforme Produkt-URLs mit deinem Partner-Tag konstruiert werden.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Rechtssichere Trennung & Claim-Workflow:</strong> KI-generierte Zusammenfassungen (kein 1:1 Kopieren von Verlags-Klappentexten), Verzicht auf Web-gescrapte Autorenfotos (Monogramm-Avatare) und ein Button zur Profilbeanspruchung für reale Autoren.
+      </div>
+    </div>
+  </div>
+
+  <!-- KAPITEL 2 -->
+  <div class="page-break"></div>
+  <h2>2. Rechtliche Grundlagen & Compliance (DSGVO, UrhG, KUG)</h2>
+  
+  <p>
+    Wer Bücher und Autoren im Web präsentiert, bewegt sich im Spannungsfeld aus Urheberrecht, Bildrechten und Datenschutz. 
+    Die folgende Matrix zeigt, was erlaubt ist und was zwingend vermieden werden muss:
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Bereich</th>
+        <th style="width: 35%;">Häufiger Fehler (Abmahnrisiko)</th>
+        <th style="width: 40%;">Rechtssichere Lösung</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Klappentexte / Inhaltsangaben</strong></td>
+        <td>1:1 Kopieren des Verlags- oder Amazon-Textes. Diese Texte genießen als Sprachwerke urheberrechtlichen Schutz (§ 2 UrhG).</td>
+        <td><strong>Eigene Inhaltsangabe per KI:</strong> Reine Fakten und Plot-Zusammenfassungen sind gemeinfrei. Die KI formuliert den Text in eigenen Worten neu.</td>
+      </tr>
+      <tr>
+        <td><strong>Buchcover</strong></td>
+        <td>Verwendung für werbliche Zwecke ohne Buchbezug oder Manipulieren des Motivs.</td>
+        <td><strong>Zitatrecht & Händlerprivileg (§ 51 UrhG):</strong> Zur eindeutigen Identifikation des besprochenen/angebotenen Buches zulässig, idealerweise über Open Library CDN eingebunden.</td>
+      </tr>
+      <tr>
+        <td><strong>Autorenfotos</strong></td>
+        <td>Automatisiertes Herunterladen von Autoren-Porträts via Google-Bildersuche. Hohe Abmahngefahr nach § 22 KUG (Recht am eigenen Bild) & UrhG der Fotografen!</td>
+        <td><strong>Keine Fremdfotos für KI-Profile:</strong> Generierung eleganter Monogramm-Avatare (Initialen). Echte Autoren können ihr Foto nach dem Beanspruchen selbst hochladen.</td>
+      </tr>
+      <tr>
+        <td><strong>Kennzeichnung</strong></td>
+        <td>Vortäuschen, dass der bekannte Autor selbst auf der Plattform registriert ist (Irreführung gem. § 5 UWG).</td>
+        <td><strong>Katalog-Disclaimer:</strong> Deutliches Badge <em>„Katalogeintrag • Nicht beansprucht“</em> plus ein Button <em>„Profil beanspruchen“</em>.</td>
+      </tr>
+      <tr>
+        <td><strong>Amazon Affiliate</strong></td>
+        <td>Fehlender Werbehinweis bei Partnerlinks. Führt zur Kündigung des Amazon PartnerNet-Kontos.</td>
+        <td><strong>Transparenzhinweis:</strong> <em>„*Als Amazon-Partner verdiene ich an qualifizierten Verkäufen.“</em> gut sichtbar auf der Buchseite platzieren.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-legal">
+    <div class="callout-title">Rechtlicher Grundsatz für Autorenprofile</div>
+    Öffentliche Daten über Autoren (Name, bibliografische Werke, Geburtsjahr, Auszeichnungen) sind allgemein zugängliche Fakten. 
+    Solange nicht behauptet wird, die Person habe das Profil selbst verfasst, und keine geschützten Porträtfotos unlizenziert verwendet werden, 
+    ist die Anlage eines bibliografischen Eintrags rechtlich zulässig.
+  </div>
+
+  <!-- KAPITEL 3 -->
+  <h2>3. Der API-Vergleich: Warum Open Library der Gewinner ist</h2>
+  
+  <p>Für den automatisierten Abruf von Buchdaten gibt es drei denkbare Schnittstellen:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Kriterium</th>
+        <th>Google Books API</th>
+        <th>Amazon Creators / PA-API</th>
+        <th>Open Library API (Empfehlung)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Kosten & Registrierung</strong></td>
+        <td>Kostenlos, aber API-Key zwingend</td>
+        <td>Kostenlos, aber Affiliate-Konto nötig</td>
+        <td><strong>100% kostenlos, kein API-Key nötig</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Zugangshürden</strong></td>
+        <td>Strikte Rate-Limits (HTTP 429 nach wenigen Anfragen ohne Billing)</td>
+        <td><strong>HTTP 403 AssociateNotEligible:</strong> API erst nutzbar nach mind. 10 qualifizierten Verkäufen in 30 Tagen!</td>
+        <td><strong>Keine Zugangshürde.</strong> Sofort ab Tag 1 in jedem Projekt nutzbar.</td>
+      </tr>
+      <tr>
+        <td><strong>Cover-Bilder</strong></td>
+        <td>Oft Thumbnail-Qualität, viele Einschränkungen</td>
+        <td>Exzellent, aber durch API-Sperre blockiert</td>
+        <td><strong>Große High-Res Covers</strong> über ID-basierte Bild-Server</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-warning">
+    <div class="callout-title">Wichtiger Hinweis: Die Open Library Cover-Falle vermeiden</div>
+    Viele Entwickler rufen Cover über die ISBN ab: <code>https://covers.openlibrary.org/b/isbn/{isbn}-L.jpg</code>.<br>
+    <strong>Problem:</strong> Wenn Open Library dieses konkrete Cover nicht exakt auf die ISBN gemappt hat, sendet der Server ein <strong>transparentes 1x1 GIF von 43 Bytes</strong> zurück (HTTP 200, aber unsichtbar!).<br>
+    <strong>Die Lösung:</strong> Frage stattdessen die Search-API ab, extrahiere die numerische <code>cover_i</code> (z.B. <code>8220145</code>) und binde das Cover über <code>https://covers.openlibrary.org/b/id/{cover_i}-L.jpg</code> ein. Das funktioniert zu fast 100%!
+  </div>
+
+  <!-- KAPITEL 4 -->
+  <div class="page-break"></div>
+  <h2>4. Das Amazon ASIN-Problem & Der ISBN-10 Algorithmus</h2>
+
+  <p>
+    Amazon-Produktseiten verwenden intern die 10-stellige ASIN (Amazon Standard Identification Number). 
+    Bei gedruckten Büchern ist die ASIN <strong>identisch mit der alten 10-stelligen ISBN</strong>.
+  </p>
+
+  <div class="callout callout-info">
+    <div class="callout-title">Analyse: Das Phänomen des Amazon 404-Fehlers</div>
+    Verlinkt man <code>https://www.amazon.de/dp/9783426633090</code> (13 Ziffern), antwortet Amazon mit einer 
+    Fehlerseite (<em>„Tut uns leid. Die eingegebene Webadresse ist keine funktionierende Seite...“</em>).<br>
+    Verlinkt man stattdessen <code>https://www.amazon.de/dp/3426633094</code> (10 Ziffern), öffnet sich 
+    sofort die offizielle Produktseite mit Kauf-Button und funktionierender Partner-Provision!
+  </div>
+
+  <h3>Die mathematische Konvertierung (ISBN-13 ➔ ISBN-10)</h3>
+  <p>
+    Alle modernen Bücher beginnen mit dem EAN-Präfix <code>978</code>. Um daraus die 10-stellige ASIN zu berechnen:
+  </p>
+  <ol>
+    <li>Entferne Bindestriche und schneide das führende <code>978</code> ab (es bleiben 9 Ziffern übrig).</li>
+    <li>Berechne die gewichtete Quersumme: Multipliziere jede Ziffer von links nach rechts mit den Gewichten <code>10, 9, 8, 7, 6, 5, 4, 3, 2</code>.</li>
+    <li>Berechne den Rest modulo 11: <code>rest = summe % 11</code>.</li>
+    <li>Prüfziffer bestimmen: <code>(11 - rest) % 11</code>. Ist das Ergebnis <code>10</code>, ist die Prüfziffer ein <code>'X'</code>.</li>
+  </ol>
+
+  <pre><code><span class="comment">// TypeScript / JavaScript: ISBN-13 zu ISBN-10 / ASIN Konverter</span>
+<span class="keyword">export function</span> <span class="fn">isbn13ToIsbn10</span>(isbn13: <span class="str">string</span>): <span class="str">string</span> | <span class="keyword">null</span> {
+  <span class="keyword">const</span> cleaned = isbn13.replace(<span class="str">/[^0-9X]/gi</span>, <span class="str">""</span>);
+  <span class="keyword">if</span> (cleaned.length === <span class="num">10</span>) <span class="keyword">return</span> cleaned.toUpperCase();
+  <span class="keyword">if</span> (cleaned.length !== <span class="num">13</span> || !cleaned.startsWith(<span class="str">"978"</span>)) <span class="keyword">return null</span>;
+
+  <span class="keyword">const</span> core = cleaned.slice(<span class="num">3</span>, <span class="num">12</span>); <span class="comment">// 9 Kernziffern ohne 978 und ohne alte Prüfziffer</span>
+  <span class="keyword">let</span> sum = <span class="num">0</span>;
+  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="num">0</span>; i &lt; <span class="num">9</span>; i++) {
+    sum += parseInt(core[i], <span class="num">10</span>) * (<span class="num">10</span> - i);
+  }
+
+  <span class="keyword">const</span> remainder = (<span class="num">11</span> - (sum % <span class="num">11</span>)) % <span class="num">11</span>;
+  <span class="keyword">const</span> checkDigit = remainder === <span class="num">10</span> ? <span class="str">"X"</span> : remainder.toString();
+  <span class="keyword">return</span> core + checkDigit;
+}
+
+<span class="comment">// Saubere Amazon-Partnerlink Generierung</span>
+<span class="keyword">export function</span> <span class="fn">buildAmazonAffiliateUrl</span>(isbn: <span class="str">string</span>, partnerTag: <span class="str">string</span>): <span class="str">string</span> {
+  <span class="keyword">const</span> asin = <span class="fn">isbn13ToIsbn10</span>(isbn) || isbn.replace(<span class="str">/[^0-9X]/gi</span>, <span class="str">""</span>);
+  <span class="keyword">return</span> <span class="str">`https://www.amazon.de/dp/<span class="keyword">${</span>asin<span class="keyword">}</span>?tag=<span class="keyword">${</span>encodeURIComponent(partnerTag)<span class="keyword">}</span>`</span>;
+}</code></pre>
+
+  <!-- KAPITEL 5 -->
+  <h2>5. KI-Prompting für Klappentexte & Autoren-Biografien</h2>
+  <p>
+    Um urheberrechtliche Abmahnungen zu verhindern, lässt man ein KI-Modell (OpenAI GPT-4o, Claude 3.5 Sonnet oder Google Gemini) 
+    auf Basis der Open Library Rohdaten eine eigene, ansprechende Inhaltsangabe erstellen.
+  </p>
+
+  <div class="callout callout-tip">
+    <div class="callout-title">Muster: System-Prompt für rechtssichere Buchbeschreibungen</div>
+    <div style="font-family: monospace; font-size: 8.5pt; color: #1e293b; margin-top: 4px;">
+      „Du bist ein literarischer Redakteur. Schreibe eine packende, 2- bis 3-absätzige Inhaltsangabe für das Buch {TITEL} von {AUTOR} (Genre: {GENRE}).<br>
+      REGELN:<br>
+      1. Kopiere niemals Original-Klappentexte des Verlags. Formuliere die Prämisse komplett in eigenen Worten.<br>
+      2. Keine Spoiler über das Ende. Wecke Leselust und skizziere Konflikt und Atmosphäre.<br>
+      3. Neutrale, ansprechende Tonalität für ein literarisches Online-Magazin.“
+    </div>
+  </div>
+
+  <!-- KAPITEL 6 -->
+  <div class="page-break"></div>
+  <h2>6. Autoren-Claims & Monogramm-Avatare im Frontend</h2>
+
+  <p>
+    Damit die Website bei Autoren und Verlagen als seriös und partnerfreundlich wahrgenommen wird, 
+    gehören zwei UI-Komponenten zum Pflichtprogramm:
+  </p>
+
+  <h3>A. Der Monogramm-Avatar (Initialen statt gescraptem Foto)</h3>
+  <p>
+    Statt eines anonymen Platzhalters oder eines unerlaubt gescrapten Fotos werden die Initialen des Autors 
+    in einem eleganten Farbverlaufskreis berechnet. Das sieht hochwertig aus und schützt vor Bildrechte-Abmahnungen:
+  </p>
+  <pre><code><span class="keyword">function</span> <span class="fn">getInitials</span>(name: <span class="str">string</span>): <span class="str">string</span> {
+  <span class="keyword">const</span> parts = name.trim().split(<span class="str">/\s+/</span>).filter(Boolean);
+  <span class="keyword">if</span> (parts.length === <span class="num">0</span>) <span class="keyword">return</span> <span class="str">"?"</span>;
+  <span class="keyword">if</span> (parts.length === <span class="num">1</span>) <span class="keyword">return</span> parts[<span class="num">0</span>].slice(<span class="num">0</span>, <span class="num">2</span>).toUpperCase();
+  <span class="keyword">return</span> (parts[<span class="num">0</span>][<span class="num">0</span>] + parts[parts.length - <span class="num">1</span>][<span class="num">0</span>]).toUpperCase();
+}
+<span class="comment">// Beispiel: "Sebastian Fitzek" ➔ "SF", "Marc-Uwe Kling" ➔ "MK"</span></code></pre>
+
+  <h3>B. Der Claim-Workflow (Profil-Beanspruchung)</h3>
+  <p>
+    Wenn ein registrierter oder realer Autor seine Bücher auf deiner Plattform entdeckt, kann er das Profil 
+    mit einem Klick beanspruchen. So sieht der Datenfluss aus:
+  </p>
+  <ol>
+    <li><strong>Hinweis-Banner im Frontend:</strong> <code>isUnclaimed: true</code> erzeugt den Button <em>„Dieses Profil beanspruchen“</em>.</li>
+    <li><strong>Modal-Formular:</strong> Der Antragsteller gibt Name, E-Mail und einen Verifikations-Nachweis (z.B. Link zur offiziellen Verlagsseite / Impressum) an.</li>
+    <li><strong>Admin-Inbox:</strong> Die Anfrage landet in einer Datenbank-Tabelle / Collection (<code>author_claims</code>) im Status <code>pending</code>.</li>
+    <li><strong>Freigabe:</strong> Der Administrator prüft die Anfrage im Backend. Bei Genehmigung wird <code>isUnclaimed = false</code> gesetzt, und der echte Autor erhält vollen Schreibzugriff.</li>
+  </ol>
+
+  <!-- KAPITEL 7 -->
+  <h2>7. Vollständiger Drop-In Code für andere Webseiten</h2>
+  <p>Das folgende TypeScript-Modul kann direkt in jedes Projekt (Next.js, Express, Nuxt etc.) kopiert werden:</p>
+
+  <pre><code><span class="comment">// lib/book-catalog-service.ts</span>
+<span class="keyword">export interface</span> BookCatalogEntry {
+  title: <span class="str">string</span>;
+  authorName: <span class="str">string</span>;
+  isbn: <span class="str">string</span>;
+  coverUrl: <span class="str">string</span> | <span class="keyword">null</span>;
+  publishYear?: <span class="str">number</span>;
+  amazonAffiliateUrl: <span class="str">string</span>;
+}
+
+<span class="keyword">export async function</span> <span class="fn">lookupBookByIsbn</span>(
+  isbn: <span class="str">string</span>,
+  amazonPartnerTag: <span class="str">string</span>
+): <span class="fn">Promise</span>&lt;BookCatalogEntry | <span class="keyword">null</span>&gt; {
+  <span class="keyword">const</span> cleanIsbn = isbn.replace(<span class="str">/[^0-9X]/gi</span>, <span class="str">""</span>);
+  <span class="keyword">const</span> url = <span class="str">`https://openlibrary.org/search.json?q=<span class="keyword">${</span>cleanIsbn<span class="keyword">}</span>&amp;fields=title,author_name,cover_i,first_publish_year,isbn`</span>;
+
+  <span class="keyword">const</span> res = <span class="keyword">await</span> fetch(url, { headers: { <span class="str">"User-Agent"</span>: <span class="str">"BookCatalogBot/1.0"</span> } });
+  <span class="keyword">if</span> (!res.ok) <span class="keyword">return null</span>;
+
+  <span class="keyword">const</span> data = <span class="keyword">await</span> res.json();
+  <span class="keyword">const</span> doc = data.docs?.[<span class="num">0</span>];
+  <span class="keyword">if</span> (!doc) <span class="keyword">return null</span>;
+
+  <span class="comment">// Zuverlässiges Cover über numerische Cover-ID</span>
+  <span class="keyword">const</span> coverUrl = doc.cover_i
+    ? <span class="str">`https://covers.openlibrary.org/b/id/<span class="keyword">${</span>doc.cover_i<span class="keyword">}</span>-L.jpg`</span>
+    : <span class="keyword">null</span>;
+
+  <span class="keyword">return</span> {
+    title: doc.title || <span class="str">"Unbekannter Titel"</span>,
+    authorName: doc.author_name?.[<span class="num">0</span>] || <span class="str">"Unbekannter Autor"</span>,
+    isbn: cleanIsbn,
+    coverUrl,
+    publishYear: doc.first_publish_year,
+    amazonAffiliateUrl: <span class="fn">buildAmazonAffiliateUrl</span>(cleanIsbn, amazonPartnerTag),
+  };
+}</code></pre>
+
+  <!-- KAPITEL 8 -->
+  <div class="page-break"></div>
+  <h2>8. Die Umgebungsvariablen (.env.local) & Next.js Konfiguration</h2>
+  <p>
+    Damit die Pipeline auf beliebigen Webseiten und Frameworks funktioniert, werden die sensiblen API-Schlüssel, 
+    Partner-Tags und Hostnamen über eine <code>.env.local</code> (bzw. <code>.env</code>) Datei gesteuert.
+  </p>
+
+  <h3>A. Die .env.local Vorlage für Folgeprojekte</h3>
+  <pre><code><span class="comment"># ============================================================
+# 1. AMAZON AFFILIATE & CREATORS API
+# ============================================================</span>
+<span class="comment"># Dein offizieller Amazon Partner-Tag für Tracking & Provisionen</span>
+<span class="str">AMAZON_PARTNER_TAG</span>=<span class="str">"erklaerung-21"</span>
+
+<span class="comment"># Standard-Marktplatz (z. B. www.amazon.de, www.amazon.com)</span>
+<span class="str">AMAZON_MARKETPLACE</span>=<span class="str">"www.amazon.de"</span>
+
+<span class="comment"># Amazon Creators / PA-API OAuth 2.0 (optional, falls API-Zugriff aktiv)
+AMAZON_CLIENT_ID="amzn1.application-oa2-client.YOUR_CLIENT_ID_HERE"
+AMAZON_CLIENT_SECRET="amzn1.oa2-cs.v1.YOUR_CLIENT_SECRET_HERE"
+
+<span class="comment"># ============================================================
+# 2. KI-TEXTGENERIERUNG (EIGENE INHALTSANGABEN / AUTORENBIO)
+# ============================================================</span>
+<span class="comment"># OpenAI, Anthropic oder Gemini Key zum Erzeugen urheberrechtsfreier Texte</span>
+<span class="str">OPENAI_API_KEY</span>=<span class="str">"sk-proj-YOUR_API_KEY_HERE"</span>
+
+<span class="comment"># ============================================================
+# 3. WEBSEITEN-URL & CLAIM-BENACHRICHTIGUNGEN
+# ============================================================</span>
+<span class="comment"># Basis-URL deiner Plattform für Verifizierungs- und Claim-Links</span>
+<span class="str">NEXT_PUBLIC_APP_URL</span>=<span class="str">"https://deinedomain.de"</span>
+
+<span class="comment"># E-Mail-Versand bei eingegangenen Autoren-Beanspruchungen (z.B. Resend)</span>
+<span class="str">RESEND_API_KEY</span>=<span class="str">"re_YOUR_RESEND_KEY"</span>
+<span class="str">MAIL_FROM</span>=<span class="str">"Buch-Portal &lt;noreply@deinedomain.de&gt;"</span>
+
+<span class="comment"># ============================================================
+# 4. DATENBANK (SPEICHERUNG VON BÜCHERN, AUTOREN & CLAIMS)
+# ============================================================</span>
+<span class="str">MONGODB_URI</span>=<span class="str">"mongodb+srv://user:pass@cluster.mongodb.net/dbname"</span>
+<span class="str">MONGODB_DB_NAME</span>=<span class="str">"bucharena"</span></code></pre>
+
+  <h3>B. Wichtig bei Next.js: Bild-Domains freischalten</h3>
+  <p>
+    Wenn du das Next.js Image-Modul (<code>&lt;Image /&gt;</code>) nutzt, blockiert Next.js externe Bilder standardmäßig 
+    aus Sicherheitsgründen. Füge in deiner <code>next.config.ts</code> folgende Remote-Patterns hinzu:
+  </p>
+  <pre><code><span class="comment">// next.config.ts</span>
+<span class="keyword">import type</span> { NextConfig } <span class="keyword">from</span> <span class="str">"next"</span>;
+
+<span class="keyword">const</span> nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      { protocol: <span class="str">"https"</span>, hostname: <span class="str">"covers.openlibrary.org"</span> },
+      { protocol: <span class="str">"https"</span>, hostname: <span class="str">"images-na.ssl-images-amazon.com"</span> },
+      { protocol: <span class="str">"https"</span>, hostname: <span class="str">"*.media-amazon.com"</span> },
+    ],
+  },
+};
+
+<span class="keyword">export default</span> nextConfig;</code></pre>
+
+  <!-- ABSCHLUSS -->
+  <div class="callout callout-tip" style="margin-top: 25px;">
+    <div class="callout-title">Fazit & Empfehlung für Folgeprojekte</div>
+    Mit dieser Kombination aus Open Library, automatischer ISBN-10 Konvertierung, dynamischem Amazon-Affiliate-Tagging 
+    und strikter rechtlicher Kennzeichnung hast du ein <strong>skalierbares, kostenloses und abmahnsicheres Fundament</strong>. 
+    Du benötigst keine kostenpflichtigen Buch-APIs und keine monatelange Wartezeit bei Amazon, um deine Plattform mit echten Büchern zum Leben zu erwecken.
+  </div>
+
+</body>
+</html>

@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     const users = await getUsersCollection();
     const user = await users.findOne(
       { username: book.ownerUsername },
-      { projection: { profile: 1, status: 1 } }
+      { projection: { profile: 1, status: 1, isUnclaimed: 1 } }
     );
 
     // Deaktiviertes Konto oder deaktiviertes Profil: Buch verstecken
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 
     const profile = user?.profile ?? createDefaultProfile();
     const authorImageUrl =
-      profile.profileImage?.visibility === "public" ? profile.profileImage.value : "";
+      !user?.isUnclaimed && profile.profileImage?.visibility === "public" ? profile.profileImage.value : "";
     const authorName =
       profile.name?.visibility === "public" ? profile.name.value : "";
 
@@ -89,12 +89,14 @@ export async function GET(request: Request) {
         presentationVideoUrl: book.presentationVideoUrl,
         presentationVideoInternal: book.presentationVideoInternal,
         excerpts: book.excerpts ?? [],
+        isUnclaimed: Boolean(book.isUnclaimed),
         createdAt: book.createdAt,
       },
       author: {
         username: book.ownerUsername,
         name: authorName,
         imageUrl: authorImageUrl,
+        isUnclaimed: Boolean(user?.isUnclaimed),
       },
       coAuthors: coAuthorInfos,
     });

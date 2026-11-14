@@ -109,6 +109,17 @@ export default function AdminPage() {
   const [catalogSaving, setCatalogSaving] = useState(false);
   const [catalogMsg, setCatalogMsg] = useState("");
   const [catalogLoaded, setCatalogLoaded] = useState(false);
+  type AuthorClaimEntry = {
+    id: string;
+    authorUsername: string;
+    authorDisplayName: string;
+    requesterName: string;
+    requesterEmail: string;
+    note: string;
+    status: "pending" | "approved" | "rejected";
+    createdAt: string;
+  };
+  const [authorClaims, setAuthorClaims] = useState<AuthorClaimEntry[]>([]);
 
   /* ── User-Suche & Paginierung ── */
   const [userSearch, setUserSearch] = useState("");
@@ -421,12 +432,37 @@ export default function AdminPage() {
         const err = await res.json();
         setCatalogMsg(err.message || "Fehler beim Laden.");
       }
+
+      // Claims laden
+      try {
+        const cRes = await fetch("/api/authors/claim");
+        if (cRes.ok) {
+          const cData = await cRes.json();
+          if (cData.claims) setAuthorClaims(cData.claims);
+        }
+      } catch {}
     } catch {
       setCatalogMsg("Netzwerkfehler beim Laden der Katalog-Einstellungen.");
     } finally {
       setCatalogLoading(false);
     }
   }, []);
+
+  const handleProcessClaim = async (claimId: string, action: "approve" | "reject") => {
+    try {
+      const res = await fetch("/api/authors/claim", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claimId, action }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Fehler");
+      setCatalogMsg(data.message);
+      void loadCatalogSettings();
+    } catch (e) {
+      setCatalogMsg(e instanceof Error ? e.message : "Fehler beim Bearbeiten.");
+    }
+  };
 
   const handleToggleCatalogSetting = async (key: "hideUnclaimedBooks" | "hideUnclaimedAuthors", value: boolean) => {
     setCatalogSaving(true);
@@ -2003,6 +2039,70 @@ export default function AdminPage() {
               {catalogMsg && (
                 <div className={`text-xs font-semibold p-2.5 rounded ${catalogMsg.includes("erfolgreich") ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
                   {catalogMsg}
+                </div>
+              )}
+            </div>
+
+            {/* ── Eingegangene Profil-Beanspruchungen ── */}
+            <div className="card p-5 border border-arena-border-light bg-white grid gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-arena-blue m-0 flex items-center gap-2">
+                  <span>📬</span> Profil-Beanspruchungen ({authorClaims.filter(c => c.status === "pending").length} offen)
+                </h3>
+              </div>
+
+              {authorClaims.length === 0 ? (
+                <p className="text-xs text-arena-muted m-0">Bisher sind noch keine Beanspruchungen für Katalogprofile eingegangen.</p>
+              ) : (
+                <div className="grid gap-3">
+                  {authorClaims.map((claim) => (
+                    <div key={claim.id} className="p-3.5 border border-arena-border-light rounded-lg bg-arena-card-light flex flex-col gap-2">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                          <strong className="text-sm text-arena-blue">{claim.authorDisplayName}</strong>
+                          <span className="text-xs text-arena-muted ml-2">(@{claim.authorUsername})</span>
+                        </div>
+                        <span className={`text-[0.7rem] uppercase font-bold px-2 py-0.5 rounded-full ${
+                          claim.status === "approved" ? "bg-emerald-100 text-emerald-800" :
+                          claim.status === "rejected" ? "bg-red-100 text-red-800" :
+                          "bg-amber-100 text-amber-800"
+                        }`}>
+                          {claim.status === "approved" ? "Genehmigt" : claim.status === "rejected" ? "Abgelehnt" : "Ausstehend"}
+                        </span>
+                      </div>
+
+                      <div className="text-xs text-arena-text">
+                        <span>Antragsteller: <strong>{claim.requesterName}</strong></span>
+                        <span className="mx-2">&bull;</span>
+                        <span>E-Mail: <a href={`mailto:${claim.requesterEmail}`} className="text-arena-link underline">{claim.requesterEmail}</a></span>
+                      </div>
+
+                      {claim.note && (
+                        <p className="text-xs text-arena-muted bg-white p-2 rounded border border-arena-border-light/60 m-0">
+                          <strong>Nachweis / Notiz:</strong> {claim.note}
+                        </p>
+                      )}
+
+                      {claim.status === "pending" && (
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-arena-border-light/60">
+                          <button
+                            type="button"
+                            onClick={() => handleProcessClaim(claim.id, "reject")}
+                            className="btn btn-sm text-red-600 hover:bg-red-50 border-red-200 font-sans"
+                          >
+                            Ablehnen
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleProcessClaim(claim.id, "approve")}
+                            className="btn btn-sm btn-primary font-sans"
+                          >
+                            Als Autor freischalten
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
