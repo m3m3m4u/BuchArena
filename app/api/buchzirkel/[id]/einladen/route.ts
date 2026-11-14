@@ -58,10 +58,17 @@ export async function POST(
     const users = await getUsersCollection();
     const zielUser = await users.findOne(
       { username: zielUsername, status: { $ne: "deactivated" } },
-      { projection: { _id: 1, username: 1 } }
+      { projection: { _id: 1, username: 1, isUnclaimed: 1 } }
     );
     if (!zielUser) {
       return NextResponse.json({ message: "Benutzer nicht gefunden." }, { status: 404 });
+    }
+
+    if (zielUser.isUnclaimed) {
+      return NextResponse.json(
+        { message: "Dieser Benutzer ist ein noch nicht beanspruchter Katalogeintrag und kann nicht zu Buchzirkeln eingeladen werden." },
+        { status: 400 }
+      );
     }
 
     // Bereits Teilnehmer?

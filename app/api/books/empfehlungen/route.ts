@@ -126,8 +126,8 @@ export async function POST(req: NextRequest) {
     // Lesezeichen vergeben (max. 3/Tag für Empfehler)
     const pointsAwarded = await awardBuchempfehlung(account.username);
 
-    // +1 Lesezeichen für den Buchbesitzer (ohne Tageslimit)
-    if (book.ownerUsername && book.ownerUsername !== account.username) {
+    // +1 Lesezeichen für den Buchbesitzer (ohne Tageslimit) – nur für echte/beanspruchte Autoren
+    if (book.ownerUsername && book.ownerUsername !== account.username && !book.isUnclaimed) {
       await awardBuchempfehlungErhalten(book.ownerUsername);
 
       // Nachricht an den Autor senden

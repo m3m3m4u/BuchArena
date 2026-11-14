@@ -48,10 +48,17 @@ export async function POST(req: NextRequest) {
     // Prüfe ob Partner aktiv ist und die angegebene Rolle hat
     const partner = await users.findOne(
       { username: partnerUsername, $or: [{ status: { $exists: false } }, { status: "active" }] },
-      { projection: { username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, testleserProfile: 1, lektorenProfile: 1, verlageProfile: 1, displayName: 1 } },
+      { projection: { username: 1, profile: 1, speakerProfile: 1, bloggerProfile: 1, testleserProfile: 1, lektorenProfile: 1, verlageProfile: 1, displayName: 1, isUnclaimed: 1 } },
     );
     if (!partner) {
       return NextResponse.json({ message: "Partner nicht gefunden." }, { status: 404 });
+    }
+
+    if (partner.isUnclaimed) {
+      return NextResponse.json(
+        { message: "Dieser Katalogeintrag wurde noch nicht beansprucht und kann keine Kooperationsanfragen annehmen." },
+        { status: 400 }
+      );
     }
 
     if (!hasRole(partner as unknown as Record<string, unknown>, partnerRole)) {

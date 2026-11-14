@@ -11,6 +11,7 @@ type AuthorDiscoverItem = {
   profileImageCrop?: { x: number; y: number; zoom: number };
   lastOnline: string | null;
   lesezeichenTotal: number;
+  isUnclaimed?: boolean;
   books: Array<{
     title: string;
     genre: string;
@@ -85,10 +86,11 @@ export async function GET() {
         username: user.username,
         displayName,
         profileSlug: user.profileSlug ?? "",
-        profileImageUrl: imgData?.url ?? "",
+        profileImageUrl: user.isUnclaimed ? "" : (imgData?.url ?? ""),
         profileImageCrop: imgData?.crop,
-        lastOnline: lastOnlineByUser.get(user.username) ?? null,
+        lastOnline: user.isUnclaimed ? null : (lastOnlineByUser.get(user.username) ?? null),
         lesezeichenTotal: 0,
+        isUnclaimed: Boolean(user.isUnclaimed),
         books: [],
       });
     }

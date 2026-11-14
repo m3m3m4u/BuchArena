@@ -5,7 +5,14 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { normalizeGenre } from "@/lib/genres";
 
 type AuthorBook = { title: string; genre: string; ageFrom: number; ageTo: number };
-type DiscoverAuthor = { username: string; displayName: string; profileSlug: string; profileImageUrl: string; profileImageCrop?: { x: number; y: number; zoom: number }; lastOnline: string | null; lesezeichenTotal: number; books: AuthorBook[] };
+type DiscoverAuthor = { username: string; displayName: string; profileSlug: string; profileImageUrl: string; profileImageCrop?: { x: number; y: number; zoom: number }; lastOnline: string | null; lesezeichenTotal: number; isUnclaimed?: boolean; books: AuthorBook[] };
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 const PAGE_SIZE = 10;
 
@@ -175,10 +182,17 @@ export default function AutorenPage() {
                           backgroundRepeat: "no-repeat",
                         } : undefined}
                       >
-                        {!author.profileImageUrl && <span>Kein Bild</span>}
+                        {!author.profileImageUrl && <span>{getInitials(author.displayName)}</span>}
                       </div>
                       <div className="min-w-0">
-                        <h2 className="font-sans m-0 text-base font-bold text-arena-blue truncate">{author.displayName}</h2>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <h2 className="font-sans m-0 text-base font-bold text-arena-blue truncate">{author.displayName}</h2>
+                          {author.isUnclaimed && (
+                            <span className="text-[0.65rem] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                              Katalog
+                            </span>
+                          )}
+                        </div>
                         <p className="font-sans mt-0.5 mb-0 text-sm text-arena-text">
                           {author.books.length === 0
                             ? "Noch keine Bücher"
