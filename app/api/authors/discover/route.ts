@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getBooksCollection, getUsersCollection } from "@/lib/mongodb";
 import { getLesezeichenCollection } from "@/lib/lesezeichen";
+import { getCatalogSettings, isRegisteredAuthorUser } from "@/lib/catalog-settings";
 
 type AuthorDiscoverItem = {
   username: string;
@@ -20,17 +21,36 @@ type AuthorDiscoverItem = {
 
 export async function GET() {
   try {
+    const [isAuthor, catalogSettings] = await Promise.all([
+      isRegisteredAuthorUser(),
+      getCatalogSettings(),
+    ]);
+    const shouldHideUnclaimedAuthors = isAuthor || catalogSettings.hideUnclaimedAuthors;
+    const shouldHideUnclaimedBooks = isAuthor || catalogSettings.hideUnclaimedBooks;
+
     const booksCollection = await getBooksCollection();
     const usersCollection = await getUsersCollection();
 
+    const booksFilter: Record<string, unknown> = {};
+    if (shouldHideUnclaimedBooks) {
+      booksFilter.isUnclaimed = { $ne: true };
+    }
+
     const books = await booksCollection
-      .find({}, { projection: { ownerUsername: 1, title: 1, genre: 1, ageFrom: 1, ageTo: 1 } })
+      .find(booksFilter, { projection: { ownerUsername: 1, title: 1, genre: 1, ageFrom: 1, ageTo: 1, isUnclaimed: 1 } })
       .toArray();
+
+    const usersFilter: Record<string, unknown> = {
+      $or: [{ status: { $exists: false } }, { status: "active" }],
+    };
+    if (shouldHideUnclaimedAuthors) {
+      usersFilter.isUnclaimed = { $ne: true };
+    }
 
     const users = await usersCollection
       .find(
-        { $or: [{ status: { $exists: false } }, { status: "active" }] },
-        { projection: { username: 1, displayName: 1, profile: 1, lastOnline: 1, speakerProfile: 1, profileSlug: 1 } }
+        usersFilter,
+        { projection: { username: 1, displayName: 1, profile: 1, lastOnline: 1, speakerProfile: 1, profileSlug: 1, isUnclaimed: 1 } }
       )
       .toArray();
 

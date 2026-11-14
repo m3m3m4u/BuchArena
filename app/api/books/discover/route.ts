@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getBooksCollection, getDatabase } from "@/lib/mongodb";
 import { applyAmazonOverride } from "@/lib/books";
 import { normalizeGenre, getGenreVariants } from "@/lib/genres";
+import { getCatalogSettings, isRegisteredAuthorUser } from "@/lib/catalog-settings";
 
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -12,6 +13,13 @@ export async function GET(request: NextRequest) {
     const books = await getBooksCollection();
     const db = await getDatabase();
     const empfCol = db.collection("buchempfehlungen");
+
+    const [isAuthor, catalogSettings] = await Promise.all([
+      isRegisteredAuthorUser(),
+      getCatalogSettings(),
+    ]);
+    const shouldHideUnclaimedBooks = isAuthor || catalogSettings.hideUnclaimedBooks;
+    const shouldHideUnclaimedAuthors = isAuthor || catalogSettings.hideUnclaimedAuthors;
 
     // Server-seitige Suche per ?q= und Genre-Filter per ?genre=
     const q = request.nextUrl.searchParams.get("q")?.trim();
@@ -25,7 +33,7 @@ export async function GET(request: NextRequest) {
           localField: "ownerUsername",
           foreignField: "username",
           as: "_owner",
-          pipeline: [{ $project: { status: 1, username: 1, displayName: 1, "profile.name.value": 1, "profile.deaktiviert": 1 } }],
+          pipeline: [{ $project: { status: 1, username: 1, displayName: 1, "profile.name.value": 1, "profile.deaktiviert": 1, isUnclaimed: 1 } }],
         },
       },
       { $unwind: { path: "$_owner", preserveNullAndEmptyArrays: true } },
@@ -65,6 +73,13 @@ export async function GET(request: NextRequest) {
       }));
       matchConditions.push(variantConditions.length === 1 ? variantConditions[0] : { $or: variantConditions });
     }
+    if (shouldHideUnclaimedBooks) {
+      matchConditions.push({ isUnclaimed: { $ne: true } });
+    }
+    if (shouldHideUnclaimedAuthors) {
+      matchConditions.push({ "_owner.isUnclaimed": { $ne: true } });
+    }
+
     if (matchConditions.length > 0) {
       pipeline.push({ $match: matchConditions.length === 1 ? matchConditions[0] : { $and: matchConditions } });
     }
@@ -75,6 +90,7 @@ export async function GET(request: NextRequest) {
         $project: {
           _id: 1,
           ownerUsername: 1,
+          isUnclaimed: 1,
           coverImageUrl: 1,
           title: 1,
           subtitle: 1,

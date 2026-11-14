@@ -39,6 +39,8 @@ export type BookDocument = {
   presentationVideoInternal: boolean;
   excerpts: BookExcerpt[];
   coAuthors?: CoAuthorEntry[];
+  isUnclaimed?: boolean;
+  source?: "manual" | "imported";
   createdAt: Date;
 };
 
@@ -59,6 +61,8 @@ export type CreateBookPayload = {
   buyLinks?: string[];
   amazonOverrideUrl?: string;
   presentationVideoUrl?: string;
+  isUnclaimed?: boolean;
+  source?: "manual" | "imported";
 };
 
 export function isAmazonLink(url: string): boolean {

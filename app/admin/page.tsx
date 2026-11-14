@@ -90,7 +90,25 @@ export default function AdminPage() {
 
   /* ── Haupt-Reiter ── */
   const router = useRouter();
-  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "nachrichten" | "users" | "buchzirkel">("bdw");
+  const [mainTab, setMainTab] = useState<"bdw" | "analytics" | "nachrichten" | "users" | "buchzirkel" | "katalog">("bdw");
+
+  /* ── Katalog & Unbeanspruchte Einträge ── */
+  const [catalogSettings, setCatalogSettings] = useState<{ hideUnclaimedBooks: boolean; hideUnclaimedAuthors: boolean }>({
+    hideUnclaimedBooks: false,
+    hideUnclaimedAuthors: false,
+  });
+  const [catalogStats, setCatalogStats] = useState<{
+    totalBooks: number;
+    unclaimedBooks: number;
+    manualBooks: number;
+    totalAuthors: number;
+    unclaimedAuthors: number;
+    manualAuthors: number;
+  } | null>(null);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogSaving, setCatalogSaving] = useState(false);
+  const [catalogMsg, setCatalogMsg] = useState("");
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
 
   /* ── User-Suche & Paginierung ── */
   const [userSearch, setUserSearch] = useState("");
@@ -390,6 +408,55 @@ export default function AdminPage() {
       .finally(() => setBuchzirkelLoading(false));
   }, [mainTab, buchzirkelLoaded]);
 
+  const loadCatalogSettings = useCallback(async () => {
+    setCatalogLoading(true);
+    setCatalogMsg("");
+    try {
+      const res = await fetch("/api/admin/catalog-settings");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.settings) setCatalogSettings(data.settings);
+        if (data.stats) setCatalogStats(data.stats);
+      } else {
+        const err = await res.json();
+        setCatalogMsg(err.message || "Fehler beim Laden.");
+      }
+    } catch {
+      setCatalogMsg("Netzwerkfehler beim Laden der Katalog-Einstellungen.");
+    } finally {
+      setCatalogLoading(false);
+    }
+  }, []);
+
+  const handleToggleCatalogSetting = async (key: "hideUnclaimedBooks" | "hideUnclaimedAuthors", value: boolean) => {
+    setCatalogSaving(true);
+    setCatalogMsg("");
+    const newSettings = { ...catalogSettings, [key]: value };
+    setCatalogSettings(newSettings);
+    try {
+      const res = await fetch("/api/admin/catalog-settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newSettings),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Fehler beim Speichern");
+      if (data.settings) setCatalogSettings(data.settings);
+      if (data.stats) setCatalogStats(data.stats);
+      setCatalogMsg("Einstellung erfolgreich aktualisiert!");
+    } catch (e) {
+      setCatalogMsg(e instanceof Error ? e.message : "Fehler beim Speichern");
+    } finally {
+      setCatalogSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    if (mainTab !== "katalog" || catalogLoaded) return;
+    setCatalogLoaded(true);
+    void loadCatalogSettings();
+  }, [mainTab, catalogLoaded, loadCatalogSettings]);
+
   async function saveBuchDerWoche() {
     setBdwLoading(true);
     setBdwMsg("");
@@ -662,14 +729,15 @@ export default function AdminPage() {
         </div>
 
         {/* ── Haupt-Reiter ── */}
-        <div className="segmented-control font-sans w-full max-w-3xl mb-4">
+        <div className="segmented-control font-sans w-full max-w-4xl mb-4">
           {([
             { key: "bdw" as const, label: "Buch der Woche" },
             { key: "analytics" as const, label: "Analyse" },
             { key: "nachrichten" as const, label: "Nachrichten" },
             { key: "buchzirkel" as const, label: "Buchzirkel" },
             { key: "users" as const, label: "User-Übersicht" },
-          ] as { key: "bdw" | "analytics" | "nachrichten" | "buchzirkel" | "users"; label: string }[]).map((t) => (
+            { key: "katalog" as const, label: "Katalog & KI" },
+          ] as { key: "bdw" | "analytics" | "nachrichten" | "buchzirkel" | "users" | "katalog"; label: string }[]).map((t) => (
             <button
               key={t.key}
               className={`segmented-control-btn font-sans ${mainTab === t.key ? "active" : ""}`}
@@ -1816,6 +1884,139 @@ export default function AdminPage() {
 
         {/* ══ Tab: Nachrichten ══ */}
         {mainTab === "nachrichten" && <BroadcastMessagePanel adminUsername={account.username} />}
+
+        {/* ══ Tab: Katalog & KI-Einstellungen ══ */}
+        {mainTab === "katalog" && (
+          <div className="grid gap-6 font-sans">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h2 className="text-xl font-bold text-arena-blue tracking-tight m-0">Katalog & Unbeanspruchte Einträge</h2>
+                <p className="text-sm text-arena-muted mt-1">
+                  Steuerung der Sichtbarkeit von automatisch importierten oder nicht beanspruchten Büchern und Autoren.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline font-sans"
+                onClick={loadCatalogSettings}
+                disabled={catalogLoading || catalogSaving}
+              >
+                {catalogLoading ? "Laden..." : "Aktualisieren"}
+              </button>
+            </div>
+
+            {/* Statistik-Karten */}
+            {catalogStats && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="card p-4 border border-arena-border-light bg-arena-card-light">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-arena-blue">📚 Bücher-Katalog</span>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-arena-blue/10 text-arena-blue">
+                      {catalogStats.totalBooks} Gesamt
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="text-arena-muted">Manuell angelegt (Echte Autoren):</span>
+                    <span className="font-bold text-emerald-700">{catalogStats.manualBooks}</span>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-sm">
+                    <span className="text-arena-muted">Nicht beansprucht / Importiert:</span>
+                    <span className="font-bold text-amber-700">{catalogStats.unclaimedBooks}</span>
+                  </div>
+                </div>
+
+                <div className="card p-4 border border-arena-border-light bg-arena-card-light">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-arena-blue">👤 Autorenprofile</span>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-arena-blue/10 text-arena-blue">
+                      {catalogStats.totalAuthors} Gesamt
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="text-arena-muted">Manuell registrierte Autoren:</span>
+                    <span className="font-bold text-emerald-700">{catalogStats.manualAuthors}</span>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-sm">
+                    <span className="text-arena-muted">Nicht beanspruchte Verzeichnis-Profile:</span>
+                    <span className="font-bold text-amber-700">{catalogStats.unclaimedAuthors}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Einstellungen / Toggles */}
+            <div className="card p-5 border border-arena-border-light bg-white grid gap-5">
+              <h3 className="text-base font-bold text-arena-blue m-0">Sichtbarkeits-Optionen für die Plattform</h3>
+
+              <div className="flex items-start justify-between gap-4 pb-4 border-b border-arena-border-light">
+                <div className="max-w-xl">
+                  <div className="font-bold text-sm text-arena-blue">Nicht beanspruchte Bücher ausblenden</div>
+                  <p className="text-xs text-arena-muted mt-1 leading-relaxed">
+                    Blendet alle Bücher mit dem Status „nicht beansprucht“ (z. B. automatischer Import) auf der Plattform aus.
+                    Nur manuell von Autoren erfasste Bücher bleiben öffentlich sichtbar.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={catalogSettings.hideUnclaimedBooks}
+                  onClick={() => handleToggleCatalogSetting("hideUnclaimedBooks", !catalogSettings.hideUnclaimedBooks)}
+                  disabled={catalogSaving}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+                    catalogSettings.hideUnclaimedBooks ? "bg-arena-blue" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      catalogSettings.hideUnclaimedBooks ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <div className="flex items-start justify-between gap-4">
+                <div className="max-w-xl">
+                  <div className="font-bold text-sm text-arena-blue">Nicht beanspruchte Autorenprofile ausblenden</div>
+                  <p className="text-xs text-arena-muted mt-1 leading-relaxed">
+                    Blendet unbeanspruchte Katalog-Profile in der Autoren-Übersicht aus.
+                    Nur selbst registrierte und manuell gepflegte Autorenprofile werden angezeigt.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={catalogSettings.hideUnclaimedAuthors}
+                  onClick={() => handleToggleCatalogSetting("hideUnclaimedAuthors", !catalogSettings.hideUnclaimedAuthors)}
+                  disabled={catalogSaving}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+                    catalogSettings.hideUnclaimedAuthors ? "bg-arena-blue" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      catalogSettings.hideUnclaimedAuthors ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {catalogMsg && (
+                <div className={`text-xs font-semibold p-2.5 rounded ${catalogMsg.includes("erfolgreich") ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
+                  {catalogMsg}
+                </div>
+              )}
+            </div>
+
+            {/* Informations-Box zur Autoren-Regel */}
+            <div className="card-tip p-4 flex items-start gap-3 bg-blue-50/70 border border-blue-200/80 rounded-lg">
+              <span className="text-xl">ℹ️</span>
+              <div className="text-xs text-blue-900 leading-relaxed">
+                <strong className="block text-sm font-bold mb-1">Automatische Autoren-Schutzregel:</strong>
+                Registrierte Benutzer, die selbst ein Autorenprofil besitzen, sehen auf BuchArena <strong>stets nur manuell eingegebene Profile und Bücher</strong>. Unbeanspruchte Einträge werden für sie serverseitig immer herausgefiltert, unabhängig von den obigen Schaltern.
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ══ Overlay: Benutzername ändern ══ */}
         {renameTarget && (

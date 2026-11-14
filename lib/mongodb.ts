@@ -144,6 +144,8 @@ export type UserDocument = {
   emailOnUnreadMessages?: boolean;
   lastUnreadNotifiedAt?: Date;
   emailNotifyFailCount?: number;
+  isUnclaimed?: boolean;
+  source?: "manual" | "imported";
   lastSettingsCheckAt?: Date;
   genreTreffpunktFilter?: string[];
   blockedUsers?: string[];
