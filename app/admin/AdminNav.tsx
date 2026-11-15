@@ -252,6 +252,15 @@ export const ADMIN_TOOLS: AdminTool[] = [
     icon: SparklesIcon,
   },
   {
+    id: "buecher",
+    title: "Bücherverwaltung",
+    shortDesc: "Alle Bücher filtern und direkt die Detailseiten öffnen",
+    category: "actions",
+    type: "link",
+    href: "/admin/buecher",
+    icon: BookOpenIcon,
+  },
+  {
     id: "amazon",
     title: "Amazon Sync",
     shortDesc: "Buchkatalog mit Amazon abgleichen (Superadmin)",
@@ -376,6 +385,7 @@ export function AdminNav({
                 <option value="bdw">Buch der Woche</option>
                 <option value="gewinnspiele">Gewinnspiele ↗</option>
                 <option value="katalog">Katalog & KI</option>
+                <option value="buecher">Bücherverwaltung ↗</option>
                 {(account?.username === "Kopernikus" || account?.role === "SUPERADMIN") && (
                   <option value="amazon">Amazon Sync ↗</option>
                 )}
