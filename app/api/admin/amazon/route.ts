@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId, type UpdateFilter } from "mongodb";
-import { getBooksCollection } from "@/lib/mongodb";
-import { applyAmazonOverride, getAllAmazonLinks, getFirstAmazonLink, type BookDocument } from "@/lib/books";
+import { getBooksCollection, getUsersCollection } from "@/lib/mongodb";
+import { applyAmazonOverride, getAllAmazonLinks, type BookDocument } from "@/lib/books";
 import { requireSuperAdmin } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
@@ -21,8 +21,14 @@ export async function GET() {
       return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
     }
 
+    const usersCol = await getUsersCollection();
+    const unclaimedUsers = await usersCol
+      .find({ isUnclaimed: true }, { projection: { username: 1 } })
+      .toArray();
+    const unclaimedUsernames = new Set(unclaimedUsers.map((u) => u.username));
+
     const col = await getBooksCollection();
-    const books = await col
+    const allBooks = await col
       .find({
         $or: [
           { buyLinks: { $elemMatch: { $regex: "amazon|amzn\\.to|amzn\\.eu", $options: "i" } } },
@@ -32,8 +38,14 @@ export async function GET() {
       .sort({ title: 1, ownerUsername: 1 })
       .toArray();
 
+    // Katalogautoren und unbeanspruchte Bücher ausschließen (haben bereits BuchArena-Affiliate-Links)
+    const registeredBooks = allBooks.filter(
+      (b) => b.isUnclaimed !== true && !unclaimedUsernames.has(b.ownerUsername)
+    );
+    const unclaimedExcludedCount = allBooks.length - registeredBooks.length;
+
     return NextResponse.json({
-      books: books.map((book) => ({
+      books: registeredBooks.map((book) => ({
         id: book._id?.toString() ?? "",
         title: book.title,
         author: book.ownerUsername,
@@ -41,6 +53,7 @@ export async function GET() {
         amazonUrlOverride: book.amazonOverrideUrl ?? "",
         effectiveAmazonUrls: getAllAmazonLinks(applyAmazonOverride(book.buyLinks, book.amazonOverrideUrl)),
       })),
+      unclaimedExcludedCount,
     });
   } catch (error) {
     console.error("Fehler beim Laden der Amazon-Links:", error);

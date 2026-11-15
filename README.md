@@ -1,5 +1,11 @@
 # BuchArena
 
+## Buchkatalog erweitern
+
+Die zentrale [Buchliste mit geplanten Ergänzungen, Prioritäten und Bearbeitungsstatus](./BUCHLISTE.md) liegt im Projektstamm und ist nach Themenbereichen gegliedert. Alle Entwickler und KI-Assistenten pflegen ihre Recherche und den Einbaustatus dort. Vor einem Import den aktuellen Datenbankbestand abgleichen.
+
+Hinweise für KI-Assistenten: [AGENTS.md](./AGENTS.md).
+
 Next.js-App mit Startseite für Registrierung und Login (Benutzername, Passwort, E-Mail).
 Persistenz läuft über MongoDB Atlas.
 Zusätzlich gibt es ein Cookie-Banner, eine Impressum-Seite und eine Datenschutzerklärung.

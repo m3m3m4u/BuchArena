@@ -22,6 +22,7 @@ type FilterMode = "alle" | "ohne" | "mit";
 export default function AmazonAdminClient() {
   const [books, setBooks] = useState<AmazonBookRow[]>([]);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [unclaimedExcludedCount, setUnclaimedExcludedCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -32,7 +33,11 @@ export default function AmazonAdminClient() {
     setMessage("");
     try {
       const response = await fetch("/api/admin/amazon", { method: "GET" });
-      const data = (await response.json()) as { books?: AmazonBookRow[]; message?: string };
+      const data = (await response.json()) as {
+        books?: AmazonBookRow[];
+        unclaimedExcludedCount?: number;
+        message?: string;
+      };
       if (!response.ok) {
         throw new Error(data.message ?? "Amazon-Links konnten nicht geladen werden.");
       }
@@ -40,7 +45,7 @@ export default function AmazonAdminClient() {
       const nextBooks = data.books ?? [];
       setBooks(nextBooks);
       setDrafts(Object.fromEntries(nextBooks.map((book) => [book.id, book.amazonUrlOverride ?? ""])));
-
+      setUnclaimedExcludedCount(data.unclaimedExcludedCount ?? 0);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Amazon-Links konnten nicht geladen werden.");
     } finally {
@@ -92,16 +97,30 @@ export default function AmazonAdminClient() {
 
   return (
     <main className="top-centered-main">
-      <section className="card gap-4">
+      <section className="card gap-4 font-sans">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
-            <h1>Amazon-Links verwalten</h1>
-            <p className="text-arena-muted mt-1">
-              Der Autoren-Link bleibt gespeichert. Verlinkt wird auf den alternativen Amazon-Link, wenn du hier einen einträgst.
+            <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">
+              Amazon-Links verwalten (Registrierte Autoren)
+            </h1>
+            <p className="text-arena-muted text-sm mt-1">
+              Hier verwaltest du alternative Amazon-Affiliate-Links für Bücher von <strong>registrierten Autoren</strong>.
+              Bücher von Katalogautoren sind automatisch ausgeschlossen, da diese bereits mit deinen BuchArena-Affiliate-Links importiert wurden.
             </p>
           </div>
-          <Link href="/admin" className="text-arena-link no-underline">← Zurück zum Admin</Link>
+          <Link href="/admin" className="btn btn-sm font-sans" title="Zurück zur Admin-Zentrale">
+            ← Admin
+          </Link>
         </div>
+
+        {unclaimedExcludedCount > 0 && (
+          <div className="text-xs bg-blue-50 text-blue-800 border border-blue-200/80 rounded-xl p-3 flex items-center gap-2">
+            <span>ℹ️</span>
+            <span>
+              <strong>{unclaimedExcludedCount} Bücher von Katalogautoren</strong> werden hier nicht aufgeführt, da sie bereits deine Partnerprogramm-Links nutzen.
+            </span>
+          </div>
+        )}
 
         <div className="flex gap-2 flex-wrap">
           {(["alle", "ohne", "mit"] as FilterMode[]).map((mode) => (
@@ -121,7 +140,7 @@ export default function AmazonAdminClient() {
         {loading ? (
           <p>Lade Amazon-Links...</p>
         ) : books.length === 0 ? (
-          <p className="text-arena-muted">Keine Bücher mit Amazon-Link gefunden.</p>
+          <p className="text-arena-muted">Keine Bücher von registrierten Autoren mit Amazon-Link gefunden.</p>
         ) : (
           <div className="grid gap-3">
             {filteredBooks.map((book) => {
