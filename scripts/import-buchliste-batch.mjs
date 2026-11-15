@@ -205,7 +205,9 @@ const rows = parseRows(markdown);
 const selected = ids.map((id) => rows.find((row) => row.id === id)).filter(Boolean);
 if (selected.length !== ids.length) throw new Error(`Nicht alle IDs in BUCHLISTE.md gefunden: ${ids.join(", ")}`);
 
-const uri = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_DIRECT_HOST
+  ? process.env.MONGODB_URI.replace("mongodb+srv://", "mongodb://").replace("cluster0.zom4b9y.mongodb.net", process.env.MONGODB_DIRECT_HOST) + "&directConnection=true&tls=true"
+  : process.env.MONGODB_URI;
 if (!uri) throw new Error("MONGODB_URI fehlt.");
 const dbName = process.env.MONGODB_DB_NAME || "bucharena";
 const client = new MongoClient(uri, { serverSelectionTimeoutMS: 15000 });

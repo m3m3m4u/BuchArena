@@ -2,12 +2,12 @@
 
 Zentrale Arbeitsliste für alle Entwickler und KI-Assistenten, die den Buchkatalog erweitern. Hier Vorschläge sammeln, recherchieren, Aufgaben übernehmen und abgeschlossene Einträge dokumentieren.
 
-Angelegt und erweitert am **14.11.2026**. Nach dem Live-Abgleich am **15.11.2026** bleiben **326 offene Buchvorschläge**. Die Auswahl ist ein redaktioneller Vorschlag: zuerst bestehende Reihen ergänzen, danach weitere Genres und Autoren ausbauen. Die Prioritäten können gemeinsam angepasst werden.
+Angelegt und erweitert am **14.11.2026**. Nach dem Live-Abgleich am **15.11.2026** bleiben **311 offene Buchvorschläge**. Die Auswahl ist ein redaktioneller Vorschlag: zuerst bestehende Reihen ergänzen, danach weitere Genres und Autoren ausbauen. Die Prioritäten können gemeinsam angepasst werden.
 
 ## Ausgangsbestand und Abgleich
 
 - Die vorhandene [Katalogübersicht als CSV](./docs/BuchArena_Katalogbuecher_Uebersicht.csv) enthält **80 Bücher** beim Anlegen dieser Liste; zusätzlich gibt es eine [Excel-Übersicht](./docs/BuchArena_Katalogbuecher_Uebersicht.xlsx).
-- Beim Live-Abgleich am **15.11.2026** wurden **2.389 Buchdatensätze** geprüft; insgesamt **308 bereits vorhandene Titel** wurden aus dieser offenen Liste entfernt. Die unten verbliebenen 326 Titel waren bei diesem Abgleich nicht im Live-Bestand; vor jedem späteren Import trotzdem erneut prüfen.
+- Beim Live-Abgleich am **15.11.2026** wurden **2.404 Buchdatensätze** geprüft; insgesamt **323 bereits vorhandene Titel** wurden aus dieser offenen Liste entfernt. Die unten verbliebenen 311 Titel waren bei diesem Abgleich nicht im Live-Bestand; vor jedem späteren Import trotzdem erneut prüfen.
 - Vor dem Einbau ISBN normalisieren und im aktuellen Bestand prüfen; zusätzlich Titel, Autor und Reihenteil vergleichen, damit andere Ausgaben nicht unbemerkt doppelt angelegt werden. Die öffentliche Katalogansicht kann durch Sichtbarkeitseinstellungen Bücher ausblenden.
 - `offen` bedeutet: konkrete **deutschsprachige Ausgabe** und ISBN müssen noch recherchiert werden. In die App werden ausschließlich deutsche Sprachversionen importiert; fremdsprachige ISBNs zählen nicht als Ersatz. ISBN, Seitenzahl, Erscheinungsjahr und Cover immer auf dieselbe Ausgabe beziehen.
 
@@ -23,13 +23,13 @@ Angelegt und erweitert am **14.11.2026**. Nach dem Live-Abgleich am **15.11.2026
 | Kinder und Jugend | 6 |
 | Kinderbücher und Vorlesebücher | 22 |
 | Krimi und Thriller | 37 |
-| Liebe, Familie und Gegenwartsliteratur | 60 |
+| Liebe, Familie und Gegenwartsliteratur | 45 |
 | Romane und Gegenwart | 19 |
 | Sachbuch und Biografie | 14 |
 | Sachbücher, Wissen und Biografien | 40 |
 | Science-Fiction und Dystopien | 27 |
 | Klassiker und Weltliteratur | 59 |
-| **Gesamt** | **326** |
+| **Gesamt** | **311** |
 
 Die Zahlen beziehen sich ausschließlich auf noch nicht im Live-Bestand gefundene Vorschläge. Vor jedem Import erneut gegen MongoDB prüfen.
 
@@ -194,190 +194,175 @@ Die IDs werden nach jedem Live-Abgleich fortlaufend vergeben. `Bereits vorhanden
 | B140 | P2 | Kein Sommer ohne dich | Emily Henry | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
 | B141 | P2 | Love, Theoretically | Ali Hazelwood | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
 | B142 | P2 | Malibu Rising | Taylor Jenkins Reid | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B143 | P2 | Maybe Someday | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B144 | P2 | Mein Herz in zwei Welten | Jojo Moyes | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B145 | P2 | Mittagsstunde | Dörte Hansen | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B146 | P2 | New Beginnings | Lilly Lucas | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B147 | P2 | New Dreams | Lilly Lucas | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B148 | P2 | New Promises | Lilly Lucas | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B149 | P2 | Normale Menschen | Sally Rooney | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B150 | P2 | November 9 | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B151 | P2 | Nur noch einmal und für immer | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B152 | P2 | Oma lässt grüßen und sagt, es tut ihr leid | Fredrik Backman | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B153 | P2 | Save Us | Mona Kasten | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B154 | P2 | Save You | Mona Kasten | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B155 | P2 | Schöne Welt, wo bist du | Sally Rooney | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B156 | P2 | Someone Else | Laura Kneidl | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B157 | P2 | Someone New | Laura Kneidl | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B158 | P2 | Someone to Stay | Laura Kneidl | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B159 | P2 | Trust Again | Mona Kasten | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B160 | P2 | Verity | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B161 | P2 | Verliebt in deine schönsten Seiten | Emily Henry | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B162 | P2 | Verliere mich. Nicht. | Laura Kneidl | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B163 | P2 | Weil ich Layken liebe | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B164 | P2 | Weil ich Will liebe | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B165 | P2 | Wie man die Zeit anhält | Matt Haig | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B166 | P2 | Zur See | Dörte Hansen | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B167 | P2 | Zurück ins Leben geliebt | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B168 | P2 | Atemschaukel | Herta Müller | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B169 | P2 | Auf Erden sind wir kurz grandios | Ocean Vuong | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B170 | P2 | Brüste und Eier | Mieko Kawakami | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B171 | P2 | Der Fluch des Hasen | Bora Chung | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B172 | P2 | Der Freund | Sigrid Nunez | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B173 | P2 | Der Gesang der Flusskrebse – Das Kochbuch | Delia Owens | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B174 | P2 | Der Namensvetter | Jhumpa Lahiri | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B175 | P2 | Die Gestirne | Eleanor Catton | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B176 | P2 | Die Insel der verlorenen Bäume | Elif Shafak | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B177 | P2 | Die Interessanten | Meg Wolitzer | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B178 | P2 | Die Jahre | Annie Ernaux | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B179 | P2 | Die Vegetarierin | Han Kang | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B180 | P2 | Die vierzig Geheimnisse der Liebe | Elif Shafak | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B181 | P2 | Himmel | Mieko Kawakami | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B182 | P2 | Kummer aller Art | Mariana Leky | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B183 | P2 | Morgen und Abend | Jon Fosse | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B184 | P2 | Outline | Rachel Cusk | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B185 | P2 | Was man von hier aus sehen kann | Mariana Leky | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B186 | P2 | Zum Paradies | Hanya Yanagihara | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B187 | P2 | Alte Wege | Robert Macfarlane | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B188 | P2 | Challenger | Sally Ride | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B189 | P2 | Das Vermächtnis | Jane Goodall | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B190 | P2 | Der Mann, der seine Frau mit einem Hut verwechselte | Oliver Sacks | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B191 | P2 | Die Macht der Geographie | Tim Marshall | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B192 | P2 | Die Mutter aller Fragen | Rebecca Solnit | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B193 | P2 | Die Welt aus den Angeln | Philipp Blom | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B194 | P2 | Eichmann in Jerusalem | Hannah Arendt | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B195 | P2 | Ein Leben auf unserer Erde | David Attenborough | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B196 | P2 | Haben oder Sein | Erich Fromm | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B197 | P2 | Kollaps | Jared Diamond | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B198 | P2 | Mythos | Stephen Fry | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B199 | P2 | Sapiens – Eine kurze Geschichte der Menschheit | Yuval Noah Harari | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B200 | P2 | Warum Zebras keine Migräne bekommen | Robert Sapolsky | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B201 | P2 | … trotzdem Ja zum Leben sagen | Viktor E. Frankl | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B202 | P2 | 21 Lektionen für das 21. Jahrhundert | Yuval Noah Harari | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B203 | P2 | Anfänge | David Graeber / David Wengrow | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B204 | P2 | Becoming | Michelle Obama | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B205 | P2 | Befreit | Tara Westover | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B206 | P2 | Bullshit Jobs | David Graeber | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B207 | P2 | Darm mit Charme | Giulia Enders | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B208 | P2 | Das geheime Leben der Bäume | Peter Wohlleben | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B209 | P2 | Das Licht in uns | Michelle Obama | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B210 | P2 | Das Seelenleben der Tiere | Peter Wohlleben | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B211 | P2 | Das Universum in der Nussschale | Stephen Hawking | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B212 | P2 | Der Drache in meiner Garage | Carl Sagan | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B213 | P2 | Der lange Weg zur Freiheit | Nelson Mandela | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B214 | P2 | Die 1%-Methode | James Clear | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B215 | P2 | Die kleinste gemeinsame Wirklichkeit | Mai Thi Nguyen-Kim | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B216 | P2 | Die Macht der Gewohnheit | Charles Duhigg | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B217 | P2 | Die Ordnung der Zeit | Carlo Rovelli | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B218 | P2 | Die Selbstgerechten | Sahra Wagenknecht | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B219 | P2 | Digitaler Minimalismus | Cal Newport | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B220 | P2 | Ein verheißenes Land | Barack Obama | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B221 | P2 | Eine kurze Geschichte der Zeit | Stephen Hawking | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B222 | P2 | Eine kurze Geschichte des menschlichen Körpers | Bill Bryson | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B223 | P2 | Eine kurze Geschichte von fast allem | Bill Bryson | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B224 | P2 | Factfulness | Hans Rosling / Ola Rosling / Anna Rosling Rönnlund | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B225 | P2 | Homo Deus | Yuval Noah Harari | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B226 | P2 | Ich bin hier, und alles ist jetzt | Edith Eger | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B227 | P2 | Ich bin Malala | Malala Yousafzai / Christina Lamb | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B228 | P2 | Im Grunde gut | Rutger Bregman | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B229 | P2 | Komisch, alles chemisch! | Mai Thi Nguyen-Kim | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B230 | P2 | Konzentriert arbeiten | Cal Newport | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B231 | P2 | Kosmos | Carl Sagan | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B232 | P2 | Kurze Antworten auf große Fragen | Stephen Hawking | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B233 | P2 | Liebe Ijeawele | Chimamanda Ngozi Adichie | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B234 | P2 | Mehr Feminismus! | Chimamanda Ngozi Adichie | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B235 | P2 | Nexus | Yuval Noah Harari | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B236 | P2 | Schnelles Denken, langsames Denken | Daniel Kahneman | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B237 | P2 | Sieben kurze Lektionen über Physik | Carlo Rovelli | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B238 | P2 | Tagebuch | Anne Frank | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B239 | P2 | Unsichtbare Frauen | Caroline Criado-Perez | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B240 | P2 | Utopien für Realisten | Rutger Bregman | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B241 | P2 | 2001 – Odyssee im Weltraum | Arthur C. Clarke | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B242 | P2 | Abaddons Tor | James S. A. Corey | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B243 | P2 | Alles, was wir geben mussten | Kazuo Ishiguro | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B244 | P2 | Artemis | Andy Weir | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B245 | P2 | Blumen für Algernon | Daniel Keyes | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B246 | P2 | Calibans Krieg | James S. A. Corey | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B247 | P2 | Das Licht der letzten Tage | Emily St. John Mandel | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B248 | P2 | Das Meer der endlosen Ruhe | Emily St. John Mandel | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B249 | P2 | Das Orakel vom Berge | Philip K. Dick | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B250 | P2 | Der futurologische Kongress | Stanisław Lem | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B251 | P2 | Der lange Weg zu einem kleinen zornigen Planeten | Becky Chambers | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B252 | P2 | Die letzte Generation | Arthur C. Clarke | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B253 | P2 | Die nackte Sonne | Isaac Asimov | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B254 | P2 | Die Ordensburg des Wüstenplaneten | Frank Herbert | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B255 | P2 | Die Stahlhöhlen | Isaac Asimov | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B256 | P2 | Die wandernde Erde | Liu Cixin | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B257 | P2 | Ich, der Robot | Isaac Asimov | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B258 | P2 | Klara und die Sonne | Kazuo Ishiguro | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B259 | P2 | Leviathan erwacht | James S. A. Corey | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B260 | P2 | Ready Player One | Ernest Cline | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B261 | P2 | Rendezvous mit Rama | Arthur C. Clarke | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B262 | P2 | Solaris | Stanisław Lem | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B263 | P2 | Sterntagebücher | Stanisław Lem | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B264 | P2 | Träumen Androiden von elektrischen Schafen? | Philip K. Dick | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B265 | P2 | Ubik | Philip K. Dick | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B266 | P2 | Unter uns die Nacht | Becky Chambers | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B267 | P2 | Zwischen zwei Sternen | Becky Chambers | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
-| B268 | P3 | Anna Karenina | Lew Tolstoi | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B269 | P3 | Brief an den Vater | Franz Kafka | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B270 | P3 | David Copperfield | Charles Dickens | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B271 | P3 | Der eingebildete Kranke | Molière | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B272 | P3 | Der Ekel | Jean-Paul Sartre | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B273 | P3 | Der Glöckner von Notre-Dame | Victor Hugo | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B274 | P3 | Der Graf von Monte Christo | Alexandre Dumas | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B275 | P3 | Der Idiot | Fjodor Dostojewski | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B276 | P3 | Der letzte Mensch | Mary Shelley | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B277 | P3 | Der Tod des Iwan Iljitsch | Lew Tolstoi | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B278 | P3 | Der Tod in Venedig | Thomas Mann | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B279 | P3 | Deutschland. Ein Wintermärchen | Heinrich Heine | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B280 | P3 | Die Abenteuer des Huckleberry Finn | Mark Twain | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B281 | P3 | Die Abenteuer des Tom Sawyer | Mark Twain | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B282 | P3 | Die Abtei von Northanger | Jane Austen | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B283 | P3 | Die Brüder Karamasow | Fjodor Dostojewski | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B284 | P3 | Die Dämonen | Fjodor Dostojewski | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B285 | P3 | Die drei Musketiere | Alexandre Dumas | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B286 | P3 | Die Elenden | Victor Hugo | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B287 | P3 | Die göttliche Komödie | Dante Alighieri | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B288 | P3 | Die Pest | Albert Camus | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B289 | P3 | Die Räuber | Friedrich Schiller | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B290 | P3 | Don Quijote | Miguel de Cervantes | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B291 | P3 | Duineser Elegien | Rainer Maria Rilke | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B292 | P3 | Effi Briest | Theodor Fontane | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B293 | P3 | Eine Geschichte aus zwei Städten | Charles Dickens | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B294 | P3 | Eine Weihnachtsgeschichte | Charles Dickens | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B295 | P3 | Emma | Jane Austen | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B296 | P3 | Faust. Der Tragödie erster Teil | Johann Wolfgang von Goethe | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B297 | P3 | Früchte des Zorns | John Steinbeck | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B298 | P3 | Germinal | Émile Zola | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B299 | P3 | Große Erwartungen | Charles Dickens | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B300 | P3 | Hamlet | William Shakespeare | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B301 | P3 | Herz der Finsternis | Joseph Conrad | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B302 | P3 | Ilias | Homer | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B303 | P3 | In einem andern Land | Ernest Hemingway | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B304 | P3 | Jenseits von Eden | John Steinbeck | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B305 | P3 | König Ödipus | Sophokles | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B306 | P3 | Krieg und Frieden | Lew Tolstoi | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B307 | P3 | Macbeth | William Shakespeare | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B308 | P3 | Madame Bovary | Gustave Flaubert | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B309 | P3 | Mansfield Park | Jane Austen | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B310 | P3 | Menschenkind | Toni Morrison | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B311 | P3 | Middlemarch | George Eliot | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B312 | P3 | Moby-Dick | Herman Melville | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B313 | P3 | Mrs Dalloway | Virginia Woolf | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B314 | P3 | Odyssee | Homer | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B315 | P3 | Oliver Twist | Charles Dickens | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B316 | P3 | Orlando | Virginia Woolf | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B317 | P3 | Romeo und Julia | William Shakespeare | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B318 | P3 | Schuld und Sühne | Fjodor Dostojewski | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B319 | P3 | Sehr blaue Augen | Toni Morrison | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B320 | P3 | Überredung | Jane Austen | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B321 | P3 | Verstand und Gefühl | Jane Austen | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B322 | P3 | Von Mäusen und Menschen | John Steinbeck | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B323 | P3 | Wem die Stunde schlägt | Ernest Hemingway | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B324 | P3 | Wer die Nachtigall stört | Harper Lee | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B325 | P3 | Woyzeck | Georg Büchner | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
-| B326 | P3 | Zum Leuchtturm | Virginia Woolf | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B143 | P2 | New Dreams | Lilly Lucas | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B144 | P2 | Schöne Welt, wo bist du | Sally Rooney | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B145 | P2 | Verity | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B146 | P2 | Verliebt in deine schönsten Seiten | Emily Henry | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B147 | P2 | Verliere mich. Nicht. | Laura Kneidl | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B148 | P2 | Weil ich Layken liebe | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B149 | P2 | Weil ich Will liebe | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B150 | P2 | Wie man die Zeit anhält | Matt Haig | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B151 | P2 | Zur See | Dörte Hansen | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B152 | P2 | Zurück ins Leben geliebt | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B153 | P2 | Atemschaukel | Herta Müller | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B154 | P2 | Auf Erden sind wir kurz grandios | Ocean Vuong | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B155 | P2 | Brüste und Eier | Mieko Kawakami | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B156 | P2 | Der Fluch des Hasen | Bora Chung | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B157 | P2 | Der Freund | Sigrid Nunez | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B158 | P2 | Der Gesang der Flusskrebse – Das Kochbuch | Delia Owens | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B159 | P2 | Der Namensvetter | Jhumpa Lahiri | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B160 | P2 | Die Gestirne | Eleanor Catton | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B161 | P2 | Die Insel der verlorenen Bäume | Elif Shafak | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B162 | P2 | Die Interessanten | Meg Wolitzer | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B163 | P2 | Die Jahre | Annie Ernaux | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B164 | P2 | Die Vegetarierin | Han Kang | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B165 | P2 | Die vierzig Geheimnisse der Liebe | Elif Shafak | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B166 | P2 | Himmel | Mieko Kawakami | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B167 | P2 | Kummer aller Art | Mariana Leky | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B168 | P2 | Morgen und Abend | Jon Fosse | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B169 | P2 | Outline | Rachel Cusk | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B170 | P2 | Was man von hier aus sehen kann | Mariana Leky | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B171 | P2 | Zum Paradies | Hanya Yanagihara | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B172 | P2 | Alte Wege | Robert Macfarlane | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B173 | P2 | Challenger | Sally Ride | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B174 | P2 | Das Vermächtnis | Jane Goodall | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B175 | P2 | Der Mann, der seine Frau mit einem Hut verwechselte | Oliver Sacks | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B176 | P2 | Die Macht der Geographie | Tim Marshall | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B177 | P2 | Die Mutter aller Fragen | Rebecca Solnit | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B178 | P2 | Die Welt aus den Angeln | Philipp Blom | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B179 | P2 | Eichmann in Jerusalem | Hannah Arendt | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B180 | P2 | Ein Leben auf unserer Erde | David Attenborough | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B181 | P2 | Haben oder Sein | Erich Fromm | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B182 | P2 | Kollaps | Jared Diamond | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B183 | P2 | Mythos | Stephen Fry | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B184 | P2 | Sapiens – Eine kurze Geschichte der Menschheit | Yuval Noah Harari | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B185 | P2 | Warum Zebras keine Migräne bekommen | Robert Sapolsky | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B186 | P2 | … trotzdem Ja zum Leben sagen | Viktor E. Frankl | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B187 | P2 | 21 Lektionen für das 21. Jahrhundert | Yuval Noah Harari | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B188 | P2 | Anfänge | David Graeber / David Wengrow | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B189 | P2 | Becoming | Michelle Obama | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B190 | P2 | Befreit | Tara Westover | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B191 | P2 | Bullshit Jobs | David Graeber | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B192 | P2 | Darm mit Charme | Giulia Enders | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B193 | P2 | Das geheime Leben der Bäume | Peter Wohlleben | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B194 | P2 | Das Licht in uns | Michelle Obama | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B195 | P2 | Das Seelenleben der Tiere | Peter Wohlleben | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B196 | P2 | Das Universum in der Nussschale | Stephen Hawking | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B197 | P2 | Der Drache in meiner Garage | Carl Sagan | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B198 | P2 | Der lange Weg zur Freiheit | Nelson Mandela | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B199 | P2 | Die 1%-Methode | James Clear | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B200 | P2 | Die kleinste gemeinsame Wirklichkeit | Mai Thi Nguyen-Kim | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B201 | P2 | Die Macht der Gewohnheit | Charles Duhigg | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B202 | P2 | Die Ordnung der Zeit | Carlo Rovelli | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B203 | P2 | Die Selbstgerechten | Sahra Wagenknecht | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B204 | P2 | Digitaler Minimalismus | Cal Newport | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B205 | P2 | Ein verheißenes Land | Barack Obama | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B206 | P2 | Eine kurze Geschichte der Zeit | Stephen Hawking | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B207 | P2 | Eine kurze Geschichte des menschlichen Körpers | Bill Bryson | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B208 | P2 | Eine kurze Geschichte von fast allem | Bill Bryson | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B209 | P2 | Factfulness | Hans Rosling / Ola Rosling / Anna Rosling Rönnlund | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B210 | P2 | Homo Deus | Yuval Noah Harari | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B211 | P2 | Ich bin hier, und alles ist jetzt | Edith Eger | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B212 | P2 | Ich bin Malala | Malala Yousafzai / Christina Lamb | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B213 | P2 | Im Grunde gut | Rutger Bregman | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B214 | P2 | Komisch, alles chemisch! | Mai Thi Nguyen-Kim | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B215 | P2 | Konzentriert arbeiten | Cal Newport | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B216 | P2 | Kosmos | Carl Sagan | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B217 | P2 | Kurze Antworten auf große Fragen | Stephen Hawking | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B218 | P2 | Liebe Ijeawele | Chimamanda Ngozi Adichie | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B219 | P2 | Mehr Feminismus! | Chimamanda Ngozi Adichie | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B220 | P2 | Nexus | Yuval Noah Harari | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B221 | P2 | Schnelles Denken, langsames Denken | Daniel Kahneman | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B222 | P2 | Sieben kurze Lektionen über Physik | Carlo Rovelli | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B223 | P2 | Tagebuch | Anne Frank | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B224 | P2 | Unsichtbare Frauen | Caroline Criado-Perez | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B225 | P2 | Utopien für Realisten | Rutger Bregman | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B226 | P2 | 2001 – Odyssee im Weltraum | Arthur C. Clarke | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B227 | P2 | Abaddons Tor | James S. A. Corey | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B228 | P2 | Alles, was wir geben mussten | Kazuo Ishiguro | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B229 | P2 | Artemis | Andy Weir | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B230 | P2 | Blumen für Algernon | Daniel Keyes | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B231 | P2 | Calibans Krieg | James S. A. Corey | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B232 | P2 | Das Licht der letzten Tage | Emily St. John Mandel | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B233 | P2 | Das Meer der endlosen Ruhe | Emily St. John Mandel | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B234 | P2 | Das Orakel vom Berge | Philip K. Dick | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B235 | P2 | Der futurologische Kongress | Stanisław Lem | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B236 | P2 | Der lange Weg zu einem kleinen zornigen Planeten | Becky Chambers | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B237 | P2 | Die letzte Generation | Arthur C. Clarke | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B238 | P2 | Die nackte Sonne | Isaac Asimov | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B239 | P2 | Die Ordensburg des Wüstenplaneten | Frank Herbert | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B240 | P2 | Die Stahlhöhlen | Isaac Asimov | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B241 | P2 | Die wandernde Erde | Liu Cixin | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B242 | P2 | Ich, der Robot | Isaac Asimov | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B243 | P2 | Klara und die Sonne | Kazuo Ishiguro | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B244 | P2 | Leviathan erwacht | James S. A. Corey | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B245 | P2 | Ready Player One | Ernest Cline | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B246 | P2 | Rendezvous mit Rama | Arthur C. Clarke | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B247 | P2 | Solaris | Stanisław Lem | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B248 | P2 | Sterntagebücher | Stanisław Lem | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B249 | P2 | Träumen Androiden von elektrischen Schafen? | Philip K. Dick | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B250 | P2 | Ubik | Philip K. Dick | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B251 | P2 | Unter uns die Nacht | Becky Chambers | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B252 | P2 | Zwischen zwei Sternen | Becky Chambers | Science-Fiction und Dystopien | offen | Vorschlag | — | — |
+| B253 | P3 | Anna Karenina | Lew Tolstoi | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B254 | P3 | Brief an den Vater | Franz Kafka | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B255 | P3 | David Copperfield | Charles Dickens | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B256 | P3 | Der eingebildete Kranke | Molière | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B257 | P3 | Der Ekel | Jean-Paul Sartre | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B258 | P3 | Der Glöckner von Notre-Dame | Victor Hugo | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B259 | P3 | Der Graf von Monte Christo | Alexandre Dumas | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B260 | P3 | Der Idiot | Fjodor Dostojewski | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B261 | P3 | Der letzte Mensch | Mary Shelley | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B262 | P3 | Der Tod des Iwan Iljitsch | Lew Tolstoi | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B263 | P3 | Der Tod in Venedig | Thomas Mann | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B264 | P3 | Deutschland. Ein Wintermärchen | Heinrich Heine | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B265 | P3 | Die Abenteuer des Huckleberry Finn | Mark Twain | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B266 | P3 | Die Abenteuer des Tom Sawyer | Mark Twain | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B267 | P3 | Die Abtei von Northanger | Jane Austen | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B268 | P3 | Die Brüder Karamasow | Fjodor Dostojewski | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B269 | P3 | Die Dämonen | Fjodor Dostojewski | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B270 | P3 | Die drei Musketiere | Alexandre Dumas | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B271 | P3 | Die Elenden | Victor Hugo | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B272 | P3 | Die göttliche Komödie | Dante Alighieri | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B273 | P3 | Die Pest | Albert Camus | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B274 | P3 | Die Räuber | Friedrich Schiller | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B275 | P3 | Don Quijote | Miguel de Cervantes | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B276 | P3 | Duineser Elegien | Rainer Maria Rilke | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B277 | P3 | Effi Briest | Theodor Fontane | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B278 | P3 | Eine Geschichte aus zwei Städten | Charles Dickens | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B279 | P3 | Eine Weihnachtsgeschichte | Charles Dickens | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B280 | P3 | Emma | Jane Austen | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B281 | P3 | Faust. Der Tragödie erster Teil | Johann Wolfgang von Goethe | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B282 | P3 | Früchte des Zorns | John Steinbeck | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B283 | P3 | Germinal | Émile Zola | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B284 | P3 | Große Erwartungen | Charles Dickens | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B285 | P3 | Hamlet | William Shakespeare | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B286 | P3 | Herz der Finsternis | Joseph Conrad | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B287 | P3 | Ilias | Homer | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B288 | P3 | In einem andern Land | Ernest Hemingway | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B289 | P3 | Jenseits von Eden | John Steinbeck | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B290 | P3 | König Ödipus | Sophokles | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B291 | P3 | Krieg und Frieden | Lew Tolstoi | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B292 | P3 | Macbeth | William Shakespeare | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B293 | P3 | Madame Bovary | Gustave Flaubert | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B294 | P3 | Mansfield Park | Jane Austen | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B295 | P3 | Menschenkind | Toni Morrison | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B296 | P3 | Middlemarch | George Eliot | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B297 | P3 | Moby-Dick | Herman Melville | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B298 | P3 | Mrs Dalloway | Virginia Woolf | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B299 | P3 | Odyssee | Homer | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B300 | P3 | Oliver Twist | Charles Dickens | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B301 | P3 | Orlando | Virginia Woolf | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B302 | P3 | Romeo und Julia | William Shakespeare | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B303 | P3 | Schuld und Sühne | Fjodor Dostojewski | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B304 | P3 | Sehr blaue Augen | Toni Morrison | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B305 | P3 | Überredung | Jane Austen | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B306 | P3 | Verstand und Gefühl | Jane Austen | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B307 | P3 | Von Mäusen und Menschen | John Steinbeck | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B308 | P3 | Wem die Stunde schlägt | Ernest Hemingway | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B309 | P3 | Wer die Nachtigall stört | Harper Lee | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B310 | P3 | Woyzeck | Georg Büchner | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
+| B311 | P3 | Zum Leuchtturm | Virginia Woolf | Klassiker und Weltliteratur | offen | Vorschlag | — | — |
 
 ## Vorgehen pro Paket
 

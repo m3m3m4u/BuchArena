@@ -122,7 +122,9 @@ const candidates = [
 const markdownPath = "BUCHLISTE.md";
 let markdown = readFileSync(markdownPath, "utf8");
 const rows = markdown.split(/\r?\n/).filter((line) => /^\| B\d{3} \|/.test(line));
-const uri = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_DIRECT_HOST
+  ? process.env.MONGODB_URI.replace("mongodb+srv://", "mongodb://").replace("cluster0.zom4b9y.mongodb.net", process.env.MONGODB_DIRECT_HOST) + "&directConnection=true&tls=true"
+  : process.env.MONGODB_URI;
 if (!uri) throw new Error("MONGODB_URI fehlt");
 const client = new MongoClient(uri, { serverSelectionTimeoutMS: 15000 });
 await client.connect();
