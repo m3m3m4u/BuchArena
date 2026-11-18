@@ -9,7 +9,9 @@ export async function GET(request: Request) {
     const typ = searchParams.get("typ");
     const status = searchParams.get("status") ?? "bewerbung";
     const genre = searchParams.get("genre");
-    const limit = Math.min(parseInt(searchParams.get("limit") ?? "20"), 50);
+    // limit=0 → alle Treffer (ohne Obergrenze); fehlender/ungültiger Wert → 100
+    const rawLimit = Number.parseInt(searchParams.get("limit") ?? "100", 10);
+    const limit = rawLimit === 0 ? 0 : Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 100;
     const nurMeine = searchParams.get("meine") === "1";
     const nurTeilnehmer = searchParams.get("teilnehmer") === "1";
 

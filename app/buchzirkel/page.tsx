@@ -22,6 +22,20 @@ type Zirkel = {
   isTeilnehmer?: boolean;
 };
 
+function isFristAbgelaufen(bewerbungBis: string): boolean {
+  const fristEnd = new Date(bewerbungBis);
+  if (Number.isNaN(fristEnd.getTime())) return false;
+  if (
+    fristEnd.getUTCHours() === 0 &&
+    fristEnd.getUTCMinutes() === 0 &&
+    fristEnd.getUTCSeconds() === 0 &&
+    fristEnd.getUTCMilliseconds() === 0
+  ) {
+    fristEnd.setHours(23, 59, 59, 999);
+  }
+  return fristEnd < new Date();
+}
+
 export default function BuchzirkelPage() {
   const [zirkel, setZirkel] = useState<Zirkel[]>([]);
   const [meine, setMeine] = useState<Zirkel[]>([]);
@@ -32,45 +46,82 @@ export default function BuchzirkelPage() {
   const [account, setAccount] = useState<ReturnType<typeof getStoredAccount>>(null);
   const [bewerbungsStatusFilter, setBewerbungsStatusFilter] = useState<string>("");
 
+  const hasActiveFilter = typFilter !== "" || bewerbungsStatusFilter !== "";
+
+  function resetFilters() {
+    setTypFilter("");
+    setBewerbungsStatusFilter("");
+  }
+
   useEffect(() => {
     setAccount(getStoredAccount());
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams({ status: "aktiv" });
-    if (typFilter) params.set("typ", typFilter);
+    const params = new URLSearchParams({ status: "aktiv", limit: "0" });
     fetch(`/api/buchzirkel/list?${params}`)
       .then((r) => r.json())
-      .then((d) => setZirkel(d.zirkel ?? []))
+      .then((d: { zirkel?: Zirkel[] }) => setZirkel(d.zirkel ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [typFilter]);
+  }, []);
 
   useEffect(() => {
     const stored = getStoredAccount();
     if (!stored) return;
-    // Alle eigenen Zirkel als Veranstalter laden (inkl. Entwürfe)
-    fetch(`/api/buchzirkel/list?meine=1&limit=50`)
-      .then((r) => r.json())
-      .then((d: { zirkel?: Zirkel[] }) => setMeineAktive(d.zirkel ?? []))
-      .catch(() => {});
-    // Zirkel laden, in denen der User Teilnehmer ist
-    fetch(`/api/buchzirkel/list?teilnehmer=1&limit=50`)
-      .then((r) => r.json())
-      .then((d: { zirkel?: Zirkel[] }) => setMeineTeilnahmen(d.zirkel ?? []))
-      .catch(() => {});
-    // Abgeschlossene Zirkel laden, an denen der User als Teilnehmer beteiligt war
-    const params = new URLSearchParams({ status: "abgeschlossen", limit: "50" });
-    fetch(`/api/buchzirkel/list?${params}`)
-      .then((r) => r.json())
-      .then((d: { zirkel?: Zirkel[] }) => {
-        const list = (d.zirkel ?? []).filter(
-          (z) => z.veranstalterUsername === stored.username || z.isTeilnehmer
-        );
-        setMeine(list);
-      })
-      .catch(() => {});
+    Promise.all([
+      fetch("/api/buchzirkel/list?meine=1&limit=0").then((r) => r.json()).catch(() => ({})),
+      fetch("/api/buchzirkel/list?teilnehmer=1&limit=0").then((r) => r.json()).catch(() => ({})),
+      fetch("/api/buchzirkel/list?status=abgeschlossen&limit=0").then((r) => r.json()).catch(() => ({})),
+    ]).then(([meineRes, teilnehmerRes, abgeschlossenRes]: [
+      { zirkel?: Zirkel[] },
+      { zirkel?: Zirkel[] },
+      { zirkel?: Zirkel[] },
+    ]) => {
+      const eigeneList = meineRes.zirkel ?? [];
+      const teilnahmeList = teilnehmerRes.zirkel ?? [];
+      const abgeschlossenPublic = (abgeschlossenRes.zirkel ?? []).filter(
+        (z) => z.veranstalterUsername === stored.username || z.isTeilnehmer
+      );
+
+      setMeineAktive(
+        eigeneList.filter((z) => z.status !== "abgeschlossen" && z.status !== "archiviert")
+      );
+      setMeineTeilnahmen(
+        teilnahmeList.filter((z) => z.status !== "abgeschlossen" && z.status !== "archiviert")
+      );
+
+      const abgeschlossenMap = new Map<string, Zirkel>();
+      for (const z of [...eigeneList, ...teilnahmeList, ...abgeschlossenPublic]) {
+        if (z.status === "abgeschlossen" && !abgeschlossenMap.has(z._id)) {
+          abgeschlossenMap.set(z._id, z);
+        }
+      }
+      const abgeschlossenSorted = Array.from(abgeschlossenMap.values()).sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setMeine(abgeschlossenSorted);
+    });
   }, []);
+
+  const filteredZirkel = zirkel
+    .filter((z) => {
+      if (typFilter && z.typ !== typFilter) return false;
+      const bewerbungOffen = z.status === "bewerbung" && !isFristAbgelaufen(z.bewerbungBis);
+      if (bewerbungsStatusFilter === "offen") return bewerbungOffen;
+      if (bewerbungsStatusFilter === "beendet") return !bewerbungOffen;
+      return true;
+    })
+    .sort((a, b) => {
+      const aOffen = a.status === "bewerbung" && !isFristAbgelaufen(a.bewerbungBis);
+      const bOffen = b.status === "bewerbung" && !isFristAbgelaufen(b.bewerbungBis);
+      if (aOffen !== bOffen) return aOffen ? -1 : 1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+  const sichtbareTeilnahmen = meineTeilnahmen.filter(
+    (z) => !meineAktive.some((m) => m._id === z._id)
+  );
 
   return (
     <main className="top-centered-main">
@@ -104,106 +155,6 @@ export default function BuchzirkelPage() {
         </ol>
       </section>
 
-      {/* Filter */}
-      <section className="card mt-3">
-        <div className="flex gap-2 flex-wrap mb-2">
-          <button
-            type="button"
-            onClick={() => setTypFilter("")}
-            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
-              typFilter === "" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
-            }`}
-          >
-            Alle Typen
-          </button>
-          <button
-            type="button"
-            onClick={() => setTypFilter("testleser")}
-            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
-              typFilter === "testleser" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
-            }`}
-          >
-            Buchzirkel
-          </button>
-          <button
-            type="button"
-            onClick={() => setTypFilter("betaleser")}
-            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
-              typFilter === "betaleser" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
-            }`}
-          >
-            Buchzirkel (Beta)
-          </button>
-        </div>
-        <div className="flex gap-2 flex-wrap font-sans">
-          <button
-            type="button"
-            onClick={() => setBewerbungsStatusFilter("")}
-            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
-              bewerbungsStatusFilter === "" ? "bg-arena-blue text-white border-arena-blue" : "border-arena-border text-arena-text hover:border-arena-blue"
-            }`}
-          >
-            Alle Status
-          </button>
-          <button
-            type="button"
-            onClick={() => setBewerbungsStatusFilter("offen")}
-            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
-              bewerbungsStatusFilter === "offen" ? "bg-green-700 text-white border-green-700" : "border-arena-border text-arena-text hover:border-green-700"
-            }`}
-          >
-            Bewerbung möglich
-          </button>
-          <button
-            type="button"
-            onClick={() => setBewerbungsStatusFilter("beendet")}
-            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans ${
-              bewerbungsStatusFilter === "beendet" ? "bg-red-700 text-white border-red-700" : "border-arena-border text-arena-text hover:border-red-700"
-            }`}
-          >
-            Läuft schon / Bewerbung beendet
-          </button>
-        </div>
-      </section>
-
-      {/* Meine eigenen Zirkel (Veranstalter) + Teilnahmen */}
-      {account && (meineAktive.length > 0 || meineTeilnahmen.length > 0) && (
-        <section className="card mt-3">
-          <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0 mb-3">Meine Buchzirkel</h2>
-          {meineAktive.length > 0 && (
-            <>
-              {meineTeilnahmen.length > 0 && (
-                <p className="font-sans text-xs font-bold uppercase tracking-wider text-arena-muted mb-2">Als Veranstalter</p>
-              )}
-              <div className="w-full grid grid-cols-1 gap-2">
-                {meineAktive.map((z) => (
-                  <ZirkelKarte
-                    key={z._id}
-                    zirkel={z}
-                    deletable={z.veranstalterUsername === account.username}
-                    onDelete={() => setMeineAktive((prev) => prev.filter((m) => m._id !== z._id))}
-                    showStatus
-                  />
-                ))}
-              </div>
-            </>
-          )}
-          {meineTeilnahmen.length > 0 && (
-            <>
-              {meineAktive.length > 0 && <hr className="border-arena-border-light my-3" />}
-              <p className="font-sans text-xs font-bold uppercase tracking-wider text-arena-muted mb-2">Als Teilnehmer</p>
-              <div className="w-full grid grid-cols-1 gap-2">
-                {meineTeilnahmen
-                  .filter((z) => !meineAktive.some((m) => m._id === z._id))
-                  .map((z) => (
-                    <ZirkelKarte key={z._id} zirkel={z} showStatus />
-                  ))}
-              </div>
-            </>
-          )}
-        </section>
-      )}
-
       {/* Erklär-Karten */}
       <section className="card mt-3 flex flex-col gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-arena-muted m-0">Zirkel-Typen</p>
@@ -211,7 +162,7 @@ export default function BuchzirkelPage() {
           <div>
             <p className="font-semibold m-0 text-arena-blue text-sm">Buchzirkel</p>
             <p className="text-sm text-arena-muted m-0">
-              Rezensionsexemplare für bereits veröffentlichte Bücher – Feedback und Bewertungen auf Amazon, Goodreads & Co.
+              Rezensionsexemplare für bereits veröffentlichte Bücher – Feedback und Bewertungen auf Amazon, Goodreads &amp; Co.
             </p>
           </div>
         </div>
@@ -226,35 +177,136 @@ export default function BuchzirkelPage() {
         </div>
       </section>
 
+      {/* Meine eigenen Zirkel (Veranstalter) + aktive Teilnahmen */}
+      {account && (meineAktive.length > 0 || sichtbareTeilnahmen.length > 0) && (
+        <section className="card mt-3">
+          <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0 mb-3">Meine Buchzirkel</h2>
+          {meineAktive.length > 0 && (
+            <>
+              {sichtbareTeilnahmen.length > 0 && (
+                <p className="font-sans text-xs font-bold uppercase tracking-wider text-arena-muted mb-2">Als Veranstalter</p>
+              )}
+              <div className="w-full grid grid-cols-1 gap-2">
+                {meineAktive.map((z) => (
+                  <ZirkelKarte
+                    key={z._id}
+                    zirkel={z}
+                    deletable={z.veranstalterUsername === account.username}
+                    onDelete={() => {
+                      setMeineAktive((prev) => prev.filter((m) => m._id !== z._id));
+                      setZirkel((prev) => prev.filter((m) => m._id !== z._id));
+                    }}
+                    showStatus
+                  />
+                ))}
+              </div>
+            </>
+          )}
+          {sichtbareTeilnahmen.length > 0 && (
+            <>
+              {meineAktive.length > 0 && <hr className="border-arena-border-light my-3" />}
+              <p className="font-sans text-xs font-bold uppercase tracking-wider text-arena-muted mb-2">Als Teilnehmer</p>
+              <div className="w-full grid grid-cols-1 gap-2">
+                {sichtbareTeilnahmen.map((z) => (
+                  <ZirkelKarte key={z._id} zirkel={z} showStatus />
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+      )}
+
+      {/* Filter */}
+      <section className="card mt-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
+          <p className="font-sans text-xs font-bold uppercase tracking-wider text-arena-muted m-0">
+            Buchzirkel filtern {!loading && `(${filteredZirkel.length})`}
+          </p>
+          {hasActiveFilter && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="font-sans text-xs font-semibold text-arena-blue hover:underline bg-transparent border-0 p-0 cursor-pointer"
+            >
+              Filter zurücksetzen
+            </button>
+          )}
+        </div>
+        <div className="flex gap-2 flex-wrap mb-2">
+          {([
+            { value: "", label: "Alle Typen" },
+            { value: "testleser", label: "Buchzirkel" },
+            { value: "betaleser", label: "Buchzirkel (Beta)" },
+          ] as const).map((opt) => (
+            <button
+              key={opt.value || "alle-typen"}
+              type="button"
+              aria-pressed={typFilter === opt.value}
+              onClick={() => setTypFilter(opt.value)}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans cursor-pointer ${
+                typFilter === opt.value
+                  ? "bg-arena-blue text-white border-arena-blue"
+                  : "border-arena-border text-arena-text hover:border-arena-blue"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2 flex-wrap font-sans">
+          {[
+            { value: "", label: "Alle Status", activeClass: "bg-arena-blue text-white border-arena-blue", hoverClass: "hover:border-arena-blue" },
+            { value: "offen", label: "Bewerbung möglich", activeClass: "bg-green-700 text-white border-green-700", hoverClass: "hover:border-green-700" },
+            { value: "beendet", label: "Läuft schon / Bewerbung beendet", activeClass: "bg-red-700 text-white border-red-700", hoverClass: "hover:border-red-700" },
+          ].map((opt) => (
+            <button
+              key={opt.value || "alle-status"}
+              type="button"
+              aria-pressed={bewerbungsStatusFilter === opt.value}
+              onClick={() => setBewerbungsStatusFilter(opt.value)}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors font-sans cursor-pointer ${
+                bewerbungsStatusFilter === opt.value
+                  ? opt.activeClass
+                  : `border-arena-border text-arena-text ${opt.hoverClass}`
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
       {/* Liste */}
       {loading ? (
         <p className="font-sans text-arena-muted text-center py-8">Wird geladen…</p>
-      ) : zirkel.length === 0 ? (
+      ) : filteredZirkel.length === 0 ? (
         <section className="card mt-3 text-center py-8">
-          <p className="font-sans text-arena-muted m-0">Aktuell keine offenen Buchzirkel.</p>
-          {account && (
+          <p className="font-sans text-arena-muted m-0">
+            {hasActiveFilter
+              ? "Keine Buchzirkel für die ausgewählten Filter gefunden."
+              : "Aktuell keine offenen Buchzirkel."}
+          </p>
+          {hasActiveFilter ? (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="btn btn-secondary btn-sm font-sans mt-3"
+            >
+              Filter zurücksetzen
+            </button>
+          ) : account ? (
             <p className="font-sans text-sm m-0 mt-2">
               <Link href="/buchzirkel/erstellen" className="font-sans text-arena-blue hover:underline">
                 Erstelle den ersten →
               </Link>
             </p>
-          )}
+          ) : null}
         </section>
       ) : (
         <section className="w-full grid grid-cols-1 gap-2 mt-3">
-          {zirkel
-            .filter((z) => {
-              const frist = new Date(z.bewerbungBis);
-              const expired = frist < new Date();
-              // Nur wenn status==='bewerbung' und Frist nicht abgelaufen, dann offen
-              const bewerbungOffen = z.status === "bewerbung" && !expired;
-              if (bewerbungsStatusFilter === "offen") return bewerbungOffen;
-              if (bewerbungsStatusFilter === "beendet") return !bewerbungOffen;
-              return true;
-            })
-            .map((z) => (
-              <ZirkelKarte key={z._id} zirkel={z} />
-            ))}
+          {filteredZirkel.map((z) => (
+            <ZirkelKarte key={z._id} zirkel={z} />
+          ))}
         </section>
       )}
 
@@ -264,7 +316,13 @@ export default function BuchzirkelPage() {
           <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0 mb-3">Meine abgeschlossenen Zirkel</h2>
           <div className="w-full grid grid-cols-1 gap-2">
             {meine.map((z) => (
-              <ZirkelKarte key={z._id} zirkel={z} deletable={z.veranstalterUsername === account.username} onDelete={() => setMeine((prev) => prev.filter((m) => m._id !== z._id))} />
+              <ZirkelKarte
+                key={z._id}
+                zirkel={z}
+                deletable={z.veranstalterUsername === account.username}
+                onDelete={() => setMeine((prev) => prev.filter((m) => m._id !== z._id))}
+                showStatus
+              />
             ))}
           </div>
         </section>
@@ -276,7 +334,7 @@ export default function BuchzirkelPage() {
 function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirkel; deletable?: boolean; onDelete?: () => void; showStatus?: boolean }) {
   const isBeta = zirkel.typ === "betaleser";
   const frist = new Date(zirkel.bewerbungBis);
-  const expired = frist < new Date();
+  const expired = isFristAbgelaufen(zirkel.bewerbungBis);
   const [deleting, setDeleting] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [deleteError, setDeleteError] = useState("");

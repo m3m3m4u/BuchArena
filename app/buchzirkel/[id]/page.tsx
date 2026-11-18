@@ -154,7 +154,17 @@ export default function BuchzirkelDetailPage() {
   if (error || !zirkel) return <main className="top-centered-main"><p className="text-red-600 text-center py-8">{error || "Nicht gefunden."}</p></main>;
 
   const isBeta = zirkel.typ === "betaleser";
-  const bewerbungOffen = zirkel.status === "bewerbung" && new Date(zirkel.bewerbungBis) > new Date();
+  const fristEnd = new Date(zirkel.bewerbungBis);
+  if (
+    !Number.isNaN(fristEnd.getTime()) &&
+    fristEnd.getUTCHours() === 0 &&
+    fristEnd.getUTCMinutes() === 0 &&
+    fristEnd.getUTCSeconds() === 0 &&
+    fristEnd.getUTCMilliseconds() === 0
+  ) {
+    fristEnd.setHours(23, 59, 59, 999);
+  }
+  const bewerbungOffen = zirkel.status === "bewerbung" && !Number.isNaN(fristEnd.getTime()) && fristEnd >= new Date();
   const kannBewerben = bewerbungOffen && account && !zirkel.isVeranstalter && !zirkel.isTeilnehmer && !zirkel.isBeworben;
 
   return (
