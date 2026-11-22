@@ -71,9 +71,11 @@ export function ProgressiveImage({
 }: ProgressiveImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
   const mainWidth = targetWidth || width || 600;
   const thumbUrl = toProxyUrl(src, thumbWidth);
   const mainUrl = toProxyUrl(src, mainWidth) || src;
+  const isCover = /\bobject-cover\b/.test(className ?? "");
 
   const handleLoad = useCallback(() => setLoaded(true), []);
   const handleError = useCallback(() => {
@@ -84,19 +86,24 @@ export function ProgressiveImage({
 
   // reset on src change & Cache-Check
   useEffect(() => {
-    setLoaded(false);
-    setFailed(false);
-    if (typeof window !== "undefined" && mainUrl) {
-      const probe = new window.Image();
-      probe.src = mainUrl;
-      if (probe.complete && probe.naturalWidth > 0) {
-        setLoaded(true);
-      }
+    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+      setLoaded(true);
+      setFailed(false);
+    } else {
+      setLoaded(false);
+      setFailed(false);
     }
-  }, [src, mainUrl]);
+  }, [mainUrl]);
 
   return (
-    <div className="progressive-image-wrap" style={{ position: "relative", overflow: "hidden", width: fill ? "100%" : width, height: fill ? "100%" : height }}>
+    <div
+      className="progressive-image-wrap"
+      style={
+        fill
+          ? { position: "absolute", inset: 0, overflow: "hidden", borderRadius: "inherit" }
+          : { position: "relative", overflow: "hidden", width, height }
+      }
+    >
       {/* Tiny blurred placeholder */}
       {thumbUrl && !failed && (
         // eslint-disable-next-line @next/next/no-img-element
@@ -110,7 +117,7 @@ export function ProgressiveImage({
             inset: 0,
             width: "100%",
             height: "100%",
-            objectFit: "contain",
+            objectFit: isCover ? "cover" : "contain",
             filter: "blur(12px)",
             transform: "scale(1.1)",
             opacity: loaded ? 0 : 1,
@@ -124,6 +131,7 @@ export function ProgressiveImage({
 
       {/* Full image */}
       <Image
+        ref={imgRef}
         src={mainUrl}
         alt={alt}
         fill={fill}
@@ -140,7 +148,7 @@ export function ProgressiveImage({
         onLoad={handleLoad}
         onError={handleError}
         priority={priority}
-        loading={priority ? undefined : "lazy"}
+        loading={priority ? undefined : "eager"}
       />
     </div>
   );
@@ -172,30 +180,21 @@ export function ProgressiveImg({
   const mainUrl = typeof src === "string" ? (toProxyUrl(src, targetWidth) || src) : src;
 
   useEffect(() => {
-    setLoaded(false);
-    setFailed(false);
-    if (typeof window !== "undefined" && typeof mainUrl === "string") {
-      const probe = new window.Image();
-      probe.src = mainUrl;
-      if (probe.complete && probe.naturalWidth > 0) {
-        setLoaded(true);
-      }
-    }
-  }, [src, mainUrl]);
-
-  useEffect(() => {
-    // Bild ist evtl. schon aus dem Cache geladen
     if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
       setLoaded(true);
+      setFailed(false);
+    } else {
+      setLoaded(false);
+      setFailed(false);
     }
-  }, [src]);
+  }, [mainUrl]);
 
   if (!src) return null;
 
-  // Kein Proxy möglich → normales lazy img
+  // Kein Proxy möglich → normales img
   if (!thumbUrl) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt} className={className} style={style} loading={loading ?? "lazy"} {...rest} />;
+    return <img src={src} alt={alt} className={className} style={style} loading={loading} {...rest} />;
   }
 
   const hasFullWidth = /\bw-full\b/.test(className ?? "");
@@ -210,7 +209,7 @@ export function ProgressiveImg({
         position: "relative",
         overflow: "hidden",
         width: hasFullWidth ? "100%" : "fit-content",
-        height: hasFullHeight ? "100%" : "fit-content",
+        height: hasFullHeight ? "100%" : "auto",
         maxWidth: "100%",
         flexShrink: hasShrink0 ? 0 : undefined,
       }}

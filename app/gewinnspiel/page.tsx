@@ -9,7 +9,7 @@ import {
   PlusIcon,
   GiftIcon 
 } from "@heroicons/react/24/outline";
-import { ProgressiveImg } from "@/app/components/progressive-image";
+import { ProgressiveImage } from "@/app/components/progressive-image";
 
 type Gewinnspiel = {
   _id: string;
@@ -172,9 +172,9 @@ export default function GewinnspielUebersichtPage() {
                 className="card-base p-0 flex flex-row group overflow-hidden no-underline text-inherit hover:border-arena-blue hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
               >
                 {/* Cover – hochkant */}
-                <div className="relative shrink-0 w-24 sm:w-32 bg-arena-bg flex items-center justify-center overflow-hidden border-r border-arena-border-light">
+                <div className="relative shrink-0 w-24 sm:w-32 min-h-[144px] sm:min-h-[192px] bg-arena-bg flex items-center justify-center overflow-hidden border-r border-arena-border-light">
                   {g.coverImageUrl ? (
-                    <ProgressiveImg src={g.coverImageUrl} alt={g.buchTitel} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" style={{ aspectRatio: "2/3", objectPosition: "center" }} />
+                    <ProgressiveImage src={g.coverImageUrl} alt={g.buchTitel} fill sizes="(max-width: 639px) 96px, 128px" className="object-cover object-center group-hover:scale-105 transition-transform duration-300" />
                   ) : (
                     <span className="font-sans text-4xl text-arena-muted">-</span>
                   )}

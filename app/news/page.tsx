@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { sanitizeHtml } from "@/lib/sanitize-html";
 import { ProgressiveImg } from "@/app/components/progressive-image";
 
@@ -61,7 +61,7 @@ export default function NewsPage() {
 
             {post.layout === "image-left" && (
               <div className="flex gap-5 items-start flex-wrap sm:flex-nowrap">
-                <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="max-sm:flex-none max-sm:w-full max-sm:max-w-full min-w-0">
+                <div style={{ "--news-img-ratio": `${post.imageRatio}%` } as CSSProperties} className="w-full sm:flex-[0_0_var(--news-img-ratio)] sm:max-w-[var(--news-img-ratio)] min-w-0">
                   {post.imageUrl && (
                     <ProgressiveImg src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" />
                   )}
@@ -79,7 +79,7 @@ export default function NewsPage() {
                   className="flex-1 min-w-0 ProseMirror font-sans text-[0.93rem] leading-relaxed text-gray-700"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.htmlContent) }}
                 />
-                <div style={{ flex: `0 0 ${post.imageRatio}%`, maxWidth: `${post.imageRatio}%` }} className="max-sm:flex-none max-sm:w-full max-sm:max-w-full min-w-0">
+                <div style={{ "--news-img-ratio": `${post.imageRatio}%` } as CSSProperties} className="w-full sm:flex-[0_0_var(--news-img-ratio)] sm:max-w-[var(--news-img-ratio)] min-w-0">
                   {post.imageUrl && (
                     <ProgressiveImg src={post.imageUrl} alt={post.title} className="w-full rounded-lg object-cover" />
                   )}

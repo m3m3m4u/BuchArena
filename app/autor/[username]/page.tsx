@@ -430,7 +430,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
                   <Link href={`/buch/${book.id}`} className="block rounded-lg no-underline text-inherit transition-shadow hover:shadow-md font-sans" key={`${book.title}-${index}`}>
                     <article className="card-base p-4 hover:border-arena-blue hover:shadow-xs transition-all duration-200 cursor-pointer h-full">
                       <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[600px]:grid-cols-1">
-                        <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border-light bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[120px]">
+                        <div className="relative w-[100px] aspect-[2/3] overflow-hidden rounded-lg border border-arena-border-light bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[600px]:w-full max-[600px]:max-w-[120px]">
                           {book.coverImageUrl ? <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" /> : <span className="font-sans">Kein Cover</span>}
                         </div>
                         <div className="min-w-0">

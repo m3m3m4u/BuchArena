@@ -47,13 +47,19 @@ export async function GET(request: Request) {
     let outputMime: string;
 
     if (maxWidth > 0 && !Number.isNaN(maxWidth)) {
-      // Bild verkleinern und als WebP ausgeben
-      const resized = await sharp(content)
-        .resize({ width: maxWidth, withoutEnlargement: true })
-        .webp({ quality: 80 })
-        .toBuffer();
-      outputBytes = new Uint8Array(resized);
-      outputMime = "image/webp";
+      try {
+        // Bild (inkl. EXIF-Drehung) verkleinern und als WebP ausgeben
+        const resized = await sharp(content)
+          .rotate()
+          .resize({ width: maxWidth, withoutEnlargement: true })
+          .webp({ quality: 80 })
+          .toBuffer();
+        outputBytes = new Uint8Array(resized);
+        outputMime = "image/webp";
+      } catch {
+        outputBytes = new Uint8Array(content);
+        outputMime = mimeTypeFromPath(remotePath);
+      }
     } else {
       outputBytes = new Uint8Array(content);
       outputMime = mimeTypeFromPath(remotePath);

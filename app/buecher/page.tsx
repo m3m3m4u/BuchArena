@@ -193,7 +193,7 @@ function BuecherContent() {
               >
                 <article className="card-base h-full p-4 hover:border-arena-blue hover:shadow-xs transition-all duration-200">
                   <div className="grid grid-cols-[100px_1fr] items-start gap-4 max-[400px]:grid-cols-1">
-                    <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border-light bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px]">
+                    <div className="relative w-[100px] aspect-[2/3] overflow-hidden rounded-lg border border-arena-border-light bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px]">
                       {book.coverImageUrl ? (
                         <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded-lg p-1" sizes="100px" />
                       ) : (

@@ -611,7 +611,7 @@ export default function MeineBuecherTab({ username }: MeineBuecherTabProps) {
               <article className="rounded-lg border border-arena-border-light bg-white p-3 font-sans" key={`${book.title}-${book.createdAt}-${index}`}>
                 <Link href={`/buch/${book.id}`} className="block no-underline text-inherit hover:opacity-90 font-sans">
                   <div className="grid grid-cols-[100px_1fr] items-start gap-3.5 max-[400px]:grid-cols-1 font-sans">
-                    <div className="relative w-[100px] aspect-[2/3] rounded-lg border border-arena-border-light bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px] font-sans">
+                    <div className="relative w-[100px] aspect-[2/3] overflow-hidden rounded-lg border border-arena-border-light bg-arena-bg flex items-center justify-center text-xs text-arena-muted max-[400px]:w-full max-[400px]:max-w-[120px] font-sans">
                       {book.coverImageUrl ? (
                         <ProgressiveImage src={book.coverImageUrl} alt={`Cover von ${book.title}`} fill className="object-contain rounded p-1" sizes="100px" />
                       ) : (
