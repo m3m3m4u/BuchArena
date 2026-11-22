@@ -428,6 +428,11 @@ export default function BuchzirkelDashboardPage() {
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>, abschnittId?: string) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 50 * 1024 * 1024) {
+      setUploadError("Die Datei darf maximal 50 MB groß sein.");
+      e.target.value = "";
+      return;
+    }
     setUploading(true);
     setUploadError("");
     const controller = new AbortController();
@@ -441,9 +446,28 @@ export default function BuchzirkelDashboardPage() {
         body: file,
         signal: controller.signal,
       });
-      const data = await res.json() as { message?: string };
-      if (!res.ok) { setUploadError(data.message ?? "Upload fehlgeschlagen."); }
-      else { setUploadAbschnittId(""); await load(); }
+      const rawText = await res.text();
+      let data: { message?: string; code?: string } = {};
+      try {
+        data = JSON.parse(rawText) as { message?: string; code?: string };
+      } catch {
+        // Proxy-Fehler liefern ggf. HTML/Plaintext statt JSON
+      }
+      if (!res.ok) {
+        const baseMsg =
+          data.message ??
+          (res.status === 413
+            ? "Die Datei ist zu groß (max. 50 MB)."
+            : `Upload fehlgeschlagen (HTTP ${res.status}).`);
+        const fullMsg = data.code ? `${baseMsg} (${data.code})` : baseMsg;
+        if (data.code) {
+          console.error("Buchzirkel Datei-Upload Fehler:", { status: res.status, code: data.code, message: baseMsg });
+        }
+        setUploadError(fullMsg);
+      } else {
+        setUploadAbschnittId("");
+        await load();
+      }
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         setUploadError("Der Upload hat zu lange gedauert. Bitte prüfe deine Verbindung und versuche es erneut.");

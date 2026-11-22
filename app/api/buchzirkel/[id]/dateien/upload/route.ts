@@ -5,8 +5,9 @@ import {
   getBuchzirkelCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import { davPut } from "@/lib/bucharena-webdav";
+import { davPut, WebDavError } from "@/lib/bucharena-webdav";
 
+export const runtime = "nodejs";
 export const maxDuration = 300; // 5 Minuten für große Datei-Uploads
 
 const BUCHZIRKEL_DIR = "buchzirkel";
@@ -72,15 +73,82 @@ export async function POST(
     const fileId = randomUUID();
     const ext = isEpub ? ".epub" : ".pdf";
     const contentType = isEpub ? "application/epub+zip" : "application/pdf";
-    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
+    const rawBase = fileName
+      .slice(0, Math.max(0, fileName.length - ext.length))
+      .replace(/[^a-zA-Z0-9._-]/g, "_")
+      .replace(/\.+$/, "");
+    const baseName = (rawBase || "datei").slice(0, 80 - ext.length);
+    const safeName = `${baseName}${ext}`;
     const masterPath = `${BUCHZIRKEL_DIR}/${id}/master/${fileId}${ext}`;
 
     let davResult: { url: string; key: string } | null;
     try {
-      davResult = await davPut(masterPath, new Uint8Array(arrayBuf), contentType);
+      davResult = await davPut(masterPath, Buffer.from(arrayBuf), contentType);
     } catch (davErr) {
-      console.error("buchzirkel/upload: davPut fehlgeschlagen:", davErr);
-      return NextResponse.json({ message: "Datei konnte nicht auf den Speicher hochgeladen werden. Bitte versuche es erneut." }, { status: 500 });
+      const status = davErr instanceof WebDavError ? davErr.status : undefined;
+      const code = davErr instanceof WebDavError ? davErr.code : undefined;
+      const responseSnippet = davErr instanceof WebDavError ? davErr.responseSnippet : undefined;
+      const errorMessage = davErr instanceof Error ? davErr.message : String(davErr);
+      console.error("buchzirkel/upload: davPut fehlgeschlagen:", {
+        zirkelId: id,
+        fileName,
+        sizeBytes: arrayBuf.byteLength,
+        masterPath,
+        errorMessage,
+        status,
+        code,
+        responseSnippet,
+      });
+
+      if (status === 507) {
+        return NextResponse.json(
+          {
+            message: "Der Dateispeicher ist voll. Bitte melde dich beim Support-Team.",
+            code: "STORAGE_FULL",
+          },
+          { status: 500 }
+        );
+      }
+      if (status === 413) {
+        return NextResponse.json(
+          {
+            message: "Die Datei ist zu groß für den Speicher.",
+            code: "STORAGE_TOO_LARGE",
+          },
+          { status: 500 }
+        );
+      }
+      if (code === "CONNECT_TIMEOUT" || code === "TIMEOUT") {
+        return NextResponse.json(
+          {
+            message: "Zeitüberschreitung bei der Verbindung zum Speicher. Bitte versuche es in einem Moment erneut.",
+            code: "STORAGE_TIMEOUT",
+          },
+          { status: 500 }
+        );
+      }
+      return NextResponse.json(
+        {
+          message: "Datei konnte nicht auf den Speicher hochgeladen werden. Bitte versuche es erneut.",
+          code: status ? `STORAGE_HTTP_${status}` : (code ?? "STORAGE_ERROR"),
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!davResult) {
+      console.error("buchzirkel/upload: WebDAV ist nicht konfiguriert.", {
+        zirkelId: id,
+        fileName,
+        masterPath,
+      });
+      return NextResponse.json(
+        {
+          message: "Dateispeicher ist derzeit nicht konfiguriert.",
+          code: "STORAGE_NOT_CONFIGURED",
+        },
+        { status: 500 }
+      );
     }
     console.log(`buchzirkel/upload: WebDAV-Upload OK – ${masterPath}`);
 
