@@ -10,6 +10,8 @@ type Folge = {
   title: string;
   text: string;
   youtubeUrl: string;
+  audioUrl?: string;
+  coverUrl?: string;
   views: number;
   createdAt: string;
 };
@@ -69,6 +71,15 @@ export default function PodcastPage() {
                 const ytId = extractYoutubeId(folge.youtubeUrl);
                 return (
                   <article key={folge._id} className="card-base flex flex-col gap-3 p-4 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200">
+                    {folge.coverUrl && (
+                      <Link href={`/podcast/${folge._id}`} className="block overflow-hidden rounded-lg border border-arena-border-light">
+                        <img
+                          src={folge.coverUrl}
+                          alt={folge.title}
+                          className="w-full aspect-video object-cover"
+                        />
+                      </Link>
+                    )}
                     <Link
                       href={`/podcast/${folge._id}`}
                       className="font-sans text-base font-bold text-arena-blue hover:text-arena-blue-light no-underline"
@@ -81,8 +92,11 @@ export default function PodcastPage() {
                     {folge.text && (
                       <p className="font-sans text-sm text-arena-text leading-relaxed line-clamp-3 m-0">{folge.text}</p>
                     )}
+                    {folge.audioUrl && (
+                      <audio controls className="w-full mt-auto" src={folge.audioUrl} preload="metadata" />
+                    )}
                     {ytId && (
-                      <div className="relative w-full mt-auto rounded-lg overflow-hidden border border-arena-border-light" style={{ paddingBottom: "56.25%" }}>
+                      <div className={`relative w-full ${folge.audioUrl ? "" : "mt-auto"} rounded-lg overflow-hidden border border-arena-border-light`} style={{ paddingBottom: "56.25%" }}>
                         <iframe
                           className="absolute inset-0 w-full h-full"
                           src={`https://www.youtube-nocookie.com/embed/${ytId}`}

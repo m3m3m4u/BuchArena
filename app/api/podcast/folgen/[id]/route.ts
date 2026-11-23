@@ -28,6 +28,10 @@ export async function GET(
         title: folge.title,
         text: folge.text,
         youtubeUrl: folge.youtubeUrl,
+        audioUrl: folge.audioUrl ?? "",
+        audioFileName: folge.audioFileName ?? "",
+        audioFileSize: folge.audioFileSize ?? 0,
+        coverUrl: folge.coverUrl ?? "",
         views: folge.views ?? 0,
         createdAt: folge.createdAt,
       },
@@ -56,6 +60,10 @@ export async function PATCH(
     title?: string;
     text?: string;
     youtubeUrl?: string;
+    audioUrl?: string;
+    audioFileName?: string;
+    audioFileSize?: number;
+    coverUrl?: string;
     published?: boolean;
   };
 
@@ -63,6 +71,10 @@ export async function PATCH(
   if (body.title !== undefined) update.title = body.title.trim();
   if (body.text !== undefined) update.text = body.text.trim();
   if (body.youtubeUrl !== undefined) update.youtubeUrl = body.youtubeUrl.trim();
+  if (body.audioUrl !== undefined) update.audioUrl = body.audioUrl.trim();
+  if (body.audioFileName !== undefined) update.audioFileName = body.audioFileName.trim();
+  if (body.audioFileSize !== undefined) update.audioFileSize = body.audioFileSize;
+  if (body.coverUrl !== undefined) update.coverUrl = body.coverUrl.trim();
   if (body.published !== undefined) update.published = body.published;
 
   try {

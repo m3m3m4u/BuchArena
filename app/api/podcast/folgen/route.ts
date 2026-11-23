@@ -21,6 +21,10 @@ export async function GET() {
         title: f.title,
         text: f.text,
         youtubeUrl: f.youtubeUrl,
+        audioUrl: f.audioUrl ?? "",
+        audioFileName: f.audioFileName ?? "",
+        audioFileSize: f.audioFileSize ?? 0,
+        coverUrl: f.coverUrl ?? "",
         views: f.views ?? 0,
         createdAt: f.createdAt,
       })),
@@ -41,12 +45,20 @@ export async function POST(request: Request) {
     title?: string;
     text?: string;
     youtubeUrl?: string;
+    audioUrl?: string;
+    audioFileName?: string;
+    audioFileSize?: number;
+    coverUrl?: string;
     published?: boolean;
   };
 
   const title = body.title?.trim();
   const text = body.text?.trim() ?? "";
   const youtubeUrl = body.youtubeUrl?.trim() ?? "";
+  const audioUrl = body.audioUrl?.trim() ?? "";
+  const audioFileName = body.audioFileName?.trim() ?? "";
+  const audioFileSize = typeof body.audioFileSize === "number" ? body.audioFileSize : 0;
+  const coverUrl = body.coverUrl?.trim() ?? "";
 
   if (!title) {
     return NextResponse.json({ message: "Titel ist erforderlich." }, { status: 400 });
@@ -59,6 +71,10 @@ export async function POST(request: Request) {
       title,
       text,
       youtubeUrl,
+      audioUrl,
+      audioFileName,
+      audioFileSize,
+      coverUrl,
       published: body.published ?? true,
       views: 0,
       createdAt: now,

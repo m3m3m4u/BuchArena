@@ -260,16 +260,6 @@ export const ADMIN_TOOLS: AdminTool[] = [
     href: "/admin/buecher",
     icon: BookOpenIcon,
   },
-  {
-    id: "amazon",
-    title: "Amazon Sync",
-    shortDesc: "Buchkatalog mit Amazon abgleichen (Superadmin)",
-    category: "actions",
-    type: "link",
-    href: "/admin/amazon",
-    icon: ArrowTopRightOnSquareIcon,
-    superAdminOnly: true,
-  },
 
   // Analyse
   {
@@ -386,9 +376,6 @@ export function AdminNav({
                 <option value="gewinnspiele">Gewinnspiele ↗</option>
                 <option value="katalog">Katalog & KI</option>
                 <option value="buecher">Bücherverwaltung ↗</option>
-                {(account?.username === "Kopernikus" || account?.role === "SUPERADMIN") && (
-                  <option value="amazon">Amazon Sync ↗</option>
-                )}
               </optgroup>
               <optgroup label="📊 Analyse">
                 <option value="analytics">Besucher-Analyse</option>

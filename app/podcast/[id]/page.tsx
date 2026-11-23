@@ -10,6 +10,8 @@ type Folge = {
   title: string;
   text: string;
   youtubeUrl: string;
+  audioUrl?: string;
+  coverUrl?: string;
   views: number;
   createdAt: string;
 };
@@ -70,6 +72,18 @@ export default function PodcastFolgePage() {
             <p className="text-xs text-gray-400">
               {formatDate(folge.createdAt)} · {folge.views} Aufruf{folge.views !== 1 ? "e" : ""}
             </p>
+
+            {folge.coverUrl && (
+              <img
+                src={folge.coverUrl}
+                alt={folge.title}
+                className="w-full max-w-xl rounded-lg border border-arena-border-light object-cover"
+              />
+            )}
+
+            {folge.audioUrl && (
+              <audio controls className="w-full max-w-xl" src={folge.audioUrl} preload="metadata" />
+            )}
 
             {folge.text && (
               <p className="text-[0.93rem] text-gray-700 leading-relaxed">{folge.text}</p>

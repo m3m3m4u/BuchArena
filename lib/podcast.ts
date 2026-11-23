@@ -26,6 +26,10 @@ export type PodcastFolgeDocument = {
   title: string;
   text: string;
   youtubeUrl: string;
+  audioUrl?: string;
+  audioFileName?: string;
+  audioFileSize?: number;
+  coverUrl?: string;
   published: boolean;
   views: number;
   createdAt: Date;

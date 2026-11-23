@@ -311,11 +311,21 @@ type Folge = {
   title: string;
   text: string;
   youtubeUrl: string;
+  audioUrl?: string;
+  audioFileName?: string;
+  audioFileSize?: number;
+  coverUrl?: string;
   published: boolean;
   views: number;
   createdAt: string;
   updatedAt: string;
 };
+
+function formatBytes(n?: number): string {
+  if (!n) return "";
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -345,10 +355,21 @@ export default function PodcastAdminPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editText, setEditText] = useState("");
   const [editYoutubeUrl, setEditYoutubeUrl] = useState("");
+  const [editAudioUrl, setEditAudioUrl] = useState("");
+  const [editAudioFileName, setEditAudioFileName] = useState("");
+  const [editAudioFileSize, setEditAudioFileSize] = useState(0);
+  const [editCoverUrl, setEditCoverUrl] = useState("");
+  const [audioUploading, setAudioUploading] = useState(false);
+  const [audioUploadProgress, setAudioUploadProgress] = useState(0);
+  const [audioUploadError, setAudioUploadError] = useState("");
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverUploadError, setCoverUploadError] = useState("");
   const [editPublished, setEditPublished] = useState(true);
   const [folgeSaveStatus, setFolgeSaveStatus] = useState("");
   const [folgeSaving, setFolgeSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const acc = getStoredAccount();
@@ -438,6 +459,12 @@ export default function PodcastAdminPage() {
     setEditTitle("");
     setEditText("");
     setEditYoutubeUrl("");
+    setEditAudioUrl("");
+    setEditAudioFileName("");
+    setEditAudioFileSize(0);
+    setEditCoverUrl("");
+    setAudioUploadError("");
+    setCoverUploadError("");
     setEditPublished(true);
     setFolgeSaveStatus("");
     setShowForm(true);
@@ -448,6 +475,12 @@ export default function PodcastAdminPage() {
     setEditTitle(f.title);
     setEditText(f.text);
     setEditYoutubeUrl(f.youtubeUrl);
+    setEditAudioUrl(f.audioUrl ?? "");
+    setEditAudioFileName(f.audioFileName ?? "");
+    setEditAudioFileSize(f.audioFileSize ?? 0);
+    setEditCoverUrl(f.coverUrl ?? "");
+    setAudioUploadError("");
+    setCoverUploadError("");
     setEditPublished(f.published);
     setFolgeSaveStatus("");
     setShowForm(true);
@@ -459,24 +492,166 @@ export default function PodcastAdminPage() {
     setFolgeSaveStatus("");
   };
 
+  /* ── MP3-Upload (direkt bis 40 MB, darüber in 10-MB-Chunks) ── */
+  const handleAudioUpload = async (file: File) => {
+    setAudioUploadError("");
+    if (!file.name.toLowerCase().endsWith(".mp3") && !file.type.includes("mpeg") && !file.type.includes("mp3")) {
+      setAudioUploadError("Bitte eine MP3-Datei auswählen.");
+      return;
+    }
+    if (file.size > 250 * 1024 * 1024) {
+      setAudioUploadError("Die MP3-Datei darf maximal 250 MB groß sein.");
+      return;
+    }
+
+    setAudioUploading(true);
+    setAudioUploadProgress(0);
+
+    try {
+      const DIRECT_LIMIT = 40 * 1024 * 1024;
+      if (file.size <= DIRECT_LIMIT) {
+        await new Promise<void>((resolve, reject) => {
+          const fd = new FormData();
+          fd.append("file", file);
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/api/podcast/upload-audio");
+          xhr.upload.addEventListener("progress", (ev) => {
+            if (ev.lengthComputable) {
+              setAudioUploadProgress(Math.round((ev.loaded / ev.total) * 100));
+            }
+          });
+          xhr.addEventListener("load", () => {
+            try {
+              const data = JSON.parse(xhr.responseText) as {
+                audioUrl?: string;
+                fileName?: string;
+                fileSize?: number;
+                message?: string;
+              };
+              if (xhr.status >= 200 && xhr.status < 300 && data.audioUrl) {
+                setEditAudioUrl(data.audioUrl);
+                setEditAudioFileName(data.fileName ?? file.name);
+                setEditAudioFileSize(data.fileSize ?? file.size);
+                resolve();
+              } else {
+                reject(new Error(data.message ?? "MP3-Upload fehlgeschlagen."));
+              }
+            } catch {
+              reject(new Error("Ungültige Serverantwort."));
+            }
+          });
+          xhr.addEventListener("error", () => reject(new Error("Netzwerkfehler beim Upload.")));
+          xhr.addEventListener("timeout", () => reject(new Error("Timeout beim Upload.")));
+          xhr.timeout = 10 * 60 * 1000;
+          xhr.send(fd);
+        });
+      } else {
+        const CHUNK_SIZE = 10 * 1024 * 1024;
+        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+        const uploadId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+        for (let i = 0; i < totalChunks; i++) {
+          const start = i * CHUNK_SIZE;
+          const end = Math.min(start + CHUNK_SIZE, file.size);
+          const chunkBlob = file.slice(start, end);
+
+          const fd = new FormData();
+          fd.append("uploadId", uploadId);
+          fd.append("chunkIndex", String(i));
+          fd.append("totalChunks", String(totalChunks));
+          fd.append("originalName", file.name);
+          fd.append("fileSize", String(file.size));
+          fd.append("mimeType", file.type || "audio/mpeg");
+          fd.append("chunk", chunkBlob, file.name);
+
+          const res = await fetch("/api/podcast/upload-audio", {
+            method: "POST",
+            body: fd,
+          });
+          const data = (await res.json()) as {
+            audioUrl?: string;
+            fileName?: string;
+            fileSize?: number;
+            message?: string;
+          };
+          if (!res.ok) {
+            throw new Error(data.message ?? "MP3-Chunk-Upload fehlgeschlagen.");
+          }
+          setAudioUploadProgress(Math.round(((i + 1) / totalChunks) * 100));
+          if (i === totalChunks - 1 && data.audioUrl) {
+            setEditAudioUrl(data.audioUrl);
+            setEditAudioFileName(data.fileName ?? file.name);
+            setEditAudioFileSize(data.fileSize ?? file.size);
+          }
+        }
+      }
+    } catch (err) {
+      setAudioUploadError(err instanceof Error ? err.message : "MP3-Upload fehlgeschlagen.");
+    } finally {
+      setAudioUploading(false);
+      setAudioUploadProgress(0);
+    }
+  };
+
+  /* ── Vorschaubild-Upload ── */
+  const handleCoverUpload = async (file: File) => {
+    setCoverUploadError("");
+    if (!file.type.startsWith("image/")) {
+      setCoverUploadError("Bitte eine Bilddatei auswählen.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setCoverUploadError("Das Vorschaubild darf maximal 10 MB groß sein.");
+      return;
+    }
+    setCoverUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/podcast/upload-image", {
+        method: "POST",
+        body: fd,
+      });
+      const data = (await res.json()) as { imageUrl?: string; message?: string };
+      if (!res.ok || !data.imageUrl) {
+        throw new Error(data.message ?? "Vorschaubild-Upload fehlgeschlagen.");
+      }
+      setEditCoverUrl(data.imageUrl);
+    } catch (err) {
+      setCoverUploadError(err instanceof Error ? err.message : "Vorschaubild-Upload fehlgeschlagen.");
+    } finally {
+      setCoverUploading(false);
+    }
+  };
+
   /* ── Folge speichern ── */
   const handleSaveFolge = async () => {
     if (!editTitle.trim()) { setFolgeSaveStatus("Titel ist erforderlich."); return; }
     setFolgeSaving(true);
     setFolgeSaveStatus("");
+    const payload = {
+      title: editTitle.trim(),
+      text: editText.trim(),
+      youtubeUrl: editYoutubeUrl.trim(),
+      audioUrl: editAudioUrl.trim(),
+      audioFileName: editAudioFileName.trim(),
+      audioFileSize: editAudioFileSize,
+      coverUrl: editCoverUrl.trim(),
+      published: editPublished,
+    };
     try {
       let res: Response;
       if (editId) {
         res = await fetch(`/api/podcast/folgen/${editId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: editTitle.trim(), text: editText.trim(), youtubeUrl: editYoutubeUrl.trim(), published: editPublished }),
+          body: JSON.stringify(payload),
         });
       } else {
         res = await fetch("/api/podcast/folgen", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: editTitle.trim(), text: editText.trim(), youtubeUrl: editYoutubeUrl.trim(), published: editPublished }),
+          body: JSON.stringify(payload),
         });
       }
       const data = (await res.json()) as { message?: string };
@@ -612,7 +787,7 @@ export default function PodcastAdminPage() {
               </div>
 
               <div>
-                <label className="block mb-1 text-sm font-medium">YouTube-Link</label>
+                <label className="block mb-1 text-sm font-medium">YouTube-Link (optional)</label>
                 <input
                   type="url"
                   value={editYoutubeUrl}
@@ -627,6 +802,120 @@ export default function PodcastAdminPage() {
                 )}
                 {editYoutubeUrl && !extractYoutubeId(editYoutubeUrl) && (
                   <p className="text-xs text-red-600 mt-1">Ungültiger YouTube-Link.</p>
+                )}
+              </div>
+
+              {/* ── MP3-Upload ── */}
+              <div className="border border-gray-200 rounded-lg p-3.5 bg-white flex flex-col gap-2">
+                <label className="text-sm font-medium">Podcast-Audio (MP3)</label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    ref={audioInputRef}
+                    type="file"
+                    accept=".mp3,audio/mpeg"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void handleAudioUpload(f);
+                      e.target.value = "";
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    disabled={audioUploading}
+                    onClick={() => audioInputRef.current?.click()}
+                  >
+                    {audioUploading
+                      ? `Lädt hoch … ${audioUploadProgress}%`
+                      : editAudioUrl
+                        ? "MP3 ersetzen"
+                        : "MP3 hochladen"}
+                  </button>
+                  <span className="text-xs text-gray-500">Max. 250 MB (.mp3)</span>
+                </div>
+                {audioUploading && (
+                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-arena-blue transition-all duration-200"
+                      style={{ width: `${audioUploadProgress}%` }}
+                    />
+                  </div>
+                )}
+                {audioUploadError && (
+                  <p className="text-xs text-red-600 m-0">{audioUploadError}</p>
+                )}
+                {editAudioUrl && (
+                  <div className="flex flex-col gap-2 pt-1">
+                    <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
+                      <span className="truncate">
+                        {editAudioFileName || "MP3 hochgeladen"}
+                        {editAudioFileSize > 0 && ` (${formatBytes(editAudioFileSize)})`}
+                      </span>
+                      <button
+                        type="button"
+                        className="text-red-600 hover:underline flex-shrink-0"
+                        onClick={() => {
+                          setEditAudioUrl("");
+                          setEditAudioFileName("");
+                          setEditAudioFileSize(0);
+                        }}
+                      >
+                        Entfernen
+                      </button>
+                    </div>
+                    <audio controls className="w-full h-9" src={editAudioUrl} />
+                  </div>
+                )}
+              </div>
+
+              {/* ── Vorschaubild-Upload ── */}
+              <div className="border border-gray-200 rounded-lg p-3.5 bg-white flex flex-col gap-2">
+                <label className="text-sm font-medium">Vorschaubild</label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void handleCoverUpload(f);
+                      e.target.value = "";
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    disabled={coverUploading}
+                    onClick={() => coverInputRef.current?.click()}
+                  >
+                    {coverUploading
+                      ? "Lädt hoch …"
+                      : editCoverUrl
+                        ? "Vorschaubild ersetzen"
+                        : "Vorschaubild hochladen"}
+                  </button>
+                  <span className="text-xs text-gray-500">JPEG, PNG, WebP oder GIF (max. 10 MB)</span>
+                </div>
+                {coverUploadError && (
+                  <p className="text-xs text-red-600 m-0">{coverUploadError}</p>
+                )}
+                {editCoverUrl && (
+                  <div className="flex items-start gap-3 pt-1">
+                    <img
+                      src={editCoverUrl}
+                      alt="Vorschaubild"
+                      className="w-32 h-20 object-cover rounded-lg border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      className="text-xs text-red-600 hover:underline"
+                      onClick={() => setEditCoverUrl("")}
+                    >
+                      Entfernen
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -650,7 +939,12 @@ export default function PodcastAdminPage() {
               )}
 
               <div className="flex gap-3">
-                <button type="button" className="btn btn-primary btn-sm" onClick={handleSaveFolge} disabled={folgeSaving}>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={handleSaveFolge}
+                  disabled={folgeSaving || audioUploading || coverUploading}
+                >
                   {folgeSaving ? "Speichert …" : "Speichern"}
                 </button>
                 <button type="button" className="btn btn-sm" onClick={closeForm}>Abbrechen</button>
@@ -679,13 +973,25 @@ export default function PodcastAdminPage() {
               return (
                 <div key={f._id} className="border border-gray-200 rounded-xl p-4 bg-white flex flex-col gap-2 shadow-sm">
                   <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="font-semibold text-gray-800 text-sm">{f.title}</span>
-                      <span className="text-xs text-gray-400">
-                        {formatDate(f.createdAt)} · {f.views} Aufruf{f.views !== 1 ? "e" : ""}
-                        {ytId && <> · Video-ID: <code className="font-mono">{ytId}</code></>}
-                      </span>
-                      {f.text && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{f.text}</p>}
+                    <div className="flex items-start gap-3 min-w-0">
+                      {f.coverUrl && (
+                        <img
+                          src={f.coverUrl}
+                          alt={f.title}
+                          className="w-20 h-14 object-cover rounded-lg border border-gray-200 flex-shrink-0"
+                        />
+                      )}
+                      <div className="flex flex-col gap-0.5 min-w-0">
+                        <span className="font-semibold text-gray-800 text-sm">{f.title}</span>
+                        <span className="text-xs text-gray-400">
+                          {formatDate(f.createdAt)} · {f.views} Aufruf{f.views !== 1 ? "e" : ""}
+                          {ytId && <> · Video-ID: <code className="font-mono">{ytId}</code></>}
+                          {f.audioUrl && (
+                            <> · <span className="text-arena-blue font-medium">MP3{f.audioFileSize ? ` (${formatBytes(f.audioFileSize)})` : ""}</span></>
+                          )}
+                        </span>
+                        {f.text && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{f.text}</p>}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <button
