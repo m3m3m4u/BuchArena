@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import { getPodcastFolgenCollection } from "@/lib/podcast";
+import {
+  getPodcastFolgenCollection,
+  mapResolvedLinkedProfiles,
+  resolvePodcastLinkedProfiles,
+  sanitizeLinkedProfiles,
+  type PodcastLinkedProfileRef,
+} from "@/lib/podcast";
 
 function isAdmin(role: string) {
   return role === "ADMIN" || role === "SUPERADMIN";
@@ -22,6 +28,7 @@ export async function GET(
     if (!folge) {
       return NextResponse.json({ message: "Nicht gefunden." }, { status: 404 });
     }
+    const resolvedMap = await resolvePodcastLinkedProfiles([folge]);
     return NextResponse.json({
       folge: {
         _id: folge._id!.toString(),
@@ -32,6 +39,7 @@ export async function GET(
         audioFileName: folge.audioFileName ?? "",
         audioFileSize: folge.audioFileSize ?? 0,
         coverUrl: folge.coverUrl ?? "",
+        linkedProfiles: mapResolvedLinkedProfiles(folge.linkedProfiles, resolvedMap),
         views: folge.views ?? 0,
         createdAt: folge.createdAt,
       },
@@ -64,6 +72,7 @@ export async function PATCH(
     audioFileName?: string;
     audioFileSize?: number;
     coverUrl?: string;
+    linkedProfiles?: PodcastLinkedProfileRef[];
     published?: boolean;
   };
 
@@ -75,6 +84,7 @@ export async function PATCH(
   if (body.audioFileName !== undefined) update.audioFileName = body.audioFileName.trim();
   if (body.audioFileSize !== undefined) update.audioFileSize = body.audioFileSize;
   if (body.coverUrl !== undefined) update.coverUrl = body.coverUrl.trim();
+  if (body.linkedProfiles !== undefined) update.linkedProfiles = sanitizeLinkedProfiles(body.linkedProfiles);
   if (body.published !== undefined) update.published = body.published;
 
   try {

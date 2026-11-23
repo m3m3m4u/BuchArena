@@ -5,6 +5,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { extractYoutubeId } from "@/lib/podcast-utils";
 
+type LinkedProfile = {
+  username: string;
+  profileType: string;
+  displayName: string;
+  profileImage?: string;
+  profilePath: string;
+  roleLabel: string;
+};
+
 type Folge = {
   _id: string;
   title: string;
@@ -12,6 +21,7 @@ type Folge = {
   youtubeUrl: string;
   audioUrl?: string;
   coverUrl?: string;
+  linkedProfiles?: LinkedProfile[];
   views: number;
   createdAt: string;
 };
@@ -87,6 +97,35 @@ export default function PodcastFolgePage() {
 
             {folge.text && (
               <p className="text-[0.93rem] text-gray-700 leading-relaxed">{folge.text}</p>
+            )}
+
+            {folge.linkedProfiles && folge.linkedProfiles.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <h2 className="text-sm font-semibold text-gray-700 m-0">Verlinkte Profile</h2>
+                <div className="flex flex-wrap gap-2">
+                  {folge.linkedProfiles.map((p) => (
+                    <Link
+                      key={`${p.username}-${p.profileType}`}
+                      href={p.profilePath}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 text-sm text-arena-blue no-underline transition-colors"
+                    >
+                      {p.profileImage ? (
+                        <img
+                          src={p.profileImage}
+                          alt={p.displayName}
+                          className="w-6 h-6 rounded-full object-cover flex-shrink-0 border border-gray-200"
+                        />
+                      ) : (
+                        <span className="w-6 h-6 rounded-full bg-arena-blue/10 text-arena-blue text-xs font-bold flex items-center justify-center flex-shrink-0">
+                          {(p.displayName || p.username).charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                      <span className="font-medium">{p.displayName}</span>
+                      <span className="text-xs text-gray-500">({p.roleLabel})</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             )}
 
             {ytId && (

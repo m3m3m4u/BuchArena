@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
-import { getPodcastFolgenCollection } from "@/lib/podcast";
+import {
+  getPodcastFolgenCollection,
+  mapResolvedLinkedProfiles,
+  resolvePodcastLinkedProfiles,
+} from "@/lib/podcast";
 
 function isAdmin(role: string) {
   return role === "ADMIN" || role === "SUPERADMIN";
@@ -19,6 +23,7 @@ export async function GET() {
       .find({})
       .sort({ createdAt: -1 })
       .toArray();
+    const resolvedMap = await resolvePodcastLinkedProfiles(folgen);
     return NextResponse.json({
       folgen: folgen.map((f) => ({
         _id: f._id!.toString(),
@@ -29,6 +34,7 @@ export async function GET() {
         audioFileName: f.audioFileName ?? "",
         audioFileSize: f.audioFileSize ?? 0,
         coverUrl: f.coverUrl ?? "",
+        linkedProfiles: mapResolvedLinkedProfiles(f.linkedProfiles, resolvedMap),
         published: f.published,
         views: f.views ?? 0,
         createdAt: f.createdAt,

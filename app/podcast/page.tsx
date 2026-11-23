@@ -5,6 +5,15 @@ import { useEffect, useState } from "react";
 import { sanitizeHtml } from "@/lib/sanitize-html";
 import { extractYoutubeId } from "@/lib/podcast-utils";
 
+type LinkedProfile = {
+  username: string;
+  profileType: string;
+  displayName: string;
+  profileImage?: string;
+  profilePath: string;
+  roleLabel: string;
+};
+
 type Folge = {
   _id: string;
   title: string;
@@ -12,6 +21,7 @@ type Folge = {
   youtubeUrl: string;
   audioUrl?: string;
   coverUrl?: string;
+  linkedProfiles?: LinkedProfile[];
   views: number;
   createdAt: string;
 };
@@ -91,6 +101,31 @@ export default function PodcastPage() {
                     </p>
                     {folge.text && (
                       <p className="font-sans text-sm text-arena-text leading-relaxed line-clamp-3 m-0">{folge.text}</p>
+                    )}
+                    {folge.linkedProfiles && folge.linkedProfiles.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {folge.linkedProfiles.map((p) => (
+                          <Link
+                            key={`${p.username}-${p.profileType}`}
+                            href={p.profilePath}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 text-xs text-arena-blue no-underline transition-colors"
+                            title={`${p.displayName} (${p.roleLabel})`}
+                          >
+                            {p.profileImage ? (
+                              <img
+                                src={p.profileImage}
+                                alt={p.displayName}
+                                className="w-4 h-4 rounded-full object-cover flex-shrink-0"
+                              />
+                            ) : (
+                              <span className="w-4 h-4 rounded-full bg-arena-blue/10 text-arena-blue text-[0.65rem] font-bold flex items-center justify-center flex-shrink-0">
+                                {(p.displayName || p.username).charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                            <span className="font-medium truncate max-w-[140px]">{p.displayName}</span>
+                          </Link>
+                        ))}
+                      </div>
                     )}
                     {folge.audioUrl && (
                       <audio controls className="w-full mt-auto" src={folge.audioUrl} preload="metadata" />

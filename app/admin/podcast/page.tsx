@@ -17,6 +17,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import { extractYoutubeId } from "@/lib/podcast-utils";
+import { ROLLE_LABELS, type KooperationsRolle } from "@/lib/kooperationen";
 
 /* ── Resizable Image (aus Blog-Admin übernommen) ── */
 const ResizableImage = Image.extend({
@@ -306,6 +307,31 @@ function EditorToolbar({
 /* ══════════════════════════════════════════════════════════════
    Typen
 ══════════════════════════════════════════════════════════════ */
+type LinkedProfile = {
+  username: string;
+  profileType: KooperationsRolle;
+  displayName: string;
+  profileImage?: string;
+  profilePath?: string;
+  roleLabel?: string;
+};
+
+type UserSearchResult = {
+  username: string;
+  displayName: string;
+  profileImage: string;
+  availableRoles: KooperationsRolle[];
+};
+
+const ALL_PROFILE_ROLES: KooperationsRolle[] = [
+  "autor",
+  "sprecher",
+  "blogger",
+  "testleser",
+  "lektor",
+  "verlag",
+];
+
 type Folge = {
   _id: string;
   title: string;
@@ -315,6 +341,7 @@ type Folge = {
   audioFileName?: string;
   audioFileSize?: number;
   coverUrl?: string;
+  linkedProfiles?: LinkedProfile[];
   published: boolean;
   views: number;
   createdAt: string;
@@ -359,6 +386,11 @@ export default function PodcastAdminPage() {
   const [editAudioFileName, setEditAudioFileName] = useState("");
   const [editAudioFileSize, setEditAudioFileSize] = useState(0);
   const [editCoverUrl, setEditCoverUrl] = useState("");
+  const [editLinkedProfiles, setEditLinkedProfiles] = useState<LinkedProfile[]>([]);
+  const [profileSearchQuery, setProfileSearchQuery] = useState("");
+  const [profileSearchResults, setProfileSearchResults] = useState<UserSearchResult[]>([]);
+  const [profileSearching, setProfileSearching] = useState(false);
+  const profileSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [audioUploading, setAudioUploading] = useState(false);
   const [audioUploadProgress, setAudioUploadProgress] = useState(0);
   const [audioUploadError, setAudioUploadError] = useState("");
@@ -453,6 +485,64 @@ export default function PodcastAdminPage() {
     if (isAdmin && tab === "folgen") void loadFolgen();
   }, [isAdmin, tab, loadFolgen]);
 
+  /* ── Profil-Suche (debounced) ── */
+  useEffect(() => {
+    if (profileSearchTimeout.current) clearTimeout(profileSearchTimeout.current);
+    const q = profileSearchQuery.trim();
+    if (!q) {
+      setProfileSearchResults([]);
+      setProfileSearching(false);
+      return;
+    }
+    profileSearchTimeout.current = setTimeout(async () => {
+      setProfileSearching(true);
+      try {
+        const res = await fetch(`/api/admin/podcast/search-users?q=${encodeURIComponent(q)}`);
+        if (res.ok) {
+          const data = (await res.json()) as { users?: UserSearchResult[] };
+          setProfileSearchResults(data.users ?? []);
+        }
+      } catch {
+        /* ignore */
+      } finally {
+        setProfileSearching(false);
+      }
+    }, 250);
+    return () => {
+      if (profileSearchTimeout.current) clearTimeout(profileSearchTimeout.current);
+    };
+  }, [profileSearchQuery]);
+
+  const addLinkedProfile = (user: UserSearchResult) => {
+    const defaultRole = user.availableRoles[0] ?? "autor";
+    setEditLinkedProfiles((prev) => {
+      if (prev.some((p) => p.username === user.username && p.profileType === defaultRole)) {
+        return prev;
+      }
+      return [
+        ...prev,
+        {
+          username: user.username,
+          profileType: defaultRole,
+          displayName: user.displayName,
+          profileImage: user.profileImage,
+        },
+      ];
+    });
+    setProfileSearchQuery("");
+    setProfileSearchResults([]);
+  };
+
+  const updateLinkedProfileRole = (index: number, profileType: KooperationsRolle) => {
+    setEditLinkedProfiles((prev) =>
+      prev.map((item, idx) => (idx === index ? { ...item, profileType } : item)),
+    );
+  };
+
+  const removeLinkedProfile = (index: number) => {
+    setEditLinkedProfiles((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
   /* ── Folge-Formular öffnen ── */
   const openNew = () => {
     setEditId(null);
@@ -463,6 +553,9 @@ export default function PodcastAdminPage() {
     setEditAudioFileName("");
     setEditAudioFileSize(0);
     setEditCoverUrl("");
+    setEditLinkedProfiles([]);
+    setProfileSearchQuery("");
+    setProfileSearchResults([]);
     setAudioUploadError("");
     setCoverUploadError("");
     setEditPublished(true);
@@ -479,6 +572,9 @@ export default function PodcastAdminPage() {
     setEditAudioFileName(f.audioFileName ?? "");
     setEditAudioFileSize(f.audioFileSize ?? 0);
     setEditCoverUrl(f.coverUrl ?? "");
+    setEditLinkedProfiles(f.linkedProfiles ?? []);
+    setProfileSearchQuery("");
+    setProfileSearchResults([]);
     setAudioUploadError("");
     setCoverUploadError("");
     setEditPublished(f.published);
@@ -637,6 +733,10 @@ export default function PodcastAdminPage() {
       audioFileName: editAudioFileName.trim(),
       audioFileSize: editAudioFileSize,
       coverUrl: editCoverUrl.trim(),
+      linkedProfiles: editLinkedProfiles.map((p) => ({
+        username: p.username,
+        profileType: p.profileType,
+      })),
       published: editPublished,
     };
     try {
@@ -919,6 +1019,104 @@ export default function PodcastAdminPage() {
                 )}
               </div>
 
+              {/* ── Verlinkte Profile ── */}
+              <div className="border border-gray-200 rounded-lg p-3.5 bg-white flex flex-col gap-2.5">
+                <label className="text-sm font-medium">Verlinkte Profile (optional)</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={profileSearchQuery}
+                    onChange={(e) => setProfileSearchQuery(e.target.value)}
+                    placeholder="Profil suchen (Name oder Benutzername) …"
+                    className="input w-full text-sm"
+                  />
+                  {(profileSearching || profileSearchResults.length > 0) && profileSearchQuery.trim() && (
+                    <div className="absolute left-0 right-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {profileSearching && (
+                        <div className="px-3 py-2 text-xs text-gray-500">Suche …</div>
+                      )}
+                      {!profileSearching && profileSearchResults.map((u) => (
+                        <button
+                          key={u.username}
+                          type="button"
+                          onClick={() => addLinkedProfile(u)}
+                          className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2.5 border-b last:border-b-0 border-gray-100"
+                        >
+                          {u.profileImage ? (
+                            <img
+                              src={u.profileImage}
+                              alt={u.displayName}
+                              className="w-7 h-7 rounded-full object-cover flex-shrink-0 border border-gray-200"
+                            />
+                          ) : (
+                            <span className="w-7 h-7 rounded-full bg-gray-200 text-gray-600 text-xs font-semibold flex items-center justify-center flex-shrink-0">
+                              {(u.displayName || u.username).charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium text-gray-800 truncate">{u.displayName}</div>
+                            <div className="text-xs text-gray-400 truncate">
+                              @{u.username} · {u.availableRoles.map((r) => ROLLE_LABELS[r]).join(", ")}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {!profileSearching && profileSearchQuery.trim().length > 0 && profileSearchResults.length === 0 && (
+                    <p className="text-xs text-gray-400 mt-1 mb-0">Keine passenden Profile gefunden.</p>
+                  )}
+                </div>
+
+                {editLinkedProfiles.length > 0 && (
+                  <div className="flex flex-col gap-2 pt-1">
+                    {editLinkedProfiles.map((p, idx) => (
+                      <div
+                        key={`${p.username}-${idx}`}
+                        className="flex items-center justify-between gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          {p.profileImage ? (
+                            <img
+                              src={p.profileImage}
+                              alt={p.displayName}
+                              className="w-6 h-6 rounded-full object-cover flex-shrink-0 border border-gray-200"
+                            />
+                          ) : (
+                            <span className="w-6 h-6 rounded-full bg-gray-200 text-gray-600 text-xs font-semibold flex items-center justify-center flex-shrink-0">
+                              {(p.displayName || p.username).charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                          <span className="text-sm font-medium text-gray-800 truncate">{p.displayName}</span>
+                          <span className="text-xs text-gray-400 truncate">@{p.username}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <select
+                            value={p.profileType}
+                            onChange={(e) => updateLinkedProfileRole(idx, e.target.value as KooperationsRolle)}
+                            className="input text-xs py-1 px-2"
+                          >
+                            {ALL_PROFILE_ROLES.map((r) => (
+                              <option key={r} value={r}>
+                                {ROLLE_LABELS[r]}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => removeLinkedProfile(idx)}
+                            className="text-xs text-red-600 hover:underline px-1"
+                            title="Entfernen"
+                          >
+                            Entfernen
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center gap-2">
                 <input
                   id="folge-published"
@@ -991,6 +1189,18 @@ export default function PodcastAdminPage() {
                           )}
                         </span>
                         {f.text && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{f.text}</p>}
+                        {f.linkedProfiles && f.linkedProfiles.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-1.5">
+                            {f.linkedProfiles.map((p) => (
+                              <span
+                                key={`${p.username}-${p.profileType}`}
+                                className="inline-flex items-center gap-1 text-[0.7rem] px-2 py-0.5 rounded-full bg-blue-50 text-arena-blue border border-blue-200"
+                              >
+                                {p.displayName} ({p.roleLabel ?? ROLLE_LABELS[p.profileType]})
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">

@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import { getPodcastFolgenCollection } from "@/lib/podcast";
+import {
+  getPodcastFolgenCollection,
+  mapResolvedLinkedProfiles,
+  resolvePodcastLinkedProfiles,
+  sanitizeLinkedProfiles,
+  type PodcastLinkedProfileRef,
+} from "@/lib/podcast";
 
 function isAdmin(role: string) {
   return role === "ADMIN" || role === "SUPERADMIN";
@@ -15,6 +21,7 @@ export async function GET() {
       .find({ published: true }, { projection: { htmlContent: 0 } })
       .sort({ createdAt: -1 })
       .toArray();
+    const resolvedMap = await resolvePodcastLinkedProfiles(folgen);
     return NextResponse.json({
       folgen: folgen.map((f) => ({
         _id: f._id!.toString(),
@@ -25,6 +32,7 @@ export async function GET() {
         audioFileName: f.audioFileName ?? "",
         audioFileSize: f.audioFileSize ?? 0,
         coverUrl: f.coverUrl ?? "",
+        linkedProfiles: mapResolvedLinkedProfiles(f.linkedProfiles, resolvedMap),
         views: f.views ?? 0,
         createdAt: f.createdAt,
       })),
@@ -49,6 +57,7 @@ export async function POST(request: Request) {
     audioFileName?: string;
     audioFileSize?: number;
     coverUrl?: string;
+    linkedProfiles?: PodcastLinkedProfileRef[];
     published?: boolean;
   };
 
@@ -59,6 +68,7 @@ export async function POST(request: Request) {
   const audioFileName = body.audioFileName?.trim() ?? "";
   const audioFileSize = typeof body.audioFileSize === "number" ? body.audioFileSize : 0;
   const coverUrl = body.coverUrl?.trim() ?? "";
+  const linkedProfiles = sanitizeLinkedProfiles(body.linkedProfiles);
 
   if (!title) {
     return NextResponse.json({ message: "Titel ist erforderlich." }, { status: 400 });
@@ -75,6 +85,7 @@ export async function POST(request: Request) {
       audioFileName,
       audioFileSize,
       coverUrl,
+      linkedProfiles,
       published: body.published ?? true,
       views: 0,
       createdAt: now,
