@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getBucharenaSprecherCollection } from "@/lib/bucharena-db";
 import { davPut, davDelete } from "@/lib/bucharena-webdav";
+import { getServerAccount, requireAdmin } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
@@ -13,7 +14,10 @@ interface RouteContext {
 
 export async function POST(request: Request, context: RouteContext) {
   try {
+    const account = await getServerAccount();
+    if (!account) return NextResponse.json({ success: false, error: "Bitte zuerst anmelden." }, { status: 401 });
     const { id } = await context.params;
+    if (!ObjectId.isValid(id)) return NextResponse.json({ success: false, error: "Ungültige ID." }, { status: 400 });
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const uploaderName = formData.get("uploaderName") as string;
@@ -39,7 +43,8 @@ export async function POST(request: Request, context: RouteContext) {
       path: mp3Path,
       url: result.url,
       uploadedAt: new Date(),
-      uploadedBy: uploaderName || undefined,
+      uploadedBy: account.username,
+      uploaderName: uploaderName?.trim().slice(0, 120) || undefined,
     };
 
     const updateDoc: Record<string, unknown> = { updatedAt: new Date() };
@@ -60,12 +65,16 @@ export async function POST(request: Request, context: RouteContext) {
 
 export async function DELETE(request: Request, context: RouteContext) {
   try {
+    const admin = await requireAdmin();
+    if (!admin) return NextResponse.json({ success: false, error: "Nur Administratoren können MP3-Dateien löschen." }, { status: 403 });
     const { id } = await context.params;
+    if (!ObjectId.isValid(id)) return NextResponse.json({ success: false, error: "Ungültige ID." }, { status: 400 });
     const { searchParams } = new URL(request.url);
     const mp3IndexStr = searchParams.get("mp3Index");
     if (mp3IndexStr === null) return NextResponse.json({ success: false, error: "mp3Index erforderlich" }, { status: 400 });
 
-    const mp3Index = parseInt(mp3IndexStr);
+    const mp3Index = Number(mp3IndexStr);
+    if (!/^\d+$/.test(mp3IndexStr) || !Number.isSafeInteger(mp3Index)) return NextResponse.json({ success: false, error: "Ungültiger MP3-Index." }, { status: 400 });
 
     const col = await getBucharenaSprecherCollection();
     const text = await col.findOne({ _id: new ObjectId(id) });

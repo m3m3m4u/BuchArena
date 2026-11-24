@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getBucharenaSprecherCollection } from "@/lib/bucharena-db";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { getServerAccount, requireAdmin } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
@@ -24,6 +24,8 @@ export async function GET(request: Request, context: RouteContext) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
+    const account = await getServerAccount();
+    if (!account) return NextResponse.json({ success: false, error: "Bitte zuerst anmelden." }, { status: 401 });
     const { id } = await context.params;
     const body = await request.json();
 
@@ -34,7 +36,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     const updateDoc: Record<string, unknown> = { updatedAt: new Date() };
 
     if (body.sprecherName !== undefined) {
-      updateDoc.sprecherName = body.sprecherName;
+      if (typeof body.sprecherName !== "string" || body.sprecherName.trim().length > 120) return NextResponse.json({ success: false, error: "Ungültiger Sprechername." }, { status: 400 });
+      updateDoc.sprecherName = body.sprecherName.trim();
       if (body.sprecherName && !text.bookedAt) {
         updateDoc.bookedAt = new Date();
         updateDoc.status = "gebucht";
@@ -47,7 +50,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     if (body.status !== undefined) {
-      const admin = await requireSuperAdmin();
+      const admin = await requireAdmin();
       if (!admin) return NextResponse.json({ success: false, error: "Nur Administratoren können den Status ändern" }, { status: 403 });
       if (["offen", "gebucht", "erledigt"].includes(body.status)) {
         updateDoc.status = body.status;
@@ -59,7 +62,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     if (body.title !== undefined) {
-      const admin = await requireSuperAdmin();
+      const admin = await requireAdmin();
       if (!admin) return NextResponse.json({ success: false, error: "Nur Administratoren können den Titel ändern" }, { status: 403 });
       updateDoc.title = body.title;
     }

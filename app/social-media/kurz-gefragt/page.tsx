@@ -89,7 +89,7 @@ export default function KurzGefragtPage() {
           <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-between gap-2">
             <span className="text-sm text-blue-900">Admin: Alle Antworten als Excel herunterladen</span>
             <a href="/api/bucharena/kurz-gefragt/export" className="btn btn-sm btn-primary" download>
-              📥 XLSX Download
+              XLSX Download
             </a>
           </div>
         )}

@@ -1,5 +1,7 @@
 "use client";
 
+import { ExclamationTriangleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+
 import Link from "next/link";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
@@ -1668,7 +1670,7 @@ function ProfilPageInner() {
         </div>
 
         {/* ── Eigene Profil-URL ── */}
-        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
+        <div style={{ background: "var(--color-arena-bg)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">Eigene Profil-URL</span>
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/autor/{profileSlug || "dein-name"}</strong>
@@ -2013,7 +2015,7 @@ function ProfilPageInner() {
         />
 
         {/* ── Eigene Profil-URL ── */}
-        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
+        <div style={{ background: "var(--color-arena-bg)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">Eigene Profil-URL</span>
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/sprecher/{profileSlug || "dein-name"}</strong>
@@ -2338,7 +2340,7 @@ function ProfilPageInner() {
         />
 
         {/* ── Eigene Profil-URL ── */}
-        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
+        <div style={{ background: "var(--color-arena-bg)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">Eigene Profil-URL</span>
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/blogger/{profileSlug || "dein-name"}</strong>
@@ -2505,7 +2507,7 @@ function ProfilPageInner() {
         </div>
 
         {/* ── Eigene Profil-URL ── */}
-        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
+        <div style={{ background: "var(--color-arena-bg)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">Eigene Profil-URL</span>
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/testleser/{profileSlug || "dein-name"}</strong>
@@ -2616,7 +2618,7 @@ function ProfilPageInner() {
                 <button
                   key={month}
                   type="button"
-                  className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${isActive ? "bg-green-600 text-white border-green-600" : "bg-white text-arena-text border-arena-border"}`}
+                  className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${isActive ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-text border-arena-border"}`}
                   onClick={() => {
                     setLektorenProfile((c) => ({
                       ...c,
@@ -2653,7 +2655,7 @@ function ProfilPageInner() {
         <FieldWithVisibility label="Mailadresse" value={lektorenProfile.socialEmail.value} visibility={lektorenProfile.socialEmail.visibility} onValueChange={(value) => setLektorenProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))} onVisibilityChange={(visibility) => setLektorenProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))} />
 
         {/* ── Eigene Profil-URL ── */}
-        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
+        <div style={{ background: "var(--color-arena-bg)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }}>
           <span className="text-sm font-semibold">Eigene Profil-URL</span>
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/lektoren/{profileSlug || "dein-name"}</strong>
@@ -2783,7 +2785,7 @@ function ProfilPageInner() {
                 <button
                   key={month}
                   type="button"
-                  className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${isActive ? "bg-green-600 text-white border-green-600" : "bg-white text-arena-text border-arena-border"}`}
+                  className={`px-3 py-2 rounded-full text-sm font-medium cursor-pointer border min-h-[44px] sm:min-h-0 ${isActive ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-text border-arena-border"}`}
                   onClick={() => {
                     setVerlageProfile((c) => ({
                       ...c,
@@ -2820,7 +2822,7 @@ function ProfilPageInner() {
         <FieldWithVisibility label="Mailadresse" value={verlageProfile.socialEmail.value} visibility={verlageProfile.socialEmail.visibility} onValueChange={(value) => setVerlageProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, value } }))} onVisibilityChange={(visibility) => setVerlageProfile((c) => ({ ...c, socialEmail: { ...c.socialEmail, visibility } }))} />
 
         {/* ── Eigene Profil-URL ── */}
-        <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }} className="font-sans">
+        <div style={{ background: "var(--color-arena-bg)", borderRadius: 10, padding: "0.9rem 1rem", marginTop: "0.5rem" }} className="font-sans">
           <span className="font-sans text-sm font-bold text-arena-blue">Eigene Profil-URL</span>
           <p className="font-sans text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/verlage/{profileSlug || "dein-name"}</strong>
@@ -2863,10 +2865,10 @@ function ProfilPageInner() {
           <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight mb-2 mt-0">Kontoeinstellungen</h2>
 
           {/* ── Newsletter Opt-In ── */}
-          <div style={{ background: newsletterOptIn ? "#f0fdf4" : "#f7f7fa", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", transition: "background 0.2s" }}>
+          <div style={{ background: "var(--color-arena-bg)", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", transition: "background 0.2s" }}>
             <div>
-              <span className="font-sans text-sm font-bold text-arena-blue">{newsletterOptIn ? "✅ Newsletter aktiv" : "📬 Newsletter"}</span>
-              <p className="font-sans" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: newsletterOptIn ? "#16a34a" : "#6b7280" }}>
+              <span className="font-sans text-sm font-bold text-arena-blue">{newsletterOptIn ? "Newsletter aktiv" : "Newsletter"}</span>
+              <p className="font-sans" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: "var(--color-arena-muted)" }}>
                 {newsletterOptIn ? "Du erhältst Neuigkeiten und Updates per E-Mail." : "Erhalte Neuigkeiten und Updates per E-Mail."}
               </p>
             </div>
@@ -2874,11 +2876,12 @@ function ProfilPageInner() {
               type="button"
               role="switch"
               aria-checked={newsletterOptIn}
+              aria-label="Newsletter"
               disabled={isSavingNewsletter}
               className="toggle-switch"
               style={{
                 width: 48, height: 26, borderRadius: 13, border: "none",
-                background: newsletterOptIn ? "#16a34a" : "#ccc",
+                background: newsletterOptIn ? "var(--color-arena-blue)" : "var(--color-arena-border)",
                 position: "relative", cursor: "pointer", flexShrink: 0,
                 transition: "background 0.2s",
               }}
@@ -2916,10 +2919,10 @@ function ProfilPageInner() {
           </div>
 
           {/* ── E-Mail bei ungelesenen Nachrichten ── */}
-          <div style={{ background: emailOnUnreadMessages ? "#f0fdf4" : "#f7f7fa", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", transition: "background 0.2s" }} className="mt-4">
+          <div style={{ background: "var(--color-arena-bg)", borderRadius: 10, padding: "0.9rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", transition: "background 0.2s" }} className="mt-4">
             <div>
-              <span className="font-sans text-sm font-bold text-arena-blue">{emailOnUnreadMessages ? "✅ Nachrichteninfo aktiv" : "🔔 Nachrichteninfo"}</span>
-              <p className="font-sans" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: emailOnUnreadMessages ? "#16a34a" : "#6b7280" }}>
+              <span className="font-sans text-sm font-bold text-arena-blue">{emailOnUnreadMessages ? "Nachrichteninfo aktiv" : "Nachrichteninfo"}</span>
+              <p className="font-sans" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: "var(--color-arena-muted)" }}>
                 {emailOnUnreadMessages ? "Du wirst per E-Mail benachrichtigt, wenn Nachrichten 24 h ungelesen bleiben." : "Per E-Mail benachrichtigt werden, wenn Nachrichten 24 h ungelesen bleiben."}
               </p>
             </div>
@@ -2927,11 +2930,12 @@ function ProfilPageInner() {
               type="button"
               role="switch"
               aria-checked={emailOnUnreadMessages}
+              aria-label="Nachrichteninfo"
               disabled={isSavingUnreadMail}
               className="toggle-switch"
               style={{
                 width: 48, height: 26, borderRadius: 13, border: "none",
-                background: emailOnUnreadMessages ? "#16a34a" : "#ccc",
+                background: emailOnUnreadMessages ? "var(--color-arena-blue)" : "var(--color-arena-border)",
                 position: "relative", cursor: "pointer", flexShrink: 0,
                 transition: "background 0.2s",
               }}
@@ -2969,8 +2973,8 @@ function ProfilPageInner() {
           </div>
 
           {/* ── Angezeigter Name ── */}
-          <div style={{ background: "var(--color-arena-bg-soft, #f7f7fa)", borderRadius: 10, padding: "0.9rem 1rem" }} className="font-sans mt-4">
-            <span className="font-sans text-sm font-bold text-arena-blue">📝 Angezeigter Name</span>
+          <div style={{ background: "var(--color-arena-bg)", borderRadius: 10, padding: "0.9rem 1rem" }} className="font-sans mt-4">
+            <span className="font-sans text-sm font-bold text-arena-blue">Angezeigter Name</span>
             <p className="font-sans text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
               Dieser Name wird bei Nachrichten, Lesezeichen, im Treffpunkt und im Kalender angezeigt.
             </p>
@@ -3551,8 +3555,8 @@ function ProfilPageInner() {
           >
             {slugModal.type === "error" ? (
               <>
-                <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-2xl mb-3 font-bold">
-                  ⚠️
+                <div className="w-12 h-12 rounded-full bg-arena-danger/10 text-arena-danger flex items-center justify-center text-2xl mb-3 font-bold">
+                  <ExclamationTriangleIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" />
                 </div>
                 <h2 className="font-sans text-xl font-bold text-gray-900 tracking-tight m-0 mb-2">
                   {slugModal.title}
@@ -3570,8 +3574,8 @@ function ProfilPageInner() {
               </>
             ) : (
               <>
-                <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-2xl mb-3 font-bold">
-                  🎉
+                <div className="w-12 h-12 rounded-full bg-arena-bg text-arena-blue flex items-center justify-center text-2xl mb-3 font-bold">
+                  <CheckCircleIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" />
                 </div>
                 <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0 mb-2">
                   {slugModal.title}
@@ -3579,7 +3583,7 @@ function ProfilPageInner() {
                 <p className="font-sans text-sm text-gray-600 m-0 mb-3 leading-relaxed">
                   Dein Profil ist jetzt unter folgender URL erreichbar:
                 </p>
-                <div className="w-full bg-blue-50/60 border border-blue-200 rounded-xl p-3 mb-5 text-center break-all font-mono text-sm text-arena-blue font-bold">
+                <div className="w-full bg-arena-bg border border-arena-border-light rounded-xl p-3 mb-5 text-center break-all font-mono text-sm text-arena-blue font-bold">
                   <a
                     href={slugModal.url}
                     target="_blank"
@@ -3601,7 +3605,7 @@ function ProfilPageInner() {
                       setSlugModal(null);
                     }}
                   >
-                    📋 Link kopieren
+                    Link kopieren
                   </button>
                   <a
                     href={slugModal.url}

@@ -1,5 +1,7 @@
 "use client";
 
+import { LockClosedIcon, BookOpenIcon, DocumentTextIcon, TrashIcon } from "@heroicons/react/24/outline";
+
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -356,7 +358,7 @@ export default function TeilnehmerBereichPage() {
       <main className="top-centered-main">
         <section className="card border border-red-300 bg-red-50/40 p-6 rounded-2xl max-w-2xl mx-auto my-8 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
-            <span className="text-2xl">🔒</span>
+            <span className="text-2xl"><LockClosedIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /></span>
             <div>
               <h2 className="text-lg font-bold text-red-900 m-0">Verschwiegenheitserklärung (Pflicht)</h2>
               <p className="text-xs text-red-700 m-0">Buchzirkel: {zirkel.titel}</p>
@@ -568,7 +570,7 @@ export default function TeilnehmerBereichPage() {
                     }`}>
                       {!isMine && (
                         <p className={`text-[11px] font-semibold m-0 mb-0.5 ${isAutor ? "text-amber-700" : "text-arena-blue"}`}>
-                          {msg.senderUsername}{isAutor ? " ✍️" : ""}
+                          {msg.senderUsername}{isAutor ? " (Autor)" : ""}
                         </p>
                       )}
                       <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] m-0" style={{ lineHeight: 1.5 }}>
@@ -664,7 +666,7 @@ export default function TeilnehmerBereichPage() {
                     <div className="flex flex-col gap-2 p-3 bg-gray-50">
                       {/* Dateiname */}
                       <div className="flex items-start gap-2 min-w-0">
-                        <span className="text-lg shrink-0">{isEpub ? "📖" : "📄"}</span>
+                        <span className="text-lg shrink-0">{isEpub ? <BookOpenIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /> : <DocumentTextIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" />}</span>
                         <div className="min-w-0">
                           <span className="font-medium text-sm break-all">{d.originalName}</span>
                           {isEpub && savedCfi && (
@@ -777,7 +779,7 @@ export default function TeilnehmerBereichPage() {
                         done ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-100 text-arena-text hover:bg-gray-200"
                       }`}
                     >
-                      {done ? "✅ Gelesen" : <span><span className="hidden sm:inline">Als gelesen </span>markieren</span>}
+                      {done ? "Gelesen" : <span><span className="hidden sm:inline">Als gelesen </span>markieren</span>}
                     </button>
                   </div>
                 );
@@ -947,7 +949,7 @@ function BeitragKarte({
           </div>
           <strong className="text-sm">{beitrag.autorUsername}</strong>
           {isAutor(beitrag.autorUsername) && (
-            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">✍️ Autor</span>
+            <span className="text-xs bg-arena-bg text-arena-blue px-1.5 py-0.5 rounded font-medium">Autor</span>
           )}
           {beitrag.imTreffpunktGeteilt && (
             <span className="text-xs bg-arena-yellow/20 text-arena-blue px-1.5 py-0.5 rounded">Im Treffpunkt</span>
@@ -962,7 +964,7 @@ function BeitragKarte({
               className="text-xs text-red-500 hover:text-red-700 p-0.5 rounded"
               title="Beitrag löschen"
             >
-              🗑️
+              <TrashIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -1094,7 +1096,7 @@ function BeitragKarte({
                     </div>
                     <strong className="text-sm">{r.autorUsername}</strong>
                     {isAutor(r.autorUsername) && (
-                      <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">✍️ Autor</span>
+                      <span className="text-xs bg-arena-bg text-arena-blue px-1.5 py-0.5 rounded font-medium">Autor</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -1206,7 +1208,7 @@ function FragebogenTab({
       <section className="card mt-3">
         <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
           <div>
-            <h2 className="text-base font-semibold m-0">📝 Abschluss-Fragebogen</h2>
+            <h2 className="text-base font-semibold m-0">Abschluss-Fragebogen</h2>
             <p className="text-sm text-arena-muted m-0 mt-0.5">Deine gespeicherten Antworten</p>
           </div>
           <button
@@ -1214,7 +1216,7 @@ function FragebogenTab({
             onClick={() => { setSaved(false); setEditMode(true); }}
             className="btn btn-secondary btn-sm"
           >
-            ✏️ Antworten bearbeiten
+            Antworten bearbeiten
           </button>
         </div>
         <div className="flex flex-col gap-4">
@@ -1232,7 +1234,7 @@ function FragebogenTab({
             );
           })}
         </div>
-        {saved && <p className="text-green-700 text-sm mt-3">✅ Antworten wurden gespeichert.</p>}
+        {saved && <p className="text-green-700 text-sm mt-3">Antworten wurden gespeichert.</p>}
       </section>
     );
   }
@@ -1241,7 +1243,7 @@ function FragebogenTab({
   return (
     <section className="card mt-3">
       <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
-        <h2 className="text-base font-semibold m-0">📝 Abschluss-Fragebogen</h2>
+        <h2 className="text-base font-semibold m-0">Abschluss-Fragebogen</h2>
         {hatAntworten && (
           <button
             type="button"

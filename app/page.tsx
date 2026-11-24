@@ -547,7 +547,7 @@ function BuchzirkelBanner() {
     <section className="mt-3 w-full max-w-[1100px]">
       <a
         href="/buchzirkel"
-        className="no-underline block rounded-xl border border-arena-border-light bg-gradient-to-r from-yellow-50 to-white px-5 py-3 hover:border-arena-yellow transition-colors"
+        className="no-underline block rounded-xl border border-arena-border-light bg-arena-bg px-5 py-3 hover:border-arena-yellow transition-colors"
       >
         <div
           className="flex items-center gap-3"

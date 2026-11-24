@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await users.updateOne(
       { username: targetUsername },
-      { $set: { passwordHash } },
+      { $set: { passwordHash }, $inc: { sessionVersion: 1 } },
     );
 
     return NextResponse.json({

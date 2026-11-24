@@ -148,7 +148,7 @@ export default function SnippetsAdminPage() {
                     {/* Status + Audio badges */}
                     <div className="flex gap-1.5 flex-wrap">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[0.8rem] font-medium ${snippet.status === "pending" ? "bg-orange-50 text-orange-700" : "bg-green-50 text-green-800"}`}>
-                        {snippet.status === "pending" ? "⏳ Ausstehend" : "✓ Bearbeitet"}
+                        {snippet.status === "pending" ? "Ausstehend" : "✓ Bearbeitet"}
                       </span>
                       {snippet.audioFileName && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[0.8rem] font-medium bg-blue-50 text-blue-800">

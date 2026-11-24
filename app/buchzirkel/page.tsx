@@ -42,6 +42,7 @@ export default function BuchzirkelPage() {
   const [meineAktive, setMeineAktive] = useState<Zirkel[]>([]);
   const [meineTeilnahmen, setMeineTeilnahmen] = useState<Zirkel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [typFilter, setTypFilter] = useState<"" | "testleser" | "betaleser">("");
   const [account, setAccount] = useState<ReturnType<typeof getStoredAccount>>(null);
   const [bewerbungsStatusFilter, setBewerbungsStatusFilter] = useState<string>("");
@@ -60,9 +61,9 @@ export default function BuchzirkelPage() {
   useEffect(() => {
     const params = new URLSearchParams({ status: "aktiv", limit: "0" });
     fetch(`/api/buchzirkel/list?${params}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error("Buchzirkel konnten nicht geladen werden."); return r.json(); })
       .then((d: { zirkel?: Zirkel[] }) => setZirkel(d.zirkel ?? []))
-      .catch(() => {})
+      .catch(() => setLoadError("Die Buchzirkel konnten nicht geladen werden. Bitte versuche es erneut."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -169,7 +170,7 @@ export default function BuchzirkelPage() {
         <hr className="border-arena-border-light m-0" />
         <div className="flex gap-3 items-start">
           <div>
-            <p className="font-semibold m-0 text-red-800 text-sm">Buchzirkel (Beta)</p>
+            <p className="font-semibold m-0 text-arena-blue text-sm">Buchzirkel (Beta)</p>
             <p className="text-sm text-arena-muted m-0">
               Unveröffentlichte Manuskripte – streng vertraulich. Alle Teilnehmer bestätigen eine Verschwiegenheitserklärung.
             </p>
@@ -256,8 +257,8 @@ export default function BuchzirkelPage() {
         <div className="flex gap-2 flex-wrap font-sans">
           {[
             { value: "", label: "Alle Status", activeClass: "bg-arena-blue text-white border-arena-blue", hoverClass: "hover:border-arena-blue" },
-            { value: "offen", label: "Bewerbung möglich", activeClass: "bg-green-700 text-white border-green-700", hoverClass: "hover:border-green-700" },
-            { value: "beendet", label: "Läuft schon / Bewerbung beendet", activeClass: "bg-red-700 text-white border-red-700", hoverClass: "hover:border-red-700" },
+            { value: "offen", label: "Bewerbung möglich", activeClass: "bg-arena-blue text-white border-arena-blue", hoverClass: "hover:border-arena-blue" },
+            { value: "beendet", label: "Läuft schon / Bewerbung beendet", activeClass: "bg-arena-blue text-white border-arena-blue", hoverClass: "hover:border-arena-blue" },
           ].map((opt) => (
             <button
               key={opt.value || "alle-status"}
@@ -279,6 +280,11 @@ export default function BuchzirkelPage() {
       {/* Liste */}
       {loading ? (
         <p className="font-sans text-arena-muted text-center py-8">Wird geladen…</p>
+      ) : loadError ? (
+        <section role="alert" className="card mt-3">
+          <p className="text-sm text-arena-danger">{loadError}</p>
+          <button className="btn" onClick={() => window.location.reload()}>Erneut laden</button>
+        </section>
       ) : filteredZirkel.length === 0 ? (
         <section className="card mt-3 text-center py-8">
           <p className="font-sans text-arena-muted m-0">
@@ -358,13 +364,13 @@ function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirk
   let statusBadge = null;
   const bewerbungOffen = zirkel.status === "bewerbung" && !expired;
   if (showStatus && zirkel.status === "entwurf") {
-    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">✏️ Entwurf</span>;
+    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-bg text-arena-muted">Entwurf</span>;
   } else if (showStatus && zirkel.status === "abgeschlossen") {
-    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">✅ Abgeschlossen</span>;
+    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-bg text-arena-muted">Abgeschlossen</span>;
   } else if (bewerbungOffen) {
-    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">🟢 Bewerbung möglich</span>;
+    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-blue/5 text-arena-blue">Bewerbung möglich</span>;
   } else {
-    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">🔒 Läuft schon</span>;
+    statusBadge = <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-bg text-arena-muted">Läuft schon</span>;
   }
 
   return (
@@ -385,7 +391,7 @@ function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirk
         {/* Info */}
         <div className="flex-1 min-w-0 flex flex-col">
           <div className="flex items-start gap-1.5 flex-wrap">
-            <span className={`font-sans text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
+            <span className="font-sans text-xs font-bold px-2 py-0.5 rounded-full bg-arena-bg text-arena-blue">
               {isBeta ? "Buchzirkel (Beta)" : "Buchzirkel"}
             </span>
             {zirkel.genre && (
@@ -395,10 +401,10 @@ function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirk
             )}
             {statusBadge}
             {zirkel.isTeilnehmer && (
-              <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✅ Teilnehmer</span>
+              <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-blue/5 text-arena-blue">Teilnehmer</span>
             )}
             {!zirkel.isTeilnehmer && zirkel.isBeworben && (
-              <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-yellow text-arena-blue">⏳ Beworben</span>
+              <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-arena-yellow text-arena-blue">Beworben</span>
             )}
           </div>
 
@@ -409,7 +415,7 @@ function ZirkelKarte({ zirkel, deletable, onDelete, showStatus }: { zirkel: Zirk
             <span>max. {zirkel.maxTeilnehmer} Teilnehmer</span>
             <span aria-hidden>·</span>
             {expired ? (
-              <span className="font-sans text-red-600 font-semibold">Bewerbung beendet</span>
+              <span className="font-sans text-arena-muted font-semibold">Bewerbung beendet</span>
             ) : (
               <span>Frist: {frist.toLocaleDateString("de-AT")}</span>
             )}

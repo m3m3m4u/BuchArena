@@ -1,5 +1,7 @@
 "use client";
 
+import { BookOpenIcon, EnvelopeIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
@@ -1116,9 +1118,9 @@ export default function AdminPage() {
                 {/* Sub-Tabs */}
                 <div className="segmented-control font-sans w-full max-w-md mb-2">
                   {([
-                    { key: "chart" as const, label: "📈 Verlauf" },
-                    { key: "pages" as const, label: "📄 Top-Seiten" },
-                    { key: "referrer" as const, label: "🔗 Herkunft" },
+                    { key: "chart" as const, label: "Verlauf" },
+                    { key: "pages" as const, label: "Top-Seiten" },
+                    { key: "referrer" as const, label: "Herkunft" },
                   ]).map((t) => (
                     <button
                       key={t.key}
@@ -1265,7 +1267,7 @@ export default function AdminPage() {
                       onClick={() => setBuchzirkelSocialView((v) => !v)}
                       title="Zeigt die 12 neuesten Buchzirkel als Social-Media-Kachelraster"
                     >
-                      📸 Social Media
+                      Social Media
                     </button>
                   </div>
 
@@ -1296,7 +1298,7 @@ export default function AdminPage() {
                                     style={{ width: 64, height: 96, objectFit: "cover", borderRadius: 6, flexShrink: 0, border: "1px solid var(--color-arena-border-light)" }}
                                   />
                                 ) : (
-                                  <div style={{ width: 64, height: 96, borderRadius: 6, flexShrink: 0, background: "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem" }}>📚</div>
+                                  <div style={{ width: 64, height: 96, borderRadius: 6, flexShrink: 0, background: "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem" }}><BookOpenIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /></div>
                                 )}
                                 <div style={{ minWidth: 0 }}>
                                   <div style={{ fontWeight: 700, fontSize: "0.88rem", lineHeight: 1.3, marginBottom: "0.25rem" }}>
@@ -1340,7 +1342,7 @@ export default function AdminPage() {
                                   onClick={() => void navigator.clipboard.writeText(captionLines)}
                                   style={{ fontSize: "0.75rem" }}
                                 >
-                                  📋 Kopieren
+                                  Kopieren
                                 </button>
                               </div>
                               <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: "0.82rem", lineHeight: 1.6, background: "#f9fafb", border: "1px solid var(--color-arena-border)", borderRadius: 8, padding: "0.9rem 1rem", margin: 0, color: "var(--color-arena-text)" }}>
@@ -1399,7 +1401,7 @@ export default function AdminPage() {
                                   onClick={() => void navigator.clipboard.writeText(cleanInstaHandle(z.veranstalterInstagram))}
                                   style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.78rem", color: "#9333ea", background: "#f3e8ff", border: "none", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontWeight: 600 }}
                                 >
-                                  📋 @{cleanInstaHandle(z.veranstalterInstagram)}
+                                  @{cleanInstaHandle(z.veranstalterInstagram)}
                                 </button>
                               ) : (
                                 <span style={{ color: "var(--color-arena-muted)", fontSize: "0.75rem" }}>–</span>
@@ -1446,15 +1448,15 @@ export default function AdminPage() {
                                 onClick={() => void navigator.clipboard.writeText(cleanInstaHandle(z.veranstalterInstagram))}
                                 style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.75rem", color: "#9333ea", background: "#f3e8ff", border: "none", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontWeight: 600 }}
                               >
-                                📋 Insta: @{cleanInstaHandle(z.veranstalterInstagram)}
+                                Insta: @{cleanInstaHandle(z.veranstalterInstagram)}
                               </button>
                             </div>
                           )}
                           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", fontSize: "0.78rem" }}>
-                            <span>📅 bis {formatDate(z.bewerbungBis)}</span>
-                            <span>📬 {z.bewerbungen.gesamt} Bew. ({z.bewerbungen.angenommen} ✓ / {z.bewerbungen.abgelehnt} ✗)</span>
-                            <span>👥 {z.teilnehmerAnzahl} / {z.maxTeilnehmer}</span>
-                            <span>📑 {z.leseabschnitteAnzahl} Abschn.</span>
+                            <span>bis {formatDate(z.bewerbungBis)}</span>
+                            <span><EnvelopeIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /> {z.bewerbungen.gesamt} Bew. ({z.bewerbungen.angenommen} ✓ / {z.bewerbungen.abgelehnt} ✗)</span>
+                            <span>{z.teilnehmerAnzahl} / {z.maxTeilnehmer} Teilnehmer</span>
+                            <span>{z.leseabschnitteAnzahl} Abschn.</span>
                           </div>
                         </div>
                       ))}
@@ -1504,7 +1506,7 @@ export default function AdminPage() {
                 className={`btn btn-sm ${spamFilterOnly ? "btn-danger font-bold" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
                 title="Nur verdächtige Konten filtern"
               >
-                ⚠️ Spam-Verdacht ({spamSuspectCount})
+                Spam-Verdacht ({spamSuspectCount})
               </button>
               <span className="text-xs text-arena-muted">{filteredUsers.length} von {users.length} Benutzern</span>
             </div>
@@ -1547,7 +1549,7 @@ export default function AdminPage() {
                         {user.isSpamSuspect && (
                           <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                             <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-200">
-                              ⚠️ Spam-Verdacht {user.spamReportCount ? `(${user.spamReportCount}x gemeldet)` : user.distinctRecipients ? `(${user.distinctRecipients} Kontakte)` : ""}
+                              Spam-Verdacht {user.spamReportCount ? `(${user.spamReportCount}x gemeldet)` : user.distinctRecipients ? `(${user.distinctRecipients} Kontakte)` : ""}
                             </span>
                             <button
                               type="button"
@@ -1556,7 +1558,7 @@ export default function AdminPage() {
                               className="text-[10px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded transition-colors cursor-pointer"
                               title="Account vom Spam-Verdacht freisprechen"
                             >
-                              🛡️ Freisprechen
+                              Freisprechen
                             </button>
                           </div>
                         )}
@@ -1587,7 +1589,7 @@ export default function AdminPage() {
                             }`}
                             title={user.hasProfile ? "Autorenprofil ausgefüllt" : "Autorenprofil leer"}
                           >
-                            ✍️ Autor {user.hasProfile ? "✓" : "✗"}
+                            Autor {user.hasProfile ? "✓" : "✗"}
                           </Link>
                           <Link
                             href={`/profil?user=${encodeURIComponent(user.username)}&tab=sprecher`}
@@ -1598,7 +1600,7 @@ export default function AdminPage() {
                             }`}
                             title={user.hasSpeakerProfile ? "Sprecherprofil ausgefüllt" : "Sprecherprofil leer"}
                           >
-                            🎙️ Sprecher {user.hasSpeakerProfile ? "✓" : "✗"}
+                            Sprecher {user.hasSpeakerProfile ? "✓" : "✗"}
                           </Link>
                           <Link
                             href={`/profil?user=${encodeURIComponent(user.username)}&tab=blogger`}
@@ -1609,7 +1611,7 @@ export default function AdminPage() {
                             }`}
                             title={user.hasBloggerProfile ? "Bloggerprofil ausgefüllt" : "Bloggerprofil leer"}
                           >
-                            📝 Blogger {user.hasBloggerProfile ? "✓" : "✗"}
+                            Blogger {user.hasBloggerProfile ? "✓" : "✗"}
                           </Link>
                           <Link
                             href={`/profil?user=${encodeURIComponent(user.username)}&tab=testleser`}
@@ -1620,7 +1622,7 @@ export default function AdminPage() {
                             }`}
                             title={user.hasTestleserProfile ? "Testleserprofil ausgefüllt" : "Testleserprofil leer"}
                           >
-                            📖 Testleser {user.hasTestleserProfile ? "✓" : "✗"}
+                            Testleser {user.hasTestleserProfile ? "✓" : "✗"}
                           </Link>
                           <Link
                             href={`/profil?user=${encodeURIComponent(user.username)}&tab=lektoren`}
@@ -1631,7 +1633,7 @@ export default function AdminPage() {
                             }`}
                             title={user.hasLektorenProfile ? "Lektorenprofil ausgefüllt" : "Lektorenprofil leer"}
                           >
-                            🔍 Lektor {user.hasLektorenProfile ? "✓" : "✗"}
+                            Lektor {user.hasLektorenProfile ? "✓" : "✗"}
                           </Link>
                           <Link
                             href={`/profil?user=${encodeURIComponent(user.username)}&tab=buecher`}
@@ -1642,14 +1644,14 @@ export default function AdminPage() {
                             }`}
                             title={`${user.bookCount ?? 0} Bücher`}
                           >
-                            📚 {user.bookCount ?? 0} Bücher
+                            <BookOpenIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /> {user.bookCount ?? 0} Bücher
                           </Link>
                         </div>
                       </td>
                       <td className="p-2 border-b border-arena-border-light">
                         <div className="flex gap-1 flex-wrap">
-                          {/* Admin/SuperAdmin: Als Benutzer einloggen */}
-                          {!isSuperAdmin && (account.role === "SUPERADMIN" || account.role === "ADMIN") && (
+                          {/* SuperAdmin: Als Benutzer einloggen */}
+                          {!isSuperAdmin && account.role === "SUPERADMIN" && (
                             <button
                               type="button"
                               className="btn btn-sm"
@@ -1657,11 +1659,11 @@ export default function AdminPage() {
                               title={`Als ${user.username} einloggen`}
                               onClick={() => handleImpersonate(user.username)}
                             >
-                              👤 Als User
+                              Als User
                             </button>
                           )}
-                          {/* Admin/SuperAdmin: Rolle umschalten */}
-                          {!isSuperAdmin && (account.role === "SUPERADMIN" || account.role === "ADMIN") && (
+                          {/* SuperAdmin: Rolle umschalten */}
+                          {!isSuperAdmin && account.role === "SUPERADMIN" && (
                             <button
                               type="button"
                               className={`btn btn-sm ${isAdmin ? "btn-danger" : ""}`}
@@ -1732,7 +1734,7 @@ export default function AdminPage() {
                                   onClick={() => void handleClearSpam(user.username)}
                                   title="Account vom Spam-Verdacht freisprechen"
                                 >
-                                  🛡️ Freisprechen
+                                  Freisprechen
                                 </button>
                               )}
                               {(user.isSpamSuspect || user.spamFlagged || (user.distinctRecipients && user.distinctRecipients > 0)) && (
@@ -1743,7 +1745,7 @@ export default function AdminPage() {
                                   onClick={() => void handleBanAndPurge(user.username)}
                                   title="Spammer sperren & alle gesendeten Nachrichten sofort löschen"
                                 >
-                                  🧹 Spam-Purge
+                                  Spam-Purge
                                 </button>
                               )}
                             </>
@@ -1779,12 +1781,12 @@ export default function AdminPage() {
                         )}
                         {user.isSpamSuspect && (
                           <span className="text-[10px] bg-red-100 text-red-700 border border-red-200 font-bold px-1.5 py-0.2 rounded">
-                            ⚠️ Spam-Verdacht
+                            Spam-Verdacht
                           </span>
                         )}
                       </div>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        isSuperAdmin ? "bg-purple-100 text-purple-800"
+                        isSuperAdmin ? "bg-arena-blue/10 text-arena-blue"
                         : isAdmin ? "bg-blue-100 text-blue-800"
                         : isDeactivated ? "bg-red-100 text-red-700"
                         : "bg-green-100 text-green-800"
@@ -1794,8 +1796,8 @@ export default function AdminPage() {
                     </div>
                     <p className="text-sm text-arena-muted mb-1 break-all">{user.email}</p>
                     <div className="flex gap-3 text-xs text-arena-muted mb-2">
-                      <span>📅 Reg. {formatDate(user.createdAt)}</span>
-                      <span>🕐 Online {formatDateTime(user.lastOnline)}</span>
+                      <span>Reg. {formatDate(user.createdAt)}</span>
+                      <span>Online {formatDateTime(user.lastOnline)}</span>
                     </div>
                     <div className="flex gap-1.5 flex-wrap items-center mb-2">
                       <Link
@@ -1806,7 +1808,7 @@ export default function AdminPage() {
                             : "bg-gray-100 text-gray-500"
                         }`}
                       >
-                        ✍️ Autor {user.hasProfile ? "✓" : "✗"}
+                        Autor {user.hasProfile ? "✓" : "✗"}
                       </Link>
                       <Link
                         href={`/profil?user=${encodeURIComponent(user.username)}&tab=sprecher`}
@@ -1816,7 +1818,7 @@ export default function AdminPage() {
                             : "bg-gray-100 text-gray-500"
                         }`}
                       >
-                        🎙️ Sprecher {user.hasSpeakerProfile ? "✓" : "✗"}
+                        Sprecher {user.hasSpeakerProfile ? "✓" : "✗"}
                       </Link>
                       <Link
                         href={`/profil?user=${encodeURIComponent(user.username)}&tab=blogger`}
@@ -1826,7 +1828,7 @@ export default function AdminPage() {
                             : "bg-gray-100 text-gray-500"
                         }`}
                       >
-                        📝 Blogger {user.hasBloggerProfile ? "✓" : "✗"}
+                        Blogger {user.hasBloggerProfile ? "✓" : "✗"}
                       </Link>
                       <Link
                         href={`/profil?user=${encodeURIComponent(user.username)}&tab=testleser`}
@@ -1836,7 +1838,7 @@ export default function AdminPage() {
                             : "bg-gray-100 text-gray-500"
                         }`}
                       >
-                        📖 Testleser {user.hasTestleserProfile ? "✓" : "✗"}
+                        Testleser {user.hasTestleserProfile ? "✓" : "✗"}
                       </Link>
                       <Link
                         href={`/profil?user=${encodeURIComponent(user.username)}&tab=lektoren`}
@@ -1846,7 +1848,7 @@ export default function AdminPage() {
                             : "bg-gray-100 text-gray-500"
                         }`}
                       >
-                        🔍 Lektor {user.hasLektorenProfile ? "✓" : "✗"}
+                        Lektor {user.hasLektorenProfile ? "✓" : "✗"}
                       </Link>
                       <Link
                         href={`/profil?user=${encodeURIComponent(user.username)}&tab=buecher`}
@@ -1856,12 +1858,12 @@ export default function AdminPage() {
                             : "bg-gray-100 text-gray-500"
                         }`}
                       >
-                        📚 {user.bookCount ?? 0} Bücher
+                        <BookOpenIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /> {user.bookCount ?? 0} Bücher
                       </Link>
                     </div>
                     <div className="flex gap-1.5 flex-wrap">
-                      {/* Admin/SuperAdmin: Als Benutzer einloggen */}
-                      {!isSuperAdmin && (account.role === "SUPERADMIN" || account.role === "ADMIN") && (
+                      {/* SuperAdmin: Als Benutzer einloggen */}
+                      {!isSuperAdmin && account.role === "SUPERADMIN" && (
                         <button
                           type="button"
                           className="btn btn-sm"
@@ -1869,11 +1871,11 @@ export default function AdminPage() {
                           title={`Als ${user.username} einloggen`}
                           onClick={() => handleImpersonate(user.username)}
                         >
-                          👤 Als User
+                          Als User
                         </button>
                       )}
-                      {/* Admin/SuperAdmin: Rolle umschalten */}
-                      {!isSuperAdmin && (account.role === "SUPERADMIN" || account.role === "ADMIN") && (
+                      {/* SuperAdmin: Rolle umschalten */}
+                      {!isSuperAdmin && account.role === "SUPERADMIN" && (
                         <button
                           type="button"
                           className={`btn btn-sm ${isAdmin ? "btn-danger" : ""}`}
@@ -1944,7 +1946,7 @@ export default function AdminPage() {
                               onClick={() => void handleClearSpam(user.username)}
                               title="Account vom Spam-Verdacht freisprechen"
                             >
-                              🛡️ Freisprechen
+                              Freisprechen
                             </button>
                           )}
                           {(user.isSpamSuspect || user.spamFlagged || (user.distinctRecipients && user.distinctRecipients > 0)) && (
@@ -1955,7 +1957,7 @@ export default function AdminPage() {
                               onClick={() => void handleBanAndPurge(user.username)}
                               title="Spammer sperren & alle Nachrichten bereinigen"
                             >
-                              🧹 Spam-Purge
+                              Spam-Purge
                             </button>
                           )}
                         </>
@@ -2010,7 +2012,7 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="card p-4 border border-arena-border-light bg-arena-card-light">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-arena-blue">📚 Bücher-Katalog</span>
+                    <span className="text-sm font-bold text-arena-blue">Bücher-Katalog</span>
                     <span className="text-xs font-semibold px-2 py-0.5 rounded bg-arena-blue/10 text-arena-blue">
                       {catalogStats.totalBooks} Gesamt
                     </span>
@@ -2027,7 +2029,7 @@ export default function AdminPage() {
 
                 <div className="card p-4 border border-arena-border-light bg-arena-card-light">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-arena-blue">👤 Autorenprofile</span>
+                    <span className="text-sm font-bold text-arena-blue">Autorenprofile</span>
                     <span className="text-xs font-semibold px-2 py-0.5 rounded bg-arena-blue/10 text-arena-blue">
                       {catalogStats.totalAuthors} Gesamt
                     </span>
@@ -2111,7 +2113,7 @@ export default function AdminPage() {
             <div className="card p-5 border border-arena-border-light bg-white grid gap-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-arena-blue m-0 flex items-center gap-2">
-                  <span>📬</span> Profil-Beanspruchungen ({authorClaims.filter(c => c.status === "pending").length} offen)
+                  <span><EnvelopeIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /></span> Profil-Beanspruchungen ({authorClaims.filter(c => c.status === "pending").length} offen)
                 </h3>
               </div>
 
@@ -2173,7 +2175,7 @@ export default function AdminPage() {
 
             {/* Informations-Box zur Autoren-Regel */}
             <div className="card-tip p-4 flex items-start gap-3 bg-blue-50/70 border border-blue-200/80 rounded-lg">
-              <span className="text-xl">ℹ️</span>
+              <span className="text-xl"><InformationCircleIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /></span>
               <div className="text-xs text-blue-900 leading-relaxed">
                 <strong className="block text-sm font-bold mb-1">Automatische Autoren-Schutzregel:</strong>
                 Registrierte Benutzer, die selbst ein Autorenprofil besitzen, sehen auf BuchArena <strong>stets nur manuell eingegebene Profile und Bücher</strong>. Unbeanspruchte Einträge werden für sie serverseitig immer herausgefiltert, unabhängig von den obigen Schaltern.
@@ -2288,12 +2290,12 @@ export default function AdminPage() {
 type BroadcastGroup = "all" | "autoren" | "sprecher" | "blogger" | "testleser" | "lektoren";
 
 const GROUP_LABELS: Record<BroadcastGroup, string> = {
-  all: "🌐 Alle Nutzer",
-  autoren: "✍️ Autoren",
-  sprecher: "🎙️ Sprecher",
-  blogger: "📝 Blogger",
-  testleser: "📖 Testleser",
-  lektoren: "✏️ Lektoren",
+  all: "Alle Nutzer",
+  autoren: "Autoren",
+  sprecher: "Sprecher",
+  blogger: "Blogger",
+  testleser: "Testleser",
+  lektoren: "Lektoren",
 };
 
 function BroadcastMessagePanel({ adminUsername }: { adminUsername: string }) {

@@ -168,7 +168,7 @@ export default function AdminMusikPage() {
           <Link href="/admin" className="btn btn-sm font-sans" title="Zurück zur Admin-Zentrale">
             ← Admin
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 m-0">🎵 Musik für Social Media</h1>
+          <h1 className="text-2xl font-bold text-gray-900 m-0">Musik für Social Media</h1>
         </div>
 
       {/* Upload-Formular */}

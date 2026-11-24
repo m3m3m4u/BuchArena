@@ -12,12 +12,14 @@
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
-import { type UserRole } from "@/lib/mongodb";
+import { getUsersCollection, type UserRole } from "@/lib/mongodb";
 
 export type ServerAccount = {
   username: string;
   email: string;
   role: UserRole;
+  sessionVersion?: number;
+  userId?: string;
 };
 
 /* ── JWT-Konfiguration ── */
@@ -40,11 +42,13 @@ interface AuthTokenPayload extends JWTPayload {
   sub: string;    // username
   email: string;
   role: UserRole;
+  sessionVersion?: number;
+  userId?: string;
 }
 
 /** Erzeugt ein signiertes JWT für den gegebenen Account. */
 export async function createAuthToken(account: ServerAccount): Promise<string> {
-  return new SignJWT({ email: account.email, role: account.role })
+  return new SignJWT({ email: account.email, role: account.role, sessionVersion: account.sessionVersion ?? 0, userId: account.userId })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuer(JWT_ISSUER)
     .setSubject(account.username)
@@ -58,27 +62,31 @@ export async function createAuthToken(account: ServerAccount): Promise<string> {
  * Verifiziert die Signatur und prüft den User in der DB.
  * Gibt null zurück, wenn kein/ungültiger Token oder User nicht existiert.
  */
-export const getServerAccount = cache(async (): Promise<ServerAccount | null> => {
+export async function getAccountFromToken(token: string): Promise<ServerAccount | null> {
+  let p: AuthTokenPayload;
   try {
-    const cookieStore = await cookies();
-
-    const token = cookieStore.get("auth_token")?.value;
-    if (!token) return null;
-
-    const { payload } = await jwtVerify(token, getJwtSecret(), { issuer: JWT_ISSUER });
-    const p = payload as AuthTokenPayload;
-    if (!p.sub || !p.email || !p.role) return null;
-
-    // Kein extra DB-Roundtrip – JWT ist signiert und enthält alle nötigen Daten.
-    // Deaktivierte Nutzer werden beim Login blockiert; ihr Token läuft nach 7 Tagen ab.
-    return {
-      username: p.sub,
-      email: p.email,
-      role: p.role,
-    };
+    const { payload } = await jwtVerify(token, getJwtSecret(), { issuer: JWT_ISSUER, algorithms: ["HS256"] });
+    p = payload as AuthTokenPayload;
+    if (typeof p.sub !== "string" || !p.sub) return null;
   } catch {
     return null;
   }
+
+  // Datenbankfehler weitergeben: ein vorübergehender Ausfall ist kein Logout.
+  const users = await getUsersCollection();
+  const user = await users.findOne(
+    { username: p.sub },
+    { projection: { username: 1, email: 1, role: 1, status: 1, sessionVersion: 1 } },
+  );
+  if (!user || user.status === "deactivated" || (p.sessionVersion ?? 0) !== (user.sessionVersion ?? 0)) return null;
+  if (p.userId ? p.userId !== user._id.toString() : p.email !== user.email) return null;
+  return { username: user.username, email: user.email, role: user.role, sessionVersion: user.sessionVersion ?? 0, userId: user._id.toString() };
+}
+
+export const getServerAccount = cache(async (): Promise<ServerAccount | null> => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+  return token ? getAccountFromToken(token) : null;
 });
 
 /**
@@ -87,7 +95,7 @@ export const getServerAccount = cache(async (): Promise<ServerAccount | null> =>
  */
 export async function requireSuperAdmin(): Promise<ServerAccount | null> {
   const account = await getServerAccount();
-  if (!account || (account.role !== "ADMIN" && account.role !== "SUPERADMIN")) return null;
+  if (!account || account.role !== "SUPERADMIN") return null;
   return account;
 }
 

@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import {
   getBuchzirkelCollection,
-  getBuchzirkelTeilnahmenCollection,
   getBuchzirkelChatCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { canAccessBuchzirkel } from "@/lib/buchzirkel-access";
 
 async function checkZugang(
   zirkelId: string,
@@ -14,7 +14,7 @@ async function checkZugang(
   const zirkelCol = await getBuchzirkelCollection();
   const zirkel = await zirkelCol.findOne(
     { _id: new ObjectId(zirkelId) },
-    { projection: { veranstalterUsername: 1, titel: 1, status: 1 } }
+    { projection: { veranstalterUsername: 1, titel: 1, status: 1, typ: 1, agbPflicht: 1 } }
   );
   if (!zirkel) return { ok: false, zirkelTitel: null, veranstalterUsername: null };
 
@@ -22,13 +22,8 @@ async function checkZugang(
     return { ok: true, zirkelTitel: zirkel.titel, veranstalterUsername: zirkel.veranstalterUsername };
   }
 
-  const teilnahmen = await getBuchzirkelTeilnahmenCollection();
-  const t = await teilnahmen.findOne({
-    buchzirkelId: new ObjectId(zirkelId),
-    teilnehmerUsername: username,
-  });
   return {
-    ok: !!t,
+    ok: await canAccessBuchzirkel(zirkel, username),
     zirkelTitel: zirkel.titel,
     veranstalterUsername: zirkel.veranstalterUsername,
   };

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { getBucharenaSnippetsCollection } from "@/lib/bucharena-db";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) return NextResponse.json({ success: false, error: "Keine Berechtigung" }, { status: 403 });
 
     const col = await getBucharenaSnippetsCollection();

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerAccount } from "@/lib/server-auth";
+import { getServerAccount, requireAdmin } from "@/lib/server-auth";
 import { getSubscribersCollection } from "@/lib/newsletter";
 
 /** GET /api/newsletter/subscribers – Liste aller Abonnenten (nur Admin) */
@@ -26,6 +26,9 @@ export async function GET() {
 /** POST /api/newsletter/subscribers – Neuen Abonnenten hinzufügen */
 export async function POST(request: Request) {
   try {
+    if (!await requireAdmin()) {
+      return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
+    }
     const body = (await request.json()) as { email?: string };
     const email = body.email?.trim().toLowerCase();
 

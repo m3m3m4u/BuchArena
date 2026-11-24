@@ -1,5 +1,7 @@
 "use client";
 
+import { MicrophoneIcon } from "@heroicons/react/24/outline";
+
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
@@ -211,7 +213,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
                   rel="noreferrer"
                   className="font-sans text-arena-link hover:underline break-all"
                 >
-                  🌐 {visibleWebseite}
+                  {visibleWebseite}
                 </a>
               </div>
             )}
@@ -301,7 +303,7 @@ export default function SpeakerProfilePage({ params }: PageProps) {
                     className="card-base p-4 flex items-center gap-3"
                   >
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
-                      🎙️
+                      <MicrophoneIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-sans text-[0.95rem] font-medium break-all text-arena-text">{sample.filename}</p>

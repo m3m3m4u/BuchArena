@@ -171,7 +171,7 @@ export default function GewinnspielDetailPage() {
             if (ichHabGewonnen) {
               return (
                 <div className="mb-4 p-4 rounded-lg text-center" style={{ background: "var(--color-arena-yellow)", color: "var(--color-arena-blue)" }}>
-                  <p className="text-2xl font-bold mb-1">🎉 Du hast gewonnen!</p>
+                  <p className="text-2xl font-bold mb-1">Du hast gewonnen!</p>
                   <p className="text-sm font-medium">Du hast das Buch <strong>{g.buchTitel}</strong> gewonnen.</p>
                   <p className="text-xs opacity-70 mt-1">Der Autor wird sich bei dir melden.</p>
                 </div>
@@ -238,7 +238,7 @@ export default function GewinnspielDetailPage() {
           {anmeldungLaeuft && !g.hatTeilgenommen && (
             <div className="flex flex-col items-center gap-2">
               <p className="w-full text-xs rounded-lg px-3 py-2 mb-1" style={{ background: "#eff6ff", color: "#1e40af" }}>
-                ℹ️ Für die Teilnahme ist ein Profil auf BuchArena erforderlich (z.&nbsp;B. als <Link href="/testleser" className="underline font-medium">Testleser</Link>, <Link href="/fuer-autoren" className="underline font-medium">Autor</Link>, <Link href="/sprecher" className="underline font-medium">Sprecher</Link> u.&nbsp;v.&nbsp;m.). Für Versand und Verlosung ist der Autor verantwortlich – nicht BuchArena.
+                Für die Teilnahme ist ein Profil auf BuchArena erforderlich (z.&nbsp;B. als <Link href="/testleser" className="underline font-medium">Testleser</Link>, <Link href="/fuer-autoren" className="underline font-medium">Autor</Link>, <Link href="/sprecher" className="underline font-medium">Sprecher</Link> u.&nbsp;v.&nbsp;m.). Für Versand und Verlosung ist der Autor verantwortlich – nicht BuchArena.
               </p>
               <button
                 onClick={teilnehmen}
@@ -246,7 +246,7 @@ export default function GewinnspielDetailPage() {
                 className="w-full py-3 rounded-lg font-bold text-base transition-opacity disabled:opacity-50"
                 style={{ background: "var(--color-arena-blue)", color: "white" }}
               >
-                {submitting ? "Wird angemeldet…" : needsAdresse && !showAdresseForm ? "Jetzt teilnehmen" : "Anmeldung bestätigen 🍀"}
+                {submitting ? "Wird angemeldet…" : needsAdresse && !showAdresseForm ? "Jetzt teilnehmen" : "Anmeldung bestätigen"}
               </button>
               {!account && (
                 <p className="text-xs opacity-60">

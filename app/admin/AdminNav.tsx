@@ -361,32 +361,32 @@ export function AdminNav({
               <option value="" disabled>
                 Schnellzugriff: Modul wählen…
               </option>
-              <option value="overview">🧭 Übersicht (Dashboard)</option>
-              <optgroup label="👥 Community & User">
+              <option value="overview">Übersicht (Dashboard)</option>
+              <optgroup label="Community & User">
                 <option value="users">User-Übersicht</option>
                 <option value="buchzirkel">Buchzirkel</option>
                 <option value="nachrichten">Rundnachrichten</option>
               </optgroup>
-              <optgroup label="✍️ Redaktion & Medien">
+              <optgroup label="Redaktion & Medien">
                 <option value="news">News-Beiträge ↗</option>
                 <option value="blog">Blog-Verwaltung ↗</option>
                 <option value="podcast">Podcast ↗</option>
                 <option value="newsletter">Newsletter ↗</option>
                 <option value="musik">Hintergrundmusik ↗</option>
               </optgroup>
-              <optgroup label="📱 Social Media & Einsendungen">
+              <optgroup label="Social Media & Einsendungen">
                 <option value="einreichungen">Buch-Einreichungen (PPTX) ↗</option>
                 <option value="reel-einreichungen">Reel-Einreichungen (Videos) ↗</option>
                 <option value="social-media">Social-Media-Galerie ↗</option>
                 <option value="social-media-content">Fertige Social-Inhalte ↗</option>
               </optgroup>
-              <optgroup label="🏆 Aktionen & Katalog">
+              <optgroup label="Aktionen & Katalog">
                 <option value="bdw">Buch der Woche</option>
                 <option value="gewinnspiele">Gewinnspiele ↗</option>
                 <option value="katalog">Katalog & KI</option>
                 <option value="buecher">Bücherverwaltung ↗</option>
               </optgroup>
-              <optgroup label="📊 Analyse">
+              <optgroup label="Analyse">
                 <option value="analytics">Besucher-Analyse</option>
               </optgroup>
             </select>
@@ -523,11 +523,11 @@ export function AdminOverviewDashboard({
             onSelectCategory("community");
             onSelectTab("users");
           }}
-          className="p-3.5 rounded-xl border border-blue-200/80 bg-blue-50/40 hover:bg-blue-50/80 transition-all cursor-pointer group shadow-2xs"
+          className="card-base p-3.5 hover:border-arena-blue transition-colors cursor-pointer group"
         >
-          <div className="flex items-center justify-between text-blue-700 mb-1">
+          <div className="flex items-center justify-between text-arena-blue mb-1">
             <span className="text-xs font-semibold">Community & User</span>
-            <UsersIcon className="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform" />
+            <UsersIcon className="w-4 h-4 text-arena-blue group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-2xl font-bold text-arena-blue tracking-tight">
             {stats.totalUsers}
@@ -543,16 +543,16 @@ export function AdminOverviewDashboard({
             onSelectCategory("actions");
             onSelectTab("bdw");
           }}
-          className="p-3.5 rounded-xl border border-amber-200/80 bg-amber-50/40 hover:bg-amber-50/80 transition-all cursor-pointer group shadow-2xs"
+          className="card-base p-3.5 hover:border-arena-blue transition-colors cursor-pointer group"
         >
-          <div className="flex items-center justify-between text-amber-800 mb-1">
+          <div className="flex items-center justify-between text-arena-blue mb-1">
             <span className="text-xs font-semibold">Buch der Woche</span>
-            <TrophyIcon className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform" />
+            <TrophyIcon className="w-4 h-4 text-arena-blue group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-sm font-bold text-arena-blue truncate tracking-tight">
             {stats.bdwTitle ? `„${stats.bdwTitle}“` : "Aktiv"}
           </div>
-          <p className="text-[11px] text-amber-900/80 m-0 mt-0.5 truncate">
+          <p className="text-[11px] text-arena-blue m-0 mt-0.5 truncate">
             Ziehung: {stats.nextDraw || "Sonntag"}
           </p>
         </div>
@@ -563,7 +563,7 @@ export function AdminOverviewDashboard({
             onSelectCategory("community");
             onSelectTab("users");
           }}
-          className="p-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all cursor-pointer group shadow-2xs"
+          className="card-base p-3.5 hover:border-arena-blue transition-colors cursor-pointer group"
         >
           <div className="flex items-center justify-between text-slate-700 mb-1">
             <span className="text-xs font-semibold">Sicherheit</span>
@@ -583,16 +583,16 @@ export function AdminOverviewDashboard({
             onSelectCategory("analytics");
             onSelectTab("analytics");
           }}
-          className="p-3.5 rounded-xl border border-emerald-200/80 bg-emerald-50/40 hover:bg-emerald-50/80 transition-all cursor-pointer group shadow-2xs"
+          className="card-base p-3.5 hover:border-arena-blue transition-colors cursor-pointer group"
         >
-          <div className="flex items-center justify-between text-emerald-800 mb-1">
+          <div className="flex items-center justify-between text-arena-blue mb-1">
             <span className="text-xs font-semibold">Besucher heute</span>
-            <ChartBarIcon className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
+            <ChartBarIcon className="w-4 h-4 text-arena-blue group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-2xl font-bold text-arena-blue tracking-tight">
             {stats.todayViews !== undefined ? stats.todayViews : "–"}
           </div>
-          <p className="text-[11px] text-emerald-800/80 m-0 mt-0.5">
+          <p className="text-[11px] text-arena-blue m-0 mt-0.5">
             Klick für detaillierte Analyse
           </p>
         </div>
@@ -649,7 +649,7 @@ export function AdminOverviewDashboard({
                       <div
                         key={tool.id}
                         onClick={handleClick}
-                        className="p-2.5 rounded-lg border border-slate-200/90 hover:border-arena-blue/40 bg-slate-50/60 hover:bg-blue-50/30 transition-all cursor-pointer group flex flex-col justify-between"
+                        className="p-2.5 rounded-lg border border-slate-200/90 hover:border-arena-blue/40 bg-slate-50/60 hover:bg-arena-bg transition-all cursor-pointer group flex flex-col justify-between"
                       >
                         <div className="flex items-start justify-between gap-1 mb-1">
                           <div className="flex items-center gap-1.5">

@@ -142,10 +142,12 @@ export async function POST(request: Request) {
       );
     }
 
-    await users.updateOne(
+    const updatedUser = await users.findOneAndUpdate(
       { username: account.username },
-      { $set: updateFields }
+      { $set: updateFields, $inc: { sessionVersion: 1 } },
+      { returnDocument: "after", projection: { sessionVersion: 1 } },
     );
+    if (!updatedUser) throw new Error("Benutzer nicht gefunden.");
 
     // If username or email changed, update related collections
     if (updateFields.username) {
@@ -256,6 +258,8 @@ export async function POST(request: Request) {
       username: (updateFields.username as string) ?? account.username,
       email: (updateFields.email as string) ?? account.email,
       role: account.role,
+      sessionVersion: updatedUser.sessionVersion ?? 0,
+      userId: updatedUser._id.toString(),
     };
 
     const token = await createAuthToken(updatedAccount);

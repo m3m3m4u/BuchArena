@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 
 type LeafletModule = typeof import("leaflet");
 
@@ -67,19 +66,21 @@ type Props = {
 export default function ProfileMapView({ category, categoryLabel }: Props) {
   const [users, setUsers] = useState<MapUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [geocodeProgress, setGeocodeProgress] = useState<{ done: number; total: number } | null>(null);
   const [userCoords, setUserCoords] = useState<Record<string, [number, number]>>({});
 
   const mapContainer = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
+  const mapInstance = useRef<import("leaflet").Map | null>(null);
+  const markersRef = useRef<import("leaflet").CircleMarker[]>([]);
   const leafletRef = useRef<LeafletModule | null>(null);
 
   // Load users from API (incl. cached coords)
   useEffect(() => {
     setIsLoading(true);
+    setLoadError("");
     fetch(`/api/profile-map?category=${category}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error("Profile konnten nicht geladen werden."); return r.json(); })
       .then((data: { users?: MapUser[] }) => {
         const loaded = data.users ?? [];
         setUsers(loaded);
@@ -92,7 +93,7 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
         }
         setUserCoords(initial);
       })
-      .catch(() => setUsers([]))
+      .catch(() => { setUsers([]); setLoadError("Profile konnten nicht geladen werden. Bitte versuche es erneut."); })
       .finally(() => setIsLoading(false));
   }, [category]);
 
@@ -198,13 +199,18 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
 
           const location = [user.postalCode, user.city, user.country].filter(Boolean).join(", ");
 
-          marker.bindPopup(
-            `<div style="max-width:200px; font-family: inherit">
-              <strong style="font-size:0.95rem; color:#1a1a2e">${user.displayName}</strong><br>
-              <span style="font-size:0.8rem; color:#666">${location}</span><br>
-              <a href="${user.profilePath}" style="font-size:0.85rem; color:#2563eb; text-decoration:none; font-weight:bold">Profil ansehen →</a>
-            </div>`
-          );
+          const popup = document.createElement("div");
+          popup.style.maxWidth = "200px";
+          const name = document.createElement("strong");
+          name.textContent = user.displayName;
+          const address = document.createElement("span");
+          address.textContent = location;
+          const link = document.createElement("a");
+          link.href = user.profilePath;
+          link.textContent = "Profil ansehen →";
+          link.className = "text-arena-link font-semibold";
+          popup.append(name, document.createElement("br"), address, document.createElement("br"), link);
+          marker.bindPopup(popup);
 
           markersRef.current.push(marker);
         }
@@ -258,6 +264,11 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
       {isLoading ? (
         <div className="font-sans flex items-center justify-center min-h-[400px] text-arena-muted text-sm">
           Lade Daten …
+        </div>
+      ) : loadError ? (
+        <div role="alert" className="card-info grid gap-3">
+          <p className="text-sm text-arena-danger">{loadError}</p>
+          <button className="btn" onClick={() => window.location.reload()}>Erneut laden</button>
         </div>
       ) : users.length === 0 ? (
         <div className="font-sans flex items-center justify-center min-h-[400px] text-arena-muted text-sm">

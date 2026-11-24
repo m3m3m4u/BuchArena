@@ -9,6 +9,7 @@ import {
   getUsersCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { canAccessBuchzirkel } from "@/lib/buchzirkel-access";
 import { davDelete } from "@/lib/bucharena-webdav";
 
 export async function DELETE(
@@ -99,7 +100,7 @@ export async function GET(
         buchzirkelId: new ObjectId(id),
         teilnehmerUsername: account.username,
       });
-      isTeilnehmer = !!t;
+      isTeilnehmer = !!t && !t.abgebrochen;
 
       if (!isTeilnehmer) {
         const bewerbungen = await getBuchzirkelBewerbungenCollection();
@@ -126,7 +127,7 @@ export async function GET(
     const result = {
       ...doc,
       // Dateien nur sichtbar für Veranstalter und Teilnehmer
-      dateien: isVeranstalter || isTeilnehmer ? doc.dateien : [],
+      dateien: account && await canAccessBuchzirkel(doc, account.username) ? doc.dateien : [],
       isVeranstalter,
       isTeilnehmer,
       isBeworben,

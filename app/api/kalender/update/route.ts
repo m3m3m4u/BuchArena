@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getKalenderCollection } from "@/lib/mongodb";
 import { getServerAccount, requireAdmin } from "@/lib/server-auth";
-import { type KalenderCategory, VALID_COUNTRIES } from "@/lib/kalender";
+import { type KalenderCategory, VALID_COUNTRIES, isValidCalendarDate, isValidCalendarTime } from "@/lib/kalender";
 
 export async function POST(request: Request) {
   try {
@@ -75,11 +75,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Beschreibung darf maximal 3000 Zeichen lang sein." }, { status: 400 });
     }
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    if (!isValidCalendarDate(date)) {
       return NextResponse.json({ message: "Ungültiges Datumsformat." }, { status: 400 });
     }
 
-    if (dateTo && !/^\d{4}-\d{2}-\d{2}$/.test(dateTo)) {
+    if (dateTo && !isValidCalendarDate(dateTo)) {
       return NextResponse.json({ message: "Ungültiges Enddatumsformat." }, { status: 400 });
     }
 
@@ -87,11 +87,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Das Enddatum darf nicht vor dem Startdatum liegen." }, { status: 400 });
     }
 
-    if (timeFrom && !/^\d{2}:\d{2}$/.test(timeFrom)) {
+    if (timeFrom && !isValidCalendarTime(timeFrom)) {
       return NextResponse.json({ message: "Ungültiges Zeitformat für 'von'." }, { status: 400 });
     }
 
-    if (timeTo && !/^\d{2}:\d{2}$/.test(timeTo)) {
+    if (timeTo && !isValidCalendarTime(timeTo)) {
       return NextResponse.json({ message: "Ungültiges Zeitformat für 'bis'." }, { status: 400 });
     }
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { MapPinIcon } from "@heroicons/react/24/outline";
+
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
@@ -38,17 +40,17 @@ interface KalenderEvent {
 const CATEGORIES: KalenderCategory[] = ["Buchmesse", "Lesung", "Release", "Sonstiges"];
 
 const CATEGORY_COLORS: Record<KalenderCategory, string> = {
-  "Buchmesse": "bg-blue-100 text-blue-800 border-blue-300",
-  "Lesung": "bg-purple-100 text-purple-800 border-purple-300",
-  "Release": "bg-green-100 text-green-800 border-green-300",
-  "Sonstiges": "bg-gray-100 text-gray-800 border-gray-300",
+  "Buchmesse": "bg-arena-blue/10 text-arena-blue border-arena-blue/30",
+  "Lesung": "bg-arena-blue-light/10 text-arena-blue-light border-arena-blue-light/30",
+  "Release": "bg-arena-yellow/15 text-arena-blue border-arena-yellow/40",
+  "Sonstiges": "bg-arena-bg text-arena-muted border-arena-border",
 };
 
 const CATEGORY_MAP_COLORS: Record<KalenderCategory, string> = {
-  "Buchmesse": "#2563eb",
-  "Lesung": "#a855f7",
-  "Release": "#16a34a",
-  "Sonstiges": "#6b7280",
+  "Buchmesse": "var(--color-arena-blue)",
+  "Lesung": "var(--color-arena-blue-light)",
+  "Release": "var(--color-arena-yellow)",
+  "Sonstiges": "var(--color-arena-muted)",
 };
 
 type ViewMode = "list" | "map";
@@ -113,7 +115,7 @@ function CountryAutocomplete({
           {suggestions.slice(0, 20).map((c) => (
             <li
               key={c}
-              className="px-3 py-1.5 cursor-pointer hover:bg-[var(--color-arena-primary)] hover:text-white"
+              className="px-3 py-1.5 cursor-pointer hover:bg-arena-blue hover:text-white"
               onMouseDown={() => {
                 onChange(c);
                 setOpen(false);
@@ -378,15 +380,18 @@ export default function KalenderPage() {
             fillOpacity: 0.9,
           }).addTo(map);
 
-          marker.bindPopup(
-            `<div style="max-width: 220px">
-              <strong>${event.title}</strong><br>
-              <small>${event.category}</small><br>
-              ${event.location?.street ? `${event.location.street}<br>` : ""}
-              ${event.location?.zipCode ? `${event.location.zipCode} ` : ""}${event.location?.city ?? ""}<br>
-              <small>von ${event.createdByDisplayName || event.createdBy}</small>
-            </div>`
-          );
+          const popup = document.createElement("div");
+          popup.style.maxWidth = "220px";
+          const title = document.createElement("strong");
+          title.textContent = event.title;
+          popup.append(title);
+          const lines = [event.category, event.location?.street, [event.location?.zipCode, event.location?.city].filter(Boolean).join(" "), `von ${event.createdByDisplayName || event.createdBy}`];
+          for (const line of lines.filter(Boolean)) {
+            const text = document.createElement("div");
+            text.textContent = line ?? "";
+            popup.append(text);
+          }
+          marker.bindPopup(popup);
 
           marker.on("click", () => openEventDetail(event));
           markersRef.current.push(marker);
@@ -728,7 +733,7 @@ export default function KalenderPage() {
                     viewMode === "list" ? "active" : ""
                   }`}
                 >
-                  📅 Kalender
+                  Kalender
                 </button>
                 <button
                   onClick={() => setViewMode("map")}
@@ -736,7 +741,7 @@ export default function KalenderPage() {
                     viewMode === "map" ? "active" : ""
                   }`}
                 >
-                  🗺️ Karte
+                  Karte
                 </button>
               </div>
               {loggedIn && (
@@ -1008,7 +1013,7 @@ export default function KalenderPage() {
                               <p className="font-sans text-xs sm:text-sm text-arena-muted line-clamp-2">{event.description}</p>
                               {event.location && (
                                 <p className="font-sans text-xs sm:text-sm text-arena-muted mt-2">
-                                  📍{" "}
+                                  <MapPinIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" />{" "}
                                   {[event.location.street, event.location.zipCode, event.location.city, event.location.country]
                                     .filter(Boolean)
                                     .join(", ")}
@@ -1228,7 +1233,7 @@ export default function KalenderPage() {
                         onClick={handleStartEdit}
                         className="btn font-sans font-bold"
                       >
-                        ✎ Bearbeiten
+                        Bearbeiten
                       </button>
                     )}
                     {(isUserRole === "user" || isUserRole === "admin") && (
@@ -1236,15 +1241,15 @@ export default function KalenderPage() {
                         onClick={handleDeleteEvent}
                         className="btn font-sans text-arena-danger hover:bg-red-50 font-bold"
                       >
-                        🗑 Löschen
+                        Löschen
                       </button>
                     )}
                     {loggedIn && selectedEvent.createdBy !== username && (
                       <button
                         onClick={() => { setReportText(""); setShowReportModal(true); }}
-                        className="btn font-sans text-orange-600 border-orange-400/40 hover:bg-orange-55 font-bold"
+                        className="btn font-sans text-arena-blue border-arena-border hover:bg-arena-bg font-bold"
                       >
-                        ⚠ Fehler melden
+                        Fehler melden
                       </button>
                     )}
                     <button
@@ -1257,21 +1262,21 @@ export default function KalenderPage() {
 
                   {/* Fehler melden Modal */}
                   {showReportModal && (
-                    <div className="mt-4 p-4 border border-orange-200 rounded-lg bg-orange-50/50 font-sans">
-                      <h4 className="font-sans font-bold mb-2 text-orange-800 text-sm">Fehler melden</h4>
+                    <div className="mt-4 p-4 border border-arena-border-light rounded-lg bg-arena-bg font-sans">
+                      <h4 className="font-sans font-bold mb-2 text-arena-blue text-sm">Fehler melden</h4>
                       <textarea
                         value={reportText}
                         onChange={(e) => setReportText(e.target.value)}
                         maxLength={2000}
                         rows={3}
-                        className="input-base font-normal w-full mt-1 text-sm font-sans resize-y border-orange-200"
+                        className="input-base font-normal w-full mt-1 text-sm font-sans resize-y border-arena-border"
                         placeholder="Beschreibe den Fehler (mind. 5 Zeichen)..."
                       />
                       <div className="flex gap-2 mt-2 font-sans">
                         <button
                           onClick={handleReportSubmit}
                           disabled={isReportSubmitting || reportText.trim().length < 5}
-                          className="btn font-sans text-sm bg-orange-500 hover:bg-orange-600 text-white font-bold"
+                          className="btn btn-primary font-sans text-sm font-bold"
                         >
                           {isReportSubmitting ? "Wird gesendet..." : "Absenden"}
                         </button>

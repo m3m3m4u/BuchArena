@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       // 1. Account dauerhaft deaktivieren und als Spammer markieren
       await users.updateOne(
         { username: targetUsername },
-        { $set: { status: "deactivated", spamFlagged: true, spamWhitelisted: false } }
+        { $set: { status: "deactivated", spamFlagged: true, spamWhitelisted: false }, $inc: { sessionVersion: 1 } }
       );
 
       // 2. Alle vom Spammer versendeten Nachrichten finden und löschen
@@ -155,7 +155,10 @@ export async function POST(request: Request) {
     }
 
     const newStatus: UserStatus = action === "deactivate" ? "deactivated" : "active";
-    await users.updateOne({ username: targetUsername }, { $set: { status: newStatus } });
+    await users.updateOne({ username: targetUsername }, {
+      $set: { status: newStatus },
+      ...(newStatus === "deactivated" ? { $inc: { sessionVersion: 1 } } : {}),
+    });
 
     const label = newStatus === "deactivated" ? "deaktiviert" : "aktiviert";
     return NextResponse.json({

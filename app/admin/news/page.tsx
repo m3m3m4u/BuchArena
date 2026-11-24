@@ -1,5 +1,7 @@
 "use client";
 
+import { PhotoIcon } from "@heroicons/react/24/outline";
+
 import { useEditor, EditorContent, useEditorState, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import LinkExtension from "@tiptap/extension-link";
@@ -31,7 +33,7 @@ const LAYOUT_OPTIONS: { key: NewsLayout; label: string; description: string; pre
     description: "Teaser zeigt das Titelbild links neben dem Text.",
     preview: (
       <div className="border border-arena-border rounded p-2 grid grid-cols-[30px_1fr] gap-2 w-full bg-white text-[8px] leading-tight select-none">
-        <div className="h-10 bg-arena-border rounded flex items-center justify-center text-[10px]">🖼️</div>
+        <div className="h-10 bg-arena-border rounded flex items-center justify-center text-[10px]"><PhotoIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /></div>
         <div className="flex flex-col gap-1">
           <div className="font-bold text-[9px] text-arena-blue">Titel des Beitrags</div>
           <div className="text-arena-muted">Das Bild befindet sich links...</div>
@@ -49,7 +51,7 @@ const LAYOUT_OPTIONS: { key: NewsLayout; label: string; description: string; pre
           <div className="font-bold text-[9px] text-arena-blue">Titel des Beitrags</div>
           <div className="text-arena-muted">Das Bild befindet sich rechts...</div>
         </div>
-        <div className="h-10 bg-arena-border rounded flex items-center justify-center text-[10px]">🖼️</div>
+        <div className="h-10 bg-arena-border rounded flex items-center justify-center text-[10px]"><PhotoIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /></div>
       </div>
     ),
   },
@@ -265,28 +267,28 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml }: { editor: Editor | nu
           onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleImageFile(f); e.target.value = ""; }} />
       </div>
       {editorState?.isImage && (
-        <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-blue-50 border border-b-0 border-blue-200 text-xs font-sans">
-          <span className="text-blue-700 font-bold">Bildgröße:</span>
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-arena-bg border border-b-0 border-arena-border-light text-xs font-sans">
+          <span className="text-arena-blue font-bold">Bildgröße:</span>
           <input type="text" value={imgWidthInput}
             onChange={(e) => setImgWidthInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") applyImageWidth(imgWidthInput); }}
             onBlur={() => applyImageWidth(imgWidthInput)}
             placeholder="400"
-            className="w-16 border border-blue-300 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white" />
-          <span className="text-blue-500">px</span>
+            className="w-16 border border-arena-border-light rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-arena-blue/30 bg-white" />
+          <span className="text-arena-blue">px</span>
           {(["200", "400", "600"] as const).map((val) => (
             <button key={val} type="button" onMouseDown={(e) => { e.preventDefault(); setImgWidthInput(val); applyImageWidth(val); }}
-              className={`px-2 py-0.5 rounded border text-xs transition-colors cursor-pointer ${imgWidthInput === val ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"}`}>{val}</button>
+              className={`px-2 py-0.5 rounded border text-xs transition-colors cursor-pointer ${imgWidthInput === val ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-blue border-arena-border-light hover:bg-arena-bg"}`}>{val}</button>
           ))}
           <button type="button" onMouseDown={(e) => { e.preventDefault(); setImgWidthInput("100%"); applyImageWidth("100%"); }}
-            className={`px-2 py-0.5 rounded border text-xs transition-colors cursor-pointer ${imgWidthInput === "100%" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"}`}>Voll</button>
-          <span className="border-l border-blue-200 mx-1 self-stretch" />
-          <span className="text-blue-700 font-bold">Ausrichtung:</span>
+            className={`px-2 py-0.5 rounded border text-xs transition-colors cursor-pointer ${imgWidthInput === "100%" ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-blue border-arena-border-light hover:bg-arena-bg"}`}>Voll</button>
+          <span className="border-l border-arena-border-light mx-1 self-stretch" />
+          <span className="text-arena-blue font-bold">Ausrichtung:</span>
           {(["left", "center", "right", null] as const).map((a) => (
             <button key={String(a)} type="button"
               onMouseDown={(e) => { e.preventDefault(); applyImageAlign(a); }}
               className={`px-2 py-0.5 rounded border text-xs transition-colors cursor-pointer ${
-                imgAlignActive === a ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"
+                imgAlignActive === a ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-blue border-arena-border-light hover:bg-arena-bg"
               }`}>
               {a === "left" ? "Links" : a === "center" ? "Mitte" : a === "right" ? "Rechts" : "Normal"}
             </button>
@@ -420,9 +422,9 @@ export default function NewsAdminPage() {
 
   async function handleSave(publish?: boolean) {
     if (!editor) return;
-    if (!title.trim()) { setSaveStatus("❌ Titel ist erforderlich."); return; }
+    if (!title.trim()) { setSaveStatus("Titel ist erforderlich."); return; }
     const htmlContent = htmlMode ? htmlSource : editor.getHTML();
-    if (!htmlContent || (!htmlMode && editor.isEmpty)) { setSaveStatus("❌ Inhalt ist erforderlich."); return; }
+    if (!htmlContent || (!htmlMode && editor.isEmpty)) { setSaveStatus("Inhalt ist erforderlich."); return; }
 
     setSaving(true);
     setSaveStatus("");
@@ -448,10 +450,10 @@ export default function NewsAdminPage() {
         void loadPosts();
         setTimeout(() => setSaveStatus(""), 3000);
       } else {
-        setSaveStatus(`❌ ${data.message ?? "Fehler"}`);
+        setSaveStatus(data.message ?? "Fehler");
       }
     } catch {
-      setSaveStatus("❌ Netzwerkfehler.");
+      setSaveStatus("Netzwerkfehler.");
     } finally {
       setSaving(false);
     }
@@ -517,7 +519,7 @@ export default function NewsAdminPage() {
             <Link href="/admin" className="btn btn-sm font-sans" title="Zurück zur Admin-Zentrale">
               ← Admin
             </Link>
-            <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">📰 News-Beiträge</h1>
+            <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">News-Beiträge</h1>
           </div>
           {view === "list" ? (
             <button type="button" onClick={openNew} className="btn btn-sm btn-primary font-sans">
@@ -612,7 +614,7 @@ export default function NewsAdminPage() {
                     type="button"
                     onClick={() => setLayout(opt.key)}
                     className={`p-4 rounded-xl border-2 text-left transition-all cursor-pointer ${
-                      layout === opt.key ? "border-arena-blue bg-blue-50/40" : "border-arena-border bg-white hover:border-arena-blue/50"
+                      layout === opt.key ? "border-arena-blue bg-arena-bg" : "border-arena-border bg-white hover:border-arena-blue/50"
                     }`}
                   >
                     <div className="mb-3">{opt.preview}</div>
@@ -625,24 +627,24 @@ export default function NewsAdminPage() {
 
             {/* Bild-Einstellungen (nur bei Image-Layouts) */}
             {layout !== "text-only" && (
-              <div className="p-4 bg-blue-50/40 border border-blue-200 rounded-xl grid gap-4 font-sans">
-                <h2 className="text-sm font-bold text-blue-900 m-0">🖼️ Titelbild</h2>
+              <div className="p-4 bg-arena-bg border border-arena-border-light rounded-xl grid gap-4 font-sans">
+                <h2 className="text-sm font-bold text-arena-blue m-0">Titelbild</h2>
                 <div>
-                  <label className="block text-xs font-bold text-blue-950 mb-1">Bild hochladen oder URL eingeben</label>
+                  <label className="block text-xs font-bold text-arena-blue mb-1">Bild hochladen oder URL eingeben</label>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={imageUrl}
                       onChange={(e) => setImageUrl(e.target.value)}
                       placeholder="https://… oder Base64 nach Upload"
-                      className="flex-1 input-base bg-white border-blue-200 text-xs min-h-[2.25rem] focus:border-blue-400"
+                      className="flex-1 input-base bg-white border-arena-border-light text-xs min-h-[2.25rem] focus:border-arena-blue"
                     />
                     <button
                       type="button"
                       onClick={() => imgInputRef.current?.click()}
-                      className="btn btn-sm border-blue-300 bg-white text-blue-600 hover:bg-blue-100 whitespace-nowrap min-h-[2.25rem] px-3 font-sans"
+                      className="btn btn-sm border-arena-border-light bg-white text-arena-blue hover:bg-arena-bg whitespace-nowrap min-h-[2.25rem] px-3 font-sans"
                     >
-                      📁 Datei
+                      Datei
                     </button>
                     <input
                       ref={imgInputRef}
@@ -653,15 +655,15 @@ export default function NewsAdminPage() {
                     />
                   </div>
                   {imageUrl && (
-                    <div className="mt-3 flex justify-center border border-blue-100 rounded-lg p-2 bg-white">
+                    <div className="mt-3 flex justify-center border border-arena-border-light rounded-lg p-2 bg-white">
                       <ProgressiveImg src={imageUrl} alt="Vorschau" className="max-h-40 rounded-lg object-contain" />
                     </div>
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-blue-950 mb-1">
-                    Bildbreite: <span className="font-bold text-blue-700">{imageRatio}%</span>
-                    <span className="text-blue-500 ml-1">(Text: {100 - imageRatio}%)</span>
+                  <label className="block text-xs font-bold text-arena-blue mb-1">
+                    Bildbreite: <span className="font-bold text-arena-blue">{imageRatio}%</span>
+                    <span className="text-arena-blue ml-1">(Text: {100 - imageRatio}%)</span>
                   </label>
                   <input
                     type="range"
@@ -672,7 +674,7 @@ export default function NewsAdminPage() {
                     onChange={(e) => setImageRatio(Number(e.target.value))}
                     className="w-full accent-arena-blue"
                   />
-                  <div className="flex justify-between text-[10px] text-blue-950 mt-0.5 font-bold">
+                  <div className="flex justify-between text-[10px] text-arena-blue mt-0.5 font-bold">
                     <span>20% Bild</span>
                     <span>80% Bild</span>
                   </div>

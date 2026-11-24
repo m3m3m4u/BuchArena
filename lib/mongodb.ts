@@ -128,6 +128,7 @@ export type UserDocument = {
   username: string;
   email: string;
   passwordHash: string;
+  sessionVersion?: number;
   role: UserRole;
   status?: UserStatus;
   displayName?: string;

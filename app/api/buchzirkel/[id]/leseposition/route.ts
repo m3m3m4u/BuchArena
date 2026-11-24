@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getBuchzirkelCollection, getBuchzirkelTeilnahmenCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { canAccessBuchzirkel } from "@/lib/buchzirkel-access";
 
 /** GET – liefert alle gespeicherten Lesepositionen des angemeldeten Nutzers für diesen Zirkel */
 export async function GET(
@@ -51,36 +52,34 @@ export async function POST(
     const body = await req.json() as { dateiId?: string; cfi?: string; pdfPage?: number };
     const { dateiId, cfi, pdfPage } = body;
 
-    if (!dateiId || typeof dateiId !== "string") {
+    if (!dateiId || typeof dateiId !== "string" || !/^[a-zA-Z0-9_-]+$/.test(dateiId)) {
       return NextResponse.json({ message: "dateiId fehlt." }, { status: 400 });
     }
 
     const zirkelCol = await getBuchzirkelCollection();
     const zirkel = await zirkelCol.findOne(
       { _id: new ObjectId(id) },
-      { projection: { veranstalterUsername: 1 } }
+      { projection: { veranstalterUsername: 1, typ: 1, agbPflicht: 1, dateien: 1 } }
     );
     if (!zirkel) {
       return NextResponse.json({ message: "Buchzirkel nicht gefunden." }, { status: 404 });
     }
 
-    const isVeranstalter = zirkel.veranstalterUsername === account.username;
     const teilnahmen = await getBuchzirkelTeilnahmenCollection();
 
-    const existing = await teilnahmen.findOne({
-      buchzirkelId: new ObjectId(id),
-      teilnehmerUsername: account.username,
-    });
 
-    if (!existing && !isVeranstalter && account.role !== "SUPERADMIN" && account.role !== "ADMIN") {
+    if (!await canAccessBuchzirkel(zirkel, account.username)) {
       return NextResponse.json({ message: "Keine Teilnahme gefunden." }, { status: 403 });
+    }
+    if (!zirkel.dateien?.some((datei) => datei.id === dateiId)) {
+      return NextResponse.json({ message: "Datei nicht gefunden." }, { status: 404 });
     }
 
     const update: Record<string, unknown> = {};
-    if (typeof cfi === "string" && cfi) {
+    if (typeof cfi === "string" && cfi && cfi.length <= 2000) {
       update[`lesePositionen.${dateiId}.cfi`] = cfi;
     }
-    if (typeof pdfPage === "number" && pdfPage >= 1) {
+    if (typeof pdfPage === "number" && Number.isSafeInteger(pdfPage) && pdfPage >= 1) {
       update[`lesePositionen.${dateiId}.pdfPage`] = pdfPage;
     }
 

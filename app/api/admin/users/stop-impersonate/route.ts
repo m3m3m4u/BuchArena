@@ -1,20 +1,9 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { jwtVerify, type JWTPayload } from "jose";
-import { getUsersCollection } from "@/lib/mongodb";
+import { getAccountFromToken } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
-function getJwtSecret(): Uint8Array {
-  const secret = process.env.JWT_SECRET;
-  if (!secret || secret.length < 16) {
-    throw new Error(
-      "JWT_SECRET ist nicht gesetzt oder zu kurz (mindestens 16 Zeichen). " +
-        "Bitte eine starke, zufällige Umgebungsvariable konfigurieren.",
-    );
-  }
-  return new TextEncoder().encode(secret);
-}
 
 export async function POST() {
   try {
@@ -25,26 +14,8 @@ export async function POST() {
       return NextResponse.json({ message: "Keine aktive Imitation." }, { status: 400 });
     }
 
-    // Return-Token verifizieren
-    let payload: JWTPayload & { sub?: string; email?: string; role?: string };
-    try {
-      const result = await jwtVerify(returnToken, getJwtSecret(), { issuer: "bucharena" });
-      payload = result.payload as typeof payload;
-    } catch {
-      return NextResponse.json({ message: "Ungültiges Return-Token." }, { status: 400 });
-    }
-
-    if (!payload.sub) {
-      return NextResponse.json({ message: "Ungültiges Return-Token." }, { status: 400 });
-    }
-
-    // User aus DB bestätigen
-    const users = await getUsersCollection();
-    const admin = await users.findOne(
-      { username: payload.sub, status: { $ne: "deactivated" } },
-      { projection: { username: 1, email: 1, role: 1 } },
-    );
-    if (!admin || (admin.role !== "ADMIN" && admin.role !== "SUPERADMIN")) {
+    const admin = await getAccountFromToken(returnToken);
+    if (!admin || admin.role !== "SUPERADMIN") {
       return NextResponse.json({ message: "Ungültige Rückkehr." }, { status: 403 });
     }
 

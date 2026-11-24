@@ -13,6 +13,8 @@ import { openCookieSettings } from "@/lib/cookie-consent";
 export default function SiteFooter() {
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Support compose overlay
@@ -80,13 +82,26 @@ export default function SiteFooter() {
     };
   }, [menuOpen]);
 
-  function onLogout() {
-    clearStoredAccount();
+  async function onLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError("");
+    try {
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) throw new Error("Abmelden fehlgeschlagen. Bitte erneut versuchen.");
+      clearStoredAccount();
+      window.location.assign("/");
+    } catch {
+      setLogoutError("Abmelden fehlgeschlagen. Bitte erneut versuchen.");
+    } finally {
+      setLoggingOut(false);
+    }
   }
 
   return (
     <>
     <footer className="flex-shrink-0 border-t border-arena-border bg-white relative z-0">
+      {logoutError && <p role="alert" className="site-shell text-sm text-arena-danger">{logoutError}</p>}
       <div className="site-shell flex flex-wrap items-center justify-between gap-2 lg:gap-4">
         <div className="flex flex-wrap items-center gap-1.5 lg:gap-3 text-[0.82rem] lg:text-[0.95rem]">
           {/* Social media icons */}
@@ -163,7 +178,7 @@ export default function SiteFooter() {
                   <>
                     <div className="my-1 border-t border-gray-100" />
                     <div className="px-4 py-1.5 text-xs text-gray-400"><strong>{account.username}</strong></div>
-                    <button type="button" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50" onClick={() => { onLogout(); setMenuOpen(false); }}>Ausloggen</button>
+                    <button type="button" disabled={loggingOut} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50" onClick={() => { void onLogout(); setMenuOpen(false); }}>{loggingOut ? "Wird abgemeldet…" : "Ausloggen"}</button>
                   </>
                 )}
                 {!account && (
@@ -185,7 +200,7 @@ export default function SiteFooter() {
           {account ? (
             <>
               <span>Online als: <strong>{account.username}</strong></span>
-              <button type="button" className="btn btn-sm" onClick={onLogout}>Ausloggen</button>
+              <button type="button" className="btn btn-sm" disabled={loggingOut} onClick={() => void onLogout()}>{loggingOut ? "Wird abgemeldet…" : "Ausloggen"}</button>
             </>
           ) : (
             <Link href="/auth" className="inline-flex items-center justify-center bg-arena-accent text-white hover:opacity-90 no-underline px-4 py-1.5 rounded-lg text-sm font-semibold border border-arena-accent transition-opacity">

@@ -1,5 +1,7 @@
 "use client";
 
+import { FlagIcon } from "@heroicons/react/24/outline";
+
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
@@ -807,7 +809,7 @@ function NachrichtenPageInner() {
                 {/* Kooperations-Buttons direkt in der Nachricht */}
                 {msg.kooperationId && msg.recipientUsername === username && (() => {
                   const status = handledKoopIds[msg.kooperationId!];
-                  if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Kooperation bestätigt!</p>;
+                  if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">Kooperation bestätigt!</p>;
                   if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Kooperation abgelehnt.</p>;
                   return (
                     <div className="flex gap-2 mt-2">
@@ -831,7 +833,7 @@ function NachrichtenPageInner() {
                 {/* Mitautoren-Einladungs-Buttons direkt in der Nachricht */}
                 {msg.bookCoAuthorId && msg.recipientUsername === username && (() => {
                   const status = handledCoAuthorIds[msg.bookCoAuthorId!];
-                  if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Mitautorenschaft bestätigt!</p>;
+                  if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">Mitautorenschaft bestätigt!</p>;
                   if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Einladung abgelehnt.</p>;
                   return (
                     <div className="flex gap-2 mt-2">
@@ -855,7 +857,7 @@ function NachrichtenPageInner() {
                 {/* Buchzirkel-Einladungs-Buttons direkt in der Nachricht */}
                 {msg.buchzirkelEinladungId && msg.recipientUsername === username && (() => {
                   const status = handledBzEinladungIds[msg.buchzirkelEinladungId!];
-                  if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">✅ Du nimmst am Buchzirkel teil!</p>;
+                  if (status === "confirmed") return <p className="text-xs mt-2 font-semibold text-green-700 m-0">Du nimmst am Buchzirkel teil!</p>;
                   if (status === "rejected") return <p className="text-xs mt-2 font-semibold text-red-700 m-0">Einladung abgelehnt.</p>;
                   return (
                     <div className="flex gap-2 mt-2">
@@ -908,7 +910,7 @@ function NachrichtenPageInner() {
                     onClick={() => void handleReportSpam(msg.id)}
                     title="Diese Nachricht als Spam melden"
                   >
-                    🚩
+                    <FlagIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" />
                   </button>
                 )}
               </div>
@@ -952,7 +954,7 @@ function NachrichtenPageInner() {
                       setBroadcastMessage("");
                     }}
                   >
-                    📢 An alle
+                    An alle
                   </button>
                 )}
                 <button
@@ -1029,7 +1031,7 @@ function NachrichtenPageInner() {
                   {/* Private Chats */}
                   {conversations.length > 0 && buchzirkelChats.length > 0 && (
                     <p className="text-[10px] font-semibold text-arena-muted uppercase tracking-wide px-4 py-2 bg-gray-50 border-b border-arena-border-light m-0">
-                      💬 Private Chats
+                      Private Chats
                     </p>
                   )}
                   {conversations.map((conv, idx) => (
@@ -1233,7 +1235,7 @@ function NachrichtenPageInner() {
                         onClick={() => void handleReportSpam()}
                         title="Diesen Benutzer als Spam melden"
                       >
-                        🚩 Spam melden
+                        Spam melden
                       </button>
                       <button
                         className={`btn btn-sm font-sans !py-1 !px-2 text-xs transition-colors ${
@@ -1244,7 +1246,7 @@ function NachrichtenPageInner() {
                         onClick={() => void handleToggleBlock()}
                         title={isPartnerBlocked ? "Blockierung aufheben" : "Benutzer blockieren"}
                       >
-                        {isPartnerBlocked ? "✓ Entblockieren" : "🚫 Blockieren"}
+                        {isPartnerBlocked ? "✓ Entblockieren" : "Blockieren"}
                       </button>
                       {isAdmin && (
                         <button
@@ -1300,7 +1302,7 @@ function NachrichtenPageInner() {
                     </div>
                   ) : activePartner === "BuchArena" ? (
                     <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-center text-xs text-arena-blue font-sans">
-                      ℹ️ Dies ist ein offizieller Benachrichtigungskanal der BuchArena. Antworten sind hier nicht möglich.
+                      Dies ist ein offizieller Benachrichtigungskanal der BuchArena. Antworten sind hier nicht möglich.
                     </div>
                   ) : (
                     <div className="flex gap-2 items-end">

@@ -359,7 +359,7 @@ export default function ReelEinreichungenAdminPage() {
         );
       case "done":
         return (
-          <span className="badge badge-info gap-1 bg-blue-100 text-blue-800 border-blue-200">
+          <span className="badge badge-info gap-1 bg-arena-bg text-arena-blue border-arena-border-light">
             <CheckIcon className="h-3 w-3" /> Erledigt
           </span>
         );
@@ -382,11 +382,11 @@ export default function ReelEinreichungenAdminPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <FilmIcon className="h-8 w-8 text-rose-600" />
+            <FilmIcon className="h-8 w-8 text-arena-blue" />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold text-gray-900">Reel-Einreichungen</h1>
-                <span className="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-purple-200 flex items-center gap-1">
+                <span className="bg-arena-bg text-arena-blue text-xs font-semibold px-2.5 py-0.5 rounded-full border border-arena-border-light flex items-center gap-1">
                   <SparklesIcon className="w-3.5 h-3.5" /> Version 02 bereit
                 </span>
               </div>
@@ -396,10 +396,10 @@ export default function ReelEinreichungenAdminPage() {
             </div>
           </div>
           <div className="flex gap-2 flex-wrap items-center">
-            <Link href="/admin" className="btn btn-sm btn-ghost">
+            <Link href="/admin" className="btn btn-sm">
               ← Admin
             </Link>
-            <Link href="/social-media" className="btn btn-sm btn-ghost">
+            <Link href="/social-media" className="btn btn-sm">
               ← Social Media
             </Link>
             <button onClick={loadSubmissions} className="btn btn-sm btn-outline gap-1">
@@ -409,19 +409,19 @@ export default function ReelEinreichungenAdminPage() {
         </div>
 
         {/* Version 02 Schnell-Aktionsleiste */}
-        <div className="mb-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl p-4 shadow-xs">
+        <div className="card-info mb-6 p-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <SparklesIcon className="w-5 h-5 text-indigo-600" />
-                <span className="font-bold text-indigo-950 text-sm">Version 02 (Kurzvideo2.pptx)</span>
-                <span className="text-xs bg-white/80 border border-indigo-200 text-indigo-700 px-2 py-0.5 rounded-md font-medium">
+                <SparklesIcon className="w-5 h-5 text-arena-blue" />
+                <span className="font-bold text-arena-blue text-sm">Version 02 (Kurzvideo2.pptx)</span>
+                <span className="text-xs bg-white/80 border border-arena-border-light text-arena-blue px-2 py-0.5 rounded-md font-medium">
                   Ohne &bdquo;Buchempfehlung&ldquo;-Überlagerung auf Folie 2 &amp; 3
                 </span>
               </div>
-              <p className="text-xs text-indigo-800/80 mt-1">
+              <p className="text-xs text-arena-blue mt-1">
                 Erzeuge PPTX-Dateien neu mit der neuen Vorlage und exportiere Excel-Tabellen mit{" "}
-                <code className="text-indigo-900 font-semibold bg-white/70 px-1 py-0.5 rounded">
+                <code className="text-arena-blue font-semibold bg-white/70 px-1 py-0.5 rounded">
                   Title · Autor · Insta · Caption · Beschreibung
                 </code>
               </p>
@@ -431,10 +431,10 @@ export default function ReelEinreichungenAdminPage() {
               {/* Excel v2 Button */}
               <button
                 onClick={() => handleExportExcelV2(false)}
-                className="btn btn-sm btn-outline gap-1.5 text-emerald-800 bg-white border-emerald-300 hover:bg-emerald-50 shadow-xs font-semibold"
+                className="btn btn-sm btn-outline gap-1.5 text-arena-blue bg-white border-arena-border-light hover:bg-arena-bg shadow-xs font-semibold"
                 title="Excel mit den 5 Spalten Title, Autor, Insta, Caption, Beschreibung exportieren"
               >
-                <TableCellsIcon className="h-4 w-4 text-emerald-600" />
+                <TableCellsIcon className="h-4 w-4 text-arena-blue" />
                 Excel v2 {selected.size > 0 ? `(${selected.size})` : `(${submissions.length})`}
               </button>
 
@@ -442,10 +442,10 @@ export default function ReelEinreichungenAdminPage() {
               <button
                 onClick={() => handleDownloadZipV2(false)}
                 disabled={downloadingZip}
-                className="btn btn-sm btn-outline gap-1.5 text-indigo-800 bg-white border-indigo-300 hover:bg-indigo-50 shadow-xs font-semibold"
+                className="btn btn-sm btn-outline gap-1.5 text-arena-blue bg-white border-arena-border-light hover:bg-arena-bg shadow-xs font-semibold"
                 title="Erzeugt ein ZIP mit Version-02-PPTX-Dateien und der fertigen Excel-Tabelle"
               >
-                <ArchiveBoxIcon className="h-4 w-4 text-indigo-600" />
+                <ArchiveBoxIcon className="h-4 w-4 text-arena-blue" />
                 {downloadingZip
                   ? "Erzeuge ZIP..."
                   : selected.size > 0
@@ -505,8 +505,8 @@ export default function ReelEinreichungenAdminPage() {
               onClick={() => setFilter("done")}
               className={`btn btn-sm ${
                 filter === "done"
-                  ? "bg-blue-600 text-white border-blue-600 font-bold"
-                  : "btn-outline border-blue-300 text-blue-800 hover:bg-blue-50"
+                  ? "bg-arena-blue text-white border-arena-blue font-bold"
+                  : "btn-outline border-arena-border-light text-arena-blue hover:bg-arena-bg"
               }`}
             >
               ✓ Erledigt ({counts.done || submissions.length})
@@ -524,14 +524,14 @@ export default function ReelEinreichungenAdminPage() {
               <span className="text-xs text-gray-500 font-medium">Nur Erledigte:</span>
               <button
                 onClick={() => handleExportExcelV2(true)}
-                className="btn btn-xs btn-outline text-emerald-700 border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100 gap-1"
+                className="btn btn-xs btn-outline text-arena-blue border-arena-border-light bg-arena-bg hover:bg-arena-blue/5 gap-1"
               >
                 <TableCellsIcon className="w-3.5 h-3.5" /> Excel Erledigte (v2)
               </button>
               <button
                 onClick={() => handleDownloadZipV2(true)}
                 disabled={downloadingZip}
-                className="btn btn-xs btn-outline text-indigo-700 border-indigo-300 bg-indigo-50/50 hover:bg-indigo-100 gap-1"
+                className="btn btn-xs btn-outline text-arena-blue border-arena-border-light bg-arena-bg hover:bg-arena-blue/5 gap-1"
               >
                 <ArchiveBoxIcon className="w-3.5 h-3.5" /> ZIP Erledigte (v2)
               </button>
@@ -567,7 +567,7 @@ export default function ReelEinreichungenAdminPage() {
         {/* Table / List */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <span className="loading loading-spinner loading-lg text-rose-500" />
+            <span className="loading loading-spinner loading-lg text-arena-blue" />
           </div>
         ) : submissions.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
@@ -587,7 +587,7 @@ export default function ReelEinreichungenAdminPage() {
                   key={sub._id}
                   className={`bg-white rounded-xl border p-4 shadow-xs transition-all ${
                     selected.has(sub._id)
-                      ? "border-indigo-400 bg-indigo-50/20 ring-1 ring-indigo-300"
+                      ? "border-arena-blue bg-arena-bg ring-1 ring-arena-blue/30"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
@@ -604,7 +604,7 @@ export default function ReelEinreichungenAdminPage() {
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <h3 className="font-bold text-gray-900 text-base">{sub.bookTitle}</h3>
                           {statusBadge(sub.status)}
-                          <span className="text-[0.7rem] bg-indigo-50 text-indigo-700 font-medium px-2 py-0.5 rounded-full border border-indigo-100">
+                          <span className="text-[0.7rem] bg-arena-bg text-arena-blue font-medium px-2 py-0.5 rounded-full border border-arena-border-light">
                             v2 bereit
                           </span>
                         </div>
@@ -622,9 +622,9 @@ export default function ReelEinreichungenAdminPage() {
                               href={`https://instagram.com/${instaHandle.replace(/^@/, "")}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-xs font-semibold text-pink-600 bg-pink-50 hover:bg-pink-100 px-2 py-0.5 rounded-md border border-pink-200 no-underline"
+                              className="text-xs font-semibold text-arena-blue bg-arena-bg hover:bg-arena-blue/5 px-2 py-0.5 rounded-md border border-arena-border-light no-underline"
                             >
-                              📷 {instaHandle}
+                              {instaHandle}
                             </a>
                           ) : (
                             <span className="text-xs text-gray-400 italic">Kein Instagram angegeben</span>
@@ -655,20 +655,20 @@ export default function ReelEinreichungenAdminPage() {
                           <span>·</span>
                           <span>{fmtSize(sub.fileSize)}</span>
                           <span>·</span>
-                          <span className="text-indigo-600 font-mono text-[0.7rem]">{v2FileName}</span>
+                          <span className="text-arena-blue font-mono text-[0.7rem]">{v2FileName}</span>
                         </div>
 
                         {/* Inline Caption Accordion */}
                         {captionExpanded && (
-                          <div className="mt-3 p-3 bg-purple-50/60 border border-purple-200 rounded-xl text-xs space-y-2">
+                          <div className="mt-3 p-3 bg-arena-bg border border-arena-border-light rounded-xl text-xs space-y-2">
                             <div className="flex items-center justify-between">
-                              <span className="font-bold text-purple-900 flex items-center gap-1">
-                                <SparklesIcon className="w-3.5 h-3.5 text-purple-600" />
+                              <span className="font-bold text-arena-blue flex items-center gap-1">
+                                <SparklesIcon className="w-3.5 h-3.5 text-arena-blue" />
                                 Instagram Caption Vorschlag (Version 02)
                               </span>
                               <button
                                 onClick={() => copyCaptionToClipboard(sub)}
-                                className="btn btn-xs btn-outline gap-1 text-purple-700 border-purple-300 hover:bg-purple-100 bg-white"
+                                className="btn btn-xs btn-outline gap-1 text-arena-blue border-arena-border-light hover:bg-arena-bg bg-white"
                               >
                                 {isCopied ? (
                                   <>
@@ -681,7 +681,7 @@ export default function ReelEinreichungenAdminPage() {
                                 )}
                               </button>
                             </div>
-                            <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-gray-700 bg-white p-3 rounded-lg border border-purple-100 max-h-48 overflow-y-auto">
+                            <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-gray-700 bg-white p-3 rounded-lg border border-arena-border-light max-h-48 overflow-y-auto">
                               {buildInstagramCaption(sub)}
                             </pre>
                           </div>
@@ -694,7 +694,7 @@ export default function ReelEinreichungenAdminPage() {
                       {/* PowerPoint / Video v2 Download */}
                       <button
                         onClick={() => handleDownloadPptx(sub._id, sub.fileName, "v2")}
-                        className="btn btn-sm btn-primary gap-1.5 shadow-xs bg-indigo-600 hover:bg-indigo-700 text-white border-none w-full justify-center"
+                        className="btn btn-sm btn-primary gap-1.5 shadow-xs w-full justify-center"
                         title="Neu generieren mit Kurzvideo2.pptx (Version 02)"
                       >
                         <FilmIcon className="h-4 w-4" />
@@ -708,7 +708,7 @@ export default function ReelEinreichungenAdminPage() {
                           className={`btn btn-xs gap-1 ${
                             isCopied
                               ? "btn-success text-white"
-                              : "btn-outline text-purple-700 border-purple-200 hover:bg-purple-50"
+                              : "btn-outline text-arena-blue border-arena-border-light hover:bg-arena-bg"
                           }`}
                           title="Fertige Instagram Caption in die Zwischenablage kopieren"
                         >
@@ -774,7 +774,7 @@ export default function ReelEinreichungenAdminPage() {
                           <button
                             onClick={() => updateStatus(sub._id, "done")}
                             disabled={updatingId === sub._id}
-                            className="btn btn-xs btn-info gap-1 text-white bg-blue-600 hover:bg-blue-700 border-none"
+                            className="btn btn-xs btn-info gap-1 text-white bg-arena-blue hover:bg-arena-blue border-none"
                           >
                             <CheckIcon className="h-3 w-3" /> Als erledigt markieren
                           </button>

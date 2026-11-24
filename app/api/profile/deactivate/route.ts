@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 
-type DeactivatePayload = {
-  username?: string;
-};
-
-export async function POST(request: Request) {
+export async function POST() {
   try {
     const account = await getServerAccount();
     if (!account) {
@@ -35,7 +31,7 @@ export async function POST(request: Request) {
       );
     }
 
-    await users.updateOne({ username }, { $set: { status: "deactivated" } });
+    await users.updateOne({ username }, { $set: { status: "deactivated" }, $inc: { sessionVersion: 1 } });
 
     return NextResponse.json({
       message: "Dein Konto wurde deaktiviert. Du wirst jetzt ausgeloggt.",

@@ -7,22 +7,18 @@ import {
   getDiscussionsCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { canAccessBuchzirkel } from "@/lib/buchzirkel-access";
 import { ALLOWED_BEITRAG_EMOJIS } from "@/lib/buchzirkel";
 
 async function checkZugang(zirkelId: string, username: string) {
   const zirkelCol = await getBuchzirkelCollection();
   const zirkel = await zirkelCol.findOne(
     { _id: new ObjectId(zirkelId) },
-    { projection: { veranstalterUsername: 1 } }
+    { projection: { veranstalterUsername: 1, typ: 1, agbPflicht: 1 } }
   );
   if (!zirkel) return false;
   if (zirkel.veranstalterUsername === username) return true;
-  const teilnahmen = await getBuchzirkelTeilnahmenCollection();
-  const t = await teilnahmen.findOne({
-    buchzirkelId: new ObjectId(zirkelId),
-    teilnehmerUsername: username,
-  });
-  return !!t;
+  return canAccessBuchzirkel(zirkel, username);
 }
 
 // PUT: Antwort auf einen Beitrag

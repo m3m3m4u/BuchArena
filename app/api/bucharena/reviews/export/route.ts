@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { getBucharenaReviewsCollection } from "@/lib/bucharena-db";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) return NextResponse.json({ success: false, error: "Keine Berechtigung" }, { status: 403 });
 
     const { searchParams } = new URL(request.url);

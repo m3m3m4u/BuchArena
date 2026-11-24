@@ -12,9 +12,9 @@ import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
 import JSZip from "jszip";
 import {
   getBuchzirkelCollection,
-  getBuchzirkelTeilnahmenCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
+import { canAccessBuchzirkel } from "@/lib/buchzirkel-access";
 import { davGet, davDelete } from "@/lib/bucharena-webdav";
 
 export const runtime = "nodejs";
@@ -41,19 +41,7 @@ export async function GET(
       return NextResponse.json({ message: "Buchzirkel nicht gefunden." }, { status: 404 });
     }
 
-    const isVeranstalter = zirkel.veranstalterUsername === account.username;
-    let isTeilnehmer = false;
-
-    if (!isVeranstalter) {
-      const teilnahmen = await getBuchzirkelTeilnahmenCollection();
-      const t = await teilnahmen.findOne({
-        buchzirkelId: new ObjectId(id),
-        teilnehmerUsername: account.username,
-      });
-      isTeilnehmer = !!t;
-    }
-
-    if (!isVeranstalter && !isTeilnehmer) {
+    if (!await canAccessBuchzirkel(zirkel, account.username)) {
       return NextResponse.json({ message: "Kein Zugang." }, { status: 403 });
     }
 

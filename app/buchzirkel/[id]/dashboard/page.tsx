@@ -1,5 +1,7 @@
 "use client";
 
+import { LinkIcon, StarIcon, DocumentTextIcon, TrashIcon } from "@heroicons/react/24/outline";
+
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -198,7 +200,7 @@ export default function BuchzirkelDashboardPage() {
     });
     const data = await res.json() as { message?: string };
     if (res.ok) {
-      setBewertungMsg((p) => ({ ...p, [username]: "✅ Gespeichert" }));
+      setBewertungMsg((p) => ({ ...p, [username]: "Gespeichert" }));
       await load();
     } else {
       setBewertungMsg((p) => ({ ...p, [username]: data.message ?? "Fehler." }));
@@ -362,7 +364,7 @@ export default function BuchzirkelDashboardPage() {
     });
     const data = await res.json() as { message?: string };
     if (res.ok) {
-      setStatusMsg(entscheidung === "angenommen" ? "✅ Teilnehmer angenommen" : "Bewerbung abgelehnt");
+      setStatusMsg(entscheidung === "angenommen" ? "Teilnehmer angenommen" : "Bewerbung abgelehnt");
       await load();
     } else {
       setStatusMsg(data.message ?? "Fehler.");
@@ -399,7 +401,7 @@ export default function BuchzirkelDashboardPage() {
     });
     const data = await res.json() as { message?: string };
     if (res.ok) {
-      setEditMsg("✅ Gespeichert!");
+      setEditMsg("Gespeichert!");
       await load();
     } else {
       setEditMsg(data.message ?? "Fehler beim Speichern.");
@@ -580,7 +582,7 @@ export default function BuchzirkelDashboardPage() {
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <Link href={`/buchzirkel/${zirkel._id}`} className="text-arena-muted text-xs hover:underline">← Zurück zur Zirkel-Seite</Link>
-            <h1 className="text-xl font-bold m-0 mt-1">📊 Dashboard: {zirkel.titel}</h1>
+            <h1 className="text-xl font-bold m-0 mt-1">Dashboard: {zirkel.titel}</h1>
             <p className="text-sm text-arena-muted m-0">
               Status: <strong className="text-arena-text">{zirkel.status}</strong> ·{" "}
               <span className={istVoll ? "font-semibold text-amber-700" : "text-arena-text"}>
@@ -678,7 +680,7 @@ export default function BuchzirkelDashboardPage() {
               <div className="flex flex-wrap gap-2">
                 {angenommen.map((b) => (
                   <Link key={b._id} href={`/testleser/${b.bewerberUsername}`} className="text-sm px-3 py-1 rounded-full bg-green-50 border border-green-200 text-green-800 hover:bg-green-100">
-                    ✅ {b.bewerberUsername}
+                    {b.bewerberUsername}
                   </Link>
                 ))}
               </div>
@@ -775,7 +777,7 @@ export default function BuchzirkelDashboardPage() {
                           <span className="ml-2 inline-flex items-center gap-1.5 flex-wrap">
                             {t.rezensionsLinks.map((r, i) => (
                               <a key={i} href={r.url} target="_blank" rel="noopener noreferrer" className="text-xs text-arena-blue hover:underline">
-                                🔗 {r.plattform}
+                                <LinkIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /> {r.plattform}
                               </a>
                             ))}
                           </span>
@@ -803,7 +805,7 @@ export default function BuchzirkelDashboardPage() {
                           className="text-xs font-semibold text-arena-blue hover:underline flex items-center gap-1.5"
                         >
                           <span>{expandedFragebogenUser[username] ? "▲" : "▼"}</span>
-                          <span>📝 Fragebogen ausgefüllt ({t.fragebogenAntworten.length} Antwort{t.fragebogenAntworten.length > 1 ? "en" : ""})</span>
+                          <span>Fragebogen ausgefüllt ({t.fragebogenAntworten.length} Antwort{t.fragebogenAntworten.length > 1 ? "en" : ""})</span>
                         </button>
                         {expandedFragebogenUser[username] && (
                           <div className="mt-2 flex flex-col gap-2 pl-3 border-l-2 border-arena-blue/30 bg-gray-50/70 p-2.5 rounded-r-lg">
@@ -830,9 +832,11 @@ export default function BuchzirkelDashboardPage() {
                             key={s}
                             type="button"
                             onClick={() => setBewertungSterne((p) => ({ ...p, [username]: s }))}
+                            aria-label={`${s} ${s === 1 ? "Stern" : "Sterne"}`}
+                            aria-pressed={s <= aktiveSterne}
                             className={`text-xl leading-none transition-opacity ${s <= aktiveSterne ? "opacity-100" : "opacity-30"}`}
                           >
-                            ⭐
+                            <StarIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" />
                           </button>
                         ))}
                         {aktiveSterne > 0 && (
@@ -856,7 +860,7 @@ export default function BuchzirkelDashboardPage() {
                           {bewertungSaving[username] ? "Speichern…" : "Bewertung speichern"}
                         </button>
                         {bewertungMsg[username] && (
-                          <span className={`text-xs ${bewertungMsg[username].startsWith("✅") ? "text-green-700" : "text-red-600"}`}>
+                          <span className={`text-xs ${bewertungMsg[username].startsWith("Gespeichert") ? "text-green-700" : "text-red-600"}`}>
                             {bewertungMsg[username]}
                           </span>
                         )}
@@ -875,7 +879,7 @@ export default function BuchzirkelDashboardPage() {
         <section className="card mt-3 flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <h2 className="text-base font-semibold m-0">📝 Antworten zum Abschluss-Fragebogen</h2>
+              <h2 className="text-base font-semibold m-0">Antworten zum Abschluss-Fragebogen</h2>
               <p className="text-sm text-arena-muted m-0 mt-0.5">
                 Gesammelte Antworten aller Teilnehmer auf deine Fragen.
               </p>
@@ -886,7 +890,7 @@ export default function BuchzirkelDashboardPage() {
               disabled={fragebogenAntwortenGesamt === 0}
               className="btn btn-secondary btn-sm flex items-center gap-1.5"
             >
-              <span>{copyFeedbackSuccess ? "✅ Kopiert!" : "📋 Alle Antworten kopieren"}</span>
+              <span>{copyFeedbackSuccess ? "Kopiert!" : "Alle Antworten kopieren"}</span>
             </button>
           </div>
 
@@ -1029,7 +1033,7 @@ export default function BuchzirkelDashboardPage() {
                       }`}>
                         {!isMine && (
                           <p className={`text-[11px] font-semibold m-0 mb-0.5 ${isAutorMsg ? "text-amber-700" : "text-arena-blue"}`}>
-                            {msg.senderUsername}{isAutorMsg ? " ✍️" : ""}
+                            {msg.senderUsername}{isAutorMsg ? " (Autor)" : ""}
                           </p>
                         )}
                         <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] m-0" style={{ lineHeight: 1.5 }}>
@@ -1168,7 +1172,7 @@ export default function BuchzirkelDashboardPage() {
           )}
 
           <label className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed transition-colors cursor-pointer ${uploading ? "opacity-50" : "hover:border-arena-blue"}`}>
-            <span className="text-2xl">📄</span>
+            <span className="text-2xl"><DocumentTextIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /></span>
             <span className="text-sm font-medium">{uploading ? "Wird hochgeladen…" : "Datei auswählen (PDF/EPUB)"}</span>
             <input type="file" accept=".pdf,.epub" className="hidden" disabled={uploading} onChange={(e) => handleUpload(e, uploadAbschnittId || undefined)} />
           </label>
@@ -1177,7 +1181,7 @@ export default function BuchzirkelDashboardPage() {
             <div className="mt-3 flex flex-col gap-2">
               {zirkel.dateien.map((d) => (
                 <div key={d.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 border border-arena-border-light text-sm">
-                  <span className="text-lg">📄</span>
+                  <span className="text-lg"><DocumentTextIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /></span>
                   <span className="flex-1 truncate">{d.originalName}</span>
                   {d.abschnittId && (
                     <span className="text-xs text-arena-muted">
@@ -1434,12 +1438,12 @@ export default function BuchzirkelDashboardPage() {
           </section>
 
           {editMsg && (
-            <p className={`text-sm ${editMsg.startsWith("✅") ? "text-green-700" : "text-red-600"}`}>{editMsg}</p>
+            <p className={`text-sm ${editMsg.startsWith("Gespeichert") ? "text-green-700" : "text-red-600"}`}>{editMsg}</p>
           )}
 
           <div className="flex justify-end pb-4">
             <button type="submit" disabled={editSaving} className="btn btn-primary">
-              {editSaving ? "Wird gespeichert…" : "💾 Änderungen speichern"}
+              {editSaving ? "Wird gespeichert…" : "Änderungen speichern"}
             </button>
           </div>
         </form>
@@ -1508,7 +1512,7 @@ function DashboardBeitragKarte({
           </div>
           <strong className="text-sm">{beitrag.autorUsername}</strong>
           {isAutor(beitrag.autorUsername) && (
-            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">✍️ Autor</span>
+            <span className="text-xs bg-arena-bg text-arena-blue px-1.5 py-0.5 rounded font-medium">Autor</span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -1520,7 +1524,7 @@ function DashboardBeitragKarte({
               className="text-xs text-red-500 hover:text-red-700 p-0.5 rounded"
               title="Beitrag löschen"
             >
-              🗑️
+              <TrashIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -1579,7 +1583,7 @@ function DashboardBeitragKarte({
                     {r.autorUsername[0]?.toUpperCase()}
                   </div>
                   <strong>{r.autorUsername}</strong>
-                  {isAutor(r.autorUsername) && <span className="text-xs bg-amber-100 text-amber-700 px-1 rounded">✍️</span>}
+                  {isAutor(r.autorUsername) && <span className="text-xs bg-arena-bg text-arena-blue px-1 rounded">Autor</span>}
                   <span className="text-xs text-arena-muted">{timeAgo(r.createdAt)}</span>
                 </div>
                 {(r.autorUsername === username || isAutor(username)) && onDelete && (
@@ -1638,11 +1642,11 @@ function BewerberKarte({
             {(bewerber.kontaktHandynummer || bewerber.kontaktEmail) && (
               <p className="text-xs text-arena-muted m-0 mt-1 flex flex-wrap gap-x-3">
                 {bewerber.kontaktHandynummer && (
-                  <span>📱 {bewerber.kontaktHandynummer}</span>
+                  <span>Tel.: {bewerber.kontaktHandynummer}</span>
                 )}
                 {bewerber.kontaktEmail && (
                   <a href={`mailto:${bewerber.kontaktEmail}`} className="text-arena-blue hover:underline">
-                    ✉️ {bewerber.kontaktEmail}
+                    {bewerber.kontaktEmail}
                   </a>
                 )}
               </p>

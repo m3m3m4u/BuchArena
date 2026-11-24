@@ -361,7 +361,7 @@ export default function AutorGewinnspielPage() {
                   {/* Gewinner-Info (nur nach Ziehung) */}
                   {g.status !== "anmeldung" && g.gewinnerName && (
                     <div className="mt-2 p-3 rounded-lg text-sm" style={{ background: "var(--color-arena-yellow)", color: "var(--color-arena-blue)" }}>
-                      <p className="font-bold text-base mb-1">🎉 Ziehung abgeschlossen!</p>
+                      <p className="font-bold text-base mb-1">Ziehung abgeschlossen!</p>
                       <p className="font-semibold">Gewinner: {g.gewinnerName}</p>
                       {g.format === "ebook" ? (
                         g.gewinnerEmail && <p className="mt-0.5">E-Book per E-Mail senden an: <strong>{g.gewinnerEmail}</strong></p>

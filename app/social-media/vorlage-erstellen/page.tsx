@@ -178,7 +178,7 @@ function CharWarn({ value, field }: { value: string; field: string }) {
   if (!limit || value.length <= limit) return null;
   return (
     <span className="text-orange-600 text-xs mt-0.5">
-      ⚠️ Fasse dich wenn möglich kürzer ({value.length}/{limit} Zeichen) – in Ausnahmefällen darfst du die Zeichenzahl auch überschreiten.
+      Fasse dich wenn möglich kürzer ({value.length}/{limit} Zeichen) – in Ausnahmefällen darfst du die Zeichenzahl auch überschreiten.
     </span>
   );
 }
@@ -1457,7 +1457,7 @@ export default function VorlageErstellenPage() {
       }
       setSubmissionId(data.submissionId);
       setDirty(false);
-      showSuccess("Vorlage erfolgreich eingereicht! 🎉");
+      showSuccess("Vorlage erfolgreich eingereicht!");
       setShowThankYou(true);
       loadVorlagen();
       loadSubmissions();

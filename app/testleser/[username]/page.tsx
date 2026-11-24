@@ -1,5 +1,7 @@
 "use client";
 
+import { LinkIcon } from "@heroicons/react/24/outline";
+
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
@@ -222,7 +224,7 @@ export default function TestleserProfilePage({ params }: PageProps) {
                     return (
                       <li key={i} className="font-sans">
                         <a href={url} target="_blank" rel="noreferrer noopener" className="font-sans text-sm text-arena-link hover:underline break-all">
-                          🔗 {host}
+                          <LinkIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /> {host}
                         </a>
                       </li>
                     );

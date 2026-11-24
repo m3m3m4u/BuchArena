@@ -50,7 +50,7 @@ const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
   pending: { label: "Ausstehend", cls: "bg-yellow-100 text-yellow-800" },
   approved: { label: "Genehmigt", cls: "bg-green-100 text-green-800" },
   rejected: { label: "Abgelehnt", cls: "bg-red-100 text-red-800" },
-  done: { label: "Erledigt", cls: "bg-blue-100 text-blue-800" },
+  done: { label: "Erledigt", cls: "bg-arena-bg text-arena-blue" },
 };
 
 type WizardStep = "start" | "video-tools" | "content-tools" | "admin" | "buch-match";
@@ -194,7 +194,7 @@ export default function SocialMediaPage() {
                 </div>
                 <div className="grid gap-0.5 flex-1">
                   <strong className="text-[0.95rem] text-arena-blue">Jeden Monat 100 € Werbebudget für dein Buch gewinnen</strong>
-                  <span className="text-sm text-arena-muted">10 sinnvolle Kommentare und 3 Story-Teilungen pro Runde: Jetzt bewerben und jeden Monat neu teilnehmen.</span>
+                  <span className="text-sm text-arena-muted">10 sinnvolle Instagram-Kommentare pro Runde. Storys sind freiwillig. Kostenlos bewerben und jeden Monat neu teilnehmen.</span>
                 </div>
                 <span className="text-arena-blue font-bold self-center shrink-0">→</span>
               </Link>
@@ -362,11 +362,11 @@ export default function SocialMediaPage() {
                 className="card-base grid gap-2 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-arena-blue">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                     <FilmIcon className="size-6" />
                   </div>
                   <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Reel-Tool – Kurzvideo</strong>
-                  <span className="ml-auto text-xs rounded-full bg-green-100 text-green-800 px-2 py-0.5 font-semibold">Schnell</span>
+                  <span className="ml-auto text-xs rounded-full bg-arena-bg text-arena-blue px-2 py-0.5 font-semibold">Schnell</span>
                 </div>
                 <ul className="font-sans text-sm text-arena-muted list-disc list-inside space-y-1 mt-1 pl-1">
                   <li><strong>3 Seiten</strong> mit Buchinformationen ausfüllen</li>
@@ -382,11 +382,11 @@ export default function SocialMediaPage() {
                 className="card-base grid gap-2 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-700">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                     <StarIcon className="size-6" />
                   </div>
                   <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Reel- und Video-Tool – Kurzvideo + längere Version</strong>
-                  <span className="ml-auto text-xs rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 font-semibold">Aufwendig</span>
+                  <span className="ml-auto text-xs rounded-full bg-arena-bg text-arena-blue px-2 py-0.5 font-semibold">Aufwendig</span>
                 </div>
                 <ul className="font-sans text-sm text-arena-muted list-disc list-inside space-y-1 mt-1 pl-1">
                   <li><strong>5 Seiten</strong> mit Buchinformationen und Sprechertext</li>
@@ -414,7 +414,7 @@ export default function SocialMediaPage() {
                 href="/rezensionen"
                 className={`${optionCls} no-underline text-inherit`}
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <PencilSquareIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
@@ -428,7 +428,7 @@ export default function SocialMediaPage() {
                 href="/schnipsel"
                 className={`${optionCls} no-underline text-inherit`}
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <MusicalNoteIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
@@ -442,7 +442,7 @@ export default function SocialMediaPage() {
                 href="/social-media/kurz-gefragt"
                 className={`${optionCls} no-underline text-inherit`}
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <ChatBubbleLeftRightIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1">
@@ -466,72 +466,72 @@ export default function SocialMediaPage() {
             <div className="grid gap-2.5">
               <Link
                 href="/admin/einreichungen"
-                className="font-sans flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-xs no-underline text-inherit hover:border-amber-500 hover:bg-amber-100/50 transition-colors"
+                className="card-base font-sans flex items-center gap-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors"
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <Cog6ToothIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1 text-[0.95rem]">
                   <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Einreichungen verwalten</strong>
                   <span className="font-sans text-sm text-arena-muted">Alle eingesendeten Buchvorstellungen – herunterladen, bearbeiten, genehmigen.</span>
                 </div>
-                <span className="text-amber-600 shrink-0">→</span>
+                <span className="text-arena-blue shrink-0">→</span>
               </Link>
 
               <Link
                 href="/admin/reel-einreichungen"
-                className="font-sans flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-xs no-underline text-inherit hover:border-amber-500 hover:bg-amber-100/50 transition-colors"
+                className="card-base font-sans flex items-center gap-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors"
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <FilmIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1 text-[0.95rem]">
                   <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Reel-Einreichungen verwalten</strong>
                   <span className="font-sans text-sm text-arena-muted">Alle eingereichten Kurzvideos (9:16) – Dateien herunterladen und Status verwalten.</span>
                 </div>
-                <span className="text-amber-600 shrink-0">→</span>
+                <span className="text-arena-blue shrink-0">→</span>
               </Link>
 
               <Link
                 href="/rezensionen/admin"
-                className="font-sans flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-xs no-underline text-inherit hover:border-amber-500 hover:bg-amber-100/50 transition-colors"
+                className="card-base font-sans flex items-center gap-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors"
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <PencilSquareIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1 text-[0.95rem]">
                   <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Rezensionen verwalten</strong>
                   <span className="font-sans text-sm text-arena-muted">Alle eingereichten Rezensionen – als bearbeitet markieren, löschen, als XLSX exportieren.</span>
                 </div>
-                <span className="text-amber-600 shrink-0">→</span>
+                <span className="text-arena-blue shrink-0">→</span>
               </Link>
 
               <Link
                 href="/schnipsel/admin"
-                className="font-sans flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-xs no-underline text-inherit hover:border-amber-500 hover:bg-amber-100/50 transition-colors"
+                className="card-base font-sans flex items-center gap-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors"
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <MusicalNoteIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1 text-[0.95rem]">
                   <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Schnipsel verwalten</strong>
                   <span className="font-sans text-sm text-arena-muted">Alle eingereichten Schnipsel – Audio herunterladen, löschen, als XLSX exportieren.</span>
                 </div>
-                <span className="text-amber-600 shrink-0">→</span>
+                <span className="text-arena-blue shrink-0">→</span>
               </Link>
 
               <Link
                 href="/admin/social-media-content"
-                className="font-sans flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-xs no-underline text-inherit hover:border-amber-500 hover:bg-amber-100/50 transition-colors"
+                className="card-base font-sans flex items-center gap-3 no-underline text-inherit hover:border-arena-blue hover:bg-arena-blue/5 transition-colors"
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-bg text-arena-blue">
                   <ArrowDownTrayIcon className="size-6" />
                 </div>
                 <div className="grid gap-0.5 flex-1 text-[0.95rem]">
                   <strong className="font-sans font-bold text-arena-blue text-[0.97rem]">Fertige Inhalte für Social Media</strong>
                   <span className="font-sans text-sm text-arena-muted">Bilder und Videos hochladen, die Mitglieder später inklusive Caption-Vorschlägen herunterladen können.</span>
                 </div>
-                <span className="text-amber-600 shrink-0">→</span>
+                <span className="text-arena-blue shrink-0">→</span>
               </Link>
             </div>
           </div>

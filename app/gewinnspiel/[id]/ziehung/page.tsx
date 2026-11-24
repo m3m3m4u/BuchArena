@@ -773,7 +773,7 @@ export default function ZiehungsradPage() {
           {(isAdmin || isAutor) && teilnehmer.length === 0 && (
             <div className="mb-4 p-3 rounded-lg text-sm font-medium"
               style={{ background: "#eff6ff", border: "1px solid #93c5fd", color: "#1e40af" }}>
-              🛠 Testmodus: Es sind noch keine echten Teilnehmer vorhanden. Es werden Dummy-Namen für die Vorschau verwendet.
+              Testmodus: Es sind noch keine echten Teilnehmer vorhanden. Es werden Dummy-Namen für die Vorschau verwendet.
             </div>
           )}
           {/* Canvas */}
@@ -834,7 +834,7 @@ export default function ZiehungsradPage() {
               className="px-6 py-3 rounded-xl font-bold text-base border transition-opacity disabled:opacity-50"
               style={{ borderColor: "var(--color-arena-blue)", color: "var(--color-arena-blue)" }}
             >
-              {exporting ? "Video wird erstellt…" : "🎥 Video (1:1) als MP4"}
+              {exporting ? "Video wird erstellt…" : "Video (1:1) als MP4"}
             </button>
 
             <button
@@ -843,7 +843,7 @@ export default function ZiehungsradPage() {
               className="px-6 py-3 rounded-xl font-bold text-base transition-opacity disabled:opacity-50"
               style={{ background: "var(--color-arena-yellow)", color: "var(--color-arena-blue)" }}
             >
-              {exportingReel ? "Reel wird erstellt…" : "🎬 Reel (9:16) erstellen"}
+              {exportingReel ? "Reel wird erstellt…" : "Reel (9:16) erstellen"}
             </button>
           </div>
 
@@ -856,7 +856,7 @@ export default function ZiehungsradPage() {
                 className="w-full rounded-lg border px-3 py-2 text-sm"
                 style={{ borderColor: "var(--color-arena-blue-light, #93c5fd)", color: "var(--color-arena-blue)" }}
               >
-                <option value="random">🎲 Zufällig</option>
+                <option value="random">Zufällig</option>
                 {musikTracks.map((t) => (
                   <option key={t._id} value={t._id}>{t.title} · {t.style}</option>
                 ))}

@@ -4,7 +4,7 @@ import {
   getEffectiveAmazonUrl,
   type BucharenaBookDoc,
 } from "@/lib/bucharena-db";
-import { requireSuperAdmin, getServerAccount } from "@/lib/server-auth";
+import { requireAdmin, getServerAccount } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const showAll = searchParams.get("all") === "true";
 
     if (showAll) {
-      const admin = await requireSuperAdmin();
+      const admin = await requireAdmin();
       if (!admin) {
         return NextResponse.json(
           { success: false, error: "Keine Berechtigung" },
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json(
         { success: false, error: "Keine Berechtigung" },

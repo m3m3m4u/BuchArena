@@ -17,26 +17,11 @@ import {
 import { PLATFORM_LABELS, type MatchPlatform } from "@/lib/buchmatch";
 import type { LoggedInAccount } from "@/lib/client-account";
 
-const PLATFORM_BADGE_STYLES: Record<MatchPlatform, { label: string; badgeCls: string }> = {
-  instagram: { label: "Instagram", badgeCls: "bg-pink-100 text-pink-800 border-pink-200" },
-  tiktok: { label: "TikTok", badgeCls: "bg-slate-900 text-cyan-300 border-slate-700" },
-  blog: { label: "Blog", badgeCls: "bg-blue-100 text-blue-800 border-blue-200" },
-  youtube: { label: "YouTube", badgeCls: "bg-red-100 text-red-800 border-red-200" },
-  newsletter: { label: "Newsletter", badgeCls: "bg-purple-100 text-purple-800 border-purple-200" },
-  podcast: { label: "Podcast", badgeCls: "bg-emerald-100 text-emerald-800 border-emerald-200" },
-  egal: { label: "Egal / Flexibel", badgeCls: "bg-amber-100 text-amber-800 border-amber-200" },
-  andere: { label: "Andere Plattform", badgeCls: "bg-gray-100 text-gray-800 border-gray-200" },
-};
-
 function PlatformBadge({ platform, labelPrefix }: { platform: MatchPlatform; labelPrefix?: string }) {
-  const style = PLATFORM_BADGE_STYLES[platform] || {
-    label: PLATFORM_LABELS[platform] || platform,
-    badgeCls: "bg-gray-100 text-gray-800 border-gray-200",
-  };
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded-md border shrink-0 ${style.badgeCls}`}>
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded-md border shrink-0 bg-arena-bg text-arena-blue border-arena-border-light">
       {labelPrefix && <span className="opacity-75 font-normal">{labelPrefix}:</span>}
-      <span>{style.label}</span>
+      <span>{PLATFORM_LABELS[platform] || platform}</span>
     </span>
   );
 }
@@ -624,7 +609,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
                           <span className={`badge ${
                             app.status === "matched" ? "bg-green-100 text-green-800" :
                             app.status === "declined" ? "bg-red-100 text-red-700" :
-                            "bg-amber-100 text-amber-800"
+                            "bg-arena-yellow/15 text-arena-blue"
                           }`}>
                             {app.status === "matched" ? "Gematcht" : app.status === "declined" ? "Abgelehnt" : "Ausstehend"}
                           </span>

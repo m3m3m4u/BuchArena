@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 import {
   getWebdavClient,
   getWebdavUploadDir,
@@ -12,7 +12,7 @@ const MAX_SIZE = 500 * 1024 * 1024; // 500 MB
 
 export async function POST(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
     }

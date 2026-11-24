@@ -24,13 +24,16 @@ export async function POST(request: Request) {
     const users = await getUsersCollection();
     const target = await users.findOne(
       { username: targetUsername },
-      { projection: { username: 1, email: 1, role: 1, status: 1 } },
+      { projection: { username: 1, email: 1, role: 1, status: 1, sessionVersion: 1 } },
     );
     if (!target) {
       return NextResponse.json({ message: "Benutzer nicht gefunden." }, { status: 404 });
     }
     if (target.role === "SUPERADMIN") {
       return NextResponse.json({ message: "SuperAdmins können nicht imitiert werden." }, { status: 403 });
+    }
+    if (target.status === "deactivated") {
+      return NextResponse.json({ message: "Dieses Konto ist deaktiviert." }, { status: 403 });
     }
 
     // Aktuelles Admin-Token lesen und für Rückkehr aufbewahren
@@ -42,6 +45,8 @@ export async function POST(request: Request) {
       username: target.username,
       email: target.email,
       role: target.role,
+      sessionVersion: target.sessionVersion ?? 0,
+      userId: target._id.toString(),
     });
 
     const res = NextResponse.json({

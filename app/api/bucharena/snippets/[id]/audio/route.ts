@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getBucharenaSnippetsCollection } from "@/lib/bucharena-db";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 import { davGet } from "@/lib/bucharena-webdav";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) return NextResponse.json({ success: false, error: "Keine Berechtigung" }, { status: 403 });
 
     const { id } = await params;

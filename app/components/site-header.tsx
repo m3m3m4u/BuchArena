@@ -142,7 +142,7 @@ export default function SiteHeader() {
       {/* Impersonation-Banner */}
       {impersonating && (
         <div style={{ background: "#f59e0b", color: "#1e1b4b" }} className="flex items-center justify-between px-4 py-1.5 text-sm font-medium">
-          <span>👤 Du siehst die Seite als <strong>{impersonating}</strong></span>
+          <span>Du siehst die Seite als <strong>{impersonating}</strong></span>
           <button
             type="button"
             onClick={stopImpersonate}

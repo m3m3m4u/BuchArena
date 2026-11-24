@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getBucharenaBooksCollection, getEffectiveAmazonUrl } from "@/lib/bucharena-db";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
@@ -43,7 +43,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json(
         { success: false, error: "Keine Berechtigung" },
@@ -137,7 +137,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json(
         { success: false, error: "Keine Berechtigung" },

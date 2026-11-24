@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { getBucharenaBooksCollection } from "@/lib/bucharena-db";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 import * as XLSX from "xlsx";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json({ success: false, error: "Keine Berechtigung" }, { status: 403 });
     }

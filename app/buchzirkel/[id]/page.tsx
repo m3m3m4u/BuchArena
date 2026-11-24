@@ -177,17 +177,17 @@ export default function BuchzirkelDetailPage() {
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isBeta ? "bg-red-100 text-red-700" : "bg-[#1a1a2e]/10 text-arena-blue"}`}>
-                {isBeta ? "🔒 Buchzirkel (Beta)" : "Buchzirkel"}
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-arena-bg text-arena-blue">
+                {isBeta ? "Buchzirkel (Beta)" : "Buchzirkel"}
               </span>
               {zirkel.genre && <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-arena-muted">{zirkel.genre}</span>}
               {zirkel.buchformateAngebot?.map((f) => (
-                <span key={f} className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-arena-blue">
+                <span key={f} className="text-xs px-2 py-0.5 rounded-full bg-arena-blue/5 text-arena-blue">
                   {f === "gedruckt" ? "Gedrucktes Buch" : f.toUpperCase()}
                 </span>
               ))}
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                zirkel.status === "bewerbung" ? "bg-green-100 text-green-700" :
+                zirkel.status === "bewerbung" ? "bg-arena-blue/5 text-arena-blue" :
                 zirkel.status === "aktiv" ? "bg-arena-yellow text-arena-blue" :
                 zirkel.status === "abgeschlossen" ? "bg-gray-100 text-gray-600" : "bg-gray-100"
               }`}>
@@ -324,11 +324,11 @@ export default function BuchzirkelDetailPage() {
           </div>
 
           {zirkel.buchformateAngebot && zirkel.buchformateAngebot.length > 0 && (
-            <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 mb-3 text-sm text-arena-blue">
+            <div className="rounded-lg bg-arena-blue/5 border border-blue-200 p-3 mb-3 text-sm text-arena-blue">
               <span className="font-semibold">Verfügbare Formate: </span>
               {zirkel.buchformateAngebot.map((f) => (
                 <span key={f} className="inline-block font-medium mr-2">
-                  {f === "gedruckt" ? "📖 Gedrucktes Buch" : f === "epub" ? "📱 EPUB" : f === "pdf" ? "📄 PDF" : f}
+                  {f === "gedruckt" ? "Gedrucktes Buch" : f === "epub" ? "EPUB" : f === "pdf" ? "PDF" : f}
                 </span>
               ))}
             </div>

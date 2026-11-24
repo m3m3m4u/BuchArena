@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 import {
   getWebdavClient,
   getWebdavUploadDir,
@@ -103,7 +103,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
     }
@@ -181,7 +181,7 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
     }

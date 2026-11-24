@@ -1,5 +1,7 @@
 "use client";
 
+import { GiftIcon } from "@heroicons/react/24/outline";
+
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -258,7 +260,7 @@ export default function AdminGewinnspielePage() {
             onClick={() => setSocialView((v) => !v)}
             title="Zeigt die 8 neuesten Gewinnspiele als Social-Media-Kachelraster"
           >
-            📸 Social Media
+            Social Media
           </button>
         </div>
 
@@ -287,7 +289,7 @@ export default function AdminGewinnspielePage() {
                           className="w-16 h-24 object-cover rounded-lg flex-shrink-0 border border-arena-border-light"
                         />
                       ) : (
-                        <div className="w-16 h-24 rounded-lg flex-shrink-0 bg-arena-border-light flex items-center justify-center text-2xl">🎁</div>
+                        <div className="w-16 h-24 rounded-lg flex-shrink-0 bg-arena-border-light flex items-center justify-center text-2xl"><GiftIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /></div>
                       )}
                       <div className="min-w-0 font-sans flex-1">
                         <div className="font-bold text-sm leading-tight text-arena-blue mb-1 truncate">
@@ -334,7 +336,7 @@ export default function AdminGewinnspielePage() {
                         className="btn btn-sm font-sans"
                         onClick={() => void navigator.clipboard.writeText(captionLines)}
                       >
-                        📋 Kopieren
+                        Kopieren
                       </button>
                     </div>
                     <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed bg-arena-bg border border-arena-border-light rounded-xl p-4 m-0 text-arena-text max-h-[300px] overflow-y-auto">
@@ -505,7 +507,7 @@ export default function AdminGewinnspielePage() {
                     href={`/gewinnspiel/${g._id}/ziehung`}
                     className="btn btn-sm font-sans border-arena-blue text-arena-blue font-bold hover:bg-arena-bg"
                   >
-                    🎬 Ziehung / Reel-Test
+                    Ziehung / Reel-Test
                   </a>
                   <button
                     onClick={() => void doDelete(g._id)}

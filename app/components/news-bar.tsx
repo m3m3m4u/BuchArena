@@ -1,5 +1,7 @@
 "use client";
 
+import { NewspaperIcon } from "@heroicons/react/24/outline";
+
 import { useEffect, useState, type CSSProperties } from "react";
 import { sanitizeHtml } from "@/lib/sanitize-html";
 import { ProgressiveImg } from "@/app/components/progressive-image";
@@ -48,7 +50,7 @@ export default function NewsBar() {
     <div className="border-b border-[#c8dff7] text-sm" style={{ background: "#eaf3fc", color: "var(--color-arena-blue)" }}>
       {/* Kompakte Leiste */}
       <div className="site-shell flex items-center gap-2 py-1.5 min-h-0">
-        <span className="text-base shrink-0">📰</span>
+        <span className="text-base shrink-0"><NewspaperIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /></span>
 
         <button
           type="button"

@@ -115,7 +115,7 @@ export default function AnalyticsPage() {
     <main className="centered-main font-sans">
       <div className="card font-sans">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-4 font-sans">
-          <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">📊 Analyse-Dashboard</h1>
+          <h1 className="font-sans text-2xl font-bold text-arena-blue tracking-tight m-0">Analyse-Dashboard</h1>
           <Link href="/admin" className="btn btn-sm font-sans">
             ← Admin
           </Link>
@@ -158,9 +158,9 @@ export default function AnalyticsPage() {
             {/* Tabs */}
             <div className="segmented-control font-sans w-full max-w-md mb-4">
               {[
-                { key: "chart" as const, label: "📈 Verlauf" },
-                { key: "pages" as const, label: "📄 Top-Seiten" },
-                { key: "referrer" as const, label: "🔗 Herkunft" },
+                { key: "chart" as const, label: "Verlauf" },
+                { key: "pages" as const, label: "Top-Seiten" },
+                { key: "referrer" as const, label: "Herkunft" },
               ].map((t) => (
                 <button
                   key={t.key}

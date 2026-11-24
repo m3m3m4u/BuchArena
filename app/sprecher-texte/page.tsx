@@ -51,7 +51,7 @@ interface SprecherText {
 
 export default function SprecherTextePage() {
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
-  const isAdmin = account?.role === "SUPERADMIN";
+  const isAdmin = account?.role === "SUPERADMIN" || account?.role === "ADMIN";
 
   const [texte, setTexte] = useState<SprecherText[]>([]);
   const [loading, setLoading] = useState(true);
@@ -258,8 +258,8 @@ export default function SprecherTextePage() {
               <div key={text._id} className={text.status === "erledigt" ? "card-info" : text.status === "gebucht" ? "card-tip" : "card-base"}>
                 {/* Header */}
                 <div className="flex gap-2.5 flex-wrap items-start">
-                  <div className="p-1.5 bg-indigo-50 rounded-lg shrink-0">
-                    <DocumentTextIcon className="w-5 h-5 text-indigo-600" />
+                  <div className="p-1.5 bg-arena-bg rounded-lg shrink-0">
+                    <DocumentTextIcon className="w-5 h-5 text-arena-blue" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
@@ -279,7 +279,7 @@ export default function SprecherTextePage() {
                             <MusicalNoteIcon className="w-3.5 h-3.5 text-green-600 shrink-0" />
                             <span className="flex-1 min-w-0 break-all">{mp3.fileName}</span>
                             {mp3.uploadedBy && <span className="text-gray-400">von {mp3.uploadedBy}</span>}
-                            <a href={proxyUrl(mp3.path, mp3.fileName)} download={mp3.fileName} className="text-indigo-600 p-1.5 -m-1 inline-flex" title="Herunterladen"><ArrowDownTrayIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" /></a>
+                            <a href={proxyUrl(mp3.path, mp3.fileName)} download={mp3.fileName} className="text-arena-blue p-1.5 -m-1 inline-flex" title="Herunterladen"><ArrowDownTrayIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" /></a>
                             {isAdmin && <button onClick={() => handleDeleteMp3(text._id, idx)} className="text-red-600 bg-transparent border-none cursor-pointer p-1.5 -m-1" title="Löschen"><TrashIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" /></button>}
                           </div>
                         ))}
@@ -292,7 +292,7 @@ export default function SprecherTextePage() {
                     <a href={proxyUrl(text.pdfPath, text.pdfFileName)} download={text.pdfFileName} className="btn btn-sm flex items-center gap-1" title="PDF herunterladen">
                       <ArrowDownTrayIcon className="w-3.5 h-3.5" />PDF
                     </a>
-                    {text.status !== "erledigt" && (
+                    {account && text.status !== "erledigt" && (
                       <button onClick={() => { setMp3UploadId(text._id); setMp3Files(null); setMp3UploaderName(text.sprecherName || ""); }} className="btn btn-sm flex items-center gap-1 bg-green-50 text-green-800">
                         <CloudArrowUpIcon className="w-3.5 h-3.5" />MP3
                       </button>
@@ -311,9 +311,9 @@ export default function SprecherTextePage() {
                 </div>
 
                 {/* Name eintragen */}
-                {text.status !== "erledigt" && editingId !== text._id && !text.sprecherName && (
+                {account && text.status !== "erledigt" && editingId !== text._id && !text.sprecherName && (
                   <div className="mt-2.5 pt-2.5 border-t border-arena-border-light">
-                    <button onClick={() => { setEditingId(text._id); setEditName(""); }} className="font-sans font-bold text-[0.85rem] text-indigo-600 bg-transparent border-none cursor-pointer flex items-center gap-1 min-h-[44px] sm:min-h-0 py-2 sm:py-0">
+                    <button onClick={() => { setEditingId(text._id); setEditName(""); }} className="font-sans font-bold text-[0.85rem] text-arena-blue bg-transparent border-none cursor-pointer flex items-center gap-1 min-h-[44px] sm:min-h-0 py-2 sm:py-0">
                       <UserIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />Meinen Namen eintragen
                     </button>
                   </div>

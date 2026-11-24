@@ -1,5 +1,7 @@
 "use client";
 
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
+
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -115,7 +117,7 @@ export default function AmazonAdminClient() {
 
         {unclaimedExcludedCount > 0 && (
           <div className="text-xs bg-blue-50 text-blue-800 border border-blue-200/80 rounded-xl p-3 flex items-center gap-2">
-            <span>ℹ️</span>
+            <span><InformationCircleIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /></span>
             <span>
               <strong>{unclaimedExcludedCount} Bücher von Katalogautoren</strong> werden hier nicht aufgeführt, da sie bereits deine Partnerprogramm-Links nutzen.
             </span>

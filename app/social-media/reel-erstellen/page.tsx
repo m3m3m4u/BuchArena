@@ -137,7 +137,7 @@ function CharWarn({ value, field }: { value: string; field: string }) {
   if (!limit || value.length <= limit) return null;
   return (
     <span className="text-orange-600 text-xs mt-0.5">
-      ⚠️ Wenn möglich kürzer ({value.length}/{limit} Zeichen)
+      Wenn möglich kürzer ({value.length}/{limit} Zeichen)
     </span>
   );
 }

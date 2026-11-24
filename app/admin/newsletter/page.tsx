@@ -1,5 +1,7 @@
 ﻿"use client";
 
+import { ExclamationTriangleIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+
 import { useEditor, EditorContent, useEditorState, type Editor } from "@tiptap/react";
 import { NodeSelection } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
@@ -131,7 +133,7 @@ function ToolbarButton({
       title={title}
       className={`px-2 py-1 rounded text-sm font-medium border transition-colors ${
         active
-          ? "bg-blue-600 text-white border-blue-600"
+          ? "bg-arena-blue text-white border-arena-blue"
           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
       }`}
     >
@@ -179,7 +181,7 @@ function UrlInputModal({ config, onClose }: { config: UrlModalConfig; onClose: (
             if (e.key === "Enter") confirm();
             if (e.key === "Escape") onClose();
           }}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arena-blue/30 mb-4"
         />
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose}
@@ -187,7 +189,7 @@ function UrlInputModal({ config, onClose }: { config: UrlModalConfig; onClose: (
             Abbrechen
           </button>
           <button type="button" onClick={confirm}
-            className="px-4 py-1.5 rounded-lg text-sm bg-blue-600 text-white font-medium hover:bg-blue-700">
+            className="px-4 py-1.5 rounded-lg text-sm bg-arena-blue text-white font-medium hover:bg-arena-blue-light">
             Einfügen
           </button>
         </div>
@@ -344,19 +346,19 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml, showPreview, onTogglePr
         <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Rechtsbündig">Rechts</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("justify").run()} active={editor.isActive({ textAlign: "justify" })} title="Blocksatz">Block</ToolbarButton>
         <span className="border-l border-gray-300 mx-1" />
-        <ToolbarButton onClick={openLinkModal} active={editor.isActive("link")} title="Link einfügen">🔗 Link</ToolbarButton>
+        <ToolbarButton onClick={openLinkModal} active={editor.isActive("link")} title="Link einfügen">Link</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Zitat">❝</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} active={false} title="Trennlinie">—</ToolbarButton>
         <span className="border-l border-gray-300 mx-1" />
-        <ToolbarButton onClick={() => imgInputRef.current?.click()} active={false} title="Bild hochladen">🖼 Bild</ToolbarButton>
-        <ToolbarButton onClick={openImageUrlModal} active={false} title="Bild per URL">🔗 Bild-URL</ToolbarButton>
-        <ToolbarButton onClick={openYoutubeModal} active={editor.isActive("youtube")} title="YouTube-Video einbetten">▶ YouTube</ToolbarButton>
+        <ToolbarButton onClick={() => imgInputRef.current?.click()} active={false} title="Bild hochladen">Bild</ToolbarButton>
+        <ToolbarButton onClick={openImageUrlModal} active={false} title="Bild per URL">Bild-URL</ToolbarButton>
+        <ToolbarButton onClick={openYoutubeModal} active={editor.isActive("youtube")} title="YouTube-Video einbetten">YouTube</ToolbarButton>
         <span className="border-l border-gray-300 mx-1" />
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} active={false} title="Rückgängig">↩</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().redo().run()} active={false} title="Wiederholen">↪</ToolbarButton>
         <span className="border-l border-gray-300 mx-1" />
         <ToolbarButton onClick={onToggleHtml} active={htmlMode} title="HTML-Quelltext bearbeiten">&lt;/&gt; HTML</ToolbarButton>
-        <ToolbarButton onClick={onTogglePreview} active={showPreview} title="E-Mail-Vorschau (600px)">👁 Vorschau</ToolbarButton>
+        <ToolbarButton onClick={onTogglePreview} active={showPreview} title="E-Mail-Vorschau (600px)">Vorschau</ToolbarButton>
         <input
           ref={imgInputRef}
           type="file"
@@ -372,10 +374,10 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml, showPreview, onTogglePr
 
       {/* Größensteuerung für Bilder und YouTube */}
       {(editorState?.isImage || editorState?.isYoutube) && (
-        <div className="flex flex-wrap items-center gap-2 px-3 py-1.5 bg-blue-50 border border-b-0 border-blue-200 text-xs">
+        <div className="flex flex-wrap items-center gap-2 px-3 py-1.5 bg-arena-bg border border-b-0 border-arena-border-light text-xs">
           {editorState.isImage && (
             <>
-              <span className="text-blue-700 font-medium">🖼️ Bildgröße:</span>
+              <span className="text-arena-blue font-medium">Bildgröße:</span>
               <input
                 type="text"
                 value={imgWidthInput}
@@ -383,10 +385,10 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml, showPreview, onTogglePr
                 onKeyDown={(e) => { if (e.key === "Enter") { applyImageWidth(imgWidthInput); } }}
                 onBlur={() => applyImageWidth(imgWidthInput)}
                 placeholder="400"
-                className="w-16 border border-blue-300 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+                className="w-16 border border-arena-border-light rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-arena-blue/30 bg-white"
               />
-              <span className="text-blue-500">px</span>
-              <span className="border-l border-blue-200 h-4 mx-0.5" />
+              <span className="text-arena-blue">px</span>
+              <span className="border-l border-arena-border-light h-4 mx-0.5" />
               {(["200", "400", "600"] as const).map((val) => (
                 <button
                   key={val}
@@ -394,8 +396,8 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml, showPreview, onTogglePr
                   onMouseDown={(e) => { e.preventDefault(); setImgWidthInput(val); applyImageWidth(val); }}
                   className={`px-2 py-0.5 rounded border text-xs transition-colors ${
                     imgWidthInput === val
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"
+                      ? "bg-arena-blue text-white border-arena-blue"
+                      : "bg-white text-arena-blue border-arena-border-light hover:bg-arena-bg"
                   }`}
                 >
                   {val}
@@ -406,8 +408,8 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml, showPreview, onTogglePr
                 onMouseDown={(e) => { e.preventDefault(); setImgWidthInput("100%"); applyImageWidth("100%"); }}
                 className={`px-2 py-0.5 rounded border text-xs transition-colors ${
                   imgWidthInput === "100%"
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"
+                    ? "bg-arena-blue text-white border-arena-blue"
+                    : "bg-white text-arena-blue border-arena-border-light hover:bg-arena-bg"
                 }`}
               >
                 Voll
@@ -419,13 +421,13 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml, showPreview, onTogglePr
               >
                 Original
               </button>
-              <span className="border-l border-blue-200 mx-1 self-stretch" />
-              <span className="text-blue-700 font-medium">Ausrichtung:</span>
+              <span className="border-l border-arena-border-light mx-1 self-stretch" />
+              <span className="text-arena-blue font-medium">Ausrichtung:</span>
               {(["left", "center", "right", null] as const).map((a) => (
                 <button key={String(a)} type="button"
                   onMouseDown={(e) => { e.preventDefault(); applyImageAlign(a); }}
                   className={`px-2 py-0.5 rounded border text-xs transition-colors ${
-                    imgAlignActive === a ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"
+                    imgAlignActive === a ? "bg-arena-blue text-white border-arena-blue" : "bg-white text-arena-blue border-arena-border-light hover:bg-arena-bg"
                   }`}>
                   {a === "left" ? "Links" : a === "center" ? "Mitte" : a === "right" ? "Rechts" : "Normal"}
                 </button>
@@ -434,7 +436,7 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml, showPreview, onTogglePr
           )}
           {editorState.isYoutube && (
             <>
-              <span className="text-blue-700 font-medium">▶️ Videogröße:</span>
+              <span className="text-arena-blue font-medium">Videogröße:</span>
               <input
                 type="number"
                 min={100}
@@ -443,9 +445,9 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml, showPreview, onTogglePr
                 onChange={(e) => setYtWidthInput(e.target.value)}
                 onBlur={() => { if (ytWidthInput && ytHeightInput) applyYtSize(Number(ytWidthInput), Number(ytHeightInput)); }}
                 onKeyDown={(e) => { if (e.key === "Enter" && ytWidthInput && ytHeightInput) applyYtSize(Number(ytWidthInput), Number(ytHeightInput)); }}
-                className="w-16 border border-blue-300 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+                className="w-16 border border-arena-border-light rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-arena-blue/30 bg-white"
               />
-              <span className="text-blue-500">×</span>
+              <span className="text-arena-blue">×</span>
               <input
                 type="number"
                 min={56}
@@ -454,10 +456,10 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml, showPreview, onTogglePr
                 onChange={(e) => setYtHeightInput(e.target.value)}
                 onBlur={() => { if (ytWidthInput && ytHeightInput) applyYtSize(Number(ytWidthInput), Number(ytHeightInput)); }}
                 onKeyDown={(e) => { if (e.key === "Enter" && ytWidthInput && ytHeightInput) applyYtSize(Number(ytWidthInput), Number(ytHeightInput)); }}
-                className="w-16 border border-blue-300 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+                className="w-16 border border-arena-border-light rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-arena-blue/30 bg-white"
               />
-              <span className="text-blue-500">px</span>
-              <span className="border-l border-blue-200 h-4 mx-0.5" />
+              <span className="text-arena-blue">px</span>
+              <span className="border-l border-arena-border-light h-4 mx-0.5" />
               {([[640, 360], [800, 450], [1024, 576]] as const).map(([w, h]) => (
                 <button
                   key={`${w}x${h}`}
@@ -465,8 +467,8 @@ function EditorToolbar({ editor, htmlMode, onToggleHtml, showPreview, onTogglePr
                   onMouseDown={(e) => { e.preventDefault(); setYtWidthInput(String(w)); setYtHeightInput(String(h)); applyYtSize(w, h); }}
                   className={`px-2 py-0.5 rounded border text-xs transition-colors ${
                     ytWidthInput === String(w) && ytHeightInput === String(h)
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-blue-600 border-blue-300 hover:bg-blue-100"
+                      ? "bg-arena-blue text-white border-arena-blue"
+                      : "bg-white text-arena-blue border-arena-border-light hover:bg-arena-bg"
                   }`}
                 >
                   {w}×{h}
@@ -822,10 +824,10 @@ export default function NewsletterAdminPage() {
   if (!isAdmin) return <div className="p-8 text-red-600 font-semibold">Kein Zugriff.</div>;
 
   const tabs: { id: "erstellen" | "entwürfe" | "archiv" | "abonnenten"; label: string }[] = [
-    { id: "erstellen", label: "✏️ Erstellen" },
-    { id: "entwürfe", label: `📝 Entwürfe${drafts.length > 0 ? ` (${drafts.length})` : ""}` },
-    { id: "archiv", label: "📦 Archiv" },
-    { id: "abonnenten", label: "👥 Abonnenten" },
+    { id: "erstellen", label: "Erstellen" },
+    { id: "entwürfe", label: `Entwürfe${drafts.length > 0 ? ` (${drafts.length})` : ""}` },
+    { id: "archiv", label: "Archiv" },
+    { id: "abonnenten", label: "Abonnenten" },
   ];
 
   return (
@@ -845,7 +847,7 @@ export default function NewsletterAdminPage() {
             onClick={() => setTab(t.id)}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors border-b-2 -mb-px ${
               tab === t.id
-                ? "border-blue-600 text-blue-600 bg-white"
+                ? "border-arena-blue text-arena-blue bg-white"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
             }`}
           >
@@ -857,12 +859,12 @@ export default function NewsletterAdminPage() {
       {tab === "erstellen" && (
         <div>
           {currentDraftId && (
-            <div className="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg flex items-center justify-between text-sm">
-              <span className="text-indigo-700">Du bearbeitest einen gespeicherten Entwurf.</span>
+            <div className="mb-4 p-3 bg-arena-bg border border-arena-border-light rounded-lg flex items-center justify-between text-sm">
+              <span className="text-arena-blue">Du bearbeitest einen gespeicherten Entwurf.</span>
               <button
                 type="button"
                 onClick={() => { setCurrentDraftId(null); setDraftNote(""); }}
-                className="text-indigo-500 hover:text-indigo-700 underline text-xs"
+                className="text-arena-blue hover:text-arena-blue underline text-xs"
               >
                 Entwurf trennen
               </button>
@@ -877,7 +879,7 @@ export default function NewsletterAdminPage() {
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Betreff des Newsletters…"
               maxLength={300}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arena-blue/30"
             />
           </div>
 
@@ -904,22 +906,22 @@ export default function NewsletterAdminPage() {
           </div>
 
           {/* Entwurf speichern */}
-          <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-            <h2 className="text-sm font-semibold text-indigo-800 mb-2">&#128452; Entwurf speichern</h2>
-            <p className="text-xs text-indigo-700 mb-3">Speichert den aktuellen Stand in der Datenbank, damit andere Admins weiterarbeiten können.</p>
+          <div className="card-info mb-6 p-4">
+            <h2 className="text-sm font-semibold text-arena-blue mb-2">Entwurf speichern</h2>
+            <p className="text-xs text-arena-blue mb-3">Speichert den aktuellen Stand in der Datenbank, damit andere Admins weiterarbeiten können.</p>
             <div className="flex gap-2 mb-2">
               <input
                 type="text"
                 value={draftNote}
                 onChange={(e) => setDraftNote(e.target.value)}
                 placeholder="Optionale Notiz für das Team (z. B. „wartet noch auf Grafik“)"
-                className="flex-1 border border-indigo-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="flex-1 border border-arena-border-light rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-arena-blue/30"
               />
               <button
                 type="button"
                 onClick={handleSaveDraft}
                 disabled={draftSaving}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                className="bg-arena-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-arena-blue-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
               >
                 {draftSaving ? "Speichert…" : currentDraftId ? "Entwurf aktualisieren" : "Als Entwurf speichern"}
               </button>
@@ -929,20 +931,20 @@ export default function NewsletterAdminPage() {
             )}
           </div>
 
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h2 className="text-sm font-semibold text-yellow-800 mb-2">🧪 Testzusendung</h2>
-            <p className="text-xs text-yellow-700 mb-3">Sendet den Entwurf direkt (ohne Queue) an eine Adresse zur Vorschau.</p>
+          <div className="card-info mb-6 p-4">
+            <h2 className="text-sm font-semibold text-arena-blue mb-2">Testzusendung</h2>
+            <p className="text-xs text-arena-blue mb-3">Sendet den Entwurf direkt (ohne Queue) an eine Adresse zur Vorschau.</p>
             <div className="flex gap-2">
               <input
                 type="email"
                 value={testEmail}
                 onChange={(e) => setTestEmail(e.target.value)}
                 placeholder="test@beispiel.de"
-                className="flex-1 border border-yellow-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="flex-1 border border-arena-border-light rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-arena-blue/30"
                 onKeyDown={(e) => { if (e.key === "Enter") void handleTestSend(); }}
               />
               <button type="button" onClick={handleTestSend} disabled={testStatus === "sending"}
-                className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap">
+                className="bg-arena-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-arena-blue-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap">
                 {testStatus === "sending" ? "Wird gesendet…" : "Test senden"}
               </button>
             </div>
@@ -951,13 +953,13 @@ export default function NewsletterAdminPage() {
           </div>
 
           {status === "sending" && sendProgress && sendProgress.total > 0 && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-sm">
+            <div className="mb-4 p-3 bg-arena-bg border border-arena-border-light text-arena-blue rounded-lg text-sm">
               <div className="flex justify-between mb-1">
                 <span>Wird versendet…</span>
                 <span className="font-semibold">{sendProgress.sent + sendProgress.failed} / {sendProgress.total}</span>
               </div>
-              <div className="w-full bg-blue-200 rounded-full h-2">
-                <div className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+              <div className="w-full bg-arena-bg rounded-full h-2">
+                <div className="bg-arena-blue h-2 rounded-full transition-all duration-500"
                   style={{ width: `${Math.round(((sendProgress.sent + sendProgress.failed) / sendProgress.total) * 100)}%` }} />
               </div>
               {sendProgress.failed > 0 && <p className="mt-1 text-xs text-red-600">{sendProgress.failed} fehlgeschlagen</p>}
@@ -968,7 +970,7 @@ export default function NewsletterAdminPage() {
 
           {retryCount !== null && retryCount > 0 && (
             <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm">
-              <p className="text-orange-800 font-medium mb-2">⚠ {retryCount} fehlgeschlagene / hängende Einträge in der Queue</p>
+              <p className="text-orange-800 font-medium mb-2"><ExclamationTriangleIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /> {retryCount} fehlgeschlagene / hängende Einträge in der Queue</p>
               <button type="button" onClick={handleRetry} disabled={retryStatus === "loading"}
                 className="bg-orange-500 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                 {retryStatus === "loading" ? "Wird zurückgesetzt…" : "Jetzt erneut versuchen"}
@@ -979,7 +981,7 @@ export default function NewsletterAdminPage() {
           )}
 
           <button type="button" onClick={handleSend} disabled={status === "sending"}
-            className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            className="bg-arena-blue text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-arena-blue-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {status === "sending" ? "Wird versendet…" : "Newsletter senden"}
           </button>
         </div>
@@ -989,7 +991,7 @@ export default function NewsletterAdminPage() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800">Gespeicherte Entwürfe</h2>
-            <button type="button" onClick={loadDrafts} className="text-sm text-blue-600 hover:underline">Aktualisieren</button>
+            <button type="button" onClick={loadDrafts} className="text-sm text-arena-blue hover:underline">Aktualisieren</button>
           </div>
           {draftsLoading ? (
             <p className="text-gray-400 text-sm">Lade Entwürfe…</p>
@@ -1009,10 +1011,10 @@ export default function NewsletterAdminPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {drafts.map((draft) => (
-                    <tr key={draft._id} className={`hover:bg-gray-50 ${currentDraftId === draft._id ? "bg-indigo-50" : ""}`}>
+                    <tr key={draft._id} className={`hover:bg-gray-50 ${currentDraftId === draft._id ? "bg-arena-bg" : ""}`}>
                       <td className="px-4 py-2 font-medium text-gray-800 max-w-xs truncate">
                         {draft.subject || <span className="text-gray-400 italic">Kein Betreff</span>}
-                        {currentDraftId === draft._id && <span className="ml-2 text-xs text-indigo-600 font-normal">(in Bearbeitung)</span>}
+                        {currentDraftId === draft._id && <span className="ml-2 text-xs text-arena-blue font-normal">(in Bearbeitung)</span>}
                       </td>
                       <td className="px-4 py-2 text-gray-500 max-w-xs truncate">{draft.note || "—"}</td>
                       <td className="px-4 py-2 text-gray-500">{draft.savedBy}</td>
@@ -1021,7 +1023,7 @@ export default function NewsletterAdminPage() {
                       </td>
                       <td className="px-4 py-2">
                         <div className="flex gap-2">
-                          <button type="button" onClick={() => void loadDraftIntoEditor(draft._id)} className="text-indigo-600 hover:underline text-xs">Bearbeiten</button>
+                          <button type="button" onClick={() => void loadDraftIntoEditor(draft._id)} className="text-arena-blue hover:underline text-xs">Bearbeiten</button>
                           <button type="button" onClick={() => void deleteDraft(draft._id)} className="text-red-500 hover:underline text-xs">Löschen</button>
                         </div>
                       </td>
@@ -1038,7 +1040,7 @@ export default function NewsletterAdminPage() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800">Gesendete Newsletter</h2>
-            <button type="button" onClick={loadArchive} className="text-sm text-blue-600 hover:underline">Aktualisieren</button>
+            <button type="button" onClick={loadArchive} className="text-sm text-arena-blue hover:underline">Aktualisieren</button>
           </div>
           {archiveLoading ? (
             <p className="text-gray-400 text-sm">Lade Archiv…</p>
@@ -1070,7 +1072,7 @@ export default function NewsletterAdminPage() {
                               <div className="flex justify-between text-xs mb-0.5">
                                 <span className="text-green-700">✓ {p.sent}</span>
                                 {p.failed > 0 && <span className="text-red-600">✗ {p.failed}</span>}
-                                {p.pending > 0 && <span className="text-orange-500">⏳ {p.pending}</span>}
+                                {p.pending > 0 && <span className="text-orange-500"><ArrowPathIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" /> {p.pending}</span>}
                                 <span className="text-gray-400">/ {p.total}</span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -1086,7 +1088,7 @@ export default function NewsletterAdminPage() {
                       </td>
                       <td className="px-4 py-2">
                         <div className="flex gap-2">
-                          <button type="button" onClick={() => void loadPreview(entry._id)} className="text-blue-600 hover:underline text-xs">Vorschau</button>
+                          <button type="button" onClick={() => void loadPreview(entry._id)} className="text-arena-blue hover:underline text-xs">Vorschau</button>
                           <button type="button" onClick={() => void loadIntoEditor(entry._id)} className="text-green-600 hover:underline text-xs">Wiederverwenden</button>
                           <button type="button" onClick={() => void deleteArchiveEntry(entry._id)} className="text-red-500 hover:underline text-xs">Löschen</button>
                         </div>
@@ -1186,15 +1188,15 @@ function SubscriberManager() {
     <div>
       {/* Zusammenfassung */}
       <div className="grid grid-cols-3 gap-3 mb-5 max-[450px]:grid-cols-1">
-        <div className="bg-blue-600 text-white rounded-lg p-3 text-center">
+        <div className="card-base p-3 text-center text-arena-blue">
           <div className="text-2xl font-bold leading-tight">{totalAll}</div>
           <div className="text-xs opacity-85">Gesamt aktiv</div>
         </div>
-        <div className="bg-blue-500 text-white rounded-lg p-3 text-center">
+        <div className="card-base p-3 text-center text-arena-blue">
           <div className="text-2xl font-bold leading-tight">{activeExt}</div>
           <div className="text-xs opacity-85">Externe Anmeldungen</div>
         </div>
-        <div className="bg-blue-400 text-white rounded-lg p-3 text-center">
+        <div className="card-base p-3 text-center text-arena-blue">
           <div className="text-2xl font-bold leading-tight">{registeredOptIns.length}</div>
           <div className="text-xs opacity-85">Registrierte Nutzer</div>
         </div>
@@ -1206,7 +1208,7 @@ function SubscriberManager() {
           type="button"
           onClick={() => setActiveSection("extern")}
           className={`px-4 py-2 text-sm font-medium rounded-t border-b-2 -mb-px transition-colors ${
-            activeSection === "extern" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
+            activeSection === "extern" ? "border-arena-blue text-arena-blue" : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
           Externe Anmeldungen ({subscribers.length})
@@ -1215,7 +1217,7 @@ function SubscriberManager() {
           type="button"
           onClick={() => setActiveSection("registriert")}
           className={`px-4 py-2 text-sm font-medium rounded-t border-b-2 -mb-px transition-colors ${
-            activeSection === "registriert" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
+            activeSection === "registriert" ? "border-arena-blue text-arena-blue" : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
           Registrierte Nutzer ({registeredOptIns.length})
@@ -1233,7 +1235,7 @@ function SubscriberManager() {
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
               placeholder="neue@email.de"
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arena-blue/30"
               onKeyDown={(e) => { if (e.key === "Enter") void handleAdd(); }}
             />
             <button type="button" onClick={handleAdd}

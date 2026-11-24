@@ -18,6 +18,7 @@ export default function SettingsCheckOverlay() {
   const [newsletter, setNewsletter] = useState(false);
   const [unreadMail, setUnreadMail] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   useEffect(() => {
     const account = getStoredAccount();
@@ -43,8 +44,9 @@ export default function SettingsCheckOverlay() {
 
   async function confirm() {
     setSaving(true);
+    setSaveError("");
     try {
-      await fetch("/api/profile/settings-check", {
+      const response = await fetch("/api/profile/settings-check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -52,10 +54,13 @@ export default function SettingsCheckOverlay() {
           emailOnUnreadMessages: unreadMail,
         }),
       });
+      if (!response.ok) throw new Error("Speichern fehlgeschlagen.");
+      setShow(false);
     } catch {
-      // Ignorieren – beim nächsten Login wird erneut gefragt
+      setSaveError("Die Einstellungen konnten nicht gespeichert werden. Bitte versuche es erneut.");
+    } finally {
+      setSaving(false);
     }
-    setShow(false);
   }
 
   return (
@@ -70,8 +75,8 @@ export default function SettingsCheckOverlay() {
         </p>
 
         {/* E-Mail-Adresse */}
-        <div style={{ background: "#f7f7fa", borderRadius: 10, padding: "0.8rem 1rem" }}>
-          <span className="text-sm font-semibold">📧 E-Mail-Adresse</span>
+        <div style={{ background: "var(--color-arena-bg)", borderRadius: 10, padding: "0.8rem 1rem" }}>
+          <span className="text-sm font-semibold">E-Mail-Adresse</span>
           <p style={{ fontSize: "0.9rem", margin: "0.25rem 0 0", wordBreak: "break-all" }}>
             {data.email}
           </p>
@@ -83,15 +88,15 @@ export default function SettingsCheckOverlay() {
         {/* Newsletter Toggle */}
         <div
           style={{
-            background: newsletter ? "#f0fdf4" : "#f7f7fa",
+            background: "var(--color-arena-bg)",
             borderRadius: 10, padding: "0.8rem 1rem",
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem",
             transition: "background 0.2s",
           }}
         >
           <div>
-            <span className="text-sm font-semibold">{newsletter ? "✅ Newsletter aktiv" : "📬 Newsletter"}</span>
-            <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: newsletter ? "#16a34a" : "#6b7280" }}>
+            <span className="text-sm font-semibold">{newsletter ? "Newsletter aktiv" : "Newsletter"}</span>
+            <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: "var(--color-arena-muted)" }}>
               Neuigkeiten und Updates per E-Mail.
             </p>
           </div>
@@ -99,10 +104,11 @@ export default function SettingsCheckOverlay() {
             type="button"
             role="switch"
             aria-checked={newsletter}
+            aria-label="Newsletter"
             className="toggle-switch"
             style={{
               width: 48, height: 26, borderRadius: 13, border: "none",
-              background: newsletter ? "#16a34a" : "#ccc",
+              background: newsletter ? "var(--color-arena-blue)" : "var(--color-arena-border)",
               position: "relative", cursor: "pointer", flexShrink: 0,
               transition: "background 0.2s",
             }}
@@ -119,15 +125,15 @@ export default function SettingsCheckOverlay() {
         {/* Nachrichteninfo Toggle */}
         <div
           style={{
-            background: unreadMail ? "#f0fdf4" : "#f7f7fa",
+            background: "var(--color-arena-bg)",
             borderRadius: 10, padding: "0.8rem 1rem",
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem",
             transition: "background 0.2s",
           }}
         >
           <div>
-            <span className="text-sm font-semibold">{unreadMail ? "✅ Nachrichteninfo aktiv" : "🔔 Nachrichteninfo"}</span>
-            <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: unreadMail ? "#16a34a" : "#6b7280" }}>
+            <span className="text-sm font-semibold">{unreadMail ? "Nachrichteninfo aktiv" : "Nachrichteninfo"}</span>
+            <p style={{ fontSize: "0.82rem", margin: "0.15rem 0 0", color: "var(--color-arena-muted)" }}>
               E-Mail bei ungelesenen Nachrichten nach 24&nbsp;h.
             </p>
           </div>
@@ -135,10 +141,11 @@ export default function SettingsCheckOverlay() {
             type="button"
             role="switch"
             aria-checked={unreadMail}
+            aria-label="Nachrichteninfo"
             className="toggle-switch"
             style={{
               width: 48, height: 26, borderRadius: 13, border: "none",
-              background: unreadMail ? "#16a34a" : "#ccc",
+              background: unreadMail ? "var(--color-arena-blue)" : "var(--color-arena-border)",
               position: "relative", cursor: "pointer", flexShrink: 0,
               transition: "background 0.2s",
             }}
@@ -152,6 +159,7 @@ export default function SettingsCheckOverlay() {
           </button>
         </div>
 
+        {saveError && <p role="alert" className="text-sm text-arena-danger">{saveError}</p>}
         <button
           type="button"
           className="btn btn-primary"

@@ -159,7 +159,7 @@ export default function BuchzirkelErstellenPage() {
               type="button"
               onClick={() => setTyp("testleser")}
               className={`p-4 rounded-xl border-2 text-left transition-colors ${
-                typ === "testleser" ? "border-arena-blue bg-blue-50" : "border-arena-border hover:border-arena-blue"
+                typ === "testleser" ? "border-arena-blue bg-arena-blue/5" : "border-arena-border hover:border-arena-blue"
               }`}
             >
               <p className="font-bold m-0">Buchzirkel</p>
@@ -171,11 +171,11 @@ export default function BuchzirkelErstellenPage() {
               type="button"
               onClick={() => setTyp("betaleser")}
               className={`p-4 rounded-xl border-2 text-left transition-colors ${
-                typ === "betaleser" ? "border-red-400 bg-red-50" : "border-arena-border hover:border-red-400"
+                typ === "betaleser" ? "border-arena-blue bg-arena-blue/5" : "border-arena-border hover:border-arena-blue"
               }`}
             >
-              <p className="font-bold m-0 text-red-800">🔒 Buchzirkel (Beta)</p>
-              <p className="text-sm text-red-700 m-0 mt-1">
+              <p className="font-bold m-0 text-arena-blue">Buchzirkel (Beta)</p>
+              <p className="text-sm text-arena-muted m-0 mt-1">
                 Für unveröffentlichte Manuskripte – Verschwiegenheitspflicht automatisch aktiv.
               </p>
             </button>

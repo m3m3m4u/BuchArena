@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getBucharenaSprecherCollection } from "@/lib/bucharena-db";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 import { davPut, davDelete } from "@/lib/bucharena-webdav";
 
 export const runtime = "nodejs";
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) return NextResponse.json({ success: false, error: "Nur Administratoren können Texte hochladen" }, { status: 403 });
 
     const formData = await request.formData();
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) return NextResponse.json({ success: false, error: "Nur Administratoren können Texte löschen" }, { status: 403 });
 
     const { searchParams } = new URL(request.url);

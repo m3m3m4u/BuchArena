@@ -3521,10 +3521,10 @@ function BeitragToolPage() {
             </div>
             <div className="px-6 py-5 grid gap-5 text-sm leading-relaxed">
 
-              <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
-                <p className="font-semibold mb-1.5 text-emerald-800">Nutzungsrechte</p>
-                <p className="text-emerald-900">Alle von uns bereitgestellten <strong>Bilder der BuchArena</strong> und <strong>Musik-Tracks</strong> wurden von der BuchArena erstellt und d&uuml;rfen <strong>ohne Einschr&auml;nkung</strong> f&uuml;r eure Social-Media-Beitr&auml;ge verwendet werden &ndash; auch kommerziell. <strong>Bilder von Pixabay</strong> sind ebenfalls kostenlos und lizenzfrei nutzbar.</p>
-                <p className="text-emerald-800 mt-2 text-xs">Wir freuen uns, wenn ihr erw&auml;hnt, dass euer Beitrag mit Tools von <strong>bucharena.org</strong> erstellt wurde &ndash; das ist aber keine Pflicht. ??</p>
+              <div className="card-info p-4">
+                <p className="font-semibold mb-1.5 text-arena-blue">Nutzungsrechte</p>
+                <p className="text-arena-text">Alle von uns bereitgestellten <strong>Bilder der BuchArena</strong> und <strong>Musik-Tracks</strong> wurden von der BuchArena erstellt und d&uuml;rfen <strong>ohne Einschr&auml;nkung</strong> f&uuml;r eure Social-Media-Beitr&auml;ge verwendet werden &ndash; auch kommerziell. <strong>Bilder von Pixabay</strong> sind ebenfalls kostenlos und lizenzfrei nutzbar.</p>
+                <p className="text-arena-muted mt-2 text-xs">Wir freuen uns, wenn ihr erw&auml;hnt, dass euer Beitrag mit Tools von <strong>bucharena.org</strong> erstellt wurde &ndash; das ist aber keine Pflicht. ??</p>
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

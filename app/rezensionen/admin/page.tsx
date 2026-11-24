@@ -178,7 +178,7 @@ export default function ReviewsAdminPage() {
                         ? "bg-orange-50 text-orange-700"
                         : "bg-green-50 text-green-800"
                     }`}>
-                      {review.status === "pending" ? "⏳ Ausstehend" : "✓ Bearbeitet"}
+                      {review.status === "pending" ? "Ausstehend" : "✓ Bearbeitet"}
                     </span>
                     <h3 className="m-0">{review.bookTitle}</h3>
                     <div className="bg-gray-50 rounded-lg p-3">

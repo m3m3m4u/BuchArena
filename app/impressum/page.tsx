@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AD_BUDGET_TERMS_PATH } from "@/lib/werbebudget-terms";
 
 export default function ImpressumPage() {
   return (
@@ -37,12 +38,8 @@ export default function ImpressumPage() {
         </div>
 
         <div className="mb-8">
-          <h2 className="mb-3 text-xl text-arena-text">Online-Streitbeilegung</h2>
+          <h2 className="mb-3 text-xl text-arena-text">Verbraucherstreitbeilegung</h2>
           <p className="my-2 leading-relaxed text-[#444]">
-            Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:{" "}
-            <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer" className="text-arena-link no-underline hover:underline">
-              https://ec.europa.eu/consumers/odr
-            </a>.
             Wir sind weder bereit noch verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
           </p>
         </div>
@@ -120,6 +117,25 @@ export default function ImpressumPage() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div className="mb-8" id="werbebudget-datenschutz">
+          <h3 className="mb-3 text-xl text-arena-text">Monatliche Aktion: 100 € Werbebudget</h3>
+          <p className="my-2 leading-relaxed text-[#444]">
+            Für die kostenlose Bewerbung verarbeiten wir Konto- und Buchzuordnung, Social-Media-Profil,
+            Wohnsitzland, freiwillige Nachweishinweise, Prüfstatus sowie Version und Zeitpunkt der Bestätigungen.
+            Die notwendige Abwicklung beruht auf Art. 6 Abs. 1 lit. b DSGVO; die begrenzte Dokumentation der
+            Durchführung zusätzlich auf Art. 6 Abs. 1 lit. f DSGVO. Eine öffentliche Gewinnernennung ist freiwillig,
+            beruht auf einer gesonderten Einwilligung und kann unabhängig von der Bewerbung widerrufen werden.
+          </p>
+          <p className="my-2 leading-relaxed text-[#444]">
+            Bewerbungsdaten werden 180 Tage nach dem Bewerbungsschluss automatisiert gelöscht. Bei Rückzug
+            werden Profilangaben und Nachweishinweise sofort aus der aktiven Bewerbung entfernt; ein minimaler
+            Teilnahme- und Rückzugsnachweis bleibt bis zum regulären Löschtermin bestehen. Gesetzlich aufzubewahrende
+            Kampagnenabrechnungen werden getrennt behandelt. Es erfolgt keine automatische Newsletter-Anmeldung.
+            Einzelheiten zu Daten, Empfängern, Drittlandübermittlungen und Rechten stehen in den{" "}
+            <Link href={`${AD_BUDGET_TERMS_PATH}#datenschutz`} className="text-arena-link underline">Datenschutzhinweisen zur Aktion</Link>.
+          </p>
         </div>
 
         <div className="mb-8">
@@ -258,7 +274,7 @@ export default function ImpressumPage() {
             Rechtslagen oder Änderungen des Dienstes anzupassen. Die aktuelle Version gilt ab dem Datum
             des letzten Updates.
           </p>
-          <p className="my-2 text-sm text-arena-muted">Stand: März 2026</p>
+          <p className="my-2 text-sm text-arena-muted">Stand: 24. November 2026</p>
         </div>
 
         <div className="mt-10 border-t border-gray-200 pt-6">

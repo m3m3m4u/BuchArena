@@ -849,7 +849,7 @@ export default function ShortsErstellenPage() {
         return;
       }
       setSubmissionId(data.submissionId);
-      setSuccessMsg("Shorts-Vorlage erfolgreich eingereicht! 🎉");
+      setSuccessMsg("Shorts-Vorlage erfolgreich eingereicht!");
       loadVorlagen();
     } catch (err) {
       console.error(err);

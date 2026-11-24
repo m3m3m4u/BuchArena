@@ -36,7 +36,7 @@ export async function POST(
       teilnehmerUsername: account.username,
     });
 
-    if (!isVeranstalter && !teilnahme) {
+    if (!isVeranstalter && (!teilnahme || teilnahme.abgebrochen)) {
       return NextResponse.json({ message: "Du nimmst nicht an diesem Buchzirkel teil." }, { status: 403 });
     }
 

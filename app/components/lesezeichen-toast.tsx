@@ -41,9 +41,9 @@ export default function LesezeichenToast() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="pointer-events-auto animate-[slideIn_0.3s_ease-out] rounded-xl bg-yellow-400 text-yellow-900 px-5 py-3 shadow-lg font-bold text-lg flex items-center gap-2"
+          className="pointer-events-auto animate-[slideIn_0.3s_ease-out] rounded-xl bg-arena-yellow text-arena-blue px-5 py-3 shadow-lg font-bold text-lg flex items-center gap-2"
         >
-          <BookmarkIcon className="h-5 w-5 text-yellow-900 flex-shrink-0" />
+          <BookmarkIcon className="h-5 w-5 text-arena-blue flex-shrink-0" />
           <span>+{t.amount} Lesezeichen</span>
         </div>
       ))}

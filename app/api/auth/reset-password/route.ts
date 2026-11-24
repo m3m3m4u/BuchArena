@@ -56,6 +56,7 @@ export async function POST(request: Request) {
       { username: user.username },
       {
         $set: { passwordHash },
+        $inc: { sessionVersion: 1 },
         $unset: { resetToken: "", resetTokenExpiresAt: "" },
       },
     );

@@ -1,5 +1,7 @@
 "use client";
 
+import { LinkIcon, ArrowPathIcon, PhotoIcon, FaceSmileIcon, PlayIcon } from "@heroicons/react/24/outline";
+
 import { useRef, useState } from "react";
 
 export function CommentToolbar({
@@ -88,23 +90,23 @@ export function CommentToolbar({
   return (
     <div className="relative">
       <div className="flex items-center gap-0.5 mt-1">
-        <button type="button" title="Link einfügen" className={btnCls}
+        <button type="button" title="Link einfügen" aria-label="Link einfügen" className={btnCls}
           onClick={() => openPopover("link")}>
-          🔗
+          <LinkIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" />
         </button>
-        <button type="button" title="Bild hochladen" className={btnCls}
+        <button type="button" title="Bild hochladen" aria-label={isUploading ? "Bild wird hochgeladen" : "Bild hochladen"} className={btnCls}
           disabled={isUploading} onClick={() => fileInputRef.current?.click()}>
-          {isUploading ? "⏳" : "🖼"}
+          {isUploading ? <ArrowPathIcon className="h-5 w-5 animate-spin" aria-hidden="true" /> : <PhotoIcon className="h-5 w-5" aria-hidden="true" />}
         </button>
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
           onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleImageFile(f); e.target.value = ""; }} />
-        <button type="button" title="YouTube-Video einbetten" className={btnCls}
+        <button type="button" title="YouTube-Video einbetten" aria-label="YouTube-Video einbetten" className={btnCls}
           onClick={() => openPopover("youtube")}>
-          ▶
+          <PlayIcon className="h-5 w-5" aria-hidden="true" />
         </button>
-        <button type="button" title="Emoji einfügen" className={btnCls}
+        <button type="button" title="Emoji einfügen" aria-label="Emoji einfügen" className={btnCls}
           onClick={() => openPopover("emoji")}>
-          😊
+          <FaceSmileIcon className="inline-block h-5 w-5 shrink-0" aria-hidden="true" />
         </button>
       </div>
 
@@ -149,7 +151,7 @@ export function CommentToolbar({
       {open === "emoji" && (
         <div className="absolute top-full mt-1 left-0 bg-white border border-arena-border-light rounded-lg p-2 shadow-lg z-50 flex flex-wrap gap-0.5 w-64 max-w-full">
           {TOOLBAR_EMOJIS.map((emoji) => (
-            <button key={emoji} type="button"
+            <button key={emoji} type="button" aria-label={`Emoji ${emoji} einfügen`}
               className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-lg cursor-pointer border-none bg-transparent"
               onClick={() => { insert(emoji); setOpen(null); }}>
               {emoji}

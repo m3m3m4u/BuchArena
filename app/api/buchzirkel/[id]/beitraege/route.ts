@@ -3,10 +3,9 @@ import { ObjectId } from "mongodb";
 import {
   getBuchzirkelCollection,
   getBuchzirkelBeitraegeCollection,
-  getBuchzirkelTeilnahmenCollection,
 } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
-import { ALLOWED_BEITRAG_EMOJIS } from "@/lib/buchzirkel";
+import { canAccessBuchzirkel } from "@/lib/buchzirkel-access";
 
 async function checkZugang(
   zirkelId: string,
@@ -15,7 +14,7 @@ async function checkZugang(
   const zirkelCol = await getBuchzirkelCollection();
   const zirkel = await zirkelCol.findOne(
     { _id: new ObjectId(zirkelId) },
-    { projection: { veranstalterUsername: 1 } }
+    { projection: { veranstalterUsername: 1, typ: 1, agbPflicht: 1 } }
   );
   if (!zirkel) return { ok: false, isVeranstalter: false };
 
@@ -23,12 +22,7 @@ async function checkZugang(
     return { ok: true, isVeranstalter: true };
   }
 
-  const teilnahmen = await getBuchzirkelTeilnahmenCollection();
-  const t = await teilnahmen.findOne({
-    buchzirkelId: new ObjectId(zirkelId),
-    teilnehmerUsername: username,
-  });
-  return { ok: !!t, isVeranstalter: false };
+  return { ok: await canAccessBuchzirkel(zirkel, username), isVeranstalter: false };
 }
 
 // GET: Beiträge eines Topics

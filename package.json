@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test tests/*.test.mjs && node --import tsx --test lib/werbebudget.test.ts lib/werbebudget-db.test.ts app/api/social-media/werbebudget/route.test.ts",
+    "test:regressions": "node --test tests/*.test.mjs",
     "dev": "next dev",
     "build": "node scripts/copy-ffmpeg.mjs && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "reels:v2": "tsx scripts/generate-reels-v2.ts"
   },
   "keywords": [],

@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getBucharenaSnippetsCollection } from "@/lib/bucharena-db";
-import { requireSuperAdmin } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 import { davDelete } from "@/lib/bucharena-webdav";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) return NextResponse.json({ success: false, error: "Keine Berechtigung" }, { status: 403 });
 
     const col = await getBucharenaSnippetsCollection();
@@ -39,7 +39,7 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) return NextResponse.json({ success: false, error: "Keine Berechtigung" }, { status: 403 });
 
     const body = await request.json();
@@ -70,7 +70,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireAdmin();
     if (!admin) return NextResponse.json({ success: false, error: "Keine Berechtigung" }, { status: 403 });
 
     const { searchParams } = new URL(request.url);
