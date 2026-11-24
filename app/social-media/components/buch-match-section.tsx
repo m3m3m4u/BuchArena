@@ -623,7 +623,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
                           )}
                         </div>
                         {app.offerBookTitle && (
-                          <p className="font-sans text-xs text-arena-muted m-0 mt-0.5">Inserat: „{app.offerBookTitle}"</p>
+                          <p className="font-sans text-xs text-arena-muted m-0 mt-0.5">Inserat: „{app.offerBookTitle}&quot;</p>
                         )}
                       </div>
                     </div>
@@ -648,7 +648,7 @@ export default function BuchMatchSection({ account }: { account: LoggedInAccount
 
                   {app.message && (
                     <p className="font-sans text-xs text-arena-muted italic p-2.5 rounded-lg bg-arena-bg/60 border border-arena-border-light/60 m-0">
-                      „{app.message}"
+                      „{app.message}&quot;
                     </p>
                   )}
                 </div>

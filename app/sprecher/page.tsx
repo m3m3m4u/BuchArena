@@ -137,7 +137,7 @@ export default function SprecherPage() {
                         <p className="font-sans mt-0.5 text-sm text-arena-text">{speaker.ort}</p>
                       )}
                       {speaker.motto && (
-                        <p className="font-sans mt-1 text-sm italic text-arena-muted">„{speaker.motto}"</p>
+                        <p className="font-sans mt-1 text-sm italic text-arena-muted">„{speaker.motto}&quot;</p>
                       )}
                       <p className="font-sans mt-1.5 text-xs text-arena-muted font-medium">
                         {speaker.sprechprobenCount}{" "}

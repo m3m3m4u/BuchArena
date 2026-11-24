@@ -51,16 +51,19 @@ function getItemFiles(item: PromoContentItem) {
 export default function PromoContentBrowser({ mediaType, title, description, itemId, notice }: PromoContentBrowserProps) {
   const [items, setItems] = useState<PromoContentItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [retry, setRetry] = useState(0);
   const [copiedCaption, setCopiedCaption] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    fetch("/api/social-media/promo-content")
-      .then((r) => r.json())
-      .then((d: { items?: PromoContentItem[] }) => setItems(d.items ?? []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    const controller = new AbortController();
+    fetch("/api/social-media/promo-content", { signal: controller.signal })
+      .then((r) => { if (!r.ok) throw new Error("Inhalte konnten nicht geladen werden."); return r.json(); })
+      .then((d: { items?: PromoContentItem[] }) => { if (!controller.signal.aborted) setItems(d.items ?? []); })
+      .catch(() => { if (!controller.signal.aborted) setLoadError("Die Inhalte konnten nicht geladen werden."); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [retry]);
 
   const filteredItems = useMemo(
     () => items.filter((item) => item.mediaType === mediaType),
@@ -122,6 +125,8 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
 
         {loading ? (
           <p className="text-sm text-arena-muted">Lade Inhalte…</p>
+        ) : loadError ? (
+          <div role="alert" className="card-info"><p>{loadError}</p><button type="button" className="btn btn-sm" onClick={() => { setLoadError(""); setLoading(true); setRetry((value) => value + 1); }}>Erneut versuchen</button></div>
         ) : filteredItems.length === 0 ? (
           <p className="text-sm text-arena-muted">Aktuell sind in diesem Bereich noch keine Inhalte verfügbar.</p>
         ) : !itemId ? (

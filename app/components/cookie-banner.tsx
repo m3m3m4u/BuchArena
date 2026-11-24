@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useStoredConsent } from "@/lib/client-state";
 import {
-  getStoredConsent,
   OPEN_COOKIE_SETTINGS_EVENT,
   persistConsent,
   type ConsentChoice,
@@ -12,14 +12,10 @@ import {
 export default function CookieBanner() {
   const [showBanner, setShowBanner] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [currentChoice, setCurrentChoice] = useState<ConsentChoice | null>(null);
+  const currentChoice = useStoredConsent();
 
   useEffect(() => {
-    const stored = getStoredConsent();
-    setCurrentChoice(stored);
-    if (!stored) setShowBanner(true);
     function onOpenSettings() {
-      setCurrentChoice(getStoredConsent());
       setShowBanner(true);
     }
     window.addEventListener(OPEN_COOKIE_SETTINGS_EVENT, onOpenSettings);
@@ -28,14 +24,13 @@ export default function CookieBanner() {
 
   function onChoose(choice: ConsentChoice) {
     persistConsent(choice);
-    setCurrentChoice(choice);
     setShowBanner(false);
     setShowDetails(false);
   }
 
   return (
     <>
-      {showBanner && (
+      {(showBanner || currentChoice === null) && (
         <div
           className="fixed right-4 bottom-4 z-[1000] w-[calc(100%-2rem)] max-w-[460px] max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-xl border border-arena-border bg-white p-4 shadow-lg max-sm:right-2 max-sm:bottom-2 max-sm:w-[calc(100%-1rem)]"
           role="dialog"
@@ -66,7 +61,8 @@ export default function CookieBanner() {
                 <p className="font-semibold mb-1">Notwendige Cookies (immer aktiv)</p>
                 <ul className="pl-4 space-y-0.5 list-disc">
                   <li><strong>cookie_consent</strong> – speichert deine Cookie-Einwilligung (6 Monate)</li>
-                  <li><strong>bucharena_account</strong> – hält deinen Login-Status (localStorage)</li>
+                  <li><strong>auth_token</strong> – authentifiziert deine Sitzung (HttpOnly-Cookie)</li>
+                  <li><strong>logged_in_account</strong> – speichert die Account-Anzeige (Cookie und localStorage)</li>
                 </ul>
               </div>
               <div>

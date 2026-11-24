@@ -67,27 +67,27 @@ export default function AutorGewinnspielPage() {
   const [ezSaving, setEzSaving] = useState(false);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    const [buechRes, gwRes] = await Promise.all([
-      fetch("/api/gewinnspiele/meine-buecher"),
-      fetch("/api/gewinnspiele/list"),
-    ]);
-    if (buechRes.ok) setBuecher(await buechRes.json() as Buch[]);
-    if (gwRes.ok) {
+    try {
+      const [buechRes, gwRes] = await Promise.all([
+        fetch("/api/gewinnspiele/meine-buecher"),
+        fetch("/api/gewinnspiele/list"),
+      ]);
+      if (!buechRes.ok || !gwRes.ok) throw new Error("Gewinnspiele konnten nicht geladen werden.");
+      setBuecher(await buechRes.json() as Buch[]);
       const all = await gwRes.json() as (Gewinnspiel & { autorUsername?: string })[];
       const accNow = getStoredAccount();
       const own = all.filter((g) => g.autorUsername === accNow?.username);
-      // Detail-Daten laden (inkl. gewinnerEmail / gewinnerAdresse)
       const details = await Promise.all(
-        own.map((g) =>
-          fetch(`/api/gewinnspiele/${g._id}`)
-            .then((r) => r.json() as Promise<Gewinnspiel>)
-            .catch(() => null)
-        )
+        own.map(async (g) => {
+          const response = await fetch(`/api/gewinnspiele/${g._id}`);
+          if (!response.ok) throw new Error("Gewinnspieldetails konnten nicht geladen werden.");
+          return response.json() as Promise<Gewinnspiel>;
+        }),
       );
-      setEigeneGewinnspiele(details.filter((d): d is Gewinnspiel => !!d));
-    }
-    setLoading(false);
+      setEigeneGewinnspiele(details);
+    } catch {
+      setMsg({ text: "Deine Gewinnspiele konnten nicht geladen werden. Bitte versuche es erneut.", ok: false });
+    } finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function AutorGewinnspielPage() {
       const hasDates = anmeldungVon && anmeldungBis;
       setMsg({ text: hasDates ? "Gewinnspiel gestartet! Die Anmeldephase ist jetzt aktiv." : "Buch erfolgreich eingereicht. Du kannst den Zeitraum jetzt direkt festlegen.", ok: true });
       setBuchId(""); setBeschreibung(""); setAnmeldungVon(""); setAnmeldungBis("");
-      await load();
+      setLoading(true); await load();
     } else {
       setMsg({ text: d.message ?? "Fehler", ok: false });
     }
@@ -143,7 +143,7 @@ export default function AutorGewinnspielPage() {
     if (r.ok) {
       setMsg({ text: "Gewinnspiel gestartet! Anmeldephase ist aktiv.", ok: true });
       setEditZeitraumId(null);
-      await load();
+      setLoading(true); await load();
     } else {
       const d = await r.json() as { message?: string };
       setMsg({ text: d.message ?? "Fehler", ok: false });
@@ -158,7 +158,7 @@ export default function AutorGewinnspielPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "versendet" }),
     });
-    if (r.ok) { setMsg({ text: "Als versendet markiert.", ok: true }); await load(); }
+    if (r.ok) { setMsg({ text: "Als versendet markiert.", ok: true }); setLoading(true); await load(); }
     else { const d = await r.json() as { message?: string }; setMsg({ text: d.message ?? "Fehler", ok: false }); }
   }
 

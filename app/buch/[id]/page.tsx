@@ -111,7 +111,7 @@ export default function BookDetailPage({ params }: PageProps) {
         .then((r) => r.json())
         .then((data) => {
           if (data?.author?.books) {
-            setAuthorBooks(data.author.books.filter((b: any) => b.id !== bookId));
+            setAuthorBooks(data.author.books.filter((b: { id: string; title: string; genre: string }) => b.id !== bookId));
           }
         })
         .catch(() => setAuthorBooks([]));

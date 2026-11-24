@@ -456,7 +456,7 @@ export default function QuizPage() {
                       ? "border-green-400 bg-green-50 text-green-800"
                       : "border-orange-300 bg-orange-50 text-orange-800"
                   }`}>
-                    Dein Tipp: „{wbGuess}" –{" "}
+                    Dein Tipp: „{wbGuess}&quot; –{" "}
                     {currentWB.book.toLowerCase().trim() === wbGuess.toLowerCase().trim()
                       ? "✓ Richtig!"
                       : "Leider falsch."}
@@ -521,7 +521,7 @@ export default function QuizPage() {
                       ? "border-green-400 bg-green-50 text-green-800"
                       : "border-orange-300 bg-orange-50 text-orange-800"
                   }`}>
-                    Dein Tipp: „{wpnSelected}" –{" "}
+                    Dein Tipp: „{wpnSelected}&quot; –{" "}
                     {currentWPN.oddOneOut.toLowerCase().includes(wpnSelected.toLowerCase())
                       ? "✓ Richtig!"
                       : "Leider falsch."}
@@ -578,7 +578,7 @@ export default function QuizPage() {
                       ? "border-green-400 bg-green-50 text-green-800"
                       : "border-orange-300 bg-orange-50 text-orange-800"
                   }`}>
-                    Dein Tipp: „{bsGuess}" –{" "}
+                    Dein Tipp: „{bsGuess}&quot; –{" "}
                     {currentBS.title.toLowerCase().trim() === bsGuess.toLowerCase().trim()
                       ? "✓ Richtig!"
                       : "Leider falsch."}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
+import { useStoredAccount } from "@/lib/client-state";
 import { 
   ExclamationTriangleIcon, 
   InformationCircleIcon, 
@@ -67,19 +67,11 @@ export default function GewinnspielUebersichtPage() {
   const [tab, setTab] = useState<"aktiv" | "archiv">("aktiv");
   const [pageAktiv, setPageAktiv] = useState(0);
   const [pageArchiv, setPageArchiv] = useState(0);
-  const [account, setAccount] = useState<ReturnType<typeof getStoredAccount>>(null);
+  const account = useStoredAccount();
 
   const PAGE_SIZE = 8;
 
   useEffect(() => {
-    setAccount(getStoredAccount());
-    const sync = () => setAccount(getStoredAccount());
-    window.addEventListener(ACCOUNT_CHANGED_EVENT, sync);
-    return () => window.removeEventListener(ACCOUNT_CHANGED_EVENT, sync);
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
     Promise.all([
       fetch("/api/gewinnspiele/list?status=aktiv").then((r) => r.json()),
       fetch("/api/gewinnspiele/list?status=archiv").then((r) => r.json()),

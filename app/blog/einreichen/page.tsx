@@ -15,7 +15,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import Youtube from "@tiptap/extension-youtube";
 import { useRouter } from "next/navigation";
-import { getStoredAccount } from "@/lib/client-account";
+import { useStoredAccount } from "@/lib/client-state";
 
 /* ── Resizable Image ── */
 const ResizableImage = Image.extend({
@@ -168,6 +168,7 @@ function EditorToolbar({
         isImage,
         imgNodePos: isImage ? sel!.from : -1,
         isYoutube,
+        ytNodePos: isYoutube ? sel?.from : -1,
         imgWidth: (imgAttrs.width as string | null) ?? "",
         imgAlign: (imgAttrs.align as string | null) ?? null,
         ytWidth: String((ctx.editor?.getAttributes("youtube").width as number | null) ?? 640),
@@ -179,13 +180,24 @@ function EditorToolbar({
   useEffect(() => {
     if (editorState?.isImage) {
       imgNodePosRef.current = editorState.imgNodePos;
-      setImgWidthInput(editorState.imgWidth);
-      setImgAlignActive(editorState.imgAlign);
     }
-  }, [editorState?.isImage, editorState?.imgNodePos, editorState?.imgWidth, editorState?.imgAlign]);
-  useEffect(() => {
-    if (editorState?.isYoutube) { setYtWidthInput(editorState.ytWidth); setYtHeightInput(editorState.ytHeight); }
-  }, [editorState?.isYoutube, editorState?.ytWidth, editorState?.ytHeight]);
+  }, [editorState?.isImage, editorState?.imgNodePos]);
+
+  // Reset local input drafts when the selected media or its attributes change.
+  const imageSource = editorState?.isImage ? JSON.stringify([editorState.imgNodePos, editorState.imgWidth, editorState.imgAlign]) : "";
+  const youtubeSource = editorState?.isYoutube ? JSON.stringify([editorState.ytNodePos, editorState.ytWidth, editorState.ytHeight]) : "";
+  const [previousImage, setPreviousImage] = useState(imageSource);
+  const [previousYoutube, setPreviousYoutube] = useState(youtubeSource);
+  if (previousImage !== imageSource) {
+    setPreviousImage(imageSource);
+    setImgWidthInput(editorState?.imgWidth ?? "");
+    setImgAlignActive(editorState?.imgAlign ?? null);
+  }
+  if (previousYoutube !== youtubeSource) {
+    setPreviousYoutube(youtubeSource);
+    setYtWidthInput(editorState?.ytWidth ?? "640");
+    setYtHeightInput(editorState?.ytHeight ?? "360");
+  }
 
   const applyImageAttrs = (patch: Record<string, unknown>) => {
     if (!editor || imgNodePosRef.current < 0) return;
@@ -329,12 +341,8 @@ export default function BlogEinreichenPage() {
   const [statusMessage, setStatusMessage] = useState("");
   const [htmlMode, setHtmlMode] = useState(false);
   const [htmlSource, setHtmlSource] = useState("");
-  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const loggedIn = !!useStoredAccount();
   const router = useRouter();
-
-  useEffect(() => {
-    setLoggedIn(!!getStoredAccount());
-  }, []);
 
   const editor = useEditor({
     immediatelyRender: false,

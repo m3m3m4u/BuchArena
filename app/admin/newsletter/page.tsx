@@ -1148,24 +1148,17 @@ function SubscriberManager() {
   const [addStatus, setAddStatus] = useState("");
   const [activeSection, setActiveSection] = useState<"extern" | "registriert">("extern");
 
-  const fetchSubscribers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const subRes = await fetch("/api/newsletter/subscribers");
-      if (subRes.ok) {
-        const subData = (await subRes.json()) as { subscribers?: Subscriber[] };
-        setSubscribers(subData.subscribers ?? []);
-      }
-    } catch { /* ignore */ }
-    try {
-      const userRes = await fetch("/api/admin/users", { method: "POST" });
-      if (userRes.ok) {
-        const userData = (await userRes.json()) as { users?: (RegisteredOptIn & { newsletterOptIn?: boolean })[] };
-        setRegisteredOptIns((userData.users ?? []).filter((u) => u.newsletterOptIn));
-      }
-    } catch { /* ignore */ }
-    setLoading(false);
-  }, []);
+  const fetchSubscribers = useCallback(() => Promise.all([
+    fetch("/api/newsletter/subscribers")
+      .then((response) => response.ok ? response.json() as Promise<{ subscribers?: Subscriber[] }> : null)
+      .catch(() => null),
+    fetch("/api/admin/users", { method: "POST" })
+      .then((response) => response.ok ? response.json() as Promise<{ users?: (RegisteredOptIn & { newsletterOptIn?: boolean })[] }> : null)
+      .catch(() => null),
+  ]).then(([subData, userData]) => {
+    if (subData) setSubscribers(subData.subscribers ?? []);
+    if (userData) setRegisteredOptIns((userData.users ?? []).filter((u) => u.newsletterOptIn));
+  }).finally(() => setLoading(false)), []);
 
   useEffect(() => { void fetchSubscribers(); }, [fetchSubscribers]);
 

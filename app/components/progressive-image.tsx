@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 
 /* ------------------------------------------------------------------ */
@@ -56,7 +56,12 @@ type ProgressiveImageProps = {
   priority?: boolean;
 };
 
-export function ProgressiveImage({
+export function ProgressiveImage(props: ProgressiveImageProps) {
+  const key = toProxyUrl(props.src, props.targetWidth || props.width || 600) || props.src;
+  return <ProgressiveImageContent key={key} {...props} />;
+}
+
+function ProgressiveImageContent({
   src,
   alt,
   fill,
@@ -71,7 +76,6 @@ export function ProgressiveImage({
 }: ProgressiveImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
   const mainWidth = targetWidth || width || 600;
   const thumbUrl = toProxyUrl(src, thumbWidth);
   const mainUrl = toProxyUrl(src, mainWidth) || src;
@@ -84,16 +88,11 @@ export function ProgressiveImage({
     setLoaded(true);
   }, []);
 
-  // reset on src change & Cache-Check
-  useEffect(() => {
-    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+  const checkCachedImage = useCallback((image: HTMLImageElement | null) => {
+    if (image?.complete && image.naturalWidth > 0) {
       setLoaded(true);
-      setFailed(false);
-    } else {
-      setLoaded(false);
-      setFailed(false);
     }
-  }, [mainUrl]);
+  }, []);
 
   return (
     <div
@@ -131,7 +130,7 @@ export function ProgressiveImage({
 
       {/* Full image */}
       <Image
-        ref={imgRef}
+        ref={checkCachedImage}
         src={mainUrl}
         alt={alt}
         fill={fill}
@@ -163,7 +162,12 @@ type ProgressiveImgProps = React.ImgHTMLAttributes<HTMLImageElement> & {
   targetWidth?: number;
 };
 
-export function ProgressiveImg({
+export function ProgressiveImg(props: ProgressiveImgProps) {
+  const key = typeof props.src === "string" ? (toProxyUrl(props.src, props.targetWidth ?? 600) || props.src) : undefined;
+  return <ProgressiveImgContent key={key} {...props} />;
+}
+
+function ProgressiveImgContent({
   src,
   alt,
   className,
@@ -171,30 +175,27 @@ export function ProgressiveImg({
   thumbWidth = 32,
   targetWidth = 600,
   loading,
+  onLoad,
+  onError,
   ...rest
 }: ProgressiveImgProps) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
   const thumbUrl = typeof src === "string" ? toProxyUrl(src, thumbWidth) : null;
   const mainUrl = typeof src === "string" ? (toProxyUrl(src, targetWidth) || src) : src;
 
-  useEffect(() => {
-    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+  const checkCachedImage = useCallback((image: HTMLImageElement | null) => {
+    if (image?.complete && image.naturalWidth > 0) {
       setLoaded(true);
-      setFailed(false);
-    } else {
-      setLoaded(false);
-      setFailed(false);
     }
-  }, [mainUrl]);
+  }, []);
 
   if (!src) return null;
 
   // Kein Proxy möglich → normales img
   if (!thumbUrl) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt} className={className} style={style} loading={loading} {...rest} />;
+    return <img src={src} alt={alt} className={className} style={style} loading={loading} onLoad={onLoad} onError={onError} {...rest} />;
   }
 
   const hasFullWidth = /\bw-full\b/.test(className ?? "");
@@ -239,7 +240,7 @@ export function ProgressiveImg({
       )}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        ref={imgRef}
+        ref={checkCachedImage}
         src={mainUrl}
         alt={alt}
         className={className}
@@ -250,10 +251,11 @@ export function ProgressiveImg({
           transition: "opacity .4s ease-in",
         }}
         loading={loading}
-        onLoad={() => setLoaded(true)}
-        onError={() => {
+        onLoad={(event) => { setLoaded(true); onLoad?.(event); }}
+        onError={(event) => {
           setFailed(true);
           setLoaded(true);
+          onError?.(event);
         }}
         {...rest}
       />
@@ -274,7 +276,12 @@ type ProgressiveBgImageProps = {
   children?: React.ReactNode;
 };
 
-export function ProgressiveBgImage({
+export function ProgressiveBgImage(props: ProgressiveBgImageProps) {
+  const key = toProxyUrl(props.src, props.targetWidth ?? 300) || props.src;
+  return <ProgressiveBgImageContent key={key} {...props} />;
+}
+
+function ProgressiveBgImageContent({
   src,
   className,
   style,
@@ -287,14 +294,16 @@ export function ProgressiveBgImage({
   const mainUrl = toProxyUrl(src, targetWidth) || src;
 
   useEffect(() => {
-    setLoaded(false);
+    let cancelled = false;
     const img = new window.Image();
+    const reveal = () => { if (!cancelled) setLoaded(true); };
+    img.onload = reveal;
+    img.onerror = reveal;
     img.src = mainUrl;
-    img.onload = () => setLoaded(true);
-    // bei cached Images
-    if (img.complete && img.naturalWidth > 0) setLoaded(true);
-    return () => { img.onload = null; };
-  }, [src, mainUrl]);
+    // decode also resolves for images already present in the browser cache.
+    if (img.complete) void img.decode().then(reveal, reveal);
+    return () => { cancelled = true; img.onload = null; img.onerror = null; };
+  }, [mainUrl]);
 
   return (
     <div

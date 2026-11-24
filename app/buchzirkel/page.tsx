@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getStoredAccount } from "@/lib/client-account";
+import { useStoredAccount } from "@/lib/client-state";
 import { BookOpenIcon } from "@heroicons/react/24/outline";
 import { ProgressiveImg } from "@/app/components/progressive-image";
 
@@ -44,7 +45,7 @@ export default function BuchzirkelPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [typFilter, setTypFilter] = useState<"" | "testleser" | "betaleser">("");
-  const [account, setAccount] = useState<ReturnType<typeof getStoredAccount>>(null);
+  const account = useStoredAccount();
   const [bewerbungsStatusFilter, setBewerbungsStatusFilter] = useState<string>("");
 
   const hasActiveFilter = typFilter !== "" || bewerbungsStatusFilter !== "";
@@ -53,10 +54,6 @@ export default function BuchzirkelPage() {
     setTypFilter("");
     setBewerbungsStatusFilter("");
   }
-
-  useEffect(() => {
-    setAccount(getStoredAccount());
-  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams({ status: "aktiv", limit: "0" });

@@ -158,7 +158,7 @@ export default function BloggerPage() {
                     <div>
                       <h2 className="font-sans m-0 text-base font-bold text-arena-blue truncate">{blogger.displayName}</h2>
                       {blogger.motto && (
-                        <p className="font-sans mt-1 text-sm italic text-arena-muted">„{blogger.motto}"</p>
+                        <p className="font-sans mt-1 text-sm italic text-arena-muted">„{blogger.motto}&quot;</p>
                       )}
                       {blogger.lieblingsbuch && (
                         <p className="font-sans mt-1.5 text-xs text-arena-muted flex items-center gap-1">

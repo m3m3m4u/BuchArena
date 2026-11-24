@@ -1171,35 +1171,33 @@ function FragebogenTab({
 }) {
   const hatAntworten = bestehend.length > 0 && bestehend.some((a) => a.antwort.trim() !== "");
   const [editMode, setEditMode] = useState(!hatAntworten);
-  const [antworten, setAntworten] = useState<Record<string, string>>(() => {
-    const m: Record<string, string> = {};
-    for (const a of bestehend) m[a.frageId] = a.antwort;
-    return m;
-  });
+  const gespeicherteAntworten = Object.fromEntries(bestehend.map((a) => [a.frageId, a.antwort]));
+  const [entwurf, setEntwurf] = useState<Record<string, string> | null>(null);
+  const antworten = entwurf ?? gespeicherteAntworten;
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-
-  // Sync wenn bestehend sich von außen ändert (z. B. nach onSaved + load())
-  useEffect(() => {
-    const m: Record<string, string> = {};
-    for (const a of bestehend) m[a.frageId] = a.antwort;
-    setAntworten(m);
-  }, [bestehend]);
+  const [saveError, setSaveError] = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    await fetch(`/api/buchzirkel/${zirkelId}/fragebogen`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        antworten: Object.entries(antworten).map(([frageId, antwort]) => ({ frageId, antwort })),
-      }),
-    });
-    setSaving(false);
-    setSaved(true);
-    setEditMode(false);
-    onSaved();
+    setSaveError("");
+    setSaved(false);
+    try {
+      const response = await fetch(`/api/buchzirkel/${zirkelId}/fragebogen`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          antworten: Object.entries(antworten).map(([frageId, antwort]) => ({ frageId, antwort })),
+        }),
+      });
+      if (!response.ok) throw new Error("Speichern fehlgeschlagen.");
+      setSaved(true);
+      setEditMode(false);
+      onSaved();
+    } catch {
+      setSaveError("Deine Antworten konnten nicht gespeichert werden. Bitte versuche es erneut.");
+    } finally { setSaving(false); }
   }
 
   // Lesemodus: gespeicherte Antworten anzeigen
@@ -1247,7 +1245,7 @@ function FragebogenTab({
         {hatAntworten && (
           <button
             type="button"
-            onClick={() => setEditMode(false)}
+            onClick={() => { setEntwurf(null); setEditMode(false); }}
             className="btn btn-secondary btn-sm"
           >
             Abbrechen
@@ -1255,6 +1253,7 @@ function FragebogenTab({
         )}
       </div>
       <p className="text-sm text-arena-muted m-0 mb-4">Der Autor möchte am Ende dein Feedback zu diesen Fragen. Du kannst deine Antworten jederzeit ändern und erneut absenden.</p>
+      {saveError && <p role="alert" className="card-info">{saveError}</p>}
       <form onSubmit={submit} className="flex flex-col gap-4">
         {fragen.map((f) => (
           <div key={f.id} className="flex flex-col gap-1.5">
@@ -1263,7 +1262,7 @@ function FragebogenTab({
               className="input"
               rows={5}
               value={antworten[f.id] ?? ""}
-              onChange={(e) => setAntworten((prev) => ({ ...prev, [f.id]: e.target.value }))}
+              onChange={(e) => setEntwurf((prev) => ({ ...(prev ?? gespeicherteAntworten), [f.id]: e.target.value }))}
             />
           </div>
         ))}
@@ -1272,7 +1271,7 @@ function FragebogenTab({
             {saving ? "Wird gespeichert…" : "Antworten absenden"}
           </button>
           {hatAntworten && (
-            <button type="button" onClick={() => setEditMode(false)} className="btn btn-secondary">
+            <button type="button" onClick={() => { setEntwurf(null); setEditMode(false); }} className="btn btn-secondary">
               Abbrechen
             </button>
           )}

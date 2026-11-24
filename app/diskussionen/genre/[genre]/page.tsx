@@ -671,7 +671,7 @@ export default function GenreDiskussionenPage() {
         <div className="overlay-backdrop">
           <div className="w-[min(600px,100%)] bg-white rounded-xl p-4 box-border grid gap-3.5">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="m-0">Neue Abstimmung in „{genre}"</h2>
+              <h2 className="m-0">Neue Abstimmung in „{genre}&quot;</h2>
               <button className="text-arena-muted hover:text-arena-text text-xl leading-none" onClick={() => setShowPollOverlay(false)}>✕</button>
             </div>
 
@@ -745,7 +745,7 @@ export default function GenreDiskussionenPage() {
         <div className="overlay-backdrop">
           <div className="w-[min(660px,100%)] bg-white rounded-xl p-4 box-border grid gap-3.5">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="m-0">Neues Thema in „{genre}"</h2>
+              <h2 className="m-0">Neues Thema in „{genre}&quot;</h2>
               <button className="text-arena-muted hover:text-arena-text text-xl leading-none" onClick={() => setShowOverlay(false)}>✕</button>
             </div>
 

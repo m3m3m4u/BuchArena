@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
+import { useStoredAccount } from "@/lib/client-state";
 import { ProgressiveImg } from "@/app/components/progressive-image";
 
 type GewinnspielDetail = {
@@ -40,11 +40,15 @@ function fmtDt(iso: string | undefined): string {
 
 export default function GewinnspielDetailPage() {
   const { id } = useParams() as { id: string };
+  return <GewinnspielDetailContent key={id} id={id} />;
+}
+
+function GewinnspielDetailContent({ id }: { id: string }) {
   const router = useRouter();
   const [g, setG] = useState<GewinnspielDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
-  const [account, setAccount] = useState(getStoredAccount());
+  const account = useStoredAccount();
   const [showAdresseForm, setShowAdresseForm] = useState(false);
   const [name, setName] = useState("");
   const [adresse, setAdresse] = useState("");
@@ -52,21 +56,18 @@ export default function GewinnspielDetailPage() {
   const [land, setLand] = useState("Deutschland");
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    const sync = () => setAccount(getStoredAccount());
-    window.addEventListener(ACCOUNT_CHANGED_EVENT, sync);
-    return () => window.removeEventListener(ACCOUNT_CHANGED_EVENT, sync);
-  }, []);
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch(`/api/gewinnspiele/${id}`);
+      if (!r.ok) throw new Error("Gewinnspiel konnte nicht geladen werden.");
+      setG(await r.json() as GewinnspielDetail);
+    } catch {
+      setG(null);
+      setMsg({ text: "Gewinnspiel konnte nicht geladen werden.", ok: false });
+    } finally { setLoading(false); }
+  }, [id]);
 
-  async function load() {
-    setLoading(true);
-    const r = await fetch(`/api/gewinnspiele/${id}`);
-    if (r.ok) setG(await r.json() as GewinnspielDetail);
-    else setG(null);
-    setLoading(false);
-  }
-
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => { void load(); }, [load]);
 
   async function teilnehmen() {
     if (!account) { router.push("/auth"); return; }
@@ -95,7 +96,7 @@ export default function GewinnspielDetailPage() {
     if (r.ok) {
       setMsg({ text: "Du nimmst jetzt teil! Viel Glück!", ok: true });
       setShowAdresseForm(false);
-      await load();
+      setLoading(true); await load();
     } else if (d.needsProfile) {
       setMsg({
         text: "Für die Teilnahme benötigst du ein Profil auf BuchArena.",
@@ -110,7 +111,7 @@ export default function GewinnspielDetailPage() {
   async function abmelden() {
     if (!confirm("Teilnahme zurückziehen?")) return;
     const r = await fetch(`/api/gewinnspiele/${id}/teilnehmen`, { method: "DELETE" });
-    if (r.ok) { setMsg({ text: "Teilnahme zurückgezogen.", ok: true }); await load(); }
+    if (r.ok) { setMsg({ text: "Teilnahme zurückgezogen.", ok: true }); setLoading(true); await load(); }
     else { const d = await r.json() as { message?: string }; setMsg({ text: d.message ?? "Fehler", ok: false }); }
   }
 

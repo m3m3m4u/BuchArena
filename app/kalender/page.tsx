@@ -239,8 +239,8 @@ export default function KalenderPage() {
   // Map state
   const [eventCoords, setEventCoords] = useState<Record<string, [number, number]>>({});
   const mapContainer = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
+  const mapInstance = useRef<import("leaflet").Map | null>(null);
+  const markersRef = useRef<import("leaflet").CircleMarker[]>([]);
   const leafletRef = useRef<LeafletModule | null>(null);
 
   // Auth sync

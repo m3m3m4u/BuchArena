@@ -400,7 +400,7 @@ export default function BuchzirkelErstellenPage() {
         {/* Diskussions-Topics */}
         <section className="card">
           <h2 className="text-base font-semibold m-0 mb-1">Diskussions-Bereiche</h2>
-          <p className="text-sm text-arena-muted m-0 mb-2">Gliedere die Diskussion in Themenbereiche (z.B. „Handlung", „Figuren", „Stil"). Teilnehmer können gezielt in einem Bereich posten. Standard-Topics werden automatisch angelegt – benenne sie nach deinen Wünschen.</p>
+          <p className="text-sm text-arena-muted m-0 mb-2">Gliedere die Diskussion in Themenbereiche (z.B. „Handlung&quot;, „Figuren&quot;, „Stil&quot;). Teilnehmer können gezielt in einem Bereich posten. Standard-Topics werden automatisch angelegt – benenne sie nach deinen Wünschen.</p>
           {topics.map((t, i) => (
             <div key={t.id} className="flex items-center gap-2 mb-2">
               <input

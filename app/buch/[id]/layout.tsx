@@ -78,7 +78,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BookDetailLayout({ params, children }: Props) {
   const { id } = await params;
-  let jsonLd: Record<string, any> | null = null;
+  let jsonLd: Record<string, unknown> | null = null;
 
   if (id && ObjectId.isValid(id)) {
     try {

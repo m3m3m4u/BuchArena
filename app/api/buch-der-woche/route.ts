@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     const cycleInfo = getBdwCycleInfo();
 
     // Wenn Admin die Seite aufruft, auch alle Bewerbungen mitliefern
-    let submissions: any[] = [];
+    let submissions: Record<string, unknown>[] = [];
     if (isAdmin) {
       const admin = await requireAdmin();
       if (admin) {
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
       ...(isAdmin ? { submissions } : {}),
     });
 
-    res.headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=60");
+    res.headers.set("Cache-Control", isAdmin ? "private, no-store" : "public, s-maxage=30, stale-while-revalidate=60");
     return res;
   } catch (err) {
     console.error("GET /api/buch-der-woche error:", err);

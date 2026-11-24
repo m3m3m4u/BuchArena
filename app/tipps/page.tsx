@@ -78,10 +78,10 @@ export default function TippsPage() {
 
   type Track = { id: string; title: string; style: string; description: string; fileUrl: string; fileName: string; fileSize: number | null; soundcloudUrl: string | null };
   const [tracks, setTracks] = useState<Track[]>([]);
-  const [tracksLoading, setTracksLoading] = useState(false);
+  const [tracksLoading, setTracksLoading] = useState(true);
 
   const [glossar, setGlossar] = useState<GlossarEntry[]>([]);
-  const [glossarLoading, setGlossarLoading] = useState(false);
+  const [glossarLoading, setGlossarLoading] = useState(true);
   const [glossarSearch, setGlossarSearch] = useState("");
   const [glossarKategorie, setGlossarKategorie] = useState("");
   const [glossarLetter, setGlossarLetter] = useState("");
@@ -89,7 +89,6 @@ export default function TippsPage() {
 
   useEffect(() => {
     if (mainTab !== "musik") return;
-    setTracksLoading(true);
     fetch("/api/musik")
       .then((r) => r.json())
       .then((d: { tracks?: Track[] }) => setTracks(d.tracks ?? []))
@@ -99,7 +98,6 @@ export default function TippsPage() {
 
   useEffect(() => {
     if (mainTab !== "glossar" || glossar.length > 0) return;
-    setGlossarLoading(true);
     fetch("/data/glossar.csv")
       .then((r) => r.text())
       .then((csv) => {
@@ -150,7 +148,7 @@ export default function TippsPage() {
                 key={tabKey}
                 type="button"
                 className={`segmented-control-btn max-sm:shrink-0 ${isActive ? "active" : ""}`}
-                onClick={() => setMainTab(tabKey)}
+                onClick={() => { if (tabKey === "musik" && mainTab !== "musik") setTracksLoading(true); setMainTab(tabKey); }}
               >
                 {labels[tabKey]}
               </button>
@@ -203,7 +201,7 @@ export default function TippsPage() {
             <div className="card-info">
               <h2 className="font-sans text-lg font-bold text-arena-blue m-0 mb-3">Der Community-Effekt</h2>
               <p className="font-sans m-0 mb-4 text-[0.95rem] leading-relaxed">
-                Der größte Fehler, den du machen kannst, ist nur deinen eigenen Beitrag zu supporten („Post &amp; Run").
+                Der größte Fehler, den du machen kannst, ist nur deinen eigenen Beitrag zu supporten („Post &amp; Run&quot;).
               </p>
               <div className="space-y-4">
                 <div className="flex gap-3 items-start">
@@ -217,7 +215,7 @@ export default function TippsPage() {
                   <span className="font-sans text-xl flex-shrink-0 text-arena-blue font-bold">2.</span>
                   <div>
                     <p className="font-sans font-semibold text-arena-blue m-0">Der Algorithmus</p>
-                    <p className="font-sans text-[0.9rem] text-arena-muted m-0">Plattformen erkennen Nutzer, die nur online kommen, wenn es um sie selbst geht. Wer regelmäßig bei anderen interagiert, wird als „wertvolles Community-Mitglied" eingestuft – deine eigenen Beiträge werden höher gerankt.</p>
+                    <p className="font-sans text-[0.9rem] text-arena-muted m-0">Plattformen erkennen Nutzer, die nur online kommen, wenn es um sie selbst geht. Wer regelmäßig bei anderen interagiert, wird als „wertvolles Community-Mitglied&quot; eingestuft – deine eigenen Beiträge werden höher gerankt.</p>
                   </div>
                 </div>
                 <div className="flex gap-3 items-start">
@@ -351,7 +349,7 @@ export default function TippsPage() {
             <ChecklistItem title="Tipps für eine gute Buchvorstellung">
               <p className="m-0"><strong>Erwähne den Autornamen und Buchtitel direkt im Text</strong> – nicht nur im Bild. Suchmaschinen indexieren Text, nicht Bilder.</p>
               <p className="m-0"><strong>Verlinke das BuchArena-Profil und ggf. die Kaufseite</strong> – das erzeugt den wertvollen Backlink.</p>
-              <p className="m-0"><strong>Kennzeichne Kooperationen transparent</strong> als "Buchvorstellung in Zusammenarbeit mit @...“ oder „Rezensionsexemplar erhalten“.</p>
+              <p className="m-0"><strong>Kennzeichne Kooperationen transparent</strong> als &quot;Buchvorstellung in Zusammenarbeit mit @...“ oder „Rezensionsexemplar erhalten“.</p>
               <p className="m-0"><strong>Nutze Hashtags mit Genre und Buchtitel</strong> – das verbessert die Auffindbarkeit auf der Plattform und in KI-Trainingsdaten.</p>
             </ChecklistItem>
 
@@ -372,20 +370,20 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.instagram}
-              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> Instagram bewertet Interaktionen nach einer strengen Hierarchie. Ein einfaches „Gefällt mir" ist nett, aber für den Algorithmus fast wertlos. Ein „Speichern" oder „Teilen" hingegen signalisiert: „Dieser Inhalt ist so gut, ich will ihn behalten oder meinen Freunden zeigen."</p>}
+              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> Instagram bewertet Interaktionen nach einer strengen Hierarchie. Ein einfaches „Gefällt mir&quot; ist nett, aber für den Algorithmus fast wertlos. Ein „Speichern&quot; oder „Teilen&quot; hingegen signalisiert: „Dieser Inhalt ist so gut, ich will ihn behalten oder meinen Freunden zeigen.&quot;</p>}
             />
             <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title='1. Das „Speichern"-Fähnchen (Priorität Nr. 1)'>
               <p className="m-0"><strong>Was tun:</strong> Klicke rechts unten beim Bild auf das Lesezeichen-Symbol. Mach das bei deinem Buch und bei den Büchern der Kollegen. Erstelle dort eine eigene Kategorie für die Bücher, so bringst du kein Chaos in deine anderen gespeicherten Inhalte. Das sind nur zwei Klicks, die aber viel bewirken können.</p>
-              <p className="m-0"><strong>Der Effekt:</strong> Es kategorisiert den Post als wertvollen Content. Instagram spielt Posts mit vielen Speicherungen bevorzugt auf der „Explore Page" an fremde Leser aus.</p>
+              <p className="m-0"><strong>Der Effekt:</strong> Es kategorisiert den Post als wertvollen Content. Instagram spielt Posts mit vielen Speicherungen bevorzugt auf der „Explore Page&quot; an fremde Leser aus.</p>
             </ChecklistItem>
             <ChecklistItem title="2. Story-Share mit Kontext">
-              <p className="m-0"><strong>Was tun:</strong> Teile den Post in deiner Story. Aber: Schreibe etwas dazu! Nutze interaktive Sticker (z.&nbsp;B. eine Umfrage: „Kennt ihr das Genre?" oder einen Slider).</p>
+              <p className="m-0"><strong>Was tun:</strong> Teile den Post in deiner Story. Aber: Schreibe etwas dazu! Nutze interaktive Sticker (z.&nbsp;B. eine Umfrage: „Kennt ihr das Genre?&quot; oder einen Slider).</p>
               <p className="m-0"><strong>Der Effekt:</strong> Eine Story ohne Interaktion wird schnell weggeklickt. Wenn deine Follower auf deine Story reagieren, bewertet Instagram den ursprünglichen Post höher.</p>
             </ChecklistItem>
             <ChecklistItem title="3. Kommentieren, aber richtig">
               <p className="m-0"><strong>Was tun:</strong> Schreibe einen Sätz mit mindestens 4 Wörtern. Gehe auf Details ein (Cover, Zitat).</p>
-              <p className="m-0"><strong>Beispiel bei Kollegen:</strong> „Das Cover ist ja der Wahnsinn, erinnert mich total an [bekanntes Buch]!"</p>
+              <p className="m-0"><strong>Beispiel bei Kollegen:</strong> „Das Cover ist ja der Wahnsinn, erinnert mich total an [bekanntes Buch]!&quot;</p>
               <p className="m-0"><strong>Der Effekt:</strong> Kurze Kommentare oder einzelne Emojis filtert Instagram oft als Bot-Spam heraus. Echte Sätze erhöhen die Verweildauer im Kommentarbereich.</p>
             </ChecklistItem>
             <PlatformLink platform="instagram" />
@@ -397,20 +395,20 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.youtube}
-              text={<p className="font-sans m-0"><strong>Warum das hier ein „Game Changer" ist (SEO &amp; KI):</strong> YouTube gehört Google. Videos veralten nicht nach 24 Stunden, sie bleiben jahrelang suchbar. Noch wichtiger: Künstliche Intelligenzen (wie ChatGPT, Google Gemini) nutzen YouTube-Transkripte und Kommentare, um Wissen zu sammeln. Wenn jemand eine KI fragt „Welche neuen Fantasy-Bücher von kleinen Autoren sind gut?", durchsucht die KI YouTube-Daten. Wenn wir dort nicht stattfinden, existiert dein Buch für die KI nicht.</p>}
+              text={<p className="font-sans m-0"><strong>Warum das hier ein „Game Changer&quot; ist (SEO &amp; KI):</strong> YouTube gehört Google. Videos veralten nicht nach 24 Stunden, sie bleiben jahrelang suchbar. Noch wichtiger: Künstliche Intelligenzen (wie ChatGPT, Google Gemini) nutzen YouTube-Transkripte und Kommentare, um Wissen zu sammeln. Wenn jemand eine KI fragt „Welche neuen Fantasy-Bücher von kleinen Autoren sind gut?&quot;, durchsucht die KI YouTube-Daten. Wenn wir dort nicht stattfinden, existiert dein Buch für die KI nicht.</p>}
             />
             <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Retention (Zuschauerdauer) ist König">
               <p className="m-0"><strong>Was tun:</strong> Schaue das Video zwingend bis zum Ende. Bei Shorts: Lass es 2–3 Mal im Loop laufen. Mach das unbedingt auch bei den Videos der anderen Autoren!</p>
-              <p className="m-0"><strong>Der Effekt:</strong> Wenn du nach 5 Sekunden likst und wegklickst, signalisierst du YouTube: „Clickbait! Video ist langweilig." YouTube straft das Video sofort ab.</p>
+              <p className="m-0"><strong>Der Effekt:</strong> Wenn du nach 5 Sekunden likst und wegklickst, signalisierst du YouTube: „Clickbait! Video ist langweilig.&quot; YouTube straft das Video sofort ab.</p>
             </ChecklistItem>
             <ChecklistItem title='2. Der „Suchmaschinen"-Kommentar'>
               <p className="m-0"><strong>Was tun:</strong> Verwende in deinem Kommentar relevante Schlüsselwörter (Keywords).</p>
-              <p className="m-0"><strong>Beispiel:</strong> Statt „Super!", schreibe: „Ein toller Buchtipp für Fans von Dark Fantasy und Urban Fantasy. Die Magie-Systeme klingen spannend."</p>
+              <p className="m-0"><strong>Beispiel:</strong> Statt „Super!&quot;, schreibe: „Ein toller Buchtipp für Fans von Dark Fantasy und Urban Fantasy. Die Magie-Systeme klingen spannend.&quot;</p>
               <p className="m-0"><strong>Der Effekt:</strong> Diese Wörter helfen der Google-Suche und der KI zu verstehen, worum es in dem Buch geht. Du optimierst damit aktiv die Auffindbarkeit.</p>
             </ChecklistItem>
             <ChecklistItem title="3. Erst schauen, dann liken">
-              <p className="m-0"><strong>Die Regel:</strong> Gib den „Daumen hoch" erst, wenn ca. 50–70 % des Videos gelaufen sind. Sofortige Likes wirken wie Bots.</p>
+              <p className="m-0"><strong>Die Regel:</strong> Gib den „Daumen hoch&quot; erst, wenn ca. 50–70 % des Videos gelaufen sind. Sofortige Likes wirken wie Bots.</p>
             </ChecklistItem>
             <PlatformLink platform="youtube" />
           </div>
@@ -421,7 +419,7 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.reddit}
-              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> Reddit ist keine Social-Media-Plattform wie Instagram, sondern ein Wissensarchiv. Extrem wichtig: Reddit ist die Hauptdatenquelle für das Training von LLMs (Large Language Models). Wenn du willst, dass ChatGPT dein Buch kennt und empfiehlt, muss es auf Reddit „validiert" sein. Ein Reddit-Thread mit guter Diskussion ist für die KI ein Qualitätssiegel.</p>}
+              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> Reddit ist keine Social-Media-Plattform wie Instagram, sondern ein Wissensarchiv. Extrem wichtig: Reddit ist die Hauptdatenquelle für das Training von LLMs (Large Language Models). Wenn du willst, dass ChatGPT dein Buch kennt und empfiehlt, muss es auf Reddit „validiert&quot; sein. Ein Reddit-Thread mit guter Diskussion ist für die KI ein Qualitätssiegel.</p>}
             />
             <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Upvote">
@@ -430,12 +428,12 @@ export default function TippsPage() {
             </ChecklistItem>
             <ChecklistItem title="2. Qualitative Diskussion (Keine Werbung!)">
               <p className="m-0"><strong>Was tun:</strong> Wenn wir dein Buch posten, fungiere als Experte, nicht als Verkäufer. Antworte auf Fragen, gib Hintergrundinformationen.</p>
-              <p className="m-0"><strong>Community-Tipp:</strong> Wenn du unter dem Post eines anderen Autors kommentierst, stelle ihm eine Frage zum Buch („Wie bist du auf die Idee gekommen?"). Das kurbelt die Diskussion an.</p>
+              <p className="m-0"><strong>Community-Tipp:</strong> Wenn du unter dem Post eines anderen Autors kommentierst, stelle ihm eine Frage zum Buch („Wie bist du auf die Idee gekommen?&quot;). Das kurbelt die Diskussion an.</p>
               <p className="m-0"><strong>Der Effekt:</strong> KIs scannen diese Konversationen, um den Kontext und Inhalt des Buches zu verstehen. Je mehr Text du lieferst, desto präziser kann eine KI dein Buch später empfehlen.</p>
             </ChecklistItem>
             <div className="card-danger">
               <h3 className="font-sans text-base font-bold m-0 mb-2 text-arena-danger">Absolute No-Gos</h3>
-              <p className="font-sans m-0 text-[0.9rem] leading-relaxed"><strong>Brigading (Vote-Manipulation):</strong> Rufe niemals öffentlich (z.&nbsp;B. in deiner Insta-Story) dazu op: „Geht alle auf Reddit und votet hoch!". Reddit erkennt, wenn viele User von extern kommen und nur voten. Das führt zur Löschung des Posts oder Sperrung unseres Accounts. Die Interaktion muss organisch wirken.</p>
+              <p className="font-sans m-0 text-[0.9rem] leading-relaxed"><strong>Brigading (Vote-Manipulation):</strong> Rufe niemals öffentlich (z.&nbsp;B. in deiner Insta-Story) dazu op: „Geht alle auf Reddit und votet hoch!&quot;. Reddit erkennt, wenn viele User von extern kommen und nur voten. Das führt zur Löschung des Posts oder Sperrung unseres Accounts. Die Interaktion muss organisch wirken.</p>
             </div>
             <PlatformLink platform="reddit" />
           </div>
@@ -446,18 +444,18 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.tiktok}
-              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> TikTok interessiert sich nicht dafür, wer dir folgt. Es interessiert sich nur dafür: „Hält dieses Video die Leute in der App?".</p>}
+              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> TikTok interessiert sich nicht dafür, wer dir folgt. Es interessiert sich nur dafür: „Hält dieses Video die Leute in der App?&quot;.</p>}
             />
             <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Watchtime &amp; Re-Watch">
               <p className="m-0"><strong>Was tun:</strong> Guck das Video ganz an. Wenn es vorbei ist, lass es noch einmal laufen. Das ist der wichtigste Faktor für Viralität.</p>
             </ChecklistItem>
             <ChecklistItem title='2. Der gelbe „Neu veröffentlichen"-Button'>
-              <p className="m-0"><strong>Was tun:</strong> Gehe auf „Teilen" und dann auf „Neu veröffentlichen" (gelber Button).</p>
+              <p className="m-0"><strong>Was tun:</strong> Gehe auf „Teilen&quot; und dann auf „Neu veröffentlichen&quot; (gelber Button).</p>
               <p className="m-0"><strong>Der Effekt:</strong> Das ist der stärkste Support. Es zeigt das Video deinen Followern, ohne dass du die Datei selbst hochladen musst (was dem Original-Algorithmus schaden würde). Reposte auch die Videos deiner Kollegen – deine Follower freuen sich über gute Buchtipps!</p>
             </ChecklistItem>
             <ChecklistItem title="3. Link kopieren">
-              <p className="m-0"><strong>Was tun:</strong> Klicke auf Teilen und dann auf „Link kopieren". Das zählt für den Algorithmus als „Share", auch wenn du den Link nirgendwo einfügst.</p>
+              <p className="m-0"><strong>Was tun:</strong> Klicke auf Teilen und dann auf „Link kopieren&quot;. Das zählt für den Algorithmus als „Share&quot;, auch wenn du den Link nirgendwo einfügst.</p>
             </ChecklistItem>
             <PlatformLink platform="tiktok" />
           </div>
@@ -468,12 +466,12 @@ export default function TippsPage() {
           <div className="space-y-4">
             <SectionIntro
               icon={socialIcons.facebook}
-              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> Facebook priorisiert Inhalte, die „bedeutungsvolle Interaktionen" zwischen Menschen auslösen. Stilles Liken bringt fast nichts mehr.</p>}
+              text={<p className="font-sans m-0"><strong>So tickt der Algorithmus:</strong> Facebook priorisiert Inhalte, die „bedeutungsvolle Interaktionen&quot; zwischen Menschen auslösen. Stilles Liken bringt fast nichts mehr.</p>}
             />
             <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Emotionale Reaktionen">
-              <p className="m-0"><strong>Was tun:</strong> Nutze das Herz („Love") oder die Umarmung („Care").</p>
-              <p className="m-0"><strong>Der Effekt:</strong> Ein einfacher „Daumen hoch" ist die Standard-Reaktion und wird vom Algorithmus geringer gewichtet als eine bewusste emotionale Reaktion.</p>
+              <p className="m-0"><strong>Was tun:</strong> Nutze das Herz („Love&quot;) oder die Umarmung („Care&quot;).</p>
+              <p className="m-0"><strong>Der Effekt:</strong> Ein einfacher „Daumen hoch&quot; ist die Standard-Reaktion und wird vom Algorithmus geringer gewichtet als eine bewusste emotionale Reaktion.</p>
             </ChecklistItem>
             <ChecklistItem title="2. Teilen mit persönlicher Note">
               <p className="m-0"><strong>Was tun:</strong> Wenn du den Beitrag teilst, schreibe unbedingt dazu, warum du das Buch (oder das des Kollegen) empfiehlst.</p>
@@ -492,20 +490,20 @@ export default function TippsPage() {
             />
             <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Pins speichern (Repinnen)">
-              <p className="m-0"><strong>Was tun:</strong> Speichere den Pin auf einem passenden Board (z.&nbsp;B. „Buchtipps", „Fantasy-Bücher"). Mach das bei deinem Buch und bei den Büchern der Kollegen.</p>
+              <p className="m-0"><strong>Was tun:</strong> Speichere den Pin auf einem passenden Board (z.&nbsp;B. „Buchtipps&quot;, „Fantasy-Bücher&quot;). Mach das bei deinem Buch und bei den Büchern der Kollegen.</p>
               <p className="m-0"><strong>Der Effekt:</strong> Je öfter ein Pin gespeichert wird, desto höher rankt er in der Pinterest-Suche. Ein Pin mit vielen Saves wird auch auf der Startseite anderer Nutzer ausgespielt.</p>
             </ChecklistItem>
             <ChecklistItem title="2. Keyword-reiche Beschreibungen">
-              <p className="m-0"><strong>Was tun:</strong> Wenn du einen Pin kommentierst oder beschreibst, verwende Schlüsselwörter zum Genre und Thema des Buches (z.&nbsp;B. „Romantasy-Buch", „Thriller Neuerscheinung 2026").</p>
+              <p className="m-0"><strong>Was tun:</strong> Wenn du einen Pin kommentierst oder beschreibst, verwende Schlüsselwörter zum Genre und Thema des Buches (z.&nbsp;B. „Romantasy-Buch&quot;, „Thriller Neuerscheinung 2026&quot;).</p>
               <p className="m-0"><strong>Der Effekt:</strong> Pinterest funktioniert wie eine Suchmaschine – Keywords in Beschreibungen und Kommentaren verbessern die Auffindbarkeit massiv. Auch Google indexiert Pinterest-Pins.</p>
             </ChecklistItem>
             <ChecklistItem title="3. Eigene Boards thematisch aufbauen">
-              <p className="m-0"><strong>Was tun:</strong> Erstelle thematische Boards (z.&nbsp;B. „Self-Publishing-Tipps", „Buchempfehlungen Fantasy"). Pinne dort regelmäßig – auch Inhalte anderer Autoren.</p>
-              <p className="m-0"><strong>Der Effekt:</strong> Aktive Boards mit einem klaren Thema werden von Pinterest bevorzugt ausgespielt. Du wirst als „Experte" für dieses Thema eingestuft.</p>
+              <p className="m-0"><strong>Was tun:</strong> Erstelle thematische Boards (z.&nbsp;B. „Self-Publishing-Tipps&quot;, „Buchempfehlungen Fantasy&quot;). Pinne dort regelmäßig – auch Inhalte anderer Autoren.</p>
+              <p className="m-0"><strong>Der Effekt:</strong> Aktive Boards mit einem klaren Thema werden von Pinterest bevorzugt ausgespielt. Du wirst als „Experte&quot; für dieses Thema eingestuft.</p>
             </ChecklistItem>
             <ChecklistItem title="4. Klick auf den Link">
               <p className="m-0"><strong>Was tun:</strong> Klicke auf den Pin und dann auf den hinterlegten Link (z.&nbsp;B. zur BuchArena-Seite oder zum Buch).</p>
-              <p className="m-0"><strong>Der Effekt:</strong> Pinterest misst „Outbound Clicks". Je mehr Nutzer einem Pin-Link folgen, desto wertvoller wird er eingestuft und desto öfter wird er angezeigt.</p>
+              <p className="m-0"><strong>Der Effekt:</strong> Pinterest misst „Outbound Clicks&quot;. Je mehr Nutzer einem Pin-Link folgen, desto wertvoller wird er eingestuft und desto öfter wird er angezeigt.</p>
             </ChecklistItem>
             <PlatformLink platform="pinterest" />
           </div>
@@ -520,12 +518,12 @@ export default function TippsPage() {
             />
             <h2 className="font-sans text-lg font-bold text-arena-blue mt-4 mb-2">Deine Checkliste</h2>
             <ChecklistItem title="1. Reagieren mit Bedacht">
-              <p className="m-0"><strong>Was tun:</strong> Nutze die verschiedenen Reaktionen (Gefällt mir, Toll, Unterstützen, Aufschlussreich). „Aufschlussreich" und „Unterstützen" werden vom Algorithmus höher gewichtet als ein einfaches Like.</p>
+              <p className="m-0"><strong>Was tun:</strong> Nutze die verschiedenen Reaktionen (Gefällt mir, Toll, Unterstützen, Aufschlussreich). „Aufschlussreich&quot; und „Unterstützen&quot; werden vom Algorithmus höher gewichtet als ein einfaches Like.</p>
               <p className="m-0"><strong>Der Effekt:</strong> LinkedIn zeigt Beiträge, auf die differenziert reagiert wird, einem breiteren Netzwerk an – auch Kontakten 2. und 3. Grades.</p>
             </ChecklistItem>
             <ChecklistItem title="2. Kommentieren als Experte">
               <p className="m-0"><strong>Was tun:</strong> Schreibe einen Kommentar mit mindestens 2–3 Sätzen. Teile deine Perspektive als Autor: Erfahrungen beim Schreiben, Einblicke ins Self-Publishing, Gedanken zum Genre.</p>
-              <p className="m-0"><strong>Beispiel:</strong> „Spannend, wie ihr das Community-Konzept umsetzt. Als Autor habe ich die Erfahrung gemacht, dass genau dieser direkte Austausch mit Lesern unbezahlbar ist."</p>
+              <p className="m-0"><strong>Beispiel:</strong> „Spannend, wie ihr das Community-Konzept umsetzt. Als Autor habe ich die Erfahrung gemacht, dass genau dieser direkte Austausch mit Lesern unbezahlbar ist.&quot;</p>
               <p className="m-0"><strong>Der Effekt:</strong> LinkedIn priorisiert Beiträge mit längeren, fachlichen Kommentaren. Der Beitrag wird dadurch auch im Feed der Kommentatoren-Kontakte angezeigt.</p>
             </ChecklistItem>
             <ChecklistItem title="3. Beiträge teilen mit eigenem Text">
@@ -534,7 +532,7 @@ export default function TippsPage() {
             </ChecklistItem>
             <ChecklistItem title="4. Vernetzen &amp; Sichtbarkeit">
               <p className="m-0"><strong>Was tun:</strong> Folge der BuchArena-Seite und vernetze dich mit anderen Autoren auf LinkedIn. Je größer dein Netzwerk, desto mehr Leute sehen deine Interaktionen.</p>
-              <p className="m-0"><strong>Der Effekt:</strong> LinkedIn zeigt deinen Kontakten: „[Dein Name] hat einen Beitrag von BuchArena kommentiert." Das erzeugt organische Reichweite ohne Werbung.</p>
+              <p className="m-0"><strong>Der Effekt:</strong> LinkedIn zeigt deinen Kontakten: „[Dein Name] hat einen Beitrag von BuchArena kommentiert.&quot; Das erzeugt organische Reichweite ohne Werbung.</p>
             </ChecklistItem>
             <PlatformLink platform="linkedin" />
           </div>
@@ -682,7 +680,7 @@ export default function TippsPage() {
                 <span>Geheimtipp</span>
               </h3>
               <p className="font-sans text-[0.93rem] leading-relaxed m-0 text-arena-text">
-                Man kann bis zu fünf „Marken" verwalten. Wenn du andere Autorinnen oder Autoren kennst, denen du vertraust, könnt ihr euch einen Account teilen. Jede Marke kann dann verschiedene Plattformen enthalten.
+                Man kann bis zu fünf „Marken&quot; verwalten. Wenn du andere Autorinnen oder Autoren kennst, denen du vertraust, könnt ihr euch einen Account teilen. Jede Marke kann dann verschiedene Plattformen enthalten.
               </p>
             </div>
 

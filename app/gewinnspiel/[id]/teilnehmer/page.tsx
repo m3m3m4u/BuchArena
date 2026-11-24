@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { getStoredAccount } from "@/lib/client-account";
+import { useStoredAccount } from "@/lib/client-state";
 
 type Teilnehmer = {
   username: string;
@@ -22,16 +22,17 @@ type GewinnspielInfo = {
 
 export default function TeilnehmerPage() {
   const { id } = useParams() as { id: string };
+  return <TeilnehmerContent key={id} id={id} />;
+}
+
+function TeilnehmerContent({ id }: { id: string }) {
   const router = useRouter();
   const [liste, setListe] = useState<Teilnehmer[]>([]);
   const [info, setInfo] = useState<GewinnspielInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [account, setAccount] = useState<ReturnType<typeof getStoredAccount>>(null);
+  const account = useStoredAccount();
 
   useEffect(() => {
-    const acc = getStoredAccount();
-    setAccount(acc);
-
     Promise.all([
       fetch(`/api/gewinnspiele/${id}`).then((r) => r.json()),
       fetch(`/api/gewinnspiele/${id}/teilnehmer`).then((r) => r.json()),

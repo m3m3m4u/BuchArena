@@ -29,7 +29,7 @@ export default async function KalenderLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let jsonLd: Record<string, any> | null = null;
+  let jsonLd: Record<string, unknown> | null = null;
 
   try {
     const col = await getKalenderCollection();

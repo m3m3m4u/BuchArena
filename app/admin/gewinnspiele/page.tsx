@@ -78,13 +78,14 @@ export default function AdminGewinnspielePage() {
   const [aktivSaving, setAktivSaving] = useState(false);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    const r = await fetch("/api/gewinnspiele/list");
-    if (r.ok) {
+    try {
+      const r = await fetch("/api/gewinnspiele/list");
+      if (!r.ok) throw new Error("Gewinnspiele konnten nicht geladen werden.");
       const data = await r.json() as Gewinnspiel[];
       setList(data);
-    }
-    setLoading(false);
+    } catch {
+      setMsg("Gewinnspiele konnten nicht geladen werden. Bitte versuche es erneut.");
+    } finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
@@ -124,7 +125,7 @@ export default function AdminGewinnspielePage() {
     });
     if (r.ok) {
       setMsg("Status geändert.");
-      await load();
+      setLoading(true); await load();
     } else {
       const d = await r.json() as { message?: string };
       setMsg(d.message ?? "Fehler");
@@ -136,7 +137,7 @@ export default function AdminGewinnspielePage() {
     const r = await fetch(`/api/gewinnspiele/${id}`, { method: "DELETE" });
     if (r.ok) {
       setMsg("Gelöscht.");
-      await load();
+      setLoading(true); await load();
     } else {
       const d = await r.json() as { message?: string };
       setMsg(d.message ?? "Fehler");
@@ -156,7 +157,7 @@ export default function AdminGewinnspielePage() {
     if (r.ok) {
       setMsg("Gespeichert.");
       setEditId(null);
-      await load();
+      setLoading(true); await load();
     } else {
       const d = await r.json() as { message?: string };
       setMsg(d.message ?? "Fehler");
@@ -182,7 +183,7 @@ export default function AdminGewinnspielePage() {
     if (r.ok) {
       setMsg("Gewinnspiel aktiviert – Anmeldephase hat begonnen.");
       setAktivId(null);
-      await load();
+      setLoading(true); await load();
     } else {
       const d = await r.json() as { message?: string };
       setMsg(d.message ?? "Fehler");

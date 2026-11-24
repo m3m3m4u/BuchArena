@@ -213,3 +213,44 @@ test("a confidential file is not fetched when access is denied", async () => {
   assert.equal(response.status, 403);
   assert.equal(downloads, 0);
 });
+
+test("profile maps exclude internal names and locations while retaining public fields", async () => {
+  const profile = {
+    name: { value: "Internal name", visibility: "internal" },
+    city: { value: "Private city", visibility: "hidden" },
+    postalCode: { value: "6800", visibility: "public" },
+    country: { value: "AT", visibility: "public" },
+  };
+  const route = load("app/api/profile-map/route.ts", {
+    "@/lib/mongodb": {
+      getUsersCollection: async () => ({ find: () => ({ toArray: async () => [{ username: "PublicUser", profile }] }) }),
+      getDatabase: async () => ({ collection: () => ({ find: () => ({ toArray: async () => [] }) }) }),
+    },
+  });
+  const response = await route.GET(new Request("http://test.invalid/api/profile-map?category=autoren"));
+  assert.equal(response.status, 200);
+  const { users } = await response.json();
+  assert.equal(users[0].displayName, "PublicUser");
+  assert.equal(users[0].city, "");
+  assert.equal(users[0].postalCode, "6800");
+  assert.equal(users[0].country, "AT");
+});
+
+test("book-of-the-week admin submissions are excluded from shared caches", async () => {
+  const route = load("app/api/buch-der-woche/route.ts", {
+    "@/lib/server-auth": { requireAdmin: async () => ({ username: "Admin", role: "ADMIN" }) },
+    "@/lib/mongodb": { getDatabase: async () => ({ collection: () => ({ findOne: async () => null }) }) },
+    "@/lib/buch-der-woche": {
+      ensureBuchDerWocheSelection: async () => {}, getBdwCycleInfo: () => ({}),
+      getBdwSubmissionsCollection: async () => ({ find: () => ({ sort: () => ({ toArray: async () => [] }) }) }),
+    },
+    "@/lib/lesezeichen": { getLesezeichenCollection: async () => ({ find: () => ({ toArray: async () => [] }) }) },
+  });
+  const adminResponse = await route.GET({ nextUrl: new URL("http://test.invalid/api/buch-der-woche?admin=1") });
+  assert.equal(adminResponse.status, 200);
+  assert.equal(adminResponse.headers.get("Cache-Control"), "private, no-store");
+  const publicResponse = await route.GET({ nextUrl: new URL("http://test.invalid/api/buch-der-woche") });
+  assert.equal(publicResponse.status, 200);
+  assert.match(publicResponse.headers.get("Cache-Control"), /^public,/);
+  assert.equal(Object.hasOwn(await publicResponse.json(), "submissions"), false);
+});

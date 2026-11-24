@@ -25,18 +25,22 @@ export default function BlogPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/blog?page=${page}`)
-      .then((r) => r.json())
+    const controller = new AbortController();
+    fetch(`/api/blog?page=${page}`, { signal: controller.signal })
+      .then((r) => { if (!r.ok) throw new Error("Beiträge konnten nicht geladen werden."); return r.json(); })
       .then((d: { posts?: BlogPost[]; total?: number }) => {
+        if (controller.signal.aborted) return;
         setPosts(d.posts ?? []);
         setTotal(d.total ?? 0);
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [page]);
+      .catch(() => { if (!controller.signal.aborted) setError("Die Beiträge konnten nicht geladen werden."); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [page, retry]);
 
   return (
     <main className="top-centered-main">
@@ -53,7 +57,9 @@ export default function BlogPage() {
 
         {loading && <p className="text-arena-muted text-sm">Wird geladen …</p>}
 
-        {!loading && posts.length === 0 && (
+        {error && <div role="alert" className="card-info"><p>{error}</p><button type="button" className="btn btn-sm" onClick={() => { setError(""); setLoading(true); setRetry((value) => value + 1); }}>Erneut versuchen</button></div>}
+
+        {!loading && !error && posts.length === 0 && (
           <p className="text-arena-muted text-sm">Noch keine Beiträge vorhanden.</p>
         )}
 
@@ -91,8 +97,8 @@ export default function BlogPage() {
           <div className="flex gap-2 mt-2 justify-center">
             <button
               className="btn btn-sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
+              disabled={loading || page <= 1}
+              onClick={() => { setError(""); setLoading(true); setPage((p) => p - 1); }}
             >
               ← Zurück
             </button>
@@ -101,8 +107,8 @@ export default function BlogPage() {
             </span>
             <button
               className="btn btn-sm"
-              disabled={page >= Math.ceil(total / 10)}
-              onClick={() => setPage((p) => p + 1)}
+              disabled={loading || page >= Math.ceil(total / 10)}
+              onClick={() => { setError(""); setLoading(true); setPage((p) => p + 1); }}
             >
               Vor →
             </button>

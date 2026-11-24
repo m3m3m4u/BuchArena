@@ -237,7 +237,7 @@ export default function AuthorProfilePage({ params }: PageProps) {
                 </div>
                 {visibleBeruf && <p className="font-sans mt-1 text-sm text-arena-muted">{visibleBeruf}</p>}
                 {visibleCityCountry && <p className="font-sans mt-1 text-sm text-arena-text">{visibleCityCountry}</p>}
-                {visibleMotto && <p className="font-sans mt-1 text-sm italic text-arena-muted">„{visibleMotto}"</p>}
+                {visibleMotto && <p className="font-sans mt-1 text-sm italic text-arena-muted">„{visibleMotto}&quot;</p>}
                 {isUnclaimed && (
                   <p className="font-sans mt-2 text-xs text-arena-muted">
                     Katalogeintrag.{" "}

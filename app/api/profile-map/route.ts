@@ -19,12 +19,12 @@ function isCategory(v: string | null): v is Category {
   return ["autoren", "blogger", "testleser", "sprecher", "lektoren", "verlage"].includes(v ?? "");
 }
 
-function getLocationField(profile: Record<string, any> | undefined, field: string): string {
+function getLocationField(profile: Record<string, unknown> | undefined, field: string): string {
   if (!profile) return "";
   const f = profile[field];
   if (!f) return "";
   if (typeof f === "string") return f;
-  if (typeof f === "object" && f.visibility === "public") return f.value ?? "";
+  if (typeof f === "object" && "visibility" in f && f.visibility === "public" && "value" in f && typeof f.value === "string") return f.value;
   return "";
 }
 
@@ -51,8 +51,6 @@ export async function GET(request: Request) {
       : category === "lektoren" ? "lektorenProfile"
       : "verlageProfile";
 
-    const nameField = "name";
-
     const query: Record<string, unknown> =
       category === "autoren"
         ? { "profile.name.value": { $exists: true, $ne: "" }, "profile.deaktiviert": { $ne: true } }
@@ -77,7 +75,7 @@ export async function GET(request: Request) {
     const partial: (Omit<ProfileMapUser, "lat" | "lon"> & { geoKey: string })[] = [];
 
     for (const doc of docs) {
-      const profile = doc[profileField as keyof typeof doc] as Record<string, any> | undefined;
+      const profile = doc[profileField as keyof typeof doc] as Record<string, unknown> | undefined;
       if (!profile) continue;
 
       const postalCode = getLocationField(profile, "postalCode");
@@ -91,9 +89,7 @@ export async function GET(request: Request) {
 
       const displayName =
         doc.displayName ??
-        (profile[nameField]?.visibility !== "hidden" && profile[nameField]?.value
-          ? profile[nameField].value
-          : doc.username);
+        (getLocationField(profile, "name") || doc.username);
 
       const slug = doc.profileSlug ?? "";
 

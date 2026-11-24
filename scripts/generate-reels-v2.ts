@@ -19,6 +19,7 @@ import fs from "fs/promises";
 import path from "path";
 import { MongoClient } from "mongodb";
 import { buildKurzVideoPptx } from "../lib/pptx-vorlage";
+import type { BucharenaReelVorlageDoc } from "../lib/bucharena-db";
 import {
   cleanInstagramHandle,
   buildReelFileName,
@@ -97,7 +98,7 @@ async function run() {
 
   // Look up Vorlagen
   const subIds = submissions.map((s) => s._id.toString());
-  const vorlagenCol = db.collection("bucharenareelvorlagen");
+  const vorlagenCol = db.collection<BucharenaReelVorlageDoc>("bucharenareelvorlagen");
   const vorlagen = await vorlagenCol.find({ submissionId: { $in: subIds } }).toArray();
   const vorlageMap = new Map(vorlagen.map((v) => [v.submissionId as string, v]));
 
@@ -169,12 +170,12 @@ async function run() {
     }
 
     try {
-      const pptxBuffer = await buildKurzVideoPptx(vDoc as any, { version: "v2" });
+      const pptxBuffer = await buildKurzVideoPptx(vDoc, { version: "v2" });
       await fs.writeFile(outFilePath, pptxBuffer);
       console.log(`✓ [${i + 1}/${items.length}] ${fileName} (${(pptxBuffer.length / (1024 * 1024)).toFixed(1)} MB)`);
       successCount++;
-    } catch (err: any) {
-      console.error(`❌ [${i + 1}/${items.length}] Fehler bei ${fileName}:`, err?.message || err);
+    } catch (err) {
+      console.error(`❌ [${i + 1}/${items.length}] Fehler bei ${fileName}:`, err instanceof Error ? err.message : err);
       failCount++;
     }
   }

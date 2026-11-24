@@ -545,7 +545,7 @@ function BuchzirkelBanner() {
 
   return (
     <section className="mt-3 w-full max-w-[1100px]">
-      <a
+      <Link
         href="/buchzirkel"
         className="no-underline block rounded-xl border border-arena-border-light bg-arena-bg px-5 py-3 hover:border-arena-yellow transition-colors"
       >
@@ -564,7 +564,7 @@ function BuchzirkelBanner() {
           </div>
           <span className="ml-auto text-xs text-arena-muted flex-shrink-0">Alle Buchzirkel →</span>
         </div>
-      </a>
+      </Link>
     </section>
   );
 }

@@ -78,7 +78,7 @@ const bucharenaFaq: FaqItem[] = [
         <li><strong>Diskussionen:</strong> Tausche dich mit anderen Mitgliedern über Bücher und das Schreiben aus.</li>
         <li><strong>Nachrichten:</strong> Kommuniziere direkt mit anderen Nutzerinnen und Nutzern auf der Plattform.</li>
         <li><strong>Quiz:</strong> Teste dein Buchwissen in unterhaltsamen Quiz-Runden.</li>
-        <li><strong>Social-Media-Inhalte:</strong> Entdecke Videos, „Kurz gefragt"-Interviews und mehr.</li>
+        <li><strong>Social-Media-Inhalte:</strong> Entdecke Videos, „Kurz gefragt&quot;-Interviews und mehr.</li>
       </ul>
     ),
   },

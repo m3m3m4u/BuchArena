@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { getStoredConsent } from "@/lib/cookie-consent";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useStoredConsent } from "@/lib/client-state";
 
 function toYouTubeEmbedUrl(rawUrl: string) {
   try {
@@ -41,18 +42,15 @@ function toYouTubeThumbnail(rawUrl: string) {
 }
 
 export default function VideoPage() {
-  const [videoUrl, setVideoUrl] = useState("");
-  const [title, setTitle] = useState("");
-  const [consentGiven, setConsentGiven] = useState(false);
-  const [userAccepted, setUserAccepted] = useState(false);
+  return <Suspense fallback={<main className="centered-main">Video wird geladen …</main>}><VideoContent /></Suspense>;
+}
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    setVideoUrl(params.get("url") ?? "");
-    setTitle(params.get("title") ?? "Vorstellungsvideo");
-    setConsentGiven(getStoredConsent() === "all");
-  }, []);
+function VideoContent() {
+  const params = useSearchParams();
+  const videoUrl = params.get("url") ?? "";
+  const title = params.get("title") ?? "Vorstellungsvideo";
+  const consentGiven = useStoredConsent() === "all";
+  const [userAccepted, setUserAccepted] = useState(false);
 
   const embedUrl = useMemo(() => toYouTubeEmbedUrl(videoUrl), [videoUrl]);
   const thumbnail = useMemo(() => toYouTubeThumbnail(videoUrl), [videoUrl]);

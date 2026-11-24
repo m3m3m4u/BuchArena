@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { findUserBySlugOrUsername, type UserDocument } from "@/lib/mongodb";
-import type { Visibility } from "@/lib/profile";
 
 export type ProfileRole = "autor" | "sprecher" | "blogger" | "lektoren" | "testleser" | "verlage";
 
@@ -51,9 +50,10 @@ const ROLE_CONFIG: Record<
   },
 };
 
-function getField(field: { value: string; visibility: Visibility } | undefined): string {
-  if (!field) return "";
-  return field.visibility === "public" ? field.value?.trim() || "" : "";
+function getField(field: unknown): string {
+  if (!field || typeof field !== "object") return "";
+  return "visibility" in field && field.visibility === "public" && "value" in field && typeof field.value === "string"
+    ? field.value.trim() : "";
 }
 
 function toSocialUrl(platform: string, raw: string): string {
@@ -96,7 +96,7 @@ interface ExtractedProfile {
 function extractProfileData(user: UserDocument, role: ProfileRole): ExtractedProfile | null {
   if (user.status === "deactivated") return null;
 
-  let rawProfile: any = null;
+  let rawProfile: Record<string, unknown> | undefined;
   switch (role) {
     case "autor":
       rawProfile = user.profile;
@@ -132,16 +132,13 @@ function extractProfileData(user: UserDocument, role: ProfileRole): ExtractedPro
     getField(rawProfile.motto) ||
     (typeof rawProfile.motto === "string" ? rawProfile.motto : "");
 
-  let imageUrl = "";
-  if (rawProfile.profileImage?.visibility === "public" && rawProfile.profileImage.value) {
-    imageUrl = rawProfile.profileImage.value;
-  }
+  const imageUrl = getField(rawProfile.profileImage);
 
   const city = getField(rawProfile.city) || getField(rawProfile.ort);
   const country = getField(rawProfile.country);
 
   const socialUrls: string[] = [];
-  const socialKeys: Array<[string, any]> = [
+  const socialKeys: Array<[string, unknown]> = [
     ["Instagram", rawProfile.socialInstagram],
     ["Facebook", rawProfile.socialFacebook],
     ["TikTok", rawProfile.socialTiktok],
@@ -233,7 +230,7 @@ export async function buildProfileMetadata(
 export async function buildProfileJsonLd(
   identifier: string,
   role: ProfileRole,
-): Promise<Record<string, any> | null> {
+): Promise<Record<string, unknown> | null> {
   const config = ROLE_CONFIG[role];
   try {
     const user = await findUserBySlugOrUsername(identifier);

@@ -190,7 +190,7 @@ export default function BloggerProfilePage({ params }: PageProps) {
               </div>
               <div>
                 <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">{visibleName}</h1>
-                {visibleMotto && <p className="font-sans mt-1 text-sm italic text-arena-muted">„{visibleMotto}"</p>}
+                {visibleMotto && <p className="font-sans mt-1 text-sm italic text-arena-muted">„{visibleMotto}&quot;</p>}
               </div>
             </div>
 

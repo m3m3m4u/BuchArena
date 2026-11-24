@@ -15,10 +15,11 @@ function loadScript(src: string): Promise<void> {
     document.head.appendChild(s);
   });
 }
-async function getFFmpeg(): Promise<{ FFmpeg: any }> {
+async function getFFmpeg(): Promise<{ FFmpeg: typeof import("@ffmpeg/ffmpeg").FFmpeg }> {
   await loadScript("/ffmpeg/ffmpeg.js");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (window as any).FFmpegWASM;
+  const wasm = (window as Window & { FFmpegWASM?: { FFmpeg: typeof import("@ffmpeg/ffmpeg").FFmpeg } }).FFmpegWASM;
+  if (!wasm) throw new Error("FFmpeg konnte nicht geladen werden.");
+  return wasm;
 }
 async function blobURL(url: string, mime: string): Promise<string> {
   const buf = await (await fetch(url)).arrayBuffer();
