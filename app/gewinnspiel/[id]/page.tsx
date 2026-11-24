@@ -122,17 +122,17 @@ export default function GewinnspielDetailPage() {
   const needsAdresse = g.format === "print" || g.format === "both";
 
   return (
-    <main className="site-shell py-8">
+    <main className="site-shell py-8 [overflow-wrap:anywhere]">
       <Link href="/gewinnspiel" className="text-sm opacity-60 hover:opacity-100 mb-4 inline-block">← Alle Gewinnspiele</Link>
 
       <div className="border rounded-xl overflow-hidden" style={{ borderColor: "var(--color-arena-border)" }}>
         <div className="p-5">
           <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-            <div className="flex gap-4 items-start">
+            <div className="flex w-full min-w-0 flex-col gap-4 items-start sm:w-auto sm:flex-row">
               {g.coverImageUrl && (
                 <ProgressiveImg src={g.coverImageUrl} alt={g.buchTitel} className="w-24 rounded shadow-md flex-shrink-0 object-cover" style={{ aspectRatio: "2/3" }} />
               )}
-              <div>
+              <div className="min-w-0 max-w-full">
                 <h1 className="text-2xl font-bold" style={{ color: "var(--color-arena-blue)" }}>{g.buchTitel}</h1>
                 <p className="text-sm opacity-70">von <Link href={`/autor/${g.autorUsername}`} className="underline">{g.autorName}</Link></p>
               </div>
@@ -149,7 +149,7 @@ export default function GewinnspielDetailPage() {
           </div>
 
           {/* Details */}
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-4">
+          <dl className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm mb-4">
             <dt className="opacity-60">Format</dt>
             <dd className="font-medium">{FORMAT_LABEL[g.format]}</dd>
             <dt className="opacity-60">Anmeldung bis</dt>

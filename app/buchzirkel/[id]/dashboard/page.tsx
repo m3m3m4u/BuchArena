@@ -63,6 +63,20 @@ type Datei = { id: string; originalName: string; abschnittId?: string };
 
 type ChatMsg = { id: string; senderUsername: string; body: string; createdAt: string };
 
+function ReorderButtons({ label, index, count, onMove }: {
+  label: string;
+  index: number;
+  count: number;
+  onMove: (direction: -1 | 1) => void;
+}) {
+  return (
+    <div className="flex shrink-0 gap-1">
+      <button type="button" aria-label={`${label} nach oben verschieben`} disabled={index === 0} onClick={() => onMove(-1)} className="min-h-11 min-w-11 text-arena-muted hover:text-arena-text disabled:opacity-20">▲</button>
+      <button type="button" aria-label={`${label} nach unten verschieben`} disabled={index === count - 1} onClick={() => onMove(1)} className="min-h-11 min-w-11 text-arena-muted hover:text-arena-text disabled:opacity-20">▼</button>
+    </div>
+  );
+}
+
 export default function BuchzirkelDashboardPage() {
   const params = useParams<{ id: string }>();
   const account = getStoredAccount();
@@ -561,7 +575,7 @@ export default function BuchzirkelDashboardPage() {
   const freiePlaetze = Math.max(0, zirkel.maxTeilnehmer - teilnehmerUsernames.length);
 
   return (
-    <main className="top-centered-main">
+    <main className="top-centered-main [overflow-wrap:anywhere]">
       <section className="card">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
@@ -611,7 +625,7 @@ export default function BuchzirkelDashboardPage() {
       </section>
 
       {/* Tab-Navigation */}
-      <nav className="sticky top-0 z-20 flex gap-1 mt-3 border-b border-arena-border-light pb-0 overflow-x-auto bg-arena-bg -mx-0">
+      <nav aria-label="Buchzirkel-Bereiche" className="sticky top-0 z-20 flex w-full min-w-0 gap-1 mt-3 border-b border-arena-border-light pb-0 overflow-x-auto bg-arena-bg -mx-0">
         {[
           { key: "bewerber" as const, label: `Bewerber (${ausstehend.length})` },
           { key: "teilnehmer" as const, label: `Teilnehmer (${teilnehmerUsernames.length})` },
@@ -628,7 +642,7 @@ export default function BuchzirkelDashboardPage() {
             key={t.key}
             type="button"
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+            className={`min-h-11 shrink-0 px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               tab === t.key ? "border-arena-blue text-arena-blue" : "border-transparent text-arena-muted hover:text-arena-text"
             }`}
           >
@@ -1251,7 +1265,7 @@ export default function BuchzirkelDashboardPage() {
 
           <section className="card">            <h2 className="text-base font-semibold m-0 mb-1">Video oder Bild (optional)</h2>
             <p className="text-sm text-arena-muted m-0 mb-3">Füge ein YouTube-Video oder ein Bild hinzu, das Lesern mehr über dein Buch zeigt.</p>
-            <div className="flex gap-2 mb-3">
+            <div className="flex flex-wrap gap-2 mb-3">
               {(["kein", "youtube", "bild"] as const).map((m) => (
                 <button key={m} type="button" onClick={() => setEditMediaTyp(m)}
                   className={`btn btn-sm${editMediaTyp === m ? " btn-primary" : ""}`}>
@@ -1268,8 +1282,8 @@ export default function BuchzirkelDashboardPage() {
             {editMediaTyp === "bild" && (
               <div className="grid gap-1">
                 <label className="text-sm font-semibold">Bild hochladen</label>
-                {editMediaImageUrl && <img src={editMediaImageUrl} alt="Vorschau" className="max-w-xs max-h-48 w-auto h-auto rounded-lg border border-arena-border mb-1" />}
-                <input type="file" accept="image/*" disabled={editMediaImageUploading}
+                {editMediaImageUrl && <img src={editMediaImageUrl} alt="Vorschau" className="max-w-full max-h-48 w-auto h-auto rounded-lg border border-arena-border mb-1" />}
+                <input type="file" accept="image/*" className="w-full min-w-0 max-w-full min-h-11" disabled={editMediaImageUploading}
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
@@ -1304,25 +1318,22 @@ export default function BuchzirkelDashboardPage() {
               </div>
             </div>
 
-            <div className="mt-3 grid gap-1">
+            <div className="mt-3 grid min-w-0 grid-cols-1 gap-1">
               <label className="text-sm font-semibold">Bewerbungsfragen</label>
               <p className="text-sm text-arena-muted m-0 mb-1">Bitte überlege gut, welchen Umfang du von Testlesern verlangst – manchmal ist weniger mehr.</p>
               {editFragen.map((f, i) => (
-                <div key={i} className="flex gap-2 items-center">
-                  <div className="flex flex-col gap-0.5">
-                    <button type="button" disabled={i === 0} onClick={() => setEditFragen((prev) => moveItem(prev, i, i - 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▲</button>
-                    <button type="button" disabled={i === editFragen.length - 1} onClick={() => setEditFragen((prev) => moveItem(prev, i, i + 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▼</button>
-                  </div>
+                <div key={i} className="flex flex-wrap gap-2 items-center">
                   <input
-                    className="input-base flex-1"
+                    className="input-base w-full sm:w-auto sm:flex-1"
                     value={f}
                     onChange={(e) => setEditFragen((prev) => prev.map((x, j) => j === i ? e.target.value : x))}
                     placeholder={`Frage ${i + 1}`}
                   />
-                  <button type="button" onClick={() => setEditFragen((prev) => prev.filter((_, j) => j !== i))} className="text-red-500 px-2">✕</button>
+                  <ReorderButtons label={`Bewerbungsfrage ${i + 1}`} index={i} count={editFragen.length} onMove={(direction) => setEditFragen((prev) => moveItem(prev, i, i + direction))} />
+                  <button type="button" aria-label={`Bewerbungsfrage ${i + 1} entfernen`} onClick={() => setEditFragen((prev) => prev.filter((_, j) => j !== i))} className="ml-auto min-h-11 min-w-11 shrink-0 text-red-500 sm:ml-0">✕</button>
                 </div>
               ))}
-              <button type="button" onClick={() => setEditFragen((prev) => [...prev, ""])} className="text-arena-blue text-sm mt-1 hover:underline">
+              <button type="button" onClick={() => setEditFragen((prev) => [...prev, ""])} className="min-h-11 text-arena-blue text-sm mt-1 hover:underline">
                 + Frage hinzufügen
               </button>
             </div>
@@ -1351,28 +1362,26 @@ export default function BuchzirkelDashboardPage() {
           <section className="card">
             <h2 className="text-base font-semibold m-0 mb-3">Leseabschnitte & Deadlines</h2>
             {editAbschnitte.map((a, i) => (
-              <div key={a.id} className="flex items-center gap-2 mb-2 text-sm border border-arena-border rounded-lg p-2">
-                <div className="flex flex-col gap-0.5">
-                  <button type="button" disabled={i === 0} onClick={() => setEditAbschnitte((prev) => moveItem(prev, i, i - 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none">▲</button>
-                  <button type="button" disabled={i === editAbschnitte.length - 1} onClick={() => setEditAbschnitte((prev) => moveItem(prev, i, i + 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none">▼</button>
-                </div>
+              <div key={a.id} className="flex flex-wrap items-center gap-2 mb-2 text-sm border border-arena-border rounded-lg p-2">
                 <input
-                  className="input-base flex-1"
+                  className="input-base w-full sm:w-auto sm:flex-1"
                   value={a.titel}
                   onChange={(e) => setEditAbschnitte((prev) => prev.map((x, j) => j === i ? { ...x, titel: e.target.value } : x))}
                 />
                 <input
                   type="date"
-                  className="input-base w-36"
+                  aria-label={`Deadline für Leseabschnitt ${i + 1}`}
+                  className="input-base w-full sm:w-36"
                   value={a.deadline ?? ""}
                   onChange={(e) => setEditAbschnitte((prev) => prev.map((x, j) => j === i ? { ...x, deadline: e.target.value } : x))}
                 />
-                <button type="button" onClick={() => setEditAbschnitte((prev) => prev.filter((_, j) => j !== i))} className="text-red-500">✕</button>
+                <ReorderButtons label={`Leseabschnitt ${i + 1}`} index={i} count={editAbschnitte.length} onMove={(direction) => setEditAbschnitte((prev) => moveItem(prev, i, i + direction))} />
+                <button type="button" aria-label={`Leseabschnitt ${i + 1} entfernen`} onClick={() => setEditAbschnitte((prev) => prev.filter((_, j) => j !== i))} className="ml-auto min-h-11 min-w-11 shrink-0 text-red-500 sm:ml-0">✕</button>
               </div>
             ))}
-            <div className="flex gap-2 mt-2 flex-wrap">
-              <input className="input-base flex-1" placeholder="z.B. Kapitel 1–10" value={neuerAbschnittTitel} onChange={(e) => setNeuerAbschnittTitel(e.target.value)} />
-              <input type="date" className="input-base w-40" value={neuerAbschnittDeadline} onChange={(e) => setNeuerAbschnittDeadline(e.target.value)} />
+            <div className="grid grid-cols-1 gap-2 mt-2 sm:flex sm:flex-wrap">
+              <input className="input-base w-full sm:w-auto sm:flex-1" placeholder="z.B. Kapitel 1–10" value={neuerAbschnittTitel} onChange={(e) => setNeuerAbschnittTitel(e.target.value)} />
+              <input type="date" aria-label="Deadline für den neuen Leseabschnitt" className="input-base w-full sm:w-40" value={neuerAbschnittDeadline} onChange={(e) => setNeuerAbschnittDeadline(e.target.value)} />
               <button type="button" onClick={addAbschnitt} className="btn btn-secondary">Hinzufügen</button>
             </div>
           </section>
@@ -1380,23 +1389,20 @@ export default function BuchzirkelDashboardPage() {
           <section className="card">
             <h2 className="text-base font-semibold m-0 mb-3">Diskussions-Bereiche</h2>
             {editTopics.map((t, i) => (
-              <div key={t.id} className="flex items-center gap-2 mb-2">
-                <div className="flex flex-col gap-0.5">
-                  <button type="button" disabled={i === 0} onClick={() => setEditTopics((prev) => moveItem(prev, i, i - 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▲</button>
-                  <button type="button" disabled={i === editTopics.length - 1} onClick={() => setEditTopics((prev) => moveItem(prev, i, i + 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▼</button>
-                </div>
+              <div key={t.id} className="flex flex-wrap items-center gap-2 mb-2">
                 <input
-                  className="input-base flex-1"
+                  className="input-base w-full sm:w-auto sm:flex-1"
                   value={t.titel}
                   onChange={(e) => setEditTopics((prev) => prev.map((x, j) => j === i ? { ...x, titel: e.target.value } : x))}
                 />
-                <button type="button" onClick={() => setEditTopics((prev) => prev.filter((_, j) => j !== i))} className="text-red-500">✕</button>
+                <ReorderButtons label={`Diskussions-Bereich ${i + 1}`} index={i} count={editTopics.length} onMove={(direction) => setEditTopics((prev) => moveItem(prev, i, i + direction))} />
+                <button type="button" aria-label={`Diskussions-Bereich ${i + 1} entfernen`} onClick={() => setEditTopics((prev) => prev.filter((_, j) => j !== i))} className="ml-auto min-h-11 min-w-11 shrink-0 text-red-500 sm:ml-0">✕</button>
               </div>
             ))}
             <button
               type="button"
               onClick={() => setEditTopics((prev) => [...prev, { id: crypto.randomUUID(), titel: "Neues Topic", typ: "allgemein" }])}
-              className="text-arena-blue text-sm hover:underline mt-1"
+              className="min-h-11 text-arena-blue text-sm hover:underline mt-1"
             >
               + Topic hinzufügen
             </button>
@@ -1405,20 +1411,17 @@ export default function BuchzirkelDashboardPage() {
           <section className="card">
             <h2 className="text-base font-semibold m-0 mb-3">Abschluss-Fragebogen</h2>
             {editFragebogen.map((f, i) => (
-              <div key={f.id} className="flex items-center gap-2 mb-2">
-                <div className="flex flex-col gap-0.5">
-                  <button type="button" disabled={i === 0} onClick={() => setEditFragebogen((prev) => moveItem(prev, i, i - 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▲</button>
-                  <button type="button" disabled={i === editFragebogen.length - 1} onClick={() => setEditFragebogen((prev) => moveItem(prev, i, i + 1))} className="text-arena-muted hover:text-arena-text disabled:opacity-20 leading-none text-xs">▼</button>
-                </div>
+              <div key={f.id} className="flex flex-wrap items-center gap-2 mb-2">
                 <input
-                  className="input-base flex-1 text-sm"
+                  className="input-base w-full text-sm sm:w-auto sm:flex-1"
                   value={f.frage}
                   onChange={(e) => setEditFragebogen((prev) => prev.map((x, j) => j === i ? { ...x, frage: e.target.value } : x))}
                 />
-                <button type="button" onClick={() => setEditFragebogen((prev) => prev.filter((_, j) => j !== i))} className="text-red-500 text-sm">✕</button>
+                <ReorderButtons label={`Abschlussfrage ${i + 1}`} index={i} count={editFragebogen.length} onMove={(direction) => setEditFragebogen((prev) => moveItem(prev, i, i + direction))} />
+                <button type="button" aria-label={`Abschlussfrage ${i + 1} entfernen`} onClick={() => setEditFragebogen((prev) => prev.filter((_, j) => j !== i))} className="ml-auto min-h-11 min-w-11 shrink-0 text-red-500 sm:ml-0">✕</button>
               </div>
             ))}
-            <div className="flex gap-2 mt-1">
+            <div className="flex flex-col gap-2 mt-1 sm:flex-row">
               <input
                 className="input-base flex-1"
                 placeholder="z.B. War das Ende glaubwürdig?"

@@ -177,7 +177,7 @@ export default function SupportPage() {
 
   return (
     <main className="top-centered-main">
-      <section className="card">
+      <section className="card [overflow-wrap:anywhere]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight">Support</h1>
           {username && (
@@ -194,10 +194,10 @@ export default function SupportPage() {
         ) : posts.length === 0 ? (
           <p className="font-sans text-arena-muted text-sm">Noch keine Support-Beiträge vorhanden.</p>
         ) : (
-          <div className="grid gap-3.5">
+          <div className="grid min-w-0 grid-cols-1 gap-3.5">
             {posts.map((post) => (
               <article key={post.id} className="card-base flex flex-col gap-3">
-                <div className="flex items-start justify-between gap-3 mb-1">
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
                   <strong className="font-sans font-bold text-arena-blue text-sm">{post.authorUsername}</strong>
                   <span className="font-sans text-xs text-arena-muted">{timeAgo(post.createdAt)}</span>
                 </div>

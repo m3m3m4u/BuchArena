@@ -181,13 +181,13 @@ export default function GewinnspielUebersichtPage() {
                 </div>
 
                 {/* Info */}
-                <div className="p-4 flex flex-col flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="p-4 flex flex-col flex-1 min-w-0 [overflow-wrap:anywhere]">
+                  <div className="flex flex-col items-start gap-2 mb-1 sm:flex-row sm:justify-between">
                     <h3 className="font-sans font-bold text-base leading-snug line-clamp-2 text-arena-blue">{g.buchTitel}</h3>
                     {(() => {
                       const badge = getDynamicStatusBadge(g);
                       return (
-                        <span className={`font-sans shrink-0 text-xs px-2.5 py-0.5 rounded-full font-medium border ${badge.className}`}>
+                        <span className={`font-sans max-w-full text-xs px-2.5 py-0.5 rounded-full font-medium border sm:shrink-0 ${badge.className}`}>
                           {badge.label}
                         </span>
                       );
@@ -215,10 +215,10 @@ export default function GewinnspielUebersichtPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-6">
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
               <button
                 disabled={page === 0}
-                onClick={() => { setPage(page - 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                onClick={() => { setPage(page - 1); document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" }); }}
                 className="btn btn-sm text-sm"
               >
                 ← Zurück
@@ -228,7 +228,7 @@ export default function GewinnspielUebersichtPage() {
               </span>
               <button
                 disabled={page >= totalPages - 1}
-                onClick={() => { setPage(page + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                onClick={() => { setPage(page + 1); document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" }); }}
                 className="btn btn-sm text-sm"
               >
                 Weiter →

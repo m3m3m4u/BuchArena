@@ -150,7 +150,7 @@ export default function BuchzirkelErstellenPage() {
         </div>
       </section>
 
-      <form className="w-full flex flex-col gap-4 mt-3" onSubmit={(e) => e.preventDefault()}>
+      <form className="w-full flex flex-col gap-4 mt-3 [overflow-wrap:anywhere]" onSubmit={(e) => e.preventDefault()}>
         {/* Typ */}
         <section className="card">
           <h2 className="text-base font-semibold m-0 mb-3">Art des Buchzirkels</h2>
@@ -219,7 +219,7 @@ export default function BuchzirkelErstellenPage() {
                 {(["gedruckt", "epub", "pdf"] as const).map((fmt) => {
                   const label = fmt === "gedruckt" ? "Gedrucktes Buch" : fmt.toUpperCase();
                   return (
-                    <label key={fmt} className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                    <label key={fmt} className="flex min-h-11 items-center gap-2 text-sm cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={buchformateAngebot.includes(fmt)}
@@ -236,8 +236,8 @@ export default function BuchzirkelErstellenPage() {
             </div>
             <div className="grid gap-1">
               <label className="text-sm font-semibold" htmlFor="coverImageUrl">Cover (optional)</label>
-              <div className="flex gap-2 items-center flex-wrap">
-                <input id="coverImageUrl" className="input-base flex-1" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} placeholder="https://… oder Datei hochladen" />
+              <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center sm:flex-wrap">
+                <input id="coverImageUrl" className="input-base w-full sm:w-auto sm:flex-1" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} placeholder="https://… oder Datei hochladen" />
                 <label className={`btn btn-secondary btn-sm cursor-pointer ${coverUploading ? "opacity-50 pointer-events-none" : ""}`}>
                   {coverUploading ? "Lädt…" : "Datei hochladen"}
                   <input type="file" accept="image/*" className="hidden" disabled={coverUploading}
@@ -269,7 +269,7 @@ export default function BuchzirkelErstellenPage() {
         <section className="card">
           <h2 className="text-base font-semibold m-0 mb-1">Video oder Bild (optional)</h2>
           <p className="text-sm text-arena-muted m-0 mb-3">Füge ein YouTube-Video oder ein Bild hinzu, das Lesern mehr über dein Buch zeigt (z.B. Trailer, Stimmungsbild).</p>
-          <div className="flex gap-2 mb-3">
+          <div className="flex flex-wrap gap-2 mb-3">
             {(["kein", "youtube", "bild"] as const).map((m) => (
               <button key={m} type="button" onClick={() => setMediaTyp(m)}
                 className={`btn btn-sm${mediaTyp === m ? " btn-primary" : ""}`}>
@@ -286,8 +286,8 @@ export default function BuchzirkelErstellenPage() {
           {mediaTyp === "bild" && (
             <div className="grid gap-1">
               <label className="text-sm font-semibold">Bild hochladen</label>
-              {mediaImageUrl && <ProgressiveImg src={mediaImageUrl} alt="Vorschau" className="max-w-xs max-h-48 w-auto h-auto rounded-lg border border-arena-border mb-1" />}
-              <input type="file" accept="image/*" disabled={mediaImageUploading}
+              {mediaImageUrl && <ProgressiveImg src={mediaImageUrl} alt="Vorschau" className="max-w-full max-h-48 w-auto h-auto rounded-lg border border-arena-border mb-1" />}
+              <input type="file" accept="image/*" className="w-full min-w-0 max-w-full min-h-11" disabled={mediaImageUploading}
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -338,7 +338,7 @@ export default function BuchzirkelErstellenPage() {
             </div>
           </div>
 
-          <div className="mt-3 grid gap-1">
+          <div className="mt-3 grid min-w-0 grid-cols-1 gap-1">
             <label className="text-sm font-semibold">Bewerbungsfragen</label>
             <p className="text-sm text-arena-muted m-0 mb-1">Bitte überlege gut, welchen Umfang du von Testlesern verlangst – manchmal ist weniger mehr.</p>
             {bewerbungsFragen.map((f, i) => (
@@ -349,10 +349,10 @@ export default function BuchzirkelErstellenPage() {
                   onChange={(e) => setBewerbungsFragen((prev) => prev.map((x, j) => j === i ? e.target.value : x))}
                   placeholder={`Frage ${i + 1}`}
                 />
-                <button type="button" onClick={() => setBewerbungsFragen((prev) => prev.filter((_, j) => j !== i))} className="text-red-500 px-2">✕</button>
+                <button type="button" aria-label={`Bewerbungsfrage ${i + 1} entfernen`} onClick={() => setBewerbungsFragen((prev) => prev.filter((_, j) => j !== i))} className="min-h-11 min-w-11 shrink-0 text-red-500 px-2">✕</button>
               </div>
             ))}
-            <button type="button" onClick={() => setBewerbungsFragen((prev) => [...prev, ""])} className="text-arena-blue text-sm mt-1 hover:underline">
+            <button type="button" onClick={() => setBewerbungsFragen((prev) => [...prev, ""])} className="min-h-11 text-arena-blue text-sm mt-1 hover:underline">
               + Frage hinzufügen
             </button>
           </div>
@@ -364,7 +364,7 @@ export default function BuchzirkelErstellenPage() {
           {typ === "betaleser" ? (
             <p className="text-sm text-red-700 m-0 mb-3">Bei Buchzirkeln (Beta) ist die Verschwiegenheitserklärung Pflicht.</p>
           ) : (
-            <label className="flex items-center gap-2 text-sm cursor-pointer mb-3">
+            <label className="flex min-h-11 items-center gap-2 text-sm cursor-pointer mb-3">
               <input type="checkbox" checked={agbPflicht} onChange={(e) => setAgbPflicht(e.target.checked)} />
               Verschwiegenheitserklärung aktivieren
             </label>
@@ -384,15 +384,15 @@ export default function BuchzirkelErstellenPage() {
           <h2 className="text-base font-semibold m-0 mb-1">Leseabschnitte & Deadlines</h2>
           <p className="text-sm text-arena-muted m-0 mb-3">Teile das Buch in Abschnitte auf und lege Lesedeadlines fest. Teilnehmer markieren jeden Abschnitt als gelesen und erhalten bei nahender Deadline eine Erinnerungs-E-Mail. Abschnitte sind optional – du kannst den Zirkel auch ohne Zeitplan betreiben.</p>
           {leseabschnitte.map((a, i) => (
-            <div key={a.id} className="flex items-center gap-2 mb-2 text-sm border border-arena-border rounded-lg p-2">
+            <div key={a.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 mb-2 text-sm border border-arena-border rounded-lg p-2 sm:flex">
               <span className="flex-1 font-medium">{a.titel}</span>
-              <span className="text-arena-muted">{a.deadline ? new Date(a.deadline).toLocaleDateString("de-AT") : "Kein Datum"}</span>
-              <button type="button" onClick={() => setLeseabschnitte((prev) => prev.filter((_, j) => j !== i))} className="text-red-500">✕</button>
+              <span className="col-start-1 text-arena-muted sm:shrink-0">{a.deadline ? new Date(a.deadline).toLocaleDateString("de-AT") : "Kein Datum"}</span>
+              <button type="button" aria-label={`Leseabschnitt ${i + 1} entfernen`} onClick={() => setLeseabschnitte((prev) => prev.filter((_, j) => j !== i))} className="col-start-2 row-start-1 row-span-2 min-h-11 min-w-11 shrink-0 text-red-500">✕</button>
             </div>
           ))}
-          <div className="flex gap-2 mt-2 flex-wrap">
-            <input className="input-base flex-1" placeholder="z.B. Kapitel 1–10" value={neuerAbschnittTitel} onChange={(e) => setNeuerAbschnittTitel(e.target.value)} />
-            <input type="date" className="input-base w-40" value={neuerAbschnittDeadline} onChange={(e) => setNeuerAbschnittDeadline(e.target.value)} />
+          <div className="grid grid-cols-1 gap-2 mt-2 sm:flex sm:flex-wrap">
+            <input className="input-base w-full sm:w-auto sm:flex-1" placeholder="z.B. Kapitel 1–10" value={neuerAbschnittTitel} onChange={(e) => setNeuerAbschnittTitel(e.target.value)} />
+            <input type="date" aria-label="Deadline für den neuen Leseabschnitt" className="input-base w-full sm:w-40" value={neuerAbschnittDeadline} onChange={(e) => setNeuerAbschnittDeadline(e.target.value)} />
             <button type="button" onClick={addAbschnitt} className="btn btn-secondary">Hinzufügen</button>
           </div>
         </section>
@@ -408,13 +408,13 @@ export default function BuchzirkelErstellenPage() {
                 value={t.titel}
                 onChange={(e) => setTopics((prev) => prev.map((x, j) => j === i ? { ...x, titel: e.target.value } : x))}
               />
-              <button type="button" onClick={() => setTopics((prev) => prev.filter((_, j) => j !== i))} className="text-red-500">✕</button>
+              <button type="button" aria-label={`Diskussions-Bereich ${i + 1} entfernen`} onClick={() => setTopics((prev) => prev.filter((_, j) => j !== i))} className="min-h-11 min-w-11 shrink-0 text-red-500">✕</button>
             </div>
           ))}
           <button
             type="button"
             onClick={() => setTopics((prev) => [...prev, { id: crypto.randomUUID(), titel: "Neues Topic", typ: "allgemein" }])}
-            className="text-arena-blue text-sm hover:underline mt-1"
+            className="min-h-11 text-arena-blue text-sm hover:underline mt-1"
           >
             + Topic hinzufügen
           </button>
@@ -426,11 +426,11 @@ export default function BuchzirkelErstellenPage() {
           <p className="text-sm text-arena-muted m-0 mb-2">Optionale Fragen, die Teilnehmer am Ende des Zirkels beantworten sollen – z.B. zu Charakteren, Handlungsbogen oder Schreibstil. Die Antworten siehst du im Dashboard.</p>
           {fragebogen.map((f, i) => (
             <div key={f.id} className="flex items-center gap-2 mb-2">
-              <span className="flex-1 text-sm">{f.frage}</span>
-              <button type="button" onClick={() => setFragebogen((prev) => prev.filter((_, j) => j !== i))} className="text-red-500 text-sm">✕</button>
+              <span className="min-w-0 flex-1 text-sm">{f.frage}</span>
+              <button type="button" aria-label={`Abschlussfrage ${i + 1} entfernen`} onClick={() => setFragebogen((prev) => prev.filter((_, j) => j !== i))} className="min-h-11 min-w-11 shrink-0 text-red-500 text-sm">✕</button>
             </div>
           ))}
-          <div className="flex gap-2 mt-1">
+          <div className="flex flex-col gap-2 mt-1 sm:flex-row">
             <input className="input-base flex-1" placeholder="z.B. War das Ende glaubwürdig?" value={neueFrage} onChange={(e) => setNeueFrage(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addFrage(); } }} />
             <button type="button" onClick={addFrage} className="btn btn-secondary">Hinzufügen</button>
           </div>

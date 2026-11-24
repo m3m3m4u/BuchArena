@@ -266,7 +266,8 @@ export default function ProfileMapView({ category, categoryLabel }: Props) {
       ) : (
         <div
           ref={mapContainer}
-          style={{ width: "100%", height: "calc(100vh - 220px)", minHeight: 420 }}
+          className="profile-map"
+          style={{ width: "100%", height: "calc(100dvh - 240px)", minHeight: 160 }}
         />
       )}
     </div>
