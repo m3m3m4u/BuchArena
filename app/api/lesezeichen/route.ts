@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
-import {
-  getLesezeichenTotal,
-  getOrCreateDoc,
-  getLesezeichenCollection,
-} from "@/lib/lesezeichen";
+import { getOrCreateDoc, getLesezeichenCollection } from "@/lib/lesezeichen";
 
 /** GET /api/lesezeichen – Eigenen Stand abrufen */
 export async function GET() {

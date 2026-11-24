@@ -1,5 +1,6 @@
 "use client";
 
+import NextImage from "next/image";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -84,7 +85,7 @@ export default function AuthPage() {
     <main className="auth-centered-main">
       <section className="w-full max-w-[480px] rounded-2xl bg-white p-6 sm:p-8 box-border border border-arena-border-light shadow-sm flex flex-col items-center">
         <div className="flex flex-col items-center mb-6 text-center w-full">
-          <img src="/logo.png" alt="BuchArena Logo" className="h-16 w-16 rounded-full mb-3 shadow-xs" />
+          <NextImage width={64} height={64} unoptimized priority src="/logo.png" alt="BuchArena Logo" className="h-16 w-16 rounded-full mb-3 shadow-xs" />
           <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight mb-1">BuchArena</h1>
           <p className="font-sans text-arena-muted text-sm mt-1">
             {account ? "Du bist bereits eingeloggt." : "Die Community für Autoren, Sprecher & Leser"}

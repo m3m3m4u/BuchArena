@@ -4,7 +4,7 @@ import {
   getEffectiveAmazonUrl,
   type BucharenaBookDoc,
 } from "@/lib/bucharena-db";
-import { requireAdmin, getServerAccount } from "@/lib/server-auth";
+import { requireAdmin } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 

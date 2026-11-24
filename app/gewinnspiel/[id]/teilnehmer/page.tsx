@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useStoredAccount } from "@/lib/client-state";
 
@@ -26,7 +26,6 @@ export default function TeilnehmerPage() {
 }
 
 function TeilnehmerContent({ id }: { id: string }) {
-  const router = useRouter();
   const [liste, setListe] = useState<Teilnehmer[]>([]);
   const [info, setInfo] = useState<GewinnspielInfo | null>(null);
   const [loading, setLoading] = useState(true);

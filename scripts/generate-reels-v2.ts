@@ -20,12 +20,7 @@ import path from "path";
 import { MongoClient } from "mongodb";
 import { buildKurzVideoPptx } from "../lib/pptx-vorlage";
 import type { BucharenaReelVorlageDoc } from "../lib/bucharena-db";
-import {
-  cleanInstagramHandle,
-  buildReelFileName,
-  generateReelsExcelBuffer,
-  type ReelExportItem,
-} from "../lib/reel-export-utils";
+import { buildReelFileName, generateReelsExcelBuffer, type ReelExportItem } from "../lib/reel-export-utils";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const ALL_STATUSES = process.argv.includes("--all");

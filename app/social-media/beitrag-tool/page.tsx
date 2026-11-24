@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useRef, useState, Suspense } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getStoredAccount } from "@/lib/client-account";
 
@@ -20,10 +20,6 @@ async function getFFmpeg(): Promise<{ FFmpeg: typeof import("@ffmpeg/ffmpeg").FF
   const wasm = (window as Window & { FFmpegWASM?: { FFmpeg: typeof import("@ffmpeg/ffmpeg").FFmpeg } }).FFmpegWASM;
   if (!wasm) throw new Error("FFmpeg konnte nicht geladen werden.");
   return wasm;
-}
-async function blobURL(url: string, mime: string): Promise<string> {
-  const buf = await (await fetch(url)).arrayBuffer();
-  return URL.createObjectURL(new Blob([buf], { type: mime }));
 }
 async function fileToUint8(blob: Blob): Promise<Uint8Array> {
   return new Uint8Array(await blob.arrayBuffer());
@@ -104,13 +100,6 @@ type PixabayHit = {
 type PixabayNotice = {
   kind: "success" | "error" | "info";
   text: string;
-};
-
-type PixabayEvidence = {
-  id: string;
-  packageHash: string;
-  accountAgeDays?: number;
-  uploadedImageCount?: number;
 };
 
 const TRANSITION_PRESETS: { value: TransitionPreset; label: string }[] = [
@@ -472,22 +461,6 @@ function drawElAnimated(
   ctx.restore();
 }
 
-function drawSel(ctx: CanvasRenderingContext2D, el: CE) {
-  ctx.save();
-  ctx.strokeStyle = "#2563eb";
-  ctx.lineWidth = 4;
-  ctx.setLineDash([14, 7]);
-  ctx.strokeRect(el.x - 4, el.y - 4, el.w + 8, el.h + 8);
-  ctx.setLineDash([]);
-  for (const h of handlePts(el)) {
-    ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.rect(h.x - 13, h.y - 13, 26, 26);
-    ctx.fill(); ctx.stroke();
-  }
-  ctx.restore();
-}
-
 /* ---- Frame drawing ---- */
 function roundRectPath(
   ctx: CanvasRenderingContext2D,
@@ -754,7 +727,7 @@ function BeitragToolPage() {
   const [editText,      setEditText]      = useState("");
   const [showTemplates, setShowTemplates]  = useState(false);
   const [tplPage,       setTplPage]        = useState(0);
-  const [tplTotal,      setTplTotal]        = useState(0);
+  const [,      setTplTotal]        = useState(0);
   const [tplTotalPages, setTplTotalPages]   = useState(0);
   const [templates,     setTemplates]      = useState<{ id: string; label: string; src: string }[]>([]);
   const [loadingTpl,    setLoadingTpl]     = useState(false);
@@ -828,7 +801,6 @@ function BeitragToolPage() {
   const [exporting,     setExporting]     = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportPhase,    setExportPhase]    = useState<"record" | "convert">("record");
-  const rafRef = useRef<number | null>(null);
   const lastTapRef = useRef(0);
   const [previewing,    setPreviewing]    = useState(false);
   const previewTRef    = useRef(0);
@@ -845,7 +817,7 @@ function BeitragToolPage() {
   const historyRef = useRef<Snapshot[]>([]);
   const [canUndo, setCanUndo] = useState(false);
 
-  function pushHistory() {
+  const pushHistory = useCallback(() => {
     const snap: Snapshot = {
       elements: elements.map((e) => ({ ...e })),
       bgColor, bgImage, bgOffsetX, bgOffsetY, bgOpacity,
@@ -855,7 +827,7 @@ function BeitragToolPage() {
     };
     historyRef.current = [...historyRef.current.slice(-19), snap];
     setCanUndo(true);
-  }
+  }, [elements, bgColor, bgImage, bgOffsetX, bgOffsetY, bgOpacity, frameStyle, frameColor, frameThickness, frameInset, format, slides, currentSlideIdx]);
 
   function undo() {
     const stack = historyRef.current;
@@ -1099,7 +1071,7 @@ function BeitragToolPage() {
       else drawEl(ctx, el, imgCache.current);
     }
     drawFrame(ctx, frameStyle, sz.w, sz.h, frameColor, frameThickness, frameInset);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [elements, selId, sz, bgColor, bgImage, bgOffsetX, bgOffsetY, bgOpacity, tick, selEl, editingId, previewing, frameStyle, frameColor, frameThickness, frameInset]);
 
   /* focus textarea when edit starts */
@@ -1209,7 +1181,7 @@ function BeitragToolPage() {
       if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
       stopAudio();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [previewing, videoDuration, slides, currentSlideIdx, selectedTrackId, musikTracks, musikFadeIn, musikFadeInDur, musikFadeOut, musikFadeOutDur]);
 
   /* Load Google Fonts for this page */
@@ -1292,7 +1264,7 @@ function BeitragToolPage() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selId, editingId]);
+  }, [selId, editingId, pushHistory]);
 
   /* Paste from clipboard (images + text) */
   useEffect(() => {
@@ -1878,34 +1850,6 @@ function BeitragToolPage() {
     await fetch(`/api/social-media/designs?name=${encodeURIComponent(name)}`, { method: "DELETE" });
   }
 
-  function exportDesign() {
-    if (editingId) commitEdit();
-    const allSlides = getAllSlides();
-    const snapshot = JSON.stringify({
-      format, editorMode, videoDuration,
-      selectedTrackId,
-      musikFadeIn, musikFadeInDur,
-      musikFadeOut, musikFadeOutDur,
-      slides: allSlides,
-      currentSlideIdx,
-      bgColor, bgImage, bgEvidenceId, bgOffsetX, bgOffsetY, bgOpacity, elements,
-      frameStyle, frameColor, frameThickness, frameInset,
-    }, null, 2);
-    const blob = new Blob([snapshot], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "beitrag.json";
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
-
-  async function importDesign(file: File) {
-    try {
-      const text = await file.text();
-      loadDesign(text);
-    } catch { /* ignore */ }
-  }
-
   function layer(dir: "up" | "down") {
     pushHistory();
     setElements((p) => {
@@ -2300,8 +2244,6 @@ function BeitragToolPage() {
       zIndex: 20,
     };
   }
-
-
 
   return (
     <main className={fullscreen ? "fixed inset-0 z-[100] bg-white overflow-hidden p-3 flex flex-col" : "top-centered-main"}>

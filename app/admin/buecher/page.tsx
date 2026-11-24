@@ -1,5 +1,6 @@
 "use client";
 
+import NextImage from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -37,7 +38,7 @@ export default function AdminBooksPage() {
       <p className="text-xs text-arena-muted mb-3">{books.length} Treffer (maximal 500)</p>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {books.map((book) => <Link key={book.id} href={`/buch/${book.id}`} className="flex gap-3 rounded-xl border border-arena-border-light bg-white p-3 hover:border-arena-blue/40 hover:shadow-sm transition-shadow">
-          {book.coverImageUrl ? <img src={book.coverImageUrl} alt="" className="w-16 h-24 object-cover rounded-md bg-slate-100" /> : <div className="w-16 h-24 rounded-md bg-slate-100" />}
+          {book.coverImageUrl ? <NextImage width={64} height={96} unoptimized src={book.coverImageUrl} alt="" className="w-16 h-24 object-cover rounded-md bg-slate-100" /> : <div className="w-16 h-24 rounded-md bg-slate-100" />}
           <div className="min-w-0"><h2 className="font-semibold text-sm text-arena-blue line-clamp-2 m-0">{book.title ?? "Ohne Titel"}</h2><p className="text-xs text-arena-muted mt-1">{book.ownerUsername ?? ""}</p>{book.isbn && <p className="text-xs text-arena-muted mt-1">ISBN {book.isbn}</p>}{book.genre && <p className="text-xs text-arena-muted mt-1 line-clamp-2">{book.genre}</p>}</div>
         </Link>)}
       </div>

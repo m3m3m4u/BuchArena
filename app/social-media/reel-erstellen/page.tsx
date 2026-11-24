@@ -19,7 +19,6 @@ import {
   FolderOpenIcon,
   PaperAirplaneIcon,
   CheckCircleIcon,
-  MusicalNoteIcon,
   PlayIcon,
   StopIcon,
 } from "@heroicons/react/24/outline";
@@ -658,8 +657,6 @@ export default function ReelErstellenPage() {
       default: return false;
     }
   }
-
-  const allComplete = [0, 1, 2].every(isStepComplete);
 
   function req(value: string): string {
     return value.trim() ? "" : " !border-red-400";

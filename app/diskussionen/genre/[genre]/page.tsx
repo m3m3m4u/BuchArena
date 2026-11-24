@@ -308,26 +308,6 @@ export default function GenreDiskussionenPage() {
     );
   }
 
-  const search = searchTerm.trim().toLowerCase();
-  const filtered = discussions
-    .filter((d) => {
-      if (!search) return true;
-      return (
-        d.title.toLowerCase().includes(search) ||
-        d.body.toLowerCase().includes(search) ||
-        (d.displayName || d.authorUsername).toLowerCase().includes(search)
-      );
-    })
-    .sort((a, b) => {
-      if (sortBy === "newest") {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-      return (
-        new Date(b.lastActivityAt ?? b.createdAt).getTime() -
-        new Date(a.lastActivityAt ?? a.createdAt).getTime()
-      );
-    });
-
   return (
     <main className="top-centered-main">
       <section className="card">

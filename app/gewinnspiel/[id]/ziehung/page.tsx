@@ -104,10 +104,6 @@ function drawSlotFrame(
     const listIdx = ((startItemIndex + i) % n + n) % n;
     const y = SLOT_DRUM_Y + i * SLOT_H - offsetInItem;
 
-    // Bestimme ob diese Zeile visuell im Mittelbereich liegt (pixelbasiert)
-    const rowCenterPx = y + SLOT_H / 2;
-    const isAtCenter = rowCenterPx >= fixedCenterY && rowCenterPx < fixedCenterY + SLOT_H;
-
     // Trennlinie
     ctx.fillStyle = "rgba(255,255,255,0.06)";
     ctx.fillRect(SLOT_DRUM_X, y + SLOT_H - 1, SLOT_DRUM_W, 1);
@@ -457,18 +453,6 @@ export default function ZiehungsradPage() {
       ? winnerIdxRef.current
       : (() => { const arr = new Uint32Array(1); crypto.getRandomValues(arr); return arr[0] % n; })();
 
-    // Buchcover laden (nicht mehr direkt verwendet, aber vorhanden für spätere Nutzung)
-    let coverImg: HTMLImageElement | null = null;
-    if (info?.coverImageUrl) {
-      coverImg = await new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = info!.coverImageUrl!;
-      });
-    }
-
     // Slot-Canvas (intern SIZE×SIZE)
     const tmp = document.createElement("canvas");
     tmp.width = SIZE; tmp.height = SIZE;
@@ -491,16 +475,6 @@ export default function ZiehungsradPage() {
       }
       if (cur) lines.push(cur);
       return lines;
-    }
-
-    function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
-      ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-      ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
-      ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
-      ctx.closePath();
     }
 
     function drawReelFrame(scrollY: number, done: boolean, hl: number | null) {
@@ -742,7 +716,6 @@ export default function ZiehungsradPage() {
       setExportingReel(false);
     }
   }
-
 
   if (loading) return <main className="site-shell py-10 text-center text-sm opacity-60">Lade…</main>;
 

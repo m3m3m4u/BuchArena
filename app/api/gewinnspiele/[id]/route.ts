@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getGewinnspieleCollection, getGewinnspielteilnahmenCollection, getUsersCollection } from "@/lib/mongodb";
+import { getGewinnspieleCollection, getGewinnspielteilnahmenCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 import { ObjectId } from "mongodb";
 

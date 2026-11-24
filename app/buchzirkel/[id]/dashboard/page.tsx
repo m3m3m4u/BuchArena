@@ -1,5 +1,6 @@
 "use client";
 
+import NextImage from "next/image";
 import { LinkIcon, StarIcon, DocumentTextIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -60,8 +61,6 @@ type Zirkel = {
   buchformateAngebot?: string[];
   erwartungenAnTestleser?: string;
 };
-
-type Datei = { id: string; originalName: string; abschnittId?: string };
 
 type ChatMsg = { id: string; senderUsername: string; body: string; createdAt: string };
 
@@ -720,7 +719,7 @@ export default function BuchzirkelDashboardPage() {
                             onMouseDown={() => { setEinladenUsername(u.username); setEinladenSuggestions([]); setEinladenMsg(""); }}
                           >
                             {u.profileImage && (
-                              <img src={toProxyUrl(u.profileImage, 100) || u.profileImage} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                              <NextImage width={24} height={24} unoptimized src={toProxyUrl(u.profileImage, 100) || u.profileImage} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
                             )}
                             <span className="font-medium">{u.username}</span>
                             {u.displayName && u.displayName !== u.username && (
@@ -1286,7 +1285,7 @@ export default function BuchzirkelDashboardPage() {
             {editMediaTyp === "bild" && (
               <div className="grid gap-1">
                 <label className="text-sm font-semibold">Bild hochladen</label>
-                {editMediaImageUrl && <img src={editMediaImageUrl} alt="Vorschau" className="max-w-full max-h-48 w-auto h-auto rounded-lg border border-arena-border mb-1" />}
+                {editMediaImageUrl && <NextImage width={640} height={480} unoptimized src={editMediaImageUrl} alt="Vorschau" className="max-w-full max-h-48 w-auto h-auto rounded-lg border border-arena-border mb-1" />}
                 <input type="file" accept="image/*" className="w-full min-w-0 max-w-full min-h-11" disabled={editMediaImageUploading}
                   onChange={async (e) => {
                     const file = e.target.files?.[0];

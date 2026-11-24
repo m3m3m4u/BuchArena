@@ -10,18 +10,15 @@ import {
 import GenrePicker from "@/app/components/genre-picker";
 import {
   Cog6ToothIcon,
-  BookOpenIcon,
   PencilSquareIcon,
   MusicalNoteIcon,
   MicrophoneIcon,
-  ArrowUpTrayIcon,
   ArrowDownTrayIcon,
   TrashIcon,
   XMarkIcon,
   CheckIcon,
   DocumentIcon,
   ChatBubbleLeftRightIcon,
-  DocumentArrowDownIcon,
   PhotoIcon,
   FilmIcon,
   ChevronLeftIcon,

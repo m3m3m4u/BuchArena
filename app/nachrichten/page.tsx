@@ -1,5 +1,6 @@
 "use client";
 
+import NextImage from "next/image";
 import { FlagIcon } from "@heroicons/react/24/outline";
 
 import Link from "next/link";
@@ -997,7 +998,7 @@ function NachrichtenPageInner() {
                         >
                           <div className="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center text-base font-bold flex-shrink-0 overflow-hidden">
                             {bz.coverImageUrl ? (
-                              <img src={toProxyUrl(bz.coverImageUrl, 100) || bz.coverImageUrl} alt={bz.titel} className="w-full h-full object-cover" />
+                              <NextImage width={64} height={64} unoptimized src={toProxyUrl(bz.coverImageUrl, 100) || bz.coverImageUrl} alt={bz.titel} className="w-full h-full object-cover" />
                             ) : bz.titel.charAt(0).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1047,7 +1048,7 @@ function NachrichtenPageInner() {
                     {/* Avatar-Kreis */}
                     <div className="w-10 h-10 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold flex-shrink-0 uppercase overflow-hidden">
                       {conv.profileImage ? (
-                        <img src={toProxyUrl(conv.profileImage, 100) || conv.profileImage} alt={conv.partner} className="w-full h-full object-cover" />
+                        <NextImage width={64} height={64} unoptimized src={toProxyUrl(conv.profileImage, 100) || conv.profileImage} alt={conv.partner} className="w-full h-full object-cover" />
                       ) : (
                         conv.partner.charAt(0)
                       )}
@@ -1113,7 +1114,7 @@ function NachrichtenPageInner() {
                   </button>
                   <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center text-base font-bold flex-shrink-0 overflow-hidden">
                     {activeBzCover ? (
-                      <img src={toProxyUrl(activeBzCover, 100) || activeBzCover} alt={activeBzTitel} className="w-full h-full object-cover" />
+                      <NextImage width={64} height={64} unoptimized src={toProxyUrl(activeBzCover, 100) || activeBzCover} alt={activeBzTitel} className="w-full h-full object-cover" />
                     ) : activeBzTitel.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex flex-col flex-1 min-w-0">
@@ -1203,7 +1204,7 @@ function NachrichtenPageInner() {
                   </button>
                   <div className="w-9 h-9 shrink-0 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold uppercase overflow-hidden font-sans">
                     {activePartnerImage ? (
-                      <img src={toProxyUrl(activePartnerImage, 100) || activePartnerImage} alt={activePartner} className="w-full h-full object-cover" />
+                      <NextImage width={64} height={64} unoptimized src={toProxyUrl(activePartnerImage, 100) || activePartnerImage} alt={activePartner} className="w-full h-full object-cover" />
                     ) : (
                       activePartner.charAt(0)
                     )}
@@ -1386,7 +1387,7 @@ function NachrichtenPageInner() {
                           >
                             <div className="w-8 h-8 rounded-full bg-arena-blue text-white flex items-center justify-center text-xs font-bold flex-shrink-0 uppercase overflow-hidden font-sans">
                               {u.profileImage ? (
-                                <img
+                                <NextImage width={64} height={64} unoptimized
                                   src={u.profileImage}
                                   alt={u.username}
                                   className="w-full h-full object-cover rounded-full"

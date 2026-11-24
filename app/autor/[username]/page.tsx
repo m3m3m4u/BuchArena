@@ -27,13 +27,6 @@ type AuthorBook = { id: string; title: string; subtitle?: string; genre: string;
 type AuthorProfilePayload = { author: { username: string; displayName?: string; isUnclaimed?: boolean; profile: ProfileData; books: AuthorBook[] } };
 type PageProps = { params: Promise<{ username: string }> };
 
-function getInitials(name: string): string {
-  if (!name) return "A";
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
 /** Wandelt Social-Media-Handles/-Werte in vollständige URLs um. */
 function toSocialUrl(platform: string, raw: string): string {
   const v = raw.trim();

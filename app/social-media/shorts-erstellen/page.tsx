@@ -23,17 +23,6 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 
-/* ── helpers ── */
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 /** Bild auf max 1200px verkleinern und als JPEG komprimieren (für DB-Speicherung) */
 function compressImage(file: File, maxDim = 1200, quality = 0.85): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -62,14 +51,6 @@ function compressImage(file: File, maxDim = 1200, quality = 0.85): Promise<strin
 
 function truncate(text: string, max: number) {
   return text.length > max ? text.slice(0, max) + "…" : text;
-}
-
-function dataUrlToBlob(dataUrl: string): Uint8Array {
-  const parts = dataUrl.split(",");
-  const raw = atob(parts[1]);
-  const arr = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-  return arr;
 }
 
 /* ── types ── */
@@ -695,9 +676,6 @@ export default function ShortsErstellenPage() {
 
     /* ────── Slide 2: Allgemeine Infos ────── */
     const effG = form.geschlecht === "custom" ? (form.geschlechtCustom || "Autorin") : (form.geschlecht || "Autorin");
-    const coverDesignText = form.coverDesign
-      ? " Cover: " + form.coverDesign
-      : " " + effG + " & Coverdesign: " + autorFull;
 
     let s2 = await zip.file("ppt/slides/slide2.xml")!.async("string");
     s2 = replacePlaceholders(s2, [

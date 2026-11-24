@@ -1,5 +1,6 @@
 "use client";
 
+import NextImage from "next/image";
 import {
   useEditor,
   EditorContent,
@@ -1003,7 +1004,7 @@ export default function PodcastAdminPage() {
                 )}
                 {editCoverUrl && (
                   <div className="flex items-start gap-3 pt-1">
-                    <img
+                    <NextImage width={128} height={80} unoptimized
                       src={editCoverUrl}
                       alt="Vorschaubild"
                       className="w-32 h-20 object-cover rounded-lg border border-gray-200"
@@ -1043,7 +1044,7 @@ export default function PodcastAdminPage() {
                           className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2.5 border-b last:border-b-0 border-gray-100"
                         >
                           {u.profileImage ? (
-                            <img
+                            <NextImage width={28} height={28} unoptimized
                               src={u.profileImage}
                               alt={u.displayName}
                               className="w-7 h-7 rounded-full object-cover flex-shrink-0 border border-gray-200"
@@ -1077,7 +1078,7 @@ export default function PodcastAdminPage() {
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           {p.profileImage ? (
-                            <img
+                            <NextImage width={24} height={24} unoptimized
                               src={p.profileImage}
                               alt={p.displayName}
                               className="w-6 h-6 rounded-full object-cover flex-shrink-0 border border-gray-200"
@@ -1173,7 +1174,7 @@ export default function PodcastAdminPage() {
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="flex items-start gap-3 min-w-0">
                       {f.coverUrl && (
-                        <img
+                        <NextImage width={80} height={56} unoptimized
                           src={f.coverUrl}
                           alt={f.title}
                           className="w-20 h-14 object-cover rounded-lg border border-gray-200 flex-shrink-0"

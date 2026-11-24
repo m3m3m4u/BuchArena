@@ -301,6 +301,30 @@ export default function KalenderPage() {
     return () => { cancelled = true; };
   }, [events]);
 
+  const openEventDetail = useCallback((event: KalenderEvent) => {
+    setSelectedEvent(event);
+    setIsEditMode(false);
+    if (event.createdBy === username || username === "Kopernikus") {
+      setIsUserRole(username === "Kopernikus" ? "admin" : "user");
+    } else {
+      setIsUserRole("none");
+    }
+    setEditFormData({
+      title: event.title,
+      description: event.description,
+      category: event.category,
+      date: event.date,
+      dateTo: event.dateTo ?? "",
+      timeFrom: event.timeFrom ?? "",
+      timeTo: event.timeTo ?? "",
+      locationStreet: event.location?.street ?? "",
+      locationCity: event.location?.city ?? "",
+      locationZipCode: event.location?.zipCode ?? "",
+      locationCountry: event.location?.country ?? "",
+      link: event.link ?? "",
+    });
+  }, [username]);
+
   // Initialize Leaflet map + place markers
   useEffect(() => {
     if (viewMode !== "map" || !mapContainer.current) return;
@@ -407,7 +431,7 @@ export default function KalenderPage() {
       disposed = true;
       resizeObserver?.disconnect();
     };
-  }, [viewMode, events, eventCoords, filterCategories]);
+  }, [viewMode, events, eventCoords, filterCategories, openEventDetail]);
 
   // Cleanup map when leaving map view
   useEffect(() => {
@@ -500,30 +524,6 @@ export default function KalenderPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const openEventDetail = (event: KalenderEvent) => {
-    setSelectedEvent(event);
-    setIsEditMode(false);
-    if (event.createdBy === username || username === "Kopernikus") {
-      setIsUserRole(username === "Kopernikus" ? "admin" : "user");
-    } else {
-      setIsUserRole("none");
-    }
-    setEditFormData({
-      title: event.title,
-      description: event.description,
-      category: event.category,
-      date: event.date,
-      dateTo: event.dateTo ?? "",
-      timeFrom: event.timeFrom ?? "",
-      timeTo: event.timeTo ?? "",
-      locationStreet: event.location?.street ?? "",
-      locationCity: event.location?.city ?? "",
-      locationZipCode: event.location?.zipCode ?? "",
-      locationCountry: event.location?.country ?? "",
-      link: event.link ?? "",
-    });
   };
 
   const closeEventDetail = () => {

@@ -12,7 +12,6 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const folder = searchParams.get("folder") ?? "inbox";
     const threadId = searchParams.get("threadId");
     const partner = searchParams.get("partner");
 

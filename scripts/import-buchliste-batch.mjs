@@ -242,7 +242,6 @@ try {
         { title: { $regex: `^${escapeRegex(row.title)}$`, $options: "i" }, ownerUsername: authorUsername },
       ],
     }, { projection: { _id: 1, title: 1 } });
-    const bookUrl = existingBook ? `/buch/${existingBook._id.toString()}` : "";
     if (DRY_RUN) {
       results.push({ id: row.id, title: row.title, status: existingBook ? "already-present" : "ready", isbn: metadata.isbn, authorUsername, existingUser: Boolean(existingUser), reference: existingBook ? `/buch/${existingBook._id.toString()}` : undefined });
       continue;

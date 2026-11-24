@@ -22,7 +22,6 @@ import {
   ChartBarIcon,
   ArrowTopRightOnSquareIcon,
   ShieldCheckIcon,
-  ChevronRightIcon,
   ArrowLeftIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";

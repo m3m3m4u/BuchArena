@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { HeartIcon } from "@heroicons/react/24/outline";
-import { normalizeGenre } from "@/lib/genres";
 
 const PAGE_SIZE = 10;
 

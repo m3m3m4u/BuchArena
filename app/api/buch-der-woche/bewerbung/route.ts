@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAccount } from "@/lib/server-auth";
-import { getBooksCollection, getDatabase } from "@/lib/mongodb";
+import { getBooksCollection } from "@/lib/mongodb";
 import { extractYouTubeId } from "@/lib/bucharena-types";
 import {
   getBdwSubmissionsCollection,

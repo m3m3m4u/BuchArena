@@ -1,5 +1,6 @@
 "use client";
 
+import NextImage from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT, type LoggedInAccount } from "@/lib/client-account";
@@ -23,8 +24,6 @@ import {
 
 type BuchDerWoche = { title: string; author: string; speaker?: string; youtubeUrl: string; buyUrl: string; active?: boolean; bookId?: string; authorUsername?: string; speakerUsername?: string };
 type Stats = { bookCount: number; authorCount: number; bloggerCount: number; speakerCount: number; testleserCount: number; lektorenCount: number; verlageCount: number };
-
-
 
 export default function HomePage() {
   const [account, setAccount] = useState<LoggedInAccount | null>(null);
@@ -95,7 +94,7 @@ export default function HomePage() {
               rel="noopener noreferrer"
               className="flex items-center gap-3 md:pl-4 no-underline text-inherit group md:col-span-2"
             >
-              <img src="/beyondbooks.png" alt="BeyondBooks" className="h-16 w-auto shrink-0 rounded" />
+              <NextImage width={64} height={64} unoptimized src="/beyondbooks.png" alt="BeyondBooks" className="h-16 w-auto shrink-0 rounded" />
               <div>
                 <p className="text-[10px] uppercase tracking-wide text-arena-muted m-0 mb-0.5">Empfehlung der BuchArena</p>
                 <p className="font-sans text-xs text-arena-muted m-0 leading-snug group-hover:text-arena-blue transition-colors">
@@ -295,7 +294,7 @@ export default function HomePage() {
       {/* Hero */}
       <section className="bg-linear-to-br from-arena-blue via-arena-blue-mid to-arena-blue-light px-4 py-16 text-center text-white">
         <div className="mx-auto max-w-[1100px]">
-          <img
+          <NextImage unoptimized priority
             src="/logo.png"
             alt="BuchArena Logo"
             width={140}
@@ -329,10 +328,10 @@ export default function HomePage() {
             </p>
             <div className="flex items-center justify-center gap-10 flex-wrap">
               <a href="https://lernarena.org" target="_blank" rel="noopener noreferrer">
-                <img src="/logolang.png" alt="LernArena" width={240} height={75} />
+                <NextImage unoptimized src="/logolang.png" alt="LernArena" width={240} height={75} />
               </a>
               <a href="https://www.martinamedia.at/" target="_blank" rel="noopener noreferrer">
-                <img src="/logoohnebgweiss.png" alt="martinamedia" width={192} height={60} />
+                <NextImage unoptimized src="/logoohnebgweiss.png" alt="martinamedia" width={192} height={60} />
               </a>
             </div>
           </div>

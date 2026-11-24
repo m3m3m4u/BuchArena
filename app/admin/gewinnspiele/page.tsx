@@ -5,7 +5,7 @@ import { GiftIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
+import { getStoredAccount } from "@/lib/client-account";
 import { ProgressiveImg } from "@/app/components/progressive-image";
 
 type Gewinnspiel = {

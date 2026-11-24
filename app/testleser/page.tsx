@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { parseGenres } from "@/app/components/genre-picker";
+
 import { GENRE_OPTIONS } from "@/lib/genres";
 
 const PAGE_SIZE = 10;

@@ -32,7 +32,7 @@ export default function AdminSocialMediaGalleryPage() {
     const ok  = acc?.role === "ADMIN" || acc?.role === "SUPERADMIN";
     setIsAdmin(ok);
     if (ok) loadItems();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   async function loadItems() {

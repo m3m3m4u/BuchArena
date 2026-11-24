@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { getBooksCollection } from "@/lib/mongodb";
 import { getServerAccount } from "@/lib/server-auth";
 
-type ListBooksPayload = {
-  ownerUsername?: string;
-};
-
-export async function POST(request: Request) {
+export async function POST() {
   try {
     const account = await getServerAccount();
     if (!account) {

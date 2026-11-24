@@ -18,13 +18,6 @@ type Payload = {
   body?: string;
 };
 
-function hasName(profile: unknown): boolean {
-  if (!profile || typeof profile !== "object") return false;
-  const p = profile as Record<string, unknown>;
-  const name = p.name as { value?: string } | undefined;
-  return !!(name?.value?.trim());
-}
-
 /**
  * POST /api/messages/broadcast-group
  * Sendet eine Nachricht an alle aktiven Nutzer einer Gruppe (nur Admin/SuperAdmin).

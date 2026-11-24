@@ -28,7 +28,6 @@ loadEnv(".env");
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const DB_NAME = process.env.MONGODB_DB_NAME ?? "bucharena";
-const WEBDAV_PUBLIC_BASE = (process.env.WEBDAV_PUBLIC_BASE_URL ?? process.env.WEBDAV_URL ?? "").replace(/\/$/, "");
 const WEBDAV_UPLOAD_DIR = (process.env.WEBDAV_UPLOAD_DIR ?? "bucharena-profile-images").replace(/^\/+/, "").replace(/\/+$/, "");
 
 if (!MONGODB_URI) { console.error("MONGODB_URI fehlt"); process.exit(1); }

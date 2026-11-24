@@ -1,9 +1,10 @@
 "use client";
 
+import NextImage from "next/image";
 import { BookOpenIcon, EnvelopeIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 import { useEffect, useState, useCallback } from "react";
 import {
   ACCOUNT_CHANGED_EVENT,
@@ -96,9 +97,6 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [busyUser, setBusyUser] = useState<string | null>(null);
-
-  /* ── Haupt-Reiter & Navigation ── */
-  const router = useRouter();
   const [mainTab, setMainTab] = useState<AdminTab>("overview");
   const [activeCategory, setActiveCategory] = useState<AdminCategory>("overview");
 
@@ -1292,7 +1290,7 @@ export default function AdminPage() {
                                 style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start", border: "1px solid var(--color-arena-border)", borderRadius: 10, padding: "0.75rem", textDecoration: "none", color: "inherit" }}
                               >
                                 {imgUrl ? (
-                                  <img
+                                  <NextImage width={64} height={96} unoptimized
                                     src={imgUrl}
                                     alt={z.titel}
                                     style={{ width: 64, height: 96, objectFit: "cover", borderRadius: 6, flexShrink: 0, border: "1px solid var(--color-arena-border-light)" }}

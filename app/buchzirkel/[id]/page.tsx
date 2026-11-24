@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getStoredAccount } from "@/lib/client-account";
 import { ProgressiveImg } from "@/app/components/progressive-image";
@@ -96,7 +96,6 @@ function getYoutubeEmbedUrl(url: string): string | null {
 
 export default function BuchzirkelDetailPage() {
   const params = useParams<{ id: string }>();
-  const router = useRouter();
   const [zirkel, setZirkel] = useState<Zirkel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

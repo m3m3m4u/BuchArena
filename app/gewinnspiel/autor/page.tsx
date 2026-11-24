@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredAccount, ACCOUNT_CHANGED_EVENT } from "@/lib/client-account";
 import { ProgressiveImg } from "@/app/components/progressive-image";
-import Image from "next/image";
 
 type Buch = { id: string; title: string; coverImageUrl?: string; genre?: string };
 
@@ -43,7 +42,6 @@ function fmtDt(iso: string | undefined): string {
   if (!iso) return "–";
   return new Date(iso).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
-
 
 export default function AutorGewinnspielPage() {
   const router = useRouter();

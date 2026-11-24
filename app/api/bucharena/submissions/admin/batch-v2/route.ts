@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+
 import JSZip from "jszip";
 import {
   getBucharenaSubmissionsCollection,
@@ -9,12 +9,7 @@ import {
 import { requireAdmin } from "@/lib/server-auth";
 import { getUsersCollection } from "@/lib/mongodb";
 import { buildKurzVideoPptx } from "@/lib/pptx-vorlage";
-import {
-  cleanInstagramHandle,
-  generateReelsExcelBuffer,
-  buildReelFileName,
-  type ReelExportItem,
-} from "@/lib/reel-export-utils";
+import { generateReelsExcelBuffer, buildReelFileName, type ReelExportItem } from "@/lib/reel-export-utils";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;

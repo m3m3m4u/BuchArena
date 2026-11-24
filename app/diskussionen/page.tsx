@@ -8,12 +8,7 @@ import { showLesezeichenToast } from "@/app/components/lesezeichen-toast";
 import { DISCUSSION_TOPICS, GENRE_TOPICS } from "@/lib/discussions";
 import { CommentToolbar } from "@/app/components/comment-toolbar";
 import PinIcon from "@/app/components/pin-icon";
-import {
-  ChatBubbleLeftRightIcon,
-  ChartBarIcon,
-  PlusIcon,
-  DocumentTextIcon
-} from "@heroicons/react/24/outline";
+import { ChartBarIcon, PlusIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 
 type DiscussionItem = {
   id: string;
@@ -413,8 +408,6 @@ export default function DiskussionenPage() {
         <p className="text-sm text-arena-muted -mt-1">
           Der Treffpunkt dient dem gegenseitigen Austausch aller BuchArena-Mitglieder. Reine Werbeposts sind nicht vorgesehen. Wir freuen uns aber, wenn du durch kompetente Beiträge auf dich aufmerksam machst und so die Diskussion bereicherst.
         </p>
-
-
 
         {selectedGenres.length > 0 && (
           <div className="rounded-xl border border-arena-border p-3 flex flex-col gap-2">

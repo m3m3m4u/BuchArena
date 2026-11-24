@@ -38,7 +38,6 @@ const WEBDAV_URL      = (process.env.WEBDAV_URL ?? "").replace(/\/$/, "");
 const WEBDAV_USERNAME = process.env.WEBDAV_USERNAME ?? "";
 const WEBDAV_PASSWORD = process.env.WEBDAV_PASSWORD ?? "";
 const WEBDAV_UPLOAD_DIR = (process.env.WEBDAV_UPLOAD_DIR ?? "bucharena-profile-images").replace(/^\/+/, "").replace(/\/+$/, "");
-const WEBDAV_PUBLIC_BASE = (process.env.WEBDAV_PUBLIC_BASE_URL ?? process.env.WEBDAV_URL ?? "").replace(/\/$/, "");
 
 if (!WEBDAV_URL || !WEBDAV_USERNAME || !WEBDAV_PASSWORD) {
   console.error("WebDAV-Konfiguration fehlt (WEBDAV_URL, WEBDAV_USERNAME, WEBDAV_PASSWORD)");

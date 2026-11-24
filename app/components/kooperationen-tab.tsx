@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ROLLE_LABELS, ROLLE_PROFILE_PATH, type KooperationsRolle } from "@/lib/kooperationen";
+import { ROLLE_PROFILE_PATH, type KooperationsRolle } from "@/lib/kooperationen";
 
 const VALID_ROLES: { value: KooperationsRolle; label: string }[] = [
   { value: "autor", label: "Autor/in" },

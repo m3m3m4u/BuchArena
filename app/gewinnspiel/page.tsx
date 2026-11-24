@@ -2,13 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useStoredAccount } from "@/lib/client-state";
-import { 
-  ExclamationTriangleIcon, 
-  InformationCircleIcon, 
-  PlusIcon,
-  GiftIcon 
-} from "@heroicons/react/24/outline";
+
+import { ExclamationTriangleIcon, InformationCircleIcon, GiftIcon } from "@heroicons/react/24/outline";
 import { ProgressiveImage } from "@/app/components/progressive-image";
 
 type Gewinnspiel = {
@@ -67,7 +62,6 @@ export default function GewinnspielUebersichtPage() {
   const [tab, setTab] = useState<"aktiv" | "archiv">("aktiv");
   const [pageAktiv, setPageAktiv] = useState(0);
   const [pageArchiv, setPageArchiv] = useState(0);
-  const account = useStoredAccount();
 
   const PAGE_SIZE = 8;
 

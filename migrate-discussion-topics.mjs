@@ -31,19 +31,6 @@ if (!uri) {
   process.exit(1);
 }
 
-const TOPICS = [
-  "Allgemein",
-  "Autorentipps",
-  "Schreibtipps",
-  "Selfpublishing",
-  "Buchmarketing",
-  "Social Media & Werbung",
-  "Buchcover",
-  "Lektoren & Testleser",
-  "Genre-Diskussion",
-  "Veranstaltungen",
-];
-
 /**
  * Einfache Keyword-basierte Zuordnung.
  * Gibt das passendste Thema zurück oder "Allgemein".

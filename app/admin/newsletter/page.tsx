@@ -542,7 +542,7 @@ export default function NewsletterAdminPage() {
       .then((r) => r.json())
       .then((d: { count?: number }) => setRetryCount(d.count ?? 0))
       .catch(() => { /* ignore */ });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   const loadArchive = useCallback(async () => {
@@ -687,16 +687,6 @@ export default function NewsletterAdminPage() {
       setStatusMessage("Netzwerkfehler – bitte versuche es erneut.");
     }
   }, [editor, subject, htmlMode, htmlSource]);
-
-  const loadRetryCount = useCallback(async () => {
-    try {
-      const res = await fetch("/api/newsletter/retry");
-      if (res.ok) {
-        const data = (await res.json()) as { count: number };
-        setRetryCount(data.count);
-      }
-    } catch { /* ignore */ }
-  }, []);
 
   const handleRetry = useCallback(async () => {
     if (!window.confirm("Alle fehlgeschlagenen / hängenden Einträge erneut in die Warteschlange stellen?")) return;

@@ -1,5 +1,6 @@
 "use client";
 
+import NextImage from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { sanitizeHtml } from "@/lib/sanitize-html";
@@ -83,7 +84,7 @@ export default function PodcastPage() {
                   <article key={folge._id} className="card-base flex flex-col gap-3 p-4 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200">
                     {folge.coverUrl && (
                       <Link href={`/podcast/${folge._id}`} className="block overflow-hidden rounded-lg border border-arena-border-light">
-                        <img
+                        <NextImage width={640} height={360} unoptimized style={{ height: "auto" }}
                           src={folge.coverUrl}
                           alt={folge.title}
                           className="w-full aspect-video object-cover"
@@ -112,7 +113,7 @@ export default function PodcastPage() {
                             title={`${p.displayName} (${p.roleLabel})`}
                           >
                             {p.profileImage ? (
-                              <img
+                              <NextImage width={16} height={16} unoptimized
                                 src={p.profileImage}
                                 alt={p.displayName}
                                 className="w-4 h-4 rounded-full object-cover flex-shrink-0"

@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   BookOpenIcon,
   PlusIcon,
-  UserGroupIcon,
   CheckCircleIcon,
   XMarkIcon,
   ChatBubbleLeftRightIcon,

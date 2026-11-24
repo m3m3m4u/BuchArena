@@ -1,5 +1,6 @@
 "use client";
 
+import NextImage from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -84,7 +85,7 @@ export default function PodcastFolgePage() {
             </p>
 
             {folge.coverUrl && (
-              <img
+              <NextImage width={576} height={480} unoptimized style={{ height: "auto" }}
                 src={folge.coverUrl}
                 alt={folge.title}
                 className="w-full max-w-xl rounded-lg border border-arena-border-light object-cover"
@@ -110,7 +111,7 @@ export default function PodcastFolgePage() {
                       className="inline-flex max-w-full min-h-11 items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 text-sm text-arena-blue no-underline transition-colors"
                     >
                       {p.profileImage ? (
-                        <img
+                        <NextImage width={24} height={24} unoptimized
                           src={p.profileImage}
                           alt={p.displayName}
                           className="w-6 h-6 rounded-full object-cover flex-shrink-0 border border-gray-200"
