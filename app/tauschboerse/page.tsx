@@ -288,25 +288,25 @@ export default function TauschboersePage() {
 
   return (
     <main className="top-centered-main">
-      <section className="card">
+      <section className="card [overflow-wrap:anywhere]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-sans text-3xl font-extrabold text-arena-blue max-sm:text-2xl tracking-tight m-0">Tauschboerse</h1>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link href="/diskussionen" className="btn font-sans">← Treffpunkt</Link>
             <button className="btn font-sans" onClick={() => setShowOverlay(true)}>Neues Angebot</button>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mt-4 border-b border-arena-border-light">
+        <div className="flex flex-wrap gap-1 mt-4 border-b border-arena-border-light">
           <button
-            className={`font-sans px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "inserate" ? "border-arena-blue text-arena-blue" : "border-transparent text-arena-muted hover:text-arena-text"}`}
+            className={`font-sans min-h-11 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "inserate" ? "border-arena-blue text-arena-blue" : "border-transparent text-arena-muted hover:text-arena-text"}`}
             onClick={() => setActiveTab("inserate")}
           >
             Inserate
           </button>
           <button
-            className={`font-sans px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "meine-bewerbungen" ? "border-arena-blue text-arena-blue" : "border-transparent text-arena-muted hover:text-arena-text"}`}
+            className={`font-sans min-h-11 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "meine-bewerbungen" ? "border-arena-blue text-arena-blue" : "border-transparent text-arena-muted hover:text-arena-text"}`}
             onClick={() => { setActiveTab("meine-bewerbungen"); void loadMeineBewerbungen(); }}
           >
             Meine Bewerbungen
@@ -338,7 +338,7 @@ export default function TauschboersePage() {
             ) : filtered.length === 0 ? (
               <p className="font-sans text-arena-muted text-sm mt-4">Keine Angebote gefunden. Erstelle das erste!</p>
             ) : (
-              <div className="grid gap-3">
+              <div className="grid min-w-0 grid-cols-1 gap-3">
                 {filtered.map((item) => {
                   const isOwn = item.authorUsername === username;
                   const isAdmin = role === "SUPERADMIN" || role === "ADMIN";
@@ -347,7 +347,7 @@ export default function TauschboersePage() {
                   const isExpanded = expandedBewerbungen.has(item.id);
 
                   return (
-                    <div key={item.id} className="card-base p-4 hover:border-arena-blue hover:shadow-xs transition-all duration-200">
+                    <div key={item.id} className="card-base min-w-0 p-4 hover:border-arena-blue hover:shadow-xs transition-all duration-200">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <strong className="font-sans font-bold text-arena-blue text-base">{item.title}</strong>
@@ -415,7 +415,7 @@ export default function TauschboersePage() {
                       {(isOwn || isAdmin) && (
                         <div className="mt-3 pt-3 border-t border-arena-border-light">
                           <button
-                            className="font-sans text-xs font-semibold text-arena-blue hover:underline"
+                            className="font-sans min-h-11 py-2 text-xs font-semibold text-arena-blue hover:underline"
                             onClick={() => toggleBewerbungenFuerInserat(item.id)}
                           >
                             {isExpanded ? "Bewerbungen ausblenden" : "Bewerbungen anzeigen"}
@@ -475,7 +475,7 @@ export default function TauschboersePage() {
             ) : meineBewerbungen.length === 0 ? (
               <p className="font-sans text-arena-muted text-sm">Du hast dich noch auf kein Inserat beworben.</p>
             ) : (
-              <div className="grid gap-3">
+              <div className="grid min-w-0 grid-cols-1 gap-3">
                 {meineBewerbungen.map((b) => {
                   const inserat = items.find((i) => i.id === b.tauschId);
                   return (
@@ -532,7 +532,7 @@ export default function TauschboersePage() {
               <textarea className="input-base font-normal" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={3000} rows={6} placeholder="Beschreibe, was du anbietest und was du suchst ..." />
             </label>
 
-            <div className="flex gap-2 justify-end">
+            <div className="flex flex-wrap gap-2 justify-end">
               <button className="btn font-sans" onClick={handleCreate} disabled={isSaving || !title.trim() || !description.trim()}>
                 {isSaving ? "Wird erstellt ..." : "Angebot erstellen"}
               </button>
@@ -565,7 +565,7 @@ export default function TauschboersePage() {
 
             {bewerbenMessage && <p className="font-sans text-red-700 text-sm">{bewerbenMessage}</p>}
 
-            <div className="flex gap-2 justify-end">
+            <div className="flex flex-wrap gap-2 justify-end">
               <button
                 className="btn font-sans btn-primary"
                 onClick={handleBewerben}

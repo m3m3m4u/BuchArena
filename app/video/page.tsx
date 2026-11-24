@@ -66,22 +66,20 @@ export default function VideoPage() {
           <p className="font-sans text-arena-muted text-sm mt-4">Kein gültiger YouTube-Link vorhanden.</p>
         ) : !showVideo ? (
           <div
-            className="relative w-full max-w-[900px] overflow-hidden rounded-xl border border-arena-border-light bg-gray-900 cursor-pointer group mt-4"
-            style={{ aspectRatio: "16/9" }}
-            onClick={() => setUserAccepted(true)}
+            className="relative grid w-full max-w-[900px] overflow-hidden rounded-xl border border-arena-border-light bg-gray-900 mt-4 sm:aspect-video"
           >
             {thumbnail && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
+              <img src={thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60" />
             )}
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white text-center px-6">
-              <svg className="w-16 h-16 opacity-80" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <div className="relative flex flex-col items-center justify-center gap-3 text-white text-center px-6 py-6">
+              <svg className="w-16 h-16 shrink-0 opacity-80" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
               <p className="font-sans text-sm max-w-[400px] leading-snug">
                 Mit dem Abspielen wird eine Verbindung zu YouTube (Google LLC) hergestellt.
                 Es gelten die{" "}
                 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline font-sans">Datenschutzbestimmungen von Google</a>.
               </p>
-              <span className="btn bg-white text-gray-900 hover:bg-gray-100 text-sm font-sans">Video laden</span>
+              <button type="button" className="btn bg-white text-gray-900 hover:bg-gray-100 text-sm font-sans" onClick={() => setUserAccepted(true)}>Video laden</button>
             </div>
           </div>
         ) : (

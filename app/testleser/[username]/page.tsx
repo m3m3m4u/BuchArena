@@ -163,14 +163,14 @@ export default function TestleserProfilePage({ params }: PageProps) {
 
   return (
     <main className="top-centered-main">
-      <section className="card">
+      <section className="card [overflow-wrap:anywhere]">
         {isLoading ? (
           <p className="font-sans text-arena-muted text-sm mt-4">Lade Testleserprofil ...</p>
         ) : message ? (
           <p className="font-sans text-red-700 text-sm mt-4">{message}</p>
         ) : (
           <>
-            <div className="grid grid-cols-[96px_1fr] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
+            <div className="grid grid-cols-[96px_minmax(0,1fr)] items-center gap-3 max-[400px]:grid-cols-1 max-[400px]:justify-items-center max-[400px]:text-center">
               <div
                 className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border border-arena-border-light bg-arena-bg text-xs text-arena-muted"
                 style={profileImageUrl ? {
@@ -290,7 +290,7 @@ export default function TestleserProfilePage({ params }: PageProps) {
                 <div className="card gap-4" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-between">
                     <h2 className="font-sans text-xl font-bold text-arena-blue tracking-tight m-0">Nachricht an {visibleName}</h2>
-                    <button className="btn btn-sm font-sans" onClick={() => setShowCompose(false)}>✕</button>
+                    <button aria-label="Nachricht schließen" className="btn btn-sm font-sans min-h-11 min-w-11 shrink-0" onClick={() => setShowCompose(false)}>✕</button>
                   </div>
                   <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue">
                     Betreff

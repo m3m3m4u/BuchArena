@@ -94,7 +94,7 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
 
   return (
     <main className="top-centered-main">
-      <section className="card grid gap-5">
+      <section className="card grid gap-5 [overflow-wrap:anywhere]">
         <div className="rounded-2xl bg-arena-blue px-6 py-7 text-white shadow-sm">
           <div className="grid gap-3">
             <span className={categoryChipClassName}>{categoryLabel}</span>
@@ -177,7 +177,7 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
                   <a
                     href={selectedItem.fileUrl}
                     download={selectedItem.fileName}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-arena-blue text-white text-sm font-medium hover:bg-arena-blue-light transition-colors no-underline"
+                    className="shrink-0 inline-flex min-h-11 items-center gap-1.5 px-3 py-1.5 rounded-lg bg-arena-blue text-white text-sm font-medium hover:bg-arena-blue-light transition-colors no-underline"
                   >
                     ↓ Download
                   </a>
@@ -201,12 +201,12 @@ export default function PromoContentBrowser({ mediaType, title, description, ite
                         const copyKey = `${selectedItem.id}-${index}`;
                         return (
                           <div key={copyKey} className="rounded-xl bg-arena-yellow p-4">
-                            <div className="flex items-start justify-between gap-3 mb-2">
+                            <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
                               <p className="text-sm font-semibold text-arena-blue m-0">Vorschlag {index + 1}</p>
                               <button
                                 type="button"
                                 onClick={() => void copyCaption(selectedItem.id, index, caption)}
-                                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-arena-blue text-white text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity"
+                                className="shrink-0 inline-flex min-h-11 items-center gap-1.5 px-3 py-1.5 rounded-lg bg-arena-blue text-white text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity"
                               >
                                 {copiedCaption === copyKey ? "Kopiert" : "Caption kopieren"}
                               </button>

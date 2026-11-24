@@ -65,7 +65,7 @@ export default function PodcastFolgePage() {
 
   return (
     <main className="top-centered-main">
-      <section className="card gap-5">
+      <section className="card gap-5 [overflow-wrap:anywhere]">
         <Link href="/podcast" className="text-sm text-arena-blue hover:underline">
           ← Zurück zur Übersicht
         </Link>
@@ -107,7 +107,7 @@ export default function PodcastFolgePage() {
                     <Link
                       key={`${p.username}-${p.profileType}`}
                       href={p.profilePath}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 text-sm text-arena-blue no-underline transition-colors"
+                      className="inline-flex max-w-full min-h-11 items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 text-sm text-arena-blue no-underline transition-colors"
                     >
                       {p.profileImage ? (
                         <img
@@ -120,7 +120,7 @@ export default function PodcastFolgePage() {
                           {(p.displayName || p.username).charAt(0).toUpperCase()}
                         </span>
                       )}
-                      <span className="font-medium">{p.displayName}</span>
+                      <span className="min-w-0 font-medium">{p.displayName}</span>
                       <span className="text-xs text-gray-500">({p.roleLabel})</span>
                     </Link>
                   ))}
