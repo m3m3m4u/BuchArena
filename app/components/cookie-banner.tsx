@@ -37,7 +37,7 @@ export default function CookieBanner() {
     <>
       {showBanner && (
         <div
-          className="fixed right-4 bottom-4 z-[1000] w-[calc(100%-2rem)] max-w-[460px] rounded-xl border border-arena-border bg-white p-4 shadow-lg max-sm:right-2 max-sm:bottom-2 max-sm:w-[calc(100%-1rem)]"
+          className="fixed right-4 bottom-4 z-[1000] w-[calc(100%-2rem)] max-w-[460px] max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-xl border border-arena-border bg-white p-4 shadow-lg max-sm:right-2 max-sm:bottom-2 max-sm:w-[calc(100%-1rem)]"
           role="dialog"
           aria-label="Cookie-Einwilligung"
         >
@@ -54,7 +54,7 @@ export default function CookieBanner() {
 
           <button
             type="button"
-            className="mt-2 text-xs text-arena-link hover:underline"
+            className="mt-2 min-h-11 text-xs text-arena-link hover:underline"
             onClick={() => setShowDetails((v) => !v)}
           >
             {showDetails ? "Details ausblenden ▲" : "Details anzeigen ▼"}

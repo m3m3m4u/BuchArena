@@ -135,7 +135,7 @@ function BuecherContent() {
 
   const goTo = useCallback((p: number) => {
     setPage(Math.max(1, Math.min(p, totalPages)));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" });
   }, [totalPages]);
 
   return (
@@ -202,9 +202,9 @@ function BuecherContent() {
                     </div>
                     <div className="min-w-0 flex flex-col justify-between h-full">
                       <div>
-                        <h3 className="font-sans mb-1 mt-0 truncate text-base font-bold text-arena-blue">{book.title}</h3>
+                        <h3 className="font-sans mb-1 mt-0 [overflow-wrap:anywhere] text-base font-bold text-arena-blue">{book.title}</h3>
                         {book.subtitle && (
-                          <p className="font-sans text-xs italic text-arena-muted -mt-0.5 mb-2 truncate">{book.subtitle}</p>
+                          <p className="font-sans text-xs italic text-arena-muted -mt-0.5 mb-2 [overflow-wrap:anywhere]">{book.subtitle}</p>
                         )}
                       </div>
                       <div className="grid gap-0.5">

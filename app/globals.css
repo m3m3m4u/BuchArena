@@ -357,6 +357,8 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Form input base ── */
 
 @utility input-base {
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid var(--color-arena-border);
   border-radius: 8px;
   padding: 0.55rem 0.75rem;
@@ -461,6 +463,36 @@ select.input-base {
 .header-link-member:hover {
   background: var(--color-arena-bg);
   color: var(--color-arena-blue);
+}
+
+/* Ausreichende Tippflächen im mobilen Menü, auch im Querformat. */
+#mobile-navigation .header-link-public,
+#mobile-navigation .header-link-member,
+.footer-menu > a,
+.footer-menu > button {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+@media (max-width: 1023px), (pointer: coarse) {
+  .footer-social > a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Touch-Geräte brauchen diese Größen auch oberhalb des Handy-Breakpoints. */
+@media (max-width: 639px), (pointer: coarse) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+  .btn, .segmented-control-btn, .segmented-control-btn-primary {
+    min-height: 44px;
+  }
 }
 
 /* ── Central Design System Component Utilities ── */

@@ -930,11 +930,11 @@ function NachrichtenPageInner() {
   return (
     <main className="flex-1 flex flex-col overflow-hidden min-h-0">
       <section className="flex-1 !p-0 overflow-hidden w-full mx-auto min-h-0" style={{ maxWidth: 1100 }}>
-        <div className="grid grid-cols-[300px_1fr] max-sm:grid-cols-1 h-full min-h-0">
+        <div className="grid grid-cols-[300px_minmax(0,1fr)] max-lg:grid-cols-1 h-full min-h-0">
           {/* ══ Linke Seite: Konversationsliste ══ */}
           <div
             className={`border-r border-arena-border flex flex-col min-h-0 overflow-hidden ${
-              mobileShowChat ? "max-sm:hidden" : ""
+              mobileShowChat ? "max-lg:hidden" : ""
             }`}
           >
             {/* Header */}
@@ -1096,15 +1096,15 @@ function NachrichtenPageInner() {
           {/* ══ Rechte Seite: Chat-Bereich ══ */}
           <div
             className={`flex flex-col min-h-0 min-w-0 overflow-hidden ${
-              !mobileShowChat ? "max-sm:hidden" : ""
+              !mobileShowChat ? "max-lg:hidden" : ""
             }`}
           >
             {activeBzId ? (
               <>
                 {/* BZ-Chat-Header */}
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-arena-border-light bg-white">
+                <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-arena-border-light bg-white">
                   <button
-                    className="min-[641px]:hidden btn btn-sm font-sans !p-1"
+                    className="lg:hidden shrink-0 btn btn-sm font-sans !p-1"
                     onClick={() => setMobileShowChat(false)}
                   >
                     ←
@@ -1191,22 +1191,22 @@ function NachrichtenPageInner() {
             ) : activePartner ? (
               <>
                 {/* Chat-Header */}
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-arena-border-light bg-white">
+                <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-arena-border-light bg-white">
                   <button
-                    className="min-[641px]:hidden btn btn-sm font-sans !px-2.5 !py-1 text-xs font-bold flex items-center gap-1 bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200"
+                    className="lg:hidden shrink-0 btn btn-sm font-sans !px-2.5 !py-1 text-xs font-bold flex items-center gap-1 bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200"
                     onClick={() => setMobileShowChat(false)}
                     title="Zurück zur Liste"
                   >
                     ← Chats
                   </button>
-                  <div className="w-9 h-9 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold uppercase overflow-hidden font-sans">
+                  <div className="w-9 h-9 shrink-0 rounded-full bg-arena-blue text-white flex items-center justify-center text-sm font-bold uppercase overflow-hidden font-sans">
                     {activePartnerImage ? (
                       <img src={toProxyUrl(activePartnerImage, 100) || activePartnerImage} alt={activePartner} className="w-full h-full object-cover" />
                     ) : (
                       activePartner.charAt(0)
                     )}
                   </div>
-                  <div className="flex flex-col font-sans">
+                  <div className="flex flex-col flex-1 min-w-0 [overflow-wrap:anywhere] font-sans">
                     {activePartner === "BuchArena" ? (
                       <span className="font-sans font-bold text-sm text-arena-blue">
                         BuchArena Redaktion
@@ -1227,7 +1227,7 @@ function NachrichtenPageInner() {
                   </div>
                   {/* Aktionen: Spam melden, Blockieren, Admin Löschen */}
                   {activePartner !== "BuchArena" && (
-                    <div className="ml-auto flex items-center gap-1.5 flex-wrap">
+                    <div className="ml-auto flex items-center gap-1.5 flex-wrap w-full sm:w-auto justify-end">
                       <button
                         className="btn btn-sm font-sans !py-1 !px-2 text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100 transition-colors text-xs"
                         onClick={() => void handleReportSpam()}

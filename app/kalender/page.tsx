@@ -704,6 +704,7 @@ export default function KalenderPage() {
             <div className="flex items-center gap-1.5 sm:gap-2 w-full justify-center font-sans">
               <button
                 onClick={goToPreviousMonth}
+                aria-label="Vorheriger Monat"
                 className="btn btn-sm font-sans flex-shrink-0 sm:!w-24"
               >
                 ← <span className="hidden sm:inline">Zurück</span>
@@ -713,6 +714,7 @@ export default function KalenderPage() {
               </h1>
               <button
                 onClick={goToNextMonth}
+                aria-label="Nächster Monat"
                 className="btn btn-sm font-sans flex-shrink-0 sm:!w-24"
               >
                 <span className="hidden sm:inline">Weiter </span>→
@@ -755,7 +757,7 @@ export default function KalenderPage() {
                   <button
                     key={cat}
                     onClick={() => toggleFilterCategory(cat)}
-                    className={`font-sans px-3 py-1 text-xs sm:text-sm font-semibold rounded border transition ${
+                    className={`font-sans min-h-11 px-3 py-1 text-xs sm:text-sm font-semibold rounded border transition ${
                       active ? CATEGORY_COLORS[cat] : "border-arena-border-light text-arena-muted hover:border-arena-blue hover:text-arena-blue"
                     }`}
                   >
@@ -766,7 +768,7 @@ export default function KalenderPage() {
               {filterCategories.size > 0 && (
                 <button
                   onClick={() => setFilterCategories(new Set())}
-                  className="font-sans px-3 py-1 text-xs sm:text-sm rounded border border-arena-border-light text-arena-muted hover:text-arena-danger hover:border-arena-danger/40 transition"
+                  className="font-sans min-h-11 px-3 py-1 text-xs sm:text-sm rounded border border-arena-border-light text-arena-muted hover:text-arena-danger hover:border-arena-danger/40 transition"
                 >
                   ✕ Alle
                 </button>

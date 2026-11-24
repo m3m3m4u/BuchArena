@@ -124,7 +124,7 @@ export default function AutorenPage() {
 
   const goTo = useCallback((p: number) => {
     setPage(Math.max(1, Math.min(p, totalPages)));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" });
   }, [totalPages]);
 
   return (

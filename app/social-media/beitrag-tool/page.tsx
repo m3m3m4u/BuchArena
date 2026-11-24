@@ -2306,15 +2306,15 @@ function BeitragToolPage() {
     <main className={fullscreen ? "fixed inset-0 z-[100] bg-white overflow-hidden p-3 flex flex-col" : "top-centered-main"}>
       <section className={fullscreen ? "w-full flex-1 min-h-0 flex flex-col overflow-hidden" : "card"}>
 
-        <div className={`flex flex-col md:flex-row gap-3 ${fullscreen ? "flex-1 min-h-0 md:items-stretch overflow-y-auto md:overflow-hidden" : "items-start"}`}>
+        <div className={`flex flex-col lg:flex-row gap-3 ${fullscreen ? "flex-1 min-h-0 lg:items-stretch overflow-y-auto lg:overflow-hidden" : "items-start"}`}>
 
           {/* Sidebar */}
-          <aside className={`order-2 md:order-none w-full ${fullscreen ? "flex flex-col gap-1 min-h-0 md:flex-shrink-0 md:overflow-y-auto md:w-[700px] md:min-w-0 md:max-w-[700px]" : "grid content-start flex-shrink-0 min-h-0 gap-2 overflow-y-auto md:w-[230px] md:min-w-0 md:max-w-[230px]"}`}>
+          <aside className={`order-2 lg:order-none w-full shrink-0 ${fullscreen ? "flex flex-col gap-1 min-h-0 lg:overflow-y-auto lg:w-[42%] lg:min-w-0 lg:max-w-[700px]" : "grid content-start min-h-0 gap-2 overflow-y-auto lg:w-[230px] lg:min-w-0 lg:max-w-[230px]"}`}>
 
             {/* Titel + Aktionen */}
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
               {fullscreen ? (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <a href="/social-media"
                     className="btn btn-primary text-sm px-4 py-1.5 flex-shrink-0 font-semibold">
                     Zurück
@@ -2347,7 +2347,7 @@ function BeitragToolPage() {
                   {currentDesignName && <p className="text-xs text-arena-muted truncate">Entwurf: <strong>{currentDesignName}</strong></p>}
                 </>
               )}
-              <div className={fullscreen ? "grid grid-cols-5 gap-1.5" : "grid grid-cols-3 md:grid-cols-1 gap-1.5"}>
+              <div className={fullscreen ? "grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-1.5" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1.5"}>
                 <button type="button" className="btn btn-primary text-xs w-full"
                   disabled={savingState === "saving"}
                   onClick={() => {
@@ -2481,7 +2481,7 @@ function BeitragToolPage() {
                     className="w-10 h-7 border border-arena-border rounded cursor-pointer p-0.5" />
                 )}
               </div>
-              <div className={`grid gap-1 ${fullscreen ? "grid-cols-5" : "grid-cols-3 md:grid-cols-2"}`}>
+              <div className={`grid gap-1 ${fullscreen ? "grid-cols-2 sm:grid-cols-3 xl:grid-cols-5" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-2"}`}>
                 {FRAME_PRESETS.map((fp) => (
                   <button
                     key={fp.value}
@@ -2545,7 +2545,7 @@ function BeitragToolPage() {
                     {currentSlideIdx < slides.length - 1 && (
                       <>
                         <p className="text-xs font-medium mt-1">Übergang nach Folie {currentSlideIdx + 1}</p>
-                        <div className={`grid gap-1 ${fullscreen ? "grid-cols-4" : "grid-cols-2"}`}>
+                        <div className={`grid gap-1 ${fullscreen ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2"}`}>
                           {TRANSITION_PRESETS.map((tp) => (
                             <button
                               key={tp.value}
@@ -2734,7 +2734,7 @@ function BeitragToolPage() {
 
             <div className="rounded-lg border border-arena-border p-2 grid gap-1.5 min-w-0 overflow-hidden">
               <p className="text-sm font-semibold">Hinzuf&uuml;gen</p>
-              <div className={fullscreen ? "grid grid-cols-4 gap-1.5" : "grid grid-cols-3 md:grid-cols-1 gap-1.5"}>
+              <div className={fullscreen ? "grid grid-cols-2 sm:grid-cols-4 gap-1.5" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1.5"}>
                 <button type="button" className="btn text-xs" onClick={addText}>Text</button>
                 <button type="button" className="btn text-xs" onClick={() => setShowTemplates(true)}>
                   Bilder der BuchArena
@@ -2783,7 +2783,7 @@ function BeitragToolPage() {
           </aside>
 
           {/* Canvas area */}
-          <div className={`min-w-0 gap-2 order-1 md:order-none ${fullscreen ? "flex-1 flex flex-col overflow-hidden" : "grid content-start w-full md:w-3/4"}`}>
+          <div className={`min-w-0 gap-2 order-1 lg:order-none ${fullscreen ? "w-full shrink-0 lg:shrink lg:flex-1 flex flex-col lg:overflow-hidden" : "grid content-start w-full lg:flex-1"}`}>
 
             {/* Toolbar – immer sichtbar, feste Höhe */}
             <div className="flex items-center gap-1.5 rounded-lg border border-arena-border bg-arena-bg/80 px-2 py-1.5 min-h-11 overflow-x-auto flex-shrink-0">
@@ -2976,13 +2976,13 @@ function BeitragToolPage() {
             )}
 
             {/* Canvas + inline overlay */}
-            <div ref={wrapRef} className={`relative rounded-xl border border-arena-border bg-arena-bg p-2 overflow-visible ${fullscreen ? "flex-1 min-h-0 flex items-center justify-center" : ""}`}>
+            <div ref={wrapRef} className={`relative rounded-xl border border-arena-border bg-arena-bg p-2 overflow-visible ${fullscreen ? "shrink-0 lg:shrink lg:flex-1 min-h-0 flex items-center justify-center" : ""}`}>
               <canvas
                 ref={canvasRef}
+                className={fullscreen ? "max-h-[65dvh] lg:max-h-full" : undefined}
                 style={{
                   width: fullscreen ? undefined : "100%",
                   maxWidth: "100%",
-                  maxHeight: fullscreen ? "100%" : undefined,
                   aspectRatio: `${sz.w}/${sz.h}`,
                   display: "block",
                   cursor,

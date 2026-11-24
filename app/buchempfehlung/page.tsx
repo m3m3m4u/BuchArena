@@ -392,7 +392,7 @@ export default function BuchempfehlungPage() {
                   <button
                     key={g}
                     onClick={() => handleGenreToggle(g)}
-                    className={`rounded-full border px-3 py-1 text-sm font-sans font-semibold cursor-pointer transition-colors ${
+                    className={`min-h-11 rounded-full border px-3 py-1 text-sm font-sans font-semibold cursor-pointer transition-colors ${
                       prefs.genres.includes(g)
                         ? "bg-arena-blue text-white border-arena-blue"
                         : "bg-white text-arena-text border-arena-border hover:bg-arena-bg"
@@ -418,7 +418,7 @@ export default function BuchempfehlungPage() {
                   <button
                     key={a}
                     onClick={() => selectAge(a)}
-                    className={`rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
+                    className={`min-h-11 rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
                       pendingAge === a
                         ? "bg-arena-blue text-white border-arena-blue"
                         : "bg-white text-arena-text border-arena-border hover:bg-arena-bg"
@@ -446,7 +446,7 @@ export default function BuchempfehlungPage() {
                   <button
                     key={m}
                     onClick={() => handleMoodToggle(m)}
-                    className={`rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
+                    className={`min-h-11 rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
                       prefs.moods.includes(m)
                         ? "bg-arena-blue text-white border-arena-blue"
                         : "bg-white text-arena-text border-arena-border hover:bg-arena-bg"
@@ -472,7 +472,7 @@ export default function BuchempfehlungPage() {
                   <button
                     key={l.value}
                     onClick={() => selectLength(l.value, l.label)}
-                    className={`rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
+                    className={`min-h-11 rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
                       pendingLength?.value === l.value
                         ? "bg-arena-blue text-white border-arena-blue"
                         : "bg-white text-arena-text border-arena-border hover:bg-arena-bg"
@@ -501,7 +501,7 @@ export default function BuchempfehlungPage() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => selectYesNo(true)}
-                  className={`rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
+                  className={`min-h-11 rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
                     pendingYesNo === true
                       ? "bg-arena-blue text-white border-arena-blue"
                       : "bg-white text-arena-text border-arena-border hover:bg-arena-bg"
@@ -511,7 +511,7 @@ export default function BuchempfehlungPage() {
                 </button>
                 <button
                   onClick={() => selectYesNo(false)}
-                  className={`rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
+                  className={`min-h-11 rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
                     pendingYesNo === false
                       ? "bg-arena-blue text-white border-arena-blue"
                       : "bg-white text-arena-text border-arena-border hover:bg-arena-bg"
@@ -521,7 +521,7 @@ export default function BuchempfehlungPage() {
                 </button>
                 <button
                   onClick={() => selectYesNo(null)}
-                  className={`rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
+                  className={`min-h-11 rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
                     pendingYesNo === "egal"
                       ? "bg-arena-blue text-white border-arena-blue"
                       : "bg-white text-arena-muted border-arena-border hover:bg-arena-bg"
@@ -551,7 +551,7 @@ export default function BuchempfehlungPage() {
                   <button
                     key={s}
                     onClick={() => selectSeries(s)}
-                    className={`rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
+                    className={`min-h-11 rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
                       pendingSeries === s
                         ? "bg-arena-blue text-white border-arena-blue"
                         : "bg-white text-arena-text border-arena-border hover:bg-arena-bg"
@@ -582,7 +582,7 @@ export default function BuchempfehlungPage() {
                   <button
                     key={s}
                     onClick={() => selectSetting(s)}
-                    className={`rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
+                    className={`min-h-11 rounded-full border px-3 py-1 text-sm cursor-pointer transition-colors ${
                       pendingSetting === s
                         ? "bg-arena-blue text-white border-arena-blue"
                         : "bg-white text-arena-text border-arena-border hover:bg-arena-bg"

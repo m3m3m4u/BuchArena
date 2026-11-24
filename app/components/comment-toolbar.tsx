@@ -83,7 +83,7 @@ export function CommentToolbar({
   }
 
   const btnCls =
-    "inline-flex items-center justify-center w-7 h-7 rounded text-arena-muted hover:text-arena-text hover:bg-gray-100 transition-colors text-base cursor-pointer border-none bg-transparent disabled:opacity-40";
+    "inline-flex items-center justify-center w-11 h-11 rounded text-arena-muted hover:text-arena-text hover:bg-gray-100 transition-colors text-base cursor-pointer border-none bg-transparent disabled:opacity-40";
 
   return (
     <div className="relative">
@@ -110,7 +110,7 @@ export function CommentToolbar({
 
       {/* Link-Formular */}
       {open === "link" && (
-        <div className="absolute top-full mt-1 left-0 bg-white border border-arena-border-light rounded-lg p-2 shadow-lg z-50 grid gap-1.5 w-72">
+        <div className="absolute top-full mt-1 left-0 bg-white border border-arena-border-light rounded-lg p-2 shadow-lg z-50 grid gap-1.5 w-72 max-w-full">
           <input className="input-base text-sm py-1" placeholder="URL (https://...)"
             value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleInsertLink(); } }}
@@ -128,7 +128,7 @@ export function CommentToolbar({
 
       {/* YouTube-Formular */}
       {open === "youtube" && (
-        <div className="absolute top-full mt-1 left-0 bg-white border border-arena-border-light rounded-lg p-2 shadow-lg z-50 grid gap-1.5 w-72">
+        <div className="absolute top-full mt-1 left-0 bg-white border border-arena-border-light rounded-lg p-2 shadow-lg z-50 grid gap-1.5 w-72 max-w-full">
           <input className="input-base text-sm py-1"
             placeholder="https://www.youtube.com/watch?v=..."
             value={ytUrl} onChange={(e) => setYtUrl(e.target.value)}
@@ -147,7 +147,7 @@ export function CommentToolbar({
 
       {/* Emoji-Picker */}
       {open === "emoji" && (
-        <div className="absolute top-full mt-1 left-0 bg-white border border-arena-border-light rounded-lg p-2 shadow-lg z-50 flex flex-wrap gap-0.5 w-64">
+        <div className="absolute top-full mt-1 left-0 bg-white border border-arena-border-light rounded-lg p-2 shadow-lg z-50 flex flex-wrap gap-0.5 w-64 max-w-full">
           {TOOLBAR_EMOJIS.map((emoji) => (
             <button key={emoji} type="button"
               className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-lg cursor-pointer border-none bg-transparent"

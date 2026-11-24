@@ -66,8 +66,18 @@ export default function SiteFooter() {
         setMenuOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        menuRef.current?.querySelector("button")?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", handleClick);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handleClick);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, [menuOpen]);
 
   function onLogout() {
@@ -77,10 +87,10 @@ export default function SiteFooter() {
   return (
     <>
     <footer className="flex-shrink-0 border-t border-arena-border bg-white relative z-0">
-      <div className="site-shell flex flex-wrap items-center justify-between gap-2 sm:gap-4">
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 text-[0.82rem] sm:text-[0.95rem]">
+      <div className="site-shell flex flex-wrap items-center justify-between gap-2 lg:gap-4">
+        <div className="flex flex-wrap items-center gap-1.5 lg:gap-3 text-[0.82rem] lg:text-[0.95rem]">
           {/* Social media icons */}
-          <div className="flex items-center gap-2">
+          <div className="footer-social flex items-center gap-0 lg:gap-2">
             <a href="https://www.instagram.com/bucharena365/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-[#888] hover:text-[#E1306C] transition-colors">
               <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5a4.25 4.25 0 0 0 4.25-4.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm5.25-2.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/></svg>
             </a>
@@ -102,7 +112,7 @@ export default function SiteFooter() {
           </div>
 
           {/* Desktop only links */}
-          <div className="hidden sm:contents">
+          <div className="hidden lg:contents">
             {(account?.role === "SUPERADMIN" || account?.role === "ADMIN") && (
               <Link href="/admin" className="btn whitespace-nowrap">Admin</Link>
             )}
@@ -116,7 +126,7 @@ export default function SiteFooter() {
           <Link href="/impressum" className="btn whitespace-nowrap">Impressum &amp; Datenschutz</Link>
 
           {/* Desktop only links */}
-          <div className="hidden sm:contents">
+          <div className="hidden lg:contents">
             <button type="button" className="btn whitespace-nowrap" onClick={openCookieSettings}>Cookies</button>
             {account && (
               <button type="button" className="btn whitespace-nowrap" onClick={() => { setSupportMsg(""); setShowSupport(true); }}>Support</button>
@@ -124,18 +134,19 @@ export default function SiteFooter() {
           </div>
 
           {/* Mobile: 3-dot menu */}
-          <div className="relative sm:hidden" ref={menuRef}>
+          <div className="lg:hidden" ref={menuRef}>
             <button
               type="button"
               className="btn btn-sm flex items-center gap-1"
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Menü"
               aria-expanded={menuOpen}
+              aria-controls="footer-menu"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><circle cx="4" cy="10" r="2"/><circle cx="10" cy="10" r="2"/><circle cx="16" cy="10" r="2"/></svg>
             </button>
             {menuOpen && (
-              <div className="absolute bottom-full left-0 mb-2 min-w-[200px] rounded-xl border border-arena-border-light bg-white shadow-lg py-1.5 z-50">
+              <div id="footer-menu" className="footer-menu absolute bottom-full right-2 mb-2 w-[min(20rem,calc(100%-1rem))] max-h-[60dvh] overflow-y-auto overscroll-contain rounded-xl border border-arena-border-light bg-white shadow-lg py-1.5 z-50">
                 {(account?.role === "SUPERADMIN" || account?.role === "ADMIN") && (
                   <Link href="/admin" className="block px-4 py-2 text-sm hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Admin</Link>
                 )}
@@ -170,7 +181,7 @@ export default function SiteFooter() {
         </div>
 
         {/* Desktop: account status */}
-        <div className="hidden sm:flex items-center gap-2.5 text-sm">
+        <div className="hidden lg:flex items-center gap-2.5 text-sm">
           {account ? (
             <>
               <span>Online als: <strong>{account.username}</strong></span>

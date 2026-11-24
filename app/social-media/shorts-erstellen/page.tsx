@@ -890,7 +890,7 @@ export default function ShortsErstellenPage() {
     switch (step) {
       case 0:
         return (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <h2 className="text-lg font-bold">Folie 1 – Titelfolie</h2>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Buchtitel <span className="text-red-500">*</span></span>
@@ -940,7 +940,7 @@ export default function ShortsErstellenPage() {
 
       case 1:
         return (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <h2 className="text-lg font-bold">Folie 2 – Allgemeine Infos</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-1 text-[0.95rem]">
@@ -987,7 +987,7 @@ export default function ShortsErstellenPage() {
 
       case 2:
         return (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <h2 className="text-lg font-bold">Folie 3 – Worum geht&apos;s?</h2>
             <p className="text-arena-muted text-sm">Diese 4 Punkte werden in der Vorlage als 4 Kacheln dargestellt.</p>
             <label className="grid gap-1 text-[0.95rem]">
@@ -1015,7 +1015,7 @@ export default function ShortsErstellenPage() {
 
       case 3:
         return (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <h2 className="text-lg font-bold">Folie 4 – Über die Autorin / den Autor</h2>
             <label className="grid gap-1 text-[0.95rem]">
               <span className="font-medium">Folientitel</span>
@@ -1060,7 +1060,7 @@ export default function ShortsErstellenPage() {
 
       case 4:
         return (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <h2 className="text-lg font-bold">Folie 5 – Zusammenfassung</h2>
             <p className="text-arena-muted text-sm">Gib die wichtigsten Stichpunkte für die letzte Folie ein (max.&nbsp;5 Platzhalter in der Shorts-Vorlage).</p>
             {form.zusammenfassung.map((b, i) => (
@@ -1162,12 +1162,12 @@ export default function ShortsErstellenPage() {
         )}
 
         {/* ── Step Indicator ── */}
-        <div className="flex items-center gap-1 py-1">
+        <div className="flex flex-wrap items-center gap-1 py-1">
           {STEP_LABELS.map((label, i) => (
             <button
               key={i}
               type="button"
-              className={"flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors " +
+              className={"flex min-h-11 items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors " +
                 (i === step
                   ? "bg-arena-blue text-white"
                   : isStepComplete(i)
@@ -1186,8 +1186,8 @@ export default function ShortsErstellenPage() {
         </button>
 
         {/* ── Main layout: Form + Preview ── */}
-        <div className="grid gap-6 sm:grid-cols-[1fr_200px]">
-          <div className="grid gap-4 content-start">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-[minmax(0,1fr)_200px]">
+          <div className="grid min-w-0 grid-cols-1 gap-4 content-start">
             {renderStep()}
           </div>
 

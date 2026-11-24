@@ -1673,9 +1673,9 @@ function ProfilPageInner() {
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/autor/{profileSlug || "dein-name"}</strong>
           </p>
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 grid gap-1">
-              <div className="flex items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
+            <div className="flex-1 min-w-0 grid gap-1">
+              <div className="flex min-w-0 items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/autor/</span>
                 <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => handleSlugChange(e.target.value)} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
@@ -1867,7 +1867,7 @@ function ProfilPageInner() {
             MP3-Datei hochladen
             <input
               type="file"
-              accept=".mp3,audio/mpeg"
+              accept=".mp3,audio/mpeg" className="w-full min-w-0 max-w-full"
               onChange={(event) => {
                 const selectedFile = event.target.files?.[0];
                 if (selectedFile) void uploadSample(selectedFile);
@@ -2018,9 +2018,9 @@ function ProfilPageInner() {
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/sprecher/{profileSlug || "dein-name"}</strong>
           </p>
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 grid gap-1">
-              <div className="flex items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
+            <div className="flex-1 min-w-0 grid gap-1">
+              <div className="flex min-w-0 items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/sprecher/</span>
                 <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => { setProfileSlug(e.target.value.toLowerCase().replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-")); setSlugAvailable(null); }} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
@@ -2343,9 +2343,9 @@ function ProfilPageInner() {
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/blogger/{profileSlug || "dein-name"}</strong>
           </p>
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 grid gap-1">
-              <div className="flex items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
+            <div className="flex-1 min-w-0 grid gap-1">
+              <div className="flex min-w-0 items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/blogger/</span>
                 <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => handleSlugChange(e.target.value)} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
@@ -2510,9 +2510,9 @@ function ProfilPageInner() {
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/testleser/{profileSlug || "dein-name"}</strong>
           </p>
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 grid gap-1">
-              <div className="flex items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
+            <div className="flex-1 min-w-0 grid gap-1">
+              <div className="flex min-w-0 items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/testleser/</span>
                 <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => handleSlugChange(e.target.value)} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
@@ -2658,9 +2658,9 @@ function ProfilPageInner() {
           <p className="text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/lektoren/{profileSlug || "dein-name"}</strong>
           </p>
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 grid gap-1">
-              <div className="flex items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
+            <div className="flex-1 min-w-0 grid gap-1">
+              <div className="flex min-w-0 items-center gap-1.5">
                 <span className="text-arena-muted text-sm whitespace-nowrap">/lektoren/</span>
                 <input type="text" className="input-base flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => handleSlugChange(e.target.value)} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
@@ -2825,9 +2825,9 @@ function ProfilPageInner() {
           <p className="font-sans text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
             z.{"\u00a0"}B. <strong>bucharena.org/verlage/{profileSlug || "dein-name"}</strong>
           </p>
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 grid gap-1">
-              <div className="flex items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
+            <div className="flex-1 min-w-0 grid gap-1">
+              <div className="flex min-w-0 items-center gap-1.5">
                 <span className="font-sans text-arena-muted text-sm whitespace-nowrap">/verlage/</span>
                 <input type="text" className="input-base font-normal flex-1" placeholder="dein-wunschname" value={profileSlug} onChange={(e) => handleSlugChange(e.target.value)} onBlur={async () => { const v = profileSlug.trim().replace(/^-+|-+$/g, ""); setProfileSlug(v); if (!v) { setSlugAvailable(null); return; } try { const res = await fetch(`/api/profile/slug?slug=${encodeURIComponent(v)}&username=${encodeURIComponent(targetUsername)}`); const data = (await res.json()) as { available: boolean }; setSlugAvailable(data.available); } catch { setSlugAvailable(null); } }} maxLength={40} />
               </div>
@@ -2974,7 +2974,7 @@ function ProfilPageInner() {
             <p className="font-sans text-arena-muted" style={{ fontSize: "0.82rem", margin: "0.15rem 0 0.5rem", overflowWrap: "break-word", wordBreak: "break-all" }}>
               Dieser Name wird bei Nachrichten, Lesezeichen, im Treffpunkt und im Kalender angezeigt.
             </p>
-            <div className="flex gap-2 items-end">
+            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
               <input
                 type="text"
                 className="input-base font-normal flex-1"
