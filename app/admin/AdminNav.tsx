@@ -187,6 +187,15 @@ export const ADMIN_TOOLS: AdminTool[] = [
 
   // Social Media & Einsendungen
   {
+    id: "werbebudget",
+    title: "100 € Werbebudget",
+    shortDesc: "Monatliche Bewerbungen und Nachweise verwalten",
+    category: "social",
+    type: "link",
+    href: "/admin/werbebudget",
+    icon: TrophyIcon,
+  },
+  {
     id: "einreichungen",
     title: "Buch-Einreichungen",
     shortDesc: "PPTX/PDF-Präsentationen von Autoren prüfen & herunterladen",

@@ -185,6 +185,19 @@ export default function SocialMediaPage() {
             </p>
 
             <div className="grid gap-2.5">
+              <Link
+                href="/social-media/werbebudget"
+                className={`${optionCls} border-arena-yellow/50 bg-arena-yellow/10 no-underline text-inherit`}
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-arena-yellow/20 text-arena-blue">
+                  <SparklesIcon className="size-6" />
+                </div>
+                <div className="grid gap-0.5 flex-1">
+                  <strong className="text-[0.95rem] text-arena-blue">Jeden Monat 100 € Werbebudget für dein Buch gewinnen</strong>
+                  <span className="text-sm text-arena-muted">10 sinnvolle Kommentare und 3 Story-Teilungen pro Runde: Jetzt bewerben und jeden Monat neu teilnehmen.</span>
+                </div>
+                <span className="text-arena-blue font-bold self-center shrink-0">→</span>
+              </Link>
               {/* 0) Buch-Match: Autoren Cross-Promotion */}
               <button
                 type="button"
