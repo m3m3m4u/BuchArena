@@ -11,6 +11,7 @@ interface EpubReaderProps {
 }
 
 export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: EpubReaderProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renditionRef = useRef<any>(null);
@@ -25,9 +26,23 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
   );
 
   useEffect(() => {
+    const dialog = dialogRef.current;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    dialog?.showModal();
+    return () => {
+      dialog?.close();
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+    };
+  }, []);
+
+  useEffect(() => {
     if (!viewerRef.current) return;
     let destroyed = false;
-    let roDisconnected = false;
+    let initialized = false;
+    let latestWidth = 0;
+    let latestHeight = 0;
+    let destroyBook: (() => void) | undefined;
+    const abortController = new AbortController();
 
     const container = viewerRef.current;
 
@@ -35,13 +50,14 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
       try {
         const ePub = (await import("epubjs")).default;
 
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: abortController.signal });
         if (!response.ok) throw new Error("Fetch fehlgeschlagen");
         const arrayBuffer = await response.arrayBuffer();
 
         if (destroyed) return;
 
         const book = ePub(arrayBuffer);
+        destroyBook = () => book.destroy();
         const rendition = book.renderTo(container, {
           width: w,
           height: h,
@@ -51,7 +67,9 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
         renditionRef.current = rendition;
 
         await rendition.display(initialCfi ?? undefined);
-        if (!destroyed) setLoading(false);
+        if (destroyed) return;
+        if (latestWidth !== w || latestHeight !== h) rendition.resize(latestWidth, latestHeight);
+        setLoading(false);
 
         // Schriftgröße initial setzen (falls vom State schon geändert)
         rendition.themes.fontSize(`${fontSize}%`);
@@ -71,6 +89,12 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
           else rendition.prev();
         });
 
+        rendition.on("keydown", (e: KeyboardEvent) => {
+          if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
+          if (["ArrowRight", "ArrowDown"].includes(e.key)) { e.preventDefault(); rendition.next(); }
+          if (["ArrowLeft", "ArrowUp"].includes(e.key)) { e.preventDefault(); rendition.prev(); }
+        });
+
         book.locations.generate(1024).then(() => {
           if (destroyed) return;
           const total = book.locations.length();
@@ -83,6 +107,8 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
           if (typeof pct === "number") {
             setCurrentPage(Math.max(1, Math.min(total, Math.round(pct * total) + 1)));
           }
+        }).catch((err: unknown) => {
+          if (!destroyed) console.warn("EPUB-Lesepositionen konnten nicht berechnet werden:", err);
         });
 
         // locationChanged-Event: { start: cfiString, end: cfiString, percentage: number }
@@ -100,30 +126,39 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
           if (typeof cfi === "string" && cfi) onCfiChange?.(cfi);
         });
       } catch (err) {
-        console.error("EpubReader:", err);
-        if (!destroyed) setError("Das EPUB konnte nicht geladen werden.");
+        if (!destroyed) {
+          console.error("EpubReader:", err);
+          setError("Das EPUB konnte nicht geladen werden.");
+          setLoading(false);
+        }
       }
     }
 
-    // Warten bis Container echte Pixelmaße hat
+    // Auch nach Bildschirmdrehung, Schriftänderungen und Layoutwechseln anpassen.
     const ro = new ResizeObserver((entries) => {
-      if (roDisconnected) return;
+      if (destroyed) return;
       const entry = entries[0];
-      const w = entry.contentRect.width;
-      const h = entry.contentRect.height;
+      const w = Math.floor(entry.contentRect.width);
+      const h = Math.floor(entry.contentRect.height);
       if (w > 0 && h > 0) {
-        roDisconnected = true;
-        ro.disconnect();
-        init(Math.floor(w), Math.floor(h));
+        if (latestWidth === w && latestHeight === h) return;
+        latestWidth = w;
+        latestHeight = h;
+        if (!initialized) {
+          initialized = true;
+          void init(w, h);
+        } else {
+          renditionRef.current?.resize(w, h);
+        }
       }
     });
     ro.observe(container);
 
     return () => {
       destroyed = true;
-      roDisconnected = true;
       ro.disconnect();
-      try { renditionRef.current?.destroy(); } catch { /* ignore */ }
+      abortController.abort();
+      try { destroyBook?.(); } catch { /* ignore */ }
       renditionRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -137,9 +172,9 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
   // Tastatur-Navigation
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") { onClose(); return; }
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") renditionRef.current?.next?.();
-      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   renditionRef.current?.prev?.();
+      if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); renditionRef.current?.next?.(); }
+      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   { e.preventDefault(); renditionRef.current?.prev?.(); }
     }
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
@@ -172,25 +207,25 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
   }, []);
 
   const modal = (
-    <div className="fixed inset-0 z-[9999] bg-black/75 flex items-end sm:items-center justify-center">
+    <dialog ref={dialogRef} aria-label="EPUB-Lesefenster" onCancel={(e) => { e.preventDefault(); onClose(); }} className="fixed inset-0 z-[9999] m-0 h-dvh w-full max-h-none max-w-none border-0 bg-black/75 p-0 open:flex items-end sm:items-center justify-center backdrop:bg-transparent">
       <div
         className="bg-white w-full sm:max-w-3xl sm:rounded-xl flex flex-col shadow-2xl"
         style={{ height: "100dvh", maxHeight: "100dvh" }}
       >
         {/* Header mit Navigation */}
-        <div className="flex items-center justify-between px-2 sm:px-4 py-2 sm:py-3 border-b border-arena-border bg-[#1a1a2e] shrink-0 sm:rounded-t-xl">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 sm:px-4 py-2 sm:py-3 border-b border-arena-border bg-[#1a1a2e] shrink-0 sm:rounded-t-xl sm:flex sm:justify-between">
           <button
             onClick={() => renditionRef.current?.prev?.()}
             disabled={loading || !!error}
-            className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-4 py-2 rounded hover:bg-white/10 min-w-[72px] touch-manipulation"
+            className="col-start-1 row-start-2 min-h-11 text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-4 py-2 rounded hover:bg-white/10 min-w-[72px] touch-manipulation"
           >&#8592; Zur&#252;ck</button>
 
           {/* Mitte: Titel + Schriftgröße */}
-          <div className="flex items-center gap-2">
+          <div className="col-start-1 row-start-1 flex items-center gap-2">
             <button
               onClick={() => setFontSize(s => Math.max(70, s - 10))}
               disabled={loading || !!error || fontSize <= 70}
-              className="text-white/70 hover:text-white disabled:opacity-30 text-base font-bold w-9 h-9 flex items-center justify-center rounded hover:bg-white/10 touch-manipulation"
+              className="text-white/70 hover:text-white disabled:opacity-30 text-base font-bold size-11 shrink-0 flex items-center justify-center rounded hover:bg-white/10 touch-manipulation"
               aria-label="Schrift kleiner"
               title="Schrift kleiner"
             >A&#8722;</button>
@@ -198,24 +233,22 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
             <button
               onClick={() => setFontSize(s => Math.min(180, s + 10))}
               disabled={loading || !!error || fontSize >= 180}
-              className="text-white/70 hover:text-white disabled:opacity-30 text-base font-bold w-9 h-9 flex items-center justify-center rounded hover:bg-white/10 touch-manipulation"
+              className="text-white/70 hover:text-white disabled:opacity-30 text-base font-bold size-11 shrink-0 flex items-center justify-center rounded hover:bg-white/10 touch-manipulation"
               aria-label="Schrift gr&#246;&#223;er"
               title="Schrift gr&#246;&#223;er"
             >A+</button>
           </div>
 
-          <div className="flex items-center gap-1">
             <button
               onClick={() => renditionRef.current?.next?.()}
               disabled={loading || !!error}
-              className="text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-4 py-2 rounded hover:bg-white/10 min-w-[72px] touch-manipulation"
+              className="col-start-2 row-start-2 min-h-11 text-white/70 hover:text-white disabled:opacity-30 text-sm font-semibold px-4 py-2 rounded hover:bg-white/10 min-w-[72px] touch-manipulation"
             >Weiter &#8594;</button>
             <button
               onClick={onClose}
-              className="text-white/70 hover:text-white text-xl leading-none w-10 h-10 flex items-center justify-center rounded hover:bg-white/10 touch-manipulation"
+              className="col-start-2 row-start-1 justify-self-end text-white/70 hover:text-white text-xl leading-none size-11 shrink-0 flex items-center justify-center rounded hover:bg-white/10 touch-manipulation"
               aria-label="Schlie&#223;en"
             >&#x2715;</button>
-          </div>
         </div>
 
         {/* Viewer */}
@@ -249,7 +282,7 @@ export default function EpubReader({ url, onClose, initialCfi, onCfiChange }: Ep
           )}
         </div>
       </div>
-    </div>
+    </dialog>
   );
 
   return createPortal(modal, portalTarget);

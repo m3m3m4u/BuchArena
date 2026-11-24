@@ -61,6 +61,10 @@ export default function PasswortVergessenPage() {
               <input
                 className="input-base"
                 type="email"
+                name="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                spellCheck={false}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

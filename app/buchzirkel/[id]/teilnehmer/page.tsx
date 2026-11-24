@@ -408,7 +408,7 @@ export default function TeilnehmerBereichPage() {
     : 0;
 
   return (
-    <main className="top-centered-main">
+    <main className="top-centered-main [overflow-wrap:anywhere]">
       {/* Header */}
       <section className="card">
         <Link href={`/buchzirkel/${zirkel._id}`} className="text-arena-muted text-xs hover:underline">← Zurück</Link>
@@ -432,7 +432,7 @@ export default function TeilnehmerBereichPage() {
       </section>
 
       {/* Tabs */}
-      <nav className="flex gap-0 mt-3 border-b border-arena-border-light overflow-x-auto">
+      <nav aria-label="Buchzirkel-Bereiche" className="flex w-full min-w-0 gap-0 mt-3 border-b border-arena-border-light overflow-x-auto">
         {[
           { key: "diskussion" as const, label: "Diskussion" },
           { key: "chat" as const, label: "Gruppen-Chat" },
@@ -445,7 +445,7 @@ export default function TeilnehmerBereichPage() {
             key={t.key}
             type="button"
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+            className={`min-h-11 shrink-0 px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               tab === t.key ? "border-arena-blue text-arena-blue" : "border-transparent text-arena-muted hover:text-arena-text"
             }`}
           >

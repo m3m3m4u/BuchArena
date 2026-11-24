@@ -27,6 +27,14 @@ export default function AuthPage() {
   const [newsletterOptIn, setNewsletterOptIn] = useState(false);
   const [website, setWebsite] = useState(""); // Honeypot gegen Spambots
 
+  function changeMode(nextMode: Mode) {
+    if (nextMode === mode) return;
+    setMode(nextMode);
+    setMessage("");
+    setIsError(false);
+    setPassword("");
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
@@ -94,14 +102,14 @@ export default function AuthPage() {
               <button
                 type="button"
                 className={`segmented-control-btn ${mode === "login" ? "active" : ""}`}
-                onClick={() => setMode("login")}
+                onClick={() => changeMode("login")}
               >
                 Einloggen
               </button>
               <button
                 type="button"
                 className={`segmented-control-btn ${mode === "register" ? "active" : ""}`}
-                onClick={() => setMode("register")}
+                onClick={() => changeMode("register")}
               >
                 Registrieren
               </button>
@@ -109,15 +117,15 @@ export default function AuthPage() {
 
             <form onSubmit={onSubmit} className="grid gap-4 w-full">
               <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
-                E-Mail oder Benutzername
-                <input className="input-base font-normal" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                {mode === "login" ? "E-Mail oder Benutzername" : "Benutzername"}
+                <input className="input-base font-normal" name={mode === "login" ? "identifier" : "username"} autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode={mode === "login" ? "email" : "text"} value={username} onChange={(e) => setUsername(e.target.value)} required />
               </label>
 
               {mode === "register" && (
                 <>
                   <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
                     E-Mail
-                    <input className="input-base font-normal" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    <input className="input-base font-normal" type="email" name="email" autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={(e) => setEmail(e.target.value)} required />
                   </label>
                   {/* Honeypot-Feld: für menschliche Nutzer unsichtbar, fängt Bots ab */}
                   <div
@@ -140,7 +148,7 @@ export default function AuthPage() {
 
               <label className="font-sans grid gap-1 text-sm font-bold text-arena-blue mt-2">
                 Passwort
-                <input className="input-base font-normal" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <input className="input-base font-normal" type="password" name="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={mode === "register" ? 8 : undefined} value={password} onChange={(e) => setPassword(e.target.value)} required />
               </label>
 
               {mode === "login" && (
@@ -187,7 +195,7 @@ export default function AuthPage() {
         )}
 
         {message && (
-          <div className={`font-sans mt-4 p-3 rounded-lg text-sm text-center w-full ${isError ? "bg-red-50 text-red-700 border border-red-100" : "bg-green-50 text-green-700 border border-green-100"}`}>
+          <div role={isError ? "alert" : "status"} className={`font-sans mt-4 p-3 rounded-lg text-sm text-center w-full ${isError ? "bg-red-50 text-red-700 border border-red-100" : "bg-green-50 text-green-700 border border-green-100"}`}>
             {message}
           </div>
         )}
