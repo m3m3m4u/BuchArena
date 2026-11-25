@@ -94,7 +94,7 @@ function harness(options: { role?: "USER" | "ADMIN" | "SUPERADMIN"; guest?: bool
   return { round, writes, call };
 }
 
-const validApplication = { month: "2026-12", bookId: "0123456789abcdef01234567", socialHandle: "@autor", notes: "",
+const validApplication = { month: "2026-12", bookId: "0123456789abcdef01234567", socialHandle: "@autor", participationOption: "comments-and-shares",
   conditionsAccepted: true, termsVersion: policies.AD_BUDGET_TERMS_VERSION, eligibilityConfirmed: true,
   rightsConfirmed: true, country: "AT", publicationConsent: false };
 const draw = { month: "2026-12", action: "draw" };
@@ -105,6 +105,8 @@ test("Bewerbung prüft Anmeldung, Monat, aktuelle Bedingungen, Berechtigung, Rec
     [{}, { ...validApplication, month: "2027-01" }, 409],
     [{}, { ...validApplication, conditionsAccepted: false }, 400],
     [{}, { ...validApplication, termsVersion: "alte-fassung" }, 409],
+    [{}, { ...validApplication, participationOption: undefined }, 400],
+    [{}, { ...validApplication, participationOption: "unbekannt" }, 400],
     [{}, { ...validApplication, eligibilityConfirmed: false }, 400],
     [{}, { ...validApplication, country: "US" }, 400],
     [{}, { ...validApplication, rightsConfirmed: false }, 400],
@@ -138,13 +140,30 @@ test("Ablehnungen verlangen einen dokumentierten Grund und speichern ihn für di
   assert.equal(h.round.applications[0].reviewReason, "Nur 7 unterschiedliche Kommentare nachgewiesen.");
 });
 
-test("Nachweisergänzungen bewahren den ursprünglichen Zustimmungsbeleg", async () => {
+test("Variantenwechsel bewahrt den ursprünglichen Zustimmungsbeleg und entfernt alte Nachweisangaben", async () => {
   const original = application().acceptance!;
   const h = harness({ apps: [application({ initialAcceptance: original })] });
-  assert.equal((await h.call("PUT", { ...validApplication, notes: "Neue Nachweise" })).status, 200);
+  assert.equal((await h.call("PUT", { ...validApplication, participationOption: "comments-only", notes: "Nicht mehr speichern" })).status, 200);
   assert.deepEqual(h.round.applications[0].initialAcceptance, original);
-  assert.equal(h.round.applications[0].notes, "Neue Nachweise");
+  assert.equal(h.round.applications[0].participationOption, "comments-only");
+  assert.equal(h.round.applications[0].notes, undefined);
   assert.equal(h.round.applications[0].status, "pending");
+});
+
+test("Beide Teilnahmevarianten funktionieren ohne Links, Screenshots oder Nachweisfelder", async () => {
+  for (const participationOption of ["comments-and-shares", "comments-only"]) {
+    const h = harness();
+    assert.equal((await h.call("POST", { ...validApplication, participationOption })).status, 200);
+    assert.equal(h.round.applications[0].participationOption, participationOption);
+    assert.equal(h.round.applications[0].notes, undefined);
+    assert.equal(h.round.applications[0].status, "pending");
+  }
+});
+
+test("Veraltete Clients können auch bei mitgesendeten Nachweisen keine neuen Nachweisdaten speichern", async () => {
+  const h = harness();
+  assert.equal((await h.call("POST", { ...validApplication, notes: "https://example.com/screenshot" })).status, 200);
+  assert.equal(h.round.applications[0].notes, undefined);
 });
 
 test("Auch parallele Bewerbungen desselben Kontos ergeben nur eine Teilnahme", async () => {

@@ -1,6 +1,6 @@
 // Published versions are immutable. Add a new entry for later changes and keep
 // previous versions available so stored acceptances retain their original text.
-export const AD_BUDGET_TERMS_VERSION = "2026-11-24-v1";
+export const AD_BUDGET_TERMS_VERSION = "2026-11-25-v3";
 export const AD_BUDGET_TERMS_PATH = `/social-media/werbebudget/teilnahmebedingungen/${AD_BUDGET_TERMS_VERSION}`;
 export const AD_BUDGET_CONTACT = "info@erklaerung-und-mehr.org";
 
@@ -123,4 +123,68 @@ export const AD_BUDGET_POLICIES: Record<string, {
       },
     ],
   },
+};
+
+// Keep v1 unchanged for earlier acceptances; v2 replaces only the affected sections.
+const previousPolicy = AD_BUDGET_POLICIES["2026-11-24-v1"];
+const revisedTerms: Record<string, { title: string; paragraphs: string[] }> = {
+  "3. Teilnahmezeiträume und Fristen": {
+    title: "3. Teilnahmezeiträume und Fristen",
+    paragraphs: [
+      "Die erste Runde heißt Dezember 2026 und beginnt bereits am 24. November 2026 um 00:00 Uhr. Bewerbungsschluss und Ende des Aktivitätszeitraums ist der 31. Dezember 2026 um 18:00 Uhr. Bereits ab dem 24. November erbrachte Aktivitäten zählen für diese erste Runde.",
+      previousPolicy.terms[2].paragraphs[1],
+      "Bewerbungen, Kommentare und Teilungen gelten nur für die jeweilige Runde und werden nicht in andere Monate übertragen. Eine neue Runde erfordert eine neue Bewerbung. Bewerbungen und die gewählte Teilnahmevariante können bis zum Bewerbungsschluss bearbeitet werden; danach sind neue Bewerbungen und Änderungen für diese Runde gesperrt.",
+    ],
+  },
+  "4. Zehn sinnvolle Kommentare; Storys sind freiwillig": {
+    title: "4. Zwei Teilnahmevarianten, mindestens drei Kalendertage",
+    paragraphs: [
+      "Im jeweiligen Teilnahmezeitraum ist eine von zwei Varianten zu erfüllen: entweder mindestens zehn eigene, sinnvolle Kommentare und mindestens drei Teilungen von BuchArena-Inhalten in der eigenen Instagram-Story oder mindestens zwanzig eigene, sinnvolle Kommentare ohne erforderliche Teilung. Die Kommentare müssen in beiden Varianten auf mindestens drei unterschiedliche Kalendertage verteilt sein. Ein Kalendertag richtet sich nach der Zeitzone Europe/Vienna einschließlich Sommerzeit. Die drei Tage müssen nicht aufeinanderfolgen.",
+      "Die Kommentare beziehen sich auf Beiträge oder Reels des offiziellen Instagram-Kontos @bucharena365. Das verwendete Instagram-Profil wird in der Bewerbung angegeben. Je Beitrag und Kalendertag zählt höchstens ein Kommentar; weitere Kommentare an anderen Tagen zählen nur, wenn sie einen eigenen inhaltlichen Beitrag zur Diskussion leisten. Für die Teilungsvariante müssen drei unterschiedliche BuchArena-Beiträge oder Reels innerhalb des Teilnahmezeitraums in der eigenen Instagram-Story geteilt werden. Eine Teilung auf Facebook ist weder vorgeschrieben noch eine Voraussetzung für die Teilnahme.",
+      previousPolicy.terms[3].paragraphs[1],
+      previousPolicy.terms[3].paragraphs[2],
+      "Beide Varianten sind gleichwertig und ergeben jeweils genau eine Teilnahme mit derselben Gewinnchance. Auch wer beide Varianten erfüllt oder mehr Aktivitäten erbringt, erhält keine zusätzlichen Lose. Likes, Folgen und Freundesmarkierungen sind keine weiteren Voraussetzungen. Bei Teilungen sind die Regeln von Instagram und gegebenenfalls erforderliche Werbekennzeichnungen zu beachten.",
+    ],
+  },
+  "5. Bewerbung und Nachweise": {
+    title: "5. Bewerbung und Selbsterklärung ohne Nachweise",
+    paragraphs: [
+      "Die Bewerbung wird ausschließlich über das Formular auf der BuchArena eingereicht. Erforderlich sind das ausgewählte Buch, das zugehörige Instagram-Profil, das Wohnsitzland, die gewählte Teilnahmevariante sowie die Bestätigung von Volljährigkeit, Teilnahmeberechtigung, Nutzungsrechten und diesen Bedingungen. Den gespeicherten Eingang zeigt die Bewerbungsseite an; ein Formular ohne erfolgreiche Speicherbestätigung ist noch keine Bewerbung.",
+      "Die Teilnahme erfolgt auf Grundlage deiner eigenen Angaben. Es müssen keine Beitragslinks, Screenshots, Uploads oder sonstigen Nachweise eingereicht werden. Eine Bewerbung ist schon vor Erfüllung der Aktivitäten möglich; die gewählte Variante einschließlich der Verteilung der Kommentare auf mindestens drei Kalendertage muss bis zum Bewerbungsschluss erfüllt sein. Mit der Bestätigung erklärst du, diese Voraussetzungen bis dahin zu erfüllen.",
+      "Die BuchArena vertraut auf wahrheitsgemäße Angaben. Eine stichprobenartige Sichtung öffentlich sichtbarer Aktivitäten ist möglich, ohne dass Teilnehmende Nachweise einreichen müssen. Das Fehlen eingereichter Belege ist kein Ablehnungsgrund. Bei festgestellten Falschangaben, Mehrfachteilnahme oder Manipulation kann die betroffene Bewerbung nach dokumentierter Prüfung ausgeschlossen werden. Sachliche Kritik ist kein Ausschlussgrund. Rückfragen oder Einwände sind über die Kontaktadresse möglich.",
+    ],
+  },
+};
+
+AD_BUDGET_POLICIES["2026-11-25-v2"] = {
+  published: "25. November 2026",
+  terms: previousPolicy.terms.map((section) => revisedTerms[section.title] ?? section),
+  privacy: previousPolicy.privacy.map((section) => {
+    if (section.title === "Verantwortlicher, Daten und Zweck") return { ...section, paragraphs: [
+      "Verantwortlicher ist Matthias Gmeiner, Herrengutgasse 16b, 6923 Lauterach, Österreich; Kontakt: info@erklaerung-und-mehr.org. Für die Aktion werden Konto-ID, Benutzername, Buch-ID und Buchtitel, Instagram-Profil, Wohnsitzland, gewählte Teilnahmevariante, Eingangs- und Änderungszeitpunkte, Prüfstatus sowie Version und Zeitpunkt der bestätigten Bedingungen und Rechteerklärung gespeichert. Eine vollständige Anschrift oder ein Geburtsdatum wird im Bewerbungsformular nicht erhoben. Beitragslinks, Screenshots oder andere Aktivitätsnachweise werden nicht abgefragt.",
+      "Die Daten dienen der Anmeldung, Prüfung der Teilnahmeberechtigung, Verhinderung von Mehrfachteilnahmen, Kontaktaufnahme und gegebenenfalls Gewährung des Gewinns. Die im Konto vorhandene E-Mail-Adresse wird nur zur Durchführung der Aktion verwendet. Kommentare und Story-Teilungen werden nicht automatisiert gezählt oder als Nachweise in der Bewerbungsdatenbank gespeichert.",
+    ] };
+    if (section.title === "Empfänger und Datenübermittlungen") return { ...section, paragraphs: [
+      "Zugriff auf Bewerbungen haben ausschließlich die für Prüfung und Abwicklung zuständigen Personen der BuchArena und die für den Betrieb notwendigen Hosting- und Datenbankdienstleister, insbesondere MongoDB Atlas. Bewerbungsdaten werden nicht als Teilnehmerliste an Meta weitergegeben. Kommentare und Story-Teilungen liegen auf der von dir verwendeten Plattform.",
+      ...section.paragraphs.slice(1),
+    ] };
+    if (section.title === "Speicherdauer, Rückzug und Betroffenenrechte") return { ...section, paragraphs: [
+      "Die Bewerbungsdaten einschließlich Teilnahmevariante und Zustimmungsprotokoll werden 180 Tage nach dem Bewerbungsschluss der jeweiligen Monatsrunde automatisiert aus der Aktionsdatenbank gelöscht. Der technische Löschlauf kann geringfügig nachgelagert sein. Im Rückzugsfall werden das Social-Media-Profil und etwaige noch vorhandene Hinweise aus älteren Bewerbungen unmittelbar aus der aktiven Bewerbung entfernt; bis zum regulären Löschtermin verbleiben nur die für den Rückzugsnachweis und die Verhinderung doppelter Teilnahme notwendigen Bewerbungsangaben und Bestätigungen.",
+      ...section.paragraphs.slice(1),
+    ] };
+    return section;
+  }),
+};
+
+const secondPolicy = AD_BUDGET_POLICIES["2026-11-25-v2"];
+AD_BUDGET_POLICIES["2026-11-25-v3"] = {
+  ...secondPolicy,
+  terms: secondPolicy.terms.map((section) => section.title === "3. Teilnahmezeiträume und Fristen" ? {
+    ...section,
+    paragraphs: [
+      section.paragraphs[0],
+      "Ab Januar 2027 beginnt jede Monatsrunde am Monatsersten um 00:00 Uhr und endet am letzten Tag desselben Monats um 18:00 Uhr. Die Ziehung ist für diesen letzten Monatstag nach Bewerbungsschluss vorgesehen. Alle Zeitangaben gelten in der Zeitzone Europe/Vienna einschließlich Sommerzeit. Maßgeblich ist der Eingang auf dem Server, nicht der Beginn des Ausfüllens.",
+      ...section.paragraphs.slice(2),
+    ],
+  } : section),
 };

@@ -188,7 +188,7 @@ export const ADMIN_TOOLS: AdminTool[] = [
   {
     id: "werbebudget",
     title: "100 € Werbebudget",
-    shortDesc: "Monatliche Bewerbungen und Nachweise verwalten",
+    shortDesc: "Monatliche Bewerbungen und Teilnahmevarianten verwalten",
     category: "social",
     type: "link",
     href: "/admin/werbebudget",

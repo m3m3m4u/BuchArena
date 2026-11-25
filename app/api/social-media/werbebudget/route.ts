@@ -2,7 +2,7 @@ import { MongoServerError, ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { getBooksCollection, getUsersCollection } from "@/lib/mongodb";
 import { getServerAccount, requireAdmin } from "@/lib/server-auth";
-import { getAdBudgetCycle, getAdBudgetExpiry, getAdBudgetMonth, isAdBudgetCountry, isAdBudgetMonth } from "@/lib/werbebudget";
+import { getAdBudgetCycle, getAdBudgetExpiry, getAdBudgetMonth, isAdBudgetCountry, isAdBudgetMonth, isAdBudgetParticipationOption } from "@/lib/werbebudget";
 import { getAdBudgetRounds } from "@/lib/werbebudget-db";
 import { AD_BUDGET_TERMS_VERSION } from "@/lib/werbebudget-terms";
 
@@ -82,13 +82,13 @@ async function saveApplication(request: NextRequest, update: boolean) {
     if (!getAdBudgetCycle(month).applicationsOpen) return failure("Die Bewerbungsfrist dieser Runde ist abgelaufen. Ab dem Monatsersten beginnt die nächste Runde.", 409);
     if (body.conditionsAccepted !== true) return failure("Bitte bestätige die Teilnahmebedingungen.");
     if (body.termsVersion !== AD_BUDGET_TERMS_VERSION) return failure("Die Teilnahmebedingungen wurden aktualisiert. Bitte lade sie neu und bestätige die aktuelle Fassung.", 409);
+    if (!isAdBudgetParticipationOption(body.participationOption)) return failure("Bitte wähle 10 Kommentare + 3 Story-Teilungen oder 20 Kommentare, jeweils auf mindestens drei Tage verteilt.");
     if (body.eligibilityConfirmed !== true || !isAdBudgetCountry(body.country)) return failure("Bitte bestätige Volljährigkeit und Teilnahmeberechtigung und wähle dein Wohnsitzland.");
     if (body.rightsConfirmed !== true) return failure("Bitte bestätige die Nutzungsrechte für die eingereichten Buchmaterialien.");
     if (typeof body.publicationConsent !== "boolean") return failure("Bitte prüfe die freiwillige Angabe zur Gewinnernennung.");
     if (typeof body.bookId !== "string" || !/^[a-f\d]{24}$/i.test(body.bookId)) return failure("Bitte wähle dein Buch aus.");
     const socialHandle = typeof body.socialHandle === "string" ? body.socialHandle.trim() : "";
-    const notes = typeof body.notes === "string" ? body.notes.trim() : "";
-    if (!socialHandle || socialHandle.length > 200 || notes.length > 2000) return failure("Bitte gib dein Social-Media-Profil an (max. 200 Zeichen; Hinweise max. 2.000 Zeichen).");
+    if (!socialHandle || socialHandle.length > 200) return failure("Bitte gib dein Social-Media-Profil an (maximal 200 Zeichen).");
     const book = await (await getBooksCollection()).findOne({ _id: new ObjectId(body.bookId), ...ownBooks(account.username) });
     if (!book) return failure("Du kannst nur ein eigenes Buch aus der BuchArena einreichen.", 403);
     const collection = await getAdBudgetRounds();
@@ -105,9 +105,9 @@ async function saveApplication(request: NextRequest, update: boolean) {
       const result = await collection.updateOne({ _id: month, status: "open", "applications.userId": userId }, {
         $set: { "applications.$.username": account.username, "applications.$.bookId": body.bookId,
           "applications.$.bookTitle": book.title, "applications.$.socialHandle": socialHandle,
-          "applications.$.notes": notes, "applications.$.status": "pending", "applications.$.updatedAt": now,
+          "applications.$.participationOption": body.participationOption, "applications.$.status": "pending", "applications.$.updatedAt": now,
           "applications.$.country": body.country, "applications.$.acceptance": acceptance, "applications.$.publicationConsent": publicationConsent },
-        $unset: { "applications.$.reviewedBy": "", "applications.$.reviewReason": "", "applications.$.withdrawnAt": "" },
+        $unset: { "applications.$.notes": "", "applications.$.reviewedBy": "", "applications.$.reviewReason": "", "applications.$.withdrawnAt": "" },
         $inc: { revision: 1 },
       });
       if (!result.modifiedCount) return failure("Deine Bewerbung ist nicht vorhanden oder die Runde ist abgeschlossen.", 409);
@@ -115,7 +115,7 @@ async function saveApplication(request: NextRequest, update: boolean) {
     }
     const result = await collection.updateOne({ _id: month, status: "open", "applications.userId": { $ne: userId } }, {
       $push: { applications: { id: new ObjectId().toHexString(), userId, username: account.username, bookId: body.bookId,
-        bookTitle: book.title, socialHandle, notes, status: "pending", createdAt: now, updatedAt: now,
+        bookTitle: book.title, socialHandle, participationOption: body.participationOption, status: "pending", createdAt: now, updatedAt: now,
         country: body.country, acceptance, initialAcceptance: acceptance, publicationConsent } },
       $inc: { revision: 1 },
     });

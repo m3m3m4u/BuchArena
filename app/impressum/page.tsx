@@ -123,14 +123,15 @@ export default function ImpressumPage() {
           <h3 className="mb-3 text-xl text-arena-text">Monatliche Aktion: 100 € Werbebudget</h3>
           <p className="my-2 leading-relaxed text-[#444]">
             Für die kostenlose Bewerbung verarbeiten wir Konto- und Buchzuordnung, Social-Media-Profil,
-            Wohnsitzland, freiwillige Nachweishinweise, Prüfstatus sowie Version und Zeitpunkt der Bestätigungen.
+            Wohnsitzland, gewählte Teilnahmevariante, Prüfstatus sowie Version und Zeitpunkt der Bestätigungen.
+            Die Teilnahme erfolgt per Selbsterklärung; Beitragslinks, Screenshots oder Uploads werden nicht verlangt.
             Die notwendige Abwicklung beruht auf Art. 6 Abs. 1 lit. b DSGVO; die begrenzte Dokumentation der
             Durchführung zusätzlich auf Art. 6 Abs. 1 lit. f DSGVO. Eine öffentliche Gewinnernennung ist freiwillig,
             beruht auf einer gesonderten Einwilligung und kann unabhängig von der Bewerbung widerrufen werden.
           </p>
           <p className="my-2 leading-relaxed text-[#444]">
             Bewerbungsdaten werden 180 Tage nach dem Bewerbungsschluss automatisiert gelöscht. Bei Rückzug
-            werden Profilangaben und Nachweishinweise sofort aus der aktiven Bewerbung entfernt; ein minimaler
+            werden Profilangaben und etwaige Hinweise aus älteren Bewerbungen sofort aus der aktiven Bewerbung entfernt; ein minimaler
             Teilnahme- und Rückzugsnachweis bleibt bis zum regulären Löschtermin bestehen. Gesetzlich aufzubewahrende
             Kampagnenabrechnungen werden getrennt behandelt. Es erfolgt keine automatische Newsletter-Anmeldung.
             Einzelheiten zu Daten, Empfängern, Drittlandübermittlungen und Rechten stehen in den{" "}
@@ -274,7 +275,7 @@ export default function ImpressumPage() {
             Rechtslagen oder Änderungen des Dienstes anzupassen. Die aktuelle Version gilt ab dem Datum
             des letzten Updates.
           </p>
-          <p className="my-2 text-sm text-arena-muted">Stand: 24. November 2026</p>
+          <p className="my-2 text-sm text-arena-muted">Stand: 25. November 2026</p>
         </div>
 
         <div className="mt-10 border-t border-gray-200 pt-6">

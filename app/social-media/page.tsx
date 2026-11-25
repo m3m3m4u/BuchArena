@@ -191,7 +191,7 @@ export default function SocialMediaPage() {
                 </div>
                 <div className="grid gap-0.5 flex-1">
                   <strong className="text-[0.95rem] text-arena-blue">Jeden Monat 100 € Werbebudget für dein Buch gewinnen</strong>
-                  <span className="text-sm text-arena-muted">10 sinnvolle Instagram-Kommentare pro Runde. Storys sind freiwillig. Kostenlos bewerben und jeden Monat neu teilnehmen.</span>
+                  <span className="text-sm text-arena-muted">10 Kommentare + 3 Instagram-Story-Teilungen oder 20 Kommentare. Kommentare an mindestens 3 Tagen, keine Nachweise nötig.</span>
                 </div>
                 <span className="text-arena-blue font-bold self-center shrink-0">→</span>
               </Link>

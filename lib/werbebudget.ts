@@ -4,6 +4,15 @@ export const AD_BUDGET_TIME_ZONE = "Europe/Vienna";
 export const AD_BUDGET_RETENTION_DAYS = 180;
 export const AD_BUDGET_COUNTRIES = { AT: "Österreich", DE: "Deutschland", CH: "Schweiz" } as const;
 export type AdBudgetCountry = keyof typeof AD_BUDGET_COUNTRIES;
+export const AD_BUDGET_PARTICIPATION_OPTIONS = {
+  "comments-and-shares": "10 sinnvolle Kommentare + 3 Instagram-Story-Teilungen",
+  "comments-only": "20 sinnvolle Kommentare",
+} as const;
+export type AdBudgetParticipationOption = keyof typeof AD_BUDGET_PARTICIPATION_OPTIONS;
+
+export function isAdBudgetParticipationOption(value: unknown): value is AdBudgetParticipationOption {
+  return typeof value === "string" && Object.hasOwn(AD_BUDGET_PARTICIPATION_OPTIONS, value);
+}
 
 export function isAdBudgetCountry(value: unknown): value is AdBudgetCountry {
   return typeof value === "string" && Object.hasOwn(AD_BUDGET_COUNTRIES, value);
@@ -49,7 +58,6 @@ export function getAdBudgetCycle(month: string, now = new Date()) {
   const startsAt = month === FIRST_AD_BUDGET_MONTH
     ? viennaInstant(2026, 10, 24, 0) : viennaInstant(year, monthNumber - 1, 1, 0);
   const deadlineAt = viennaInstant(year, monthNumber - 1, lastDay, 18);
-  const drawAt = viennaInstant(year, monthNumber - 1, lastDay, 20);
   return {
     month,
     label,
@@ -59,7 +67,6 @@ export function getAdBudgetCycle(month: string, now = new Date()) {
       : label,
     startsAt: startsAt.toISOString(),
     deadlineAt: deadlineAt.toISOString(),
-    drawAt: drawAt.toISOString(),
     applicationsOpen: now >= startsAt && now < deadlineAt,
     canReview: now >= deadlineAt,
     nextMonth: `${monthNumber === 12 ? year + 1 : year}-${String(monthNumber === 12 ? 1 : monthNumber + 1).padStart(2, "0")}`,
@@ -84,7 +91,9 @@ export type AdBudgetApplication = {
   bookId: string;
   bookTitle: string;
   socialHandle: string;
-  notes: string;
+  /** Legacy evidence from earlier applications; no longer collected. */
+  notes?: string;
+  participationOption?: AdBudgetParticipationOption;
   status: "pending" | "approved" | "rejected" | "withdrawn";
   createdAt: string;
   updatedAt: string;
