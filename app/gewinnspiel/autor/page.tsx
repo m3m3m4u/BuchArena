@@ -149,6 +149,13 @@ export default function AutorGewinnspielPage() {
     setEzSaving(false);
   }
 
+  async function zurueckziehen(id: string) {
+    if (!confirm("Gewinnspiel wirklich zurückziehen? Das kann nicht rückgängig gemacht werden.")) return;
+    const r = await fetch(`/api/gewinnspiele/${id}`, { method: "DELETE" });
+    if (r.ok) { setMsg({ text: "Gewinnspiel zurückgezogen.", ok: true }); setLoading(true); await load(); }
+    else { const d = await r.json() as { message?: string }; setMsg({ text: d.message ?? "Fehler", ok: false }); }
+  }
+
   async function markVersendet(id: string) {
     if (!confirm("Versand als abgeschlossen markieren?")) return;
     const r = await fetch(`/api/gewinnspiele/${id}`, {
@@ -382,6 +389,16 @@ export default function AutorGewinnspielPage() {
                     >
                       {g.status === "verlost" ? "Ziehung wiederholen" : "Ziehung starten"}
                     </a>
+                  )}
+
+                  {/* Zurückziehen (nur ohne Bewerbungen) */}
+                  {(g.status === "vorschlag" || g.status === "anmeldung") && (g.teilnehmerAnzahl ?? 0) === 0 && (
+                    <button
+                      onClick={() => zurueckziehen(g._id)}
+                      className="mt-2 mr-2 px-3 py-1.5 text-sm rounded font-medium border border-red-300 text-red-700"
+                    >
+                      Gewinnspiel zurückziehen
+                    </button>
                   )}
 
                   {/* Versand-Button */}

@@ -117,7 +117,6 @@ export async function DELETE(req: Request, { params }: Params) {
   if (!account) return NextResponse.json({ message: "Nicht angemeldet." }, { status: 401 });
 
   const isAdmin = account.role === "ADMIN" || account.role === "SUPERADMIN";
-  if (!isAdmin) return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
 
   let oid;
   try { oid = new ObjectId(id); } catch {
@@ -125,11 +124,28 @@ export async function DELETE(req: Request, { params }: Params) {
   }
 
   const col = await getGewinnspieleCollection();
+  const teilnahmeCol = await getGewinnspielteilnahmenCollection();
+
+  if (!isAdmin) {
+    // Autor darf zurückziehen, solange keine Bewerbung vorliegt
+    const doc = await col.findOne({ _id: oid });
+    if (!doc) return NextResponse.json({ message: "Nicht gefunden." }, { status: 404 });
+    if (doc.autorUsername !== account.username) {
+      return NextResponse.json({ message: "Kein Zugriff." }, { status: 403 });
+    }
+    if (doc.status !== "vorschlag" && doc.status !== "anmeldung") {
+      return NextResponse.json({ message: "Dieses Gewinnspiel kann nicht mehr zurückgezogen werden." }, { status: 400 });
+    }
+    const anzahl = await teilnahmeCol.countDocuments({ gewinnspielId: id });
+    if (anzahl > 0) {
+      return NextResponse.json({ message: "Zurückziehen nicht möglich: Es gibt bereits Bewerbungen." }, { status: 409 });
+    }
+  }
+
   const res = await col.deleteOne({ _id: oid });
   if (res.deletedCount === 0) return NextResponse.json({ message: "Nicht gefunden." }, { status: 404 });
 
   // Teilnahmen auch löschen
-  const teilnahmeCol = await getGewinnspielteilnahmenCollection();
   await teilnahmeCol.deleteMany({ gewinnspielId: id });
 
   return NextResponse.json({ ok: true });
