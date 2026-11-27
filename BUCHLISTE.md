@@ -2,12 +2,12 @@
 
 Zentrale Arbeitsliste für alle Entwickler und KI-Assistenten, die den Buchkatalog erweitern. Hier Vorschläge sammeln, recherchieren, Aufgaben übernehmen und abgeschlossene Einträge dokumentieren.
 
-Angelegt und erweitert am **14.11.2026**. Nach dem Live-Abgleich am **15.11.2026** bleiben **293 offene Buchvorschläge**. Die Auswahl ist ein redaktioneller Vorschlag: zuerst bestehende Reihen ergänzen, danach weitere Genres und Autoren ausbauen. Die Prioritäten können gemeinsam angepasst werden.
+Angelegt und erweitert am **14.11.2026**. Nach dem Live-Abgleich und Import am **26.11.2026** bleiben **168 offene Buchvorschläge**; 124 Einträge dieses Arbeitsstands sind eingebaut und 1 Eintrag ist zurückgestellt. Die Auswahl ist ein redaktioneller Vorschlag: zuerst bestehende Reihen ergänzen, danach weitere Genres und Autoren ausbauen. Die Prioritäten können gemeinsam angepasst werden.
 
 ## Ausgangsbestand und Abgleich
 
 - Die vorhandene [Katalogübersicht als CSV](./docs/BuchArena_Katalogbuecher_Uebersicht.csv) enthält **80 Bücher** beim Anlegen dieser Liste; zusätzlich gibt es eine [Excel-Übersicht](./docs/BuchArena_Katalogbuecher_Uebersicht.xlsx).
-- Beim Live-Abgleich am **15.11.2026** wurden **2.422 Buchdatensätze** geprüft; insgesamt **341 bereits vorhandene Titel** wurden aus dieser offenen Liste entfernt. Die unten verbliebenen 293 Titel waren bei diesem Abgleich nicht im Live-Bestand; vor jedem späteren Import trotzdem erneut prüfen.
+- Beim Live-Abgleich am **26.11.2026** wurden vor dem aktuellen Paket **2.615 Buchdatensätze** geprüft. Aus dieser Liste wurden anschließend 62 weitere Titel eingebaut; der aktuelle Live-Bestand umfasst **2.677 Bücher**. Insgesamt sind damit 124 Einträge dieser Arbeitsliste eingebaut. Eingebaute Einträge bleiben mit Buch-ID und Prüfdatum als Arbeitsnachweis in dieser Liste erhalten.
 - Vor dem Einbau ISBN normalisieren und im aktuellen Bestand prüfen; zusätzlich Titel, Autor und Reihenteil vergleichen, damit andere Ausgaben nicht unbemerkt doppelt angelegt werden. Die öffentliche Katalogansicht kann durch Sichtbarkeitseinstellungen Bücher ausblenden.
 - `offen` bedeutet: konkrete **deutschsprachige Ausgabe** und ISBN müssen noch recherchiert werden. In die App werden ausschließlich deutsche Sprachversionen importiert; fremdsprachige ISBNs zählen nicht als Ersatz. ISBN, Seitenzahl, Erscheinungsjahr und Cover immer auf dieselbe Ausgabe beziehen.
 
@@ -15,23 +15,23 @@ Angelegt und erweitert am **14.11.2026**. Nach dem Live-Abgleich am **15.11.2026
 
 | Bereich | Offene Vorschläge |
 | --- | ---: |
-| Fantasy und Romantasy | 1 |
-| Fantasy und Science-Fiction | 10 |
-| Historische Romane und Familiensagas | 6 |
-| Horror, Spannung und dunkle Fantastik | 4 |
-| Jugendbücher und Young Adult | 21 |
-| Kinder und Jugend | 6 |
-| Kinderbücher und Vorlesebücher | 22 |
-| Krimi und Thriller | 37 |
-| Liebe, Familie und Gegenwartsliteratur | 45 |
-| Romane und Gegenwart | 12 |
-| Sachbuch und Biografie | 6 |
-| Sachbücher, Wissen und Biografien | 37 |
+| Fantasy und Romantasy | 0 |
+| Fantasy und Science-Fiction | 1 |
+| Historische Romane und Familiensagas | 5 |
+| Horror, Spannung und dunkle Fantastik | 2 |
+| Jugendbücher und Young Adult | 5 |
+| Kinder und Jugend | 3 |
+| Kinderbücher und Vorlesebücher | 9 |
+| Krimi und Thriller | 13 |
+| Liebe, Familie und Gegenwartsliteratur | 23 |
+| Romane und Gegenwart | 8 |
+| Sachbuch und Biografie | 5 |
+| Sachbücher, Wissen und Biografien | 8 |
 | Science-Fiction und Dystopien | 27 |
 | Klassiker und Weltliteratur | 59 |
-| **Gesamt** | **293** |
+| **Gesamt** | **168** |
 
-Die Zahlen beziehen sich ausschließlich auf noch nicht im Live-Bestand gefundene Vorschläge. Vor jedem Import erneut gegen MongoDB prüfen.
+Die Zahlen beziehen sich ausschließlich auf Einträge mit Status `Vorschlag`, `Recherche` oder `Bereit`. Eingebaute und zurückgestellte Einträge sind nicht mitgezählt. Vor jedem Import erneut gegen MongoDB prüfen.
 
 ## Prioritäten und Status
 
@@ -52,125 +52,125 @@ Die IDs werden nach jedem Live-Abgleich fortlaufend vergeben. `Bereits vorhanden
 
 | ID | Prio | Titel | Autor/in | Reihe / Schwerpunkt | ISBN-13 | Status | Zuständig / seit | Buch-ID/URL / geprüft am |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| B001 | P2 | Das Labyrinth der Träumenden Bücher | Walter Moers | Fantasy und Romantasy | offen | Vorschlag | — | — |
-| B002 | P2 | Das Tor der Welt | N. K. Jemisin | Fantasy und Science-Fiction | offen | Vorschlag | — | — |
-| B003 | P2 | Der wilde Planet | John Scalzi | Fantasy und Science-Fiction | offen | Vorschlag | — | — |
-| B004 | P2 | Die Elfenkönigin | Bernhard Hennen | Fantasy und Science-Fiction | offen | Vorschlag | — | — |
-| B005 | P2 | Die fünfte Jahreszeit | N. K. Jemisin | Fantasy und Science-Fiction | offen | Vorschlag | — | — |
-| B006 | P2 | Die Geschichte des Wassers | Maja Lunde | Fantasy und Science-Fiction | offen | Vorschlag | — | — |
-| B007 | P2 | Die große Stille | Ted Chiang | Fantasy und Science-Fiction | offen | Vorschlag | — | — |
-| B008 | P2 | Die Maschinen | Ann Leckie | Fantasy und Science-Fiction | offen | Vorschlag | — | — |
-| B009 | P2 | Die Parabel vom Sämann | Octavia E. Butler | Fantasy und Science-Fiction | offen | Vorschlag | — | — |
-| B010 | P2 | Die Seiten der Welt | Kai Meyer | Fantasy und Science-Fiction | offen | Vorschlag | — | — |
+| B001 | P2 | Das Labyrinth der Träumenden Bücher | Walter Moers | Fantasy und Romantasy | 9783813503937 | Eingebaut | Codex / 26.11.2026 | /buch/6b0843d6d0764666b9d1dd4f / geprüft am 26.11.2026 |
+| B002 | P2 | Brennender Fels | N. K. Jemisin | Fantasy und Science-Fiction | 9783426525166 | Eingebaut | Codex / 26.11.2026 | /buch/6b0843d6d0764666b9d1dd51 / geprüft am 26.11.2026 |
+| B003 | P2 | Der wilde Planet | John Scalzi | Fantasy und Science-Fiction | offen | Zurückgestellt | Codex / 26.11.2026 | Keine deutsche Buchausgabe dieses Titels von John Scalzi nachweisbar |
+| B004 | P2 | Elfenkönigin | Bernhard Hennen | Fantasy und Science-Fiction | 9783453315693 | Eingebaut | Codex / 26.11.2026 | /buch/6b0844085752d09a9bc88773 / geprüft am 26.11.2026 |
+| B005 | P2 | Zerrissene Erde | N. K. Jemisin | Fantasy und Science-Fiction | 9783426521786 | Eingebaut | Codex / 26.11.2026 | /buch/6b0843d7d0764666b9d1dd52 / geprüft am 26.11.2026 |
+| B006 | P2 | Die Geschichte des Wassers | Maja Lunde | Fantasy und Science-Fiction | 9783442718313 | Eingebaut | Codex / 26.11.2026 | /buch/6b0843d7d0764666b9d1dd54 / geprüft am 26.11.2026 |
+| B007 | P2 | Die große Stille | Ted Chiang | Fantasy und Science-Fiction | 9783965090354 | Eingebaut | Codex / 26.11.2026 | /buch/6b0843d7d0764666b9d1dd56 / geprüft am 26.11.2026 |
+| B008 | P2 | Die Maschinen | Ann Leckie | Fantasy und Science-Fiction | 9783453316362 | Eingebaut | Codex / 26.11.2026 | /buch/6b0843d7d0764666b9d1dd58 / geprüft am 26.11.2026 |
+| B009 | P2 | Die Parabel vom Sämann | Octavia E. Butler | Fantasy und Science-Fiction | 9783453534926 | Eingebaut | Codex / 26.11.2026 | /buch/6b0843d7d0764666b9d1dd5a / geprüft am 26.11.2026 |
+| B010 | P2 | Die Seiten der Welt | Kai Meyer | Fantasy und Science-Fiction | 9783841421654 | Eingebaut | Codex / 26.11.2026 | /buch/6b0843d7d0764666b9d1dd5b / geprüft am 26.11.2026 |
 | B011 | P2 | Künstliche Verhältnisse | Martha Wells | Fantasy und Science-Fiction | offen | Vorschlag | — | — |
 | B012 | P2 | Das Fundament der Ewigkeit | Ken Follett | Historische Romane und Familiensagas | offen | Vorschlag | — | — |
-| B013 | P2 | Die Päpstin | Donna W. Cross | Historische Romane und Familiensagas | offen | Vorschlag | — | — |
+| B013 | P2 | Die Päpstin | Donna W. Cross | Historische Romane und Familiensagas | 9783746614007 | Eingebaut | Codex / 26.11.2026 | /buch/6b084ba43cc7bfae2d6484d9 / geprüft am 26.11.2026 |
 | B014 | P2 | Die vier Winde | Kristin Hannah | Historische Romane und Familiensagas | offen | Vorschlag | — | — |
 | B015 | P2 | Die Waffen des Lichts | Ken Follett | Historische Romane und Familiensagas | offen | Vorschlag | — | — |
 | B016 | P2 | Ein einfaches Leben | Min Jin Lee | Historische Romane und Familiensagas | offen | Vorschlag | — | — |
 | B017 | P2 | Spiegel und Licht | Hilary Mantel | Historische Romane und Familiensagas | offen | Vorschlag | — | — |
-| B018 | P2 | Berge des Wahnsinns | H. P. Lovecraft | Horror, Spannung und dunkle Fantastik | offen | Vorschlag | — | — |
+| B018 | P2 | Berge des Wahnsinns | H. P. Lovecraft | Horror, Spannung und dunkle Fantastik | 9783518392607 | Eingebaut | Codex / 26.11.2026 | /buch/6b084b6387682bf05dac14b4 / geprüft am 26.11.2026 |
 | B019 | P2 | Das Haus – House of Leaves | Mark Z. Danielewski | Horror, Spannung und dunkle Fantastik | offen | Vorschlag | — | — |
 | B020 | P2 | Der Ruf des Cthulhu | H. P. Lovecraft | Horror, Spannung und dunkle Fantastik | offen | Vorschlag | — | — |
-| B021 | P2 | Holly | Stephen King | Horror, Spannung und dunkle Fantastik | offen | Vorschlag | — | — |
-| B022 | P2 | Aquila | Ursula Poznanski | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B023 | P2 | Bis(s) zum Abendrot | Stephenie Meyer | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B024 | P2 | Bis(s) zum Ende der Nacht | Stephenie Meyer | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B025 | P2 | Bis(s) zum Morgengrauen | Stephenie Meyer | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B026 | P2 | Bis(s) zur Mittagsstunde | Stephenie Meyer | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B027 | P2 | Cryptos | Ursula Poznanski | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B028 | P2 | Das Bernstein-Teleskop | Philip Pullman | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
+| B021 | P2 | Holly | Stephen King | Horror, Spannung und dunkle Fantastik | 9783453274334 | Eingebaut | Codex / 26.11.2026 | /buch/6b084b6387682bf05dac14b5 / geprüft am 26.11.2026 |
+| B022 | P2 | Aquila | Ursula Poznanski | Jugendbücher und Young Adult | 9783785586136 | Eingebaut | Codex / 26.11.2026 | /buch/6b084b6387682bf05dac14b6 / geprüft am 26.11.2026 |
+| B023 | P2 | Bis(s) zum Abendrot | Stephenie Meyer | Jugendbücher und Young Adult | 9783551581662 | Eingebaut | Codex / 26.11.2026 | /buch/6b084b6387682bf05dac14b8 / geprüft am 26.11.2026 |
+| B024 | P2 | Bis(s) zum Ende der Nacht | Stephenie Meyer | Jugendbücher und Young Adult | 9783551581990 | Eingebaut | Codex / 26.11.2026 | /buch/6b084b6387682bf05dac14b9 / geprüft am 26.11.2026 |
+| B025 | P2 | Bis(s) zum Morgengrauen | Stephenie Meyer | Jugendbücher und Young Adult | 9783551581495 | Eingebaut | Codex / 26.11.2026 | /buch/6b084b6387682bf05dac14ba / geprüft am 26.11.2026 |
+| B026 | P2 | Bis(s) zur Mittagsstunde | Stephenie Meyer | Jugendbücher und Young Adult | 9783551581617 | Eingebaut | Codex / 26.11.2026 | /buch/6b084b6387682bf05dac14bb / geprüft am 26.11.2026 |
+| B027 | P2 | Cryptos | Ursula Poznanski | Jugendbücher und Young Adult | 9783743200500 | Eingebaut | Codex / 26.11.2026 | /buch/6b084b6387682bf05dac14bc / geprüft am 26.11.2026 |
+| B028 | P2 | Das Bernstein-Teleskop | Philip Pullman | Jugendbücher und Young Adult | 9783551580375 | Eingebaut | Codex / 26.11.2026 | /buch/6b084ba43cc7bfae2d6484db / geprüft am 26.11.2026 |
 | B029 | P2 | Das Magische Messer | Philip Pullman | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B030 | P2 | Der Goldene Kompass | Philip Pullman | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B031 | P2 | Die Auserwählten – Im Labyrinth | James Dashner | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B032 | P2 | Die Auserwählten – In der Brandwüste | James Dashner | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
+| B030 | P2 | Der Goldene Kompass | Philip Pullman | Jugendbücher und Young Adult | 9783453137448 | Eingebaut | Codex / 26.11.2026 | /buch/6b084ba43cc7bfae2d6484dc / geprüft am 26.11.2026 |
+| B031 | P2 | Die Auserwählten – Im Labyrinth | James Dashner | Jugendbücher und Young Adult | 9783551313485 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e8f87389a2bfc7e2ffc / geprüft am 26.11.2026 |
+| B032 | P2 | Die Auserwählten – In der Brandwüste | James Dashner | Jugendbücher und Young Adult | 9783551312822 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9087389a2bfc7e2ffd / geprüft am 26.11.2026 |
 | B033 | P2 | Die Auserwählten – In der Todeszone | James Dashner | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B034 | P2 | Die Bestimmung | Veronica Roth | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B035 | P2 | Die Bestimmung – Letzte Entscheidung | Veronica Roth | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B036 | P2 | Die Bestimmung – Tödliche Wahrheit | Veronica Roth | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B037 | P2 | Die Tribute von Panem – Flammender Zorn | Suzanne Collins | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B038 | P2 | Die Tribute von Panem – Gefährliche Liebe | Suzanne Collins | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
+| B034 | P2 | Die Bestimmung | Veronica Roth | Jugendbücher und Young Adult | 9783570161319 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9087389a2bfc7e2fff / geprüft am 26.11.2026 |
+| B035 | P2 | Die Bestimmung – Letzte Entscheidung | Veronica Roth | Jugendbücher und Young Adult | 9783570311240 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9087389a2bfc7e3000 / geprüft am 26.11.2026 |
+| B036 | P2 | Die Bestimmung – Tödliche Wahrheit | Veronica Roth | Jugendbücher und Young Adult | 9783570161562 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9087389a2bfc7e3001 / geprüft am 26.11.2026 |
+| B037 | P2 | Die Tribute von Panem – Flammender Zorn | Suzanne Collins | Jugendbücher und Young Adult | 9783841501363 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9087389a2bfc7e3003 / geprüft am 26.11.2026 |
+| B038 | P2 | Die Tribute von Panem – Gefährliche Liebe | Suzanne Collins | Jugendbücher und Young Adult | 9783789132193 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9087389a2bfc7e3004 / geprüft am 26.11.2026 |
 | B039 | P2 | Die Tribute von Panem L – Der Tag bricht an | Suzanne Collins | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
-| B040 | P2 | Die Tribute von Panem X – Das Lied von Vogel und Schlange | Suzanne Collins | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
+| B040 | P2 | Die Tribute von Panem X – Das Lied von Vogel und Schlange | Suzanne Collins | Jugendbücher und Young Adult | 9783789120022 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9087389a2bfc7e3005 / geprüft am 26.11.2026 |
 | B041 | P2 | Radio Silence | Alice Oseman | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
 | B042 | P2 | Schlaft gut, ihr fiesen Gedanken | John Green | Jugendbücher und Young Adult | offen | Vorschlag | — | — |
 | B043 | P2 | Das längste Schnupfen der Welt | Benji Davies | Kinder und Jugend | offen | Vorschlag | — | — |
 | B044 | P2 | Der Streik der Farben | Oliver Jeffers | Kinder und Jugend | offen | Vorschlag | — | — |
 | B045 | P2 | Für Hund und Katz ist auch noch Platz | Axel Scheffler | Kinder und Jugend | offen | Vorschlag | — | — |
-| B046 | P2 | Reckless – Steinernes Fleisch | Cornelia Funke | Kinder und Jugend | offen | Vorschlag | — | — |
-| B047 | P2 | Thabo – Detektiv und Gentleman | Kirsten Boie | Kinder und Jugend | offen | Vorschlag | — | — |
-| B048 | P2 | Wolfszeit | Nina Blazon | Kinder und Jugend | offen | Vorschlag | — | — |
+| B046 | P2 | Reckless – Steinernes Fleisch | Cornelia Funke | Kinder und Jugend | 9783791500959 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9087389a2bfc7e3006 / geprüft am 26.11.2026 |
+| B047 | P2 | Thabo – Detektiv und Gentleman | Kirsten Boie | Kinder und Jugend | 9783789103957 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9087389a2bfc7e3007 / geprüft am 26.11.2026 |
+| B048 | P2 | Wolfszeit | Nina Blazon | Kinder und Jugend | 9783473584437 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9187389a2bfc7e3008 / geprüft am 26.11.2026 |
 | B049 | P2 | Als Hitler das rosa Kaninchen stahl | Judith Kerr | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
 | B050 | P2 | Am Samstag kam das Sams zurück | Paul Maar | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
 | B051 | P2 | Charlie und die Schokoladenfabrik | Roald Dahl | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B052 | P2 | Das doppelte Lottchen | Erich Kästner | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B053 | P2 | Das fliegende Klassenzimmer | Erich Kästner | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
+| B052 | P2 | Das doppelte Lottchen | Erich Kästner | Kinderbücher und Vorlesebücher | 9783791530345 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9187389a2bfc7e3009 / geprüft am 26.11.2026 |
+| B053 | P2 | Das fliegende Klassenzimmer | Erich Kästner | Kinderbücher und Vorlesebücher | 9783791530154 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9187389a2bfc7e300a / geprüft am 26.11.2026 |
 | B054 | P2 | Der 35. Mai | Erich Kästner | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B055 | P2 | Der fantastische Mr. Fox | Roald Dahl | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B056 | P2 | Eine Woche voller Samstage | Paul Maar | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
+| B055 | P2 | Der fantastische Mr. Fox | Roald Dahl | Kinderbücher und Vorlesebücher | 9783499214110 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9187389a2bfc7e300c / geprüft am 26.11.2026 |
+| B056 | P2 | Eine Woche voller Samstage | Paul Maar | Kinderbücher und Vorlesebücher | 9783789119521 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9187389a2bfc7e300e / geprüft am 26.11.2026 |
 | B057 | P2 | Emil und die drei Zwillinge | Erich Kästner | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B058 | P2 | Hexen hexen | Roald Dahl | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B059 | P2 | Hotzenplotz 3 | Otfried Preußler | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B060 | P2 | Igraine Ohnefurcht | Cornelia Funke | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B061 | P2 | Immer lustig in Bullerbü | Astrid Lindgren | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B062 | P2 | James und der Riesenpfirsich | Roald Dahl | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B063 | P2 | Kleiner Werwolf | Cornelia Funke | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
+| B058 | P2 | Hexen hexen | Roald Dahl | Kinderbücher und Vorlesebücher | 9783150090800 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9187389a2bfc7e300f / geprüft am 26.11.2026 |
+| B059 | P2 | Hotzenplotz 3 | Otfried Preußler | Kinderbücher und Vorlesebücher | 9783522119801 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9187389a2bfc7e3010 / geprüft am 26.11.2026 |
+| B060 | P2 | Igraine Ohnefurcht | Cornelia Funke | Kinderbücher und Vorlesebücher | 9783791504711 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9187389a2bfc7e3011 / geprüft am 26.11.2026 |
+| B061 | P2 | Immer lustig in Bullerbü | Astrid Lindgren | Kinderbücher und Vorlesebücher | 9783789129452 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9187389a2bfc7e3012 / geprüft am 26.11.2026 |
+| B062 | P2 | James und der Riesenpfirsich | Roald Dahl | Kinderbücher und Vorlesebücher | 9783328301615 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9287389a2bfc7e3013 / geprüft am 26.11.2026 |
+| B063 | P2 | Kleiner Werwolf | Cornelia Funke | Kinderbücher und Vorlesebücher | 9783596802890 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9287389a2bfc7e3014 / geprüft am 26.11.2026 |
 | B064 | P2 | Lippels Traum | Paul Maar | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B065 | P2 | Matilda | Roald Dahl | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
+| B065 | P2 | Matilda | Roald Dahl | Kinderbücher und Vorlesebücher | 9783499217616 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9287389a2bfc7e3015 / geprüft am 26.11.2026 |
 | B066 | P2 | Mehr von uns Kindern aus Bullerbü | Astrid Lindgren | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B067 | P2 | Neue Punkte für das Sams | Paul Maar | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
+| B067 | P2 | Neue Punkte für das Sams | Paul Maar | Kinderbücher und Vorlesebücher | 9783789142048 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9287389a2bfc7e3016 / geprüft am 26.11.2026 |
 | B068 | P2 | Oh, wie schön ist Panama | Janosch | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
-| B069 | P2 | Pippi geht an Bord | Astrid Lindgren | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
+| B069 | P2 | Pippi geht an Bord | Astrid Lindgren | Kinderbücher und Vorlesebücher | 9783789118524 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9287389a2bfc7e3017 / geprüft am 26.11.2026 |
 | B070 | P2 | Post für den Tiger | Janosch | Kinderbücher und Vorlesebücher | offen | Vorschlag | — | — |
 | B071 | P2 | Das Zeichen der Vier | Arthur Conan Doyle | Krimi und Thriller | offen | Vorschlag | — | — |
 | B072 | P2 | Der achte Tag | Nicci French | Krimi und Thriller | offen | Vorschlag | — | — |
 | B073 | P2 | Der Schneemann | Jo Nesbø | Krimi und Thriller | offen | Vorschlag | — | — |
 | B074 | P2 | Der Seidenspinner | Robert Galbraith | Krimi und Thriller | offen | Vorschlag | — | — |
 | B075 | P2 | Die Betrogene | Charlotte Link | Krimi und Thriller | offen | Vorschlag | — | — |
-| B076 | P2 | Die dunklen Wasser von Aberdeen | Stuart MacBride | Krimi und Thriller | offen | Vorschlag | — | — |
-| B077 | P2 | Die Einladung | Sebastian Fitzek | Krimi und Thriller | offen | Vorschlag | — | — |
-| B078 | P2 | Die Entscheidung | Charlotte Link | Krimi und Thriller | offen | Vorschlag | — | — |
-| B079 | P2 | Die Ernte des Bösen | Robert Galbraith | Krimi und Thriller | offen | Vorschlag | — | — |
-| B080 | P2 | Die gute Tochter | Karin Slaughter | Krimi und Thriller | offen | Vorschlag | — | — |
+| B076 | P2 | Die dunklen Wasser von Aberdeen | Stuart MacBride | Krimi und Thriller | 9783442461653 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9287389a2bfc7e3019 / geprüft am 26.11.2026 |
+| B077 | P2 | Die Einladung | Sebastian Fitzek | Krimi und Thriller | 9783426281581 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9287389a2bfc7e301a / geprüft am 26.11.2026 |
+| B078 | P2 | Die Entscheidung | Charlotte Link | Krimi und Thriller | 9783764504410 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9287389a2bfc7e301b / geprüft am 26.11.2026 |
+| B079 | P2 | Die Ernte des Bösen | Robert Galbraith | Krimi und Thriller | 9783734104091 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9287389a2bfc7e301c / geprüft am 26.11.2026 |
+| B080 | P2 | Die gute Tochter | Karin Slaughter | Krimi und Thriller | 9783959671897 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9387389a2bfc7e301e / geprüft am 26.11.2026 |
 | B081 | P2 | Die Hunde von Riga | Henning Mankell | Krimi und Thriller | offen | Vorschlag | — | — |
-| B082 | P2 | Die Lebenden und die Toten | Nele Neuhaus | Krimi und Thriller | offen | Vorschlag | — | — |
-| B083 | P2 | Die Morde des Herrn ABC | Agatha Christie | Krimi und Thriller | offen | Vorschlag | — | — |
-| B084 | P2 | Die purpurnen Flüsse | Jean-Christophe Grangé | Krimi und Thriller | offen | Vorschlag | — | — |
+| B082 | P2 | Die Lebenden und die Toten | Nele Neuhaus | Krimi und Thriller | 9783550080548 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9387389a2bfc7e301f / geprüft am 26.11.2026 |
+| B083 | P2 | Die Morde des Herrn ABC | Agatha Christie | Krimi und Thriller | 9783502516170 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9387389a2bfc7e3020 / geprüft am 26.11.2026 |
+| B084 | P2 | Die purpurnen Flüsse | Jean-Christophe Grangé | Krimi und Thriller | 9783404144037 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9387389a2bfc7e3022 / geprüft am 26.11.2026 |
 | B085 | P2 | Die verirrten Kugeln | Richard Osman | Krimi und Thriller | offen | Vorschlag | — | — |
 | B086 | P2 | Die verschwundenen Studentinnen | Alex Michaelides | Krimi und Thriller | offen | Vorschlag | — | — |
 | B087 | P2 | Die weiße Löwin | Henning Mankell | Krimi und Thriller | offen | Vorschlag | — | — |
-| B088 | P2 | Ein Mord wird angekündigt | Agatha Christie | Krimi und Thriller | offen | Vorschlag | — | — |
-| B089 | P2 | Ein Teil von ihr | Karin Slaughter | Krimi und Thriller | offen | Vorschlag | — | — |
-| B090 | P2 | Eine unbeliebte Frau | Nele Neuhaus | Krimi und Thriller | offen | Vorschlag | — | — |
+| B088 | P2 | Ein Mord wird angekündigt | Agatha Christie | Krimi und Thriller | 9783502511823 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9387389a2bfc7e3023 / geprüft am 26.11.2026 |
+| B089 | P2 | Ein Teil von ihr | Karin Slaughter | Krimi und Thriller | 9783959672146 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9387389a2bfc7e3024 / geprüft am 26.11.2026 |
+| B090 | P2 | Eine unbeliebte Frau | Nele Neuhaus | Krimi und Thriller | 9783548608877 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9387389a2bfc7e3025 / geprüft am 26.11.2026 |
 | B091 | P2 | Einsame Nacht | Charlotte Link | Krimi und Thriller | offen | Vorschlag | — | — |
-| B092 | P2 | Erbarmen | Jussi Adler-Olsen | Krimi und Thriller | offen | Vorschlag | — | — |
-| B093 | P2 | Erlösung | Jussi Adler-Olsen | Krimi und Thriller | offen | Vorschlag | — | — |
-| B094 | P2 | Erwartung | Jussi Adler-Olsen | Krimi und Thriller | offen | Vorschlag | — | — |
+| B092 | P2 | Erbarmen | Jussi Adler-Olsen | Krimi und Thriller | 9783423212625 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9387389a2bfc7e3026 / geprüft am 26.11.2026 |
+| B093 | P2 | Erlösung | Jussi Adler-Olsen | Krimi und Thriller | 9783423248525 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9387389a2bfc7e3027 / geprüft am 26.11.2026 |
+| B094 | P2 | Erwartung | Jussi Adler-Olsen | Krimi und Thriller | 9783423280204 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9387389a2bfc7e3028 / geprüft am 26.11.2026 |
 | B095 | P2 | Finstere Orte | Gillian Flynn | Krimi und Thriller | offen | Vorschlag | — | — |
-| B096 | P2 | Girl on the Train – Du kennst sie nicht, aber sie kennt dich | Paula Hawkins | Krimi und Thriller | offen | Vorschlag | — | — |
-| B097 | P2 | Grabesgrün | Tana French | Krimi und Thriller | offen | Vorschlag | — | — |
-| B098 | P2 | Grießnockerlaffäre | Rita Falk | Krimi und Thriller | offen | Vorschlag | — | — |
-| B099 | P2 | Hannibal | Thomas Harris | Krimi und Thriller | offen | Vorschlag | — | — |
+| B096 | P2 | Girl on the Train – Du kennst sie nicht, aber sie kennt dich | Paula Hawkins | Krimi und Thriller | 9783764506018 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9487389a2bfc7e302a / geprüft am 26.11.2026 |
+| B097 | P2 | Grabesgrün | Tana French | Krimi und Thriller | 9783502101918 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9487389a2bfc7e302b / geprüft am 26.11.2026 |
+| B098 | P2 | Grießnockerlaffäre | Rita Falk | Krimi und Thriller | 9783423214988 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9487389a2bfc7e302c / geprüft am 26.11.2026 |
+| B099 | P2 | Hannibal | Thomas Harris | Krimi und Thriller | 9783453177741 | Eingebaut | Codex / 26.11.2026 | /buch/6b084e9487389a2bfc7e302d / geprüft am 26.11.2026 |
 | B100 | P2 | Monster | Nele Neuhaus | Krimi und Thriller | offen | Vorschlag | — | — |
-| B101 | P2 | Verachtung | Jussi Adler-Olsen | Krimi und Thriller | offen | Vorschlag | — | — |
-| B102 | P2 | Verdammnis | Stieg Larsson | Krimi und Thriller | offen | Vorschlag | — | — |
-| B103 | P2 | Vergebung | Stieg Larsson | Krimi und Thriller | offen | Vorschlag | — | — |
-| B104 | P2 | Wer Wind sät | Nele Neuhaus | Krimi und Thriller | offen | Vorschlag | — | — |
-| B105 | P2 | Winterkartoffelknödel | Rita Falk | Krimi und Thriller | offen | Vorschlag | — | — |
-| B106 | P2 | Wir sehen uns dort oben | Pierre Lemaitre | Krimi und Thriller | offen | Vorschlag | — | — |
+| B101 | P2 | Verachtung | Jussi Adler-Olsen | Krimi und Thriller | 9783423280020 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850746fdbc42356c416a7 / geprüft am 26.11.2026 |
+| B102 | P2 | Verdammnis | Stieg Larsson | Krimi und Thriller | 9783453433175 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850746fdbc42356c416a9 / geprüft am 26.11.2026 |
+| B103 | P2 | Vergebung | Stieg Larsson | Krimi und Thriller | 9783453013803 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850746fdbc42356c416aa / geprüft am 26.11.2026 |
+| B104 | P2 | Wer Wind sät | Nele Neuhaus | Krimi und Thriller | 9783548284675 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850756fdbc42356c416ab / geprüft am 26.11.2026 |
+| B105 | P2 | Winterkartoffelknödel | Rita Falk | Krimi und Thriller | 9783423405546 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850756fdbc42356c416ac / geprüft am 26.11.2026 |
+| B106 | P2 | Wir sehen uns dort oben | Pierre Lemaitre | Krimi und Thriller | 9783608980165 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850756fdbc42356c416ae / geprüft am 26.11.2026 |
 | B107 | P2 | Zwetschgendatschikomplott | Rita Falk | Krimi und Thriller | offen | Vorschlag | — | — |
-| B108 | P2 | Americanah | Chimamanda Ngozi Adichie | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B108 | P2 | Americanah | Chimamanda Ngozi Adichie | Liebe, Familie und Gegenwartsliteratur | 9783596185986 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850756fdbc42356c416b0 / geprüft am 26.11.2026 |
 | B109 | P2 | Atlas – Die Geschichte von Pa Salt | Lucinda Riley / Harry Whittaker | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B110 | P2 | Begin Again | Mona Kasten | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B111 | P2 | Berühre mich. Nicht. | Laura Kneidl | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B112 | P2 | Blauer Hibiskus | Chimamanda Ngozi Adichie | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B113 | P2 | Britt-Marie war hier | Fredrik Backman | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B110 | P2 | Begin Again | Mona Kasten | Liebe, Familie und Gegenwartsliteratur | 9783736302471 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850756fdbc42356c416b1 / geprüft am 26.11.2026 |
+| B111 | P2 | Berühre mich. Nicht. | Laura Kneidl | Liebe, Familie und Gegenwartsliteratur | 9783736319936 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850756fdbc42356c416b2 / geprüft am 26.11.2026 |
+| B112 | P2 | Blauer Hibiskus | Chimamanda Ngozi Adichie | Liebe, Familie und Gegenwartsliteratur | 9783596032440 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850756fdbc42356c416b3 / geprüft am 26.11.2026 |
+| B113 | P2 | Britt-Marie war hier | Fredrik Backman | Liebe, Familie und Gegenwartsliteratur | 9783596033317 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850756fdbc42356c416b4 / geprüft am 26.11.2026 |
 | B114 | P2 | Daisy Jones & The Six | Taylor Jenkins Reid | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B115 | P2 | Das Café ohne Namen | Robert Seethaler | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B116 | P2 | Das Feld | Robert Seethaler | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B115 | P2 | Das Café ohne Namen | Robert Seethaler | Liebe, Familie und Gegenwartsliteratur | 9783546100328 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850756fdbc42356c416b6 / geprüft am 26.11.2026 |
+| B116 | P2 | Das Feld | Robert Seethaler | Liebe, Familie und Gegenwartsliteratur | 9783446260382 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850766fdbc42356c416b7 / geprüft am 26.11.2026 |
 | B117 | P2 | Das irrationale Vorkommnis der Liebe | Ali Hazelwood | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B118 | P2 | Der Trafikant | Robert Seethaler | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B119 | P2 | Die Hälfte der Sonne | Chimamanda Ngozi Adichie | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B118 | P2 | Der Trafikant | Robert Seethaler | Liebe, Familie und Gegenwartsliteratur | 9783036956459 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850766fdbc42356c416b8 / geprüft am 26.11.2026 |
+| B119 | P2 | Die Hälfte der Sonne | Chimamanda Ngozi Adichie | Liebe, Familie und Gegenwartsliteratur | 9783630872476 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850766fdbc42356c416b9 / geprüft am 26.11.2026 |
 | B120 | P2 | Die Mondschwester | Lucinda Riley | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
 | B121 | P2 | Die Perlenschwester | Lucinda Riley | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
 | B122 | P2 | Die Schattenschwester | Lucinda Riley | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
@@ -179,79 +179,79 @@ Die IDs werden nach jedem Live-Abgleich fortlaufend vergeben. `Bereits vorhanden
 | B125 | P2 | Die Sturmschwester | Lucinda Riley | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
 | B126 | P2 | Die theoretische Unwahrscheinlichkeit von Liebe | Ali Hazelwood | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
 | B127 | P2 | Die verschwundene Schwester | Lucinda Riley | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B128 | P2 | Dream Again | Mona Kasten | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B129 | P2 | Ein ganz neues Leben | Jojo Moyes | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B130 | P2 | Ein ganzes halbes Jahr | Jojo Moyes | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B131 | P2 | Ein Mann namens Ove | Fredrik Backman | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B128 | P2 | Dream Again | Mona Kasten | Liebe, Familie und Gegenwartsliteratur | 9783736311879 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850766fdbc42356c416ba / geprüft am 26.11.2026 |
+| B129 | P2 | Ein ganz neues Leben | Jojo Moyes | Liebe, Familie und Gegenwartsliteratur | 9783805250948 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850766fdbc42356c416bb / geprüft am 26.11.2026 |
+| B130 | P2 | Ein ganzes halbes Jahr | Jojo Moyes | Liebe, Familie und Gegenwartsliteratur | 9783499267031 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850766fdbc42356c416bc / geprüft am 26.11.2026 |
+| B131 | P2 | Ein Mann namens Ove | Fredrik Backman | Liebe, Familie und Gegenwartsliteratur | 9783810504807 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850766fdbc42356c416bd / geprüft am 26.11.2026 |
 | B132 | P2 | Eine Handvoll Worte | Jojo Moyes | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B133 | P2 | Feel Again | Mona Kasten | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B133 | P2 | Feel Again | Mona Kasten | Liebe, Familie und Gegenwartsliteratur | 9783736304451 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850766fdbc42356c416be / geprüft am 26.11.2026 |
 | B134 | P2 | Gespräche mit Freunden | Sally Rooney | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
 | B135 | P2 | Happy Place – Urlaub mit dem Ex | Emily Henry | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B136 | P2 | Hope Again | Mona Kasten | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B137 | P2 | Hope Forever | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B136 | P2 | Hope Again | Mona Kasten | Liebe, Familie und Gegenwartsliteratur | 9783736308343 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850766fdbc42356c416bf / geprüft am 26.11.2026 |
+| B137 | P2 | Hope Forever | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | 9783423716062 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850766fdbc42356c416c0 / geprüft am 26.11.2026 |
 | B138 | P2 | Ich und die Menschen | Matt Haig | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B139 | P2 | Identitti | Mithu Sanyal | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B139 | P2 | Identitti | Mithu Sanyal | Liebe, Familie und Gegenwartsliteratur | 9783446269217 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850776fdbc42356c416c2 / geprüft am 26.11.2026 |
 | B140 | P2 | Kein Sommer ohne dich | Emily Henry | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
 | B141 | P2 | Love, Theoretically | Ali Hazelwood | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
 | B142 | P2 | Malibu Rising | Taylor Jenkins Reid | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
 | B143 | P2 | New Dreams | Lilly Lucas | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
 | B144 | P2 | Schöne Welt, wo bist du | Sally Rooney | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B145 | P2 | Verity | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B145 | P2 | Verity | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | 9783423230124 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850776fdbc42356c416c3 / geprüft am 26.11.2026 |
 | B146 | P2 | Verliebt in deine schönsten Seiten | Emily Henry | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B147 | P2 | Verliere mich. Nicht. | Laura Kneidl | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B148 | P2 | Weil ich Layken liebe | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B149 | P2 | Weil ich Will liebe | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B147 | P2 | Verliere mich. Nicht. | Laura Kneidl | Liebe, Familie und Gegenwartsliteratur | 9783736319943 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850776fdbc42356c416c4 / geprüft am 26.11.2026 |
+| B148 | P2 | Weil ich Layken liebe | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | 9783423715621 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850776fdbc42356c416c5 / geprüft am 26.11.2026 |
+| B149 | P2 | Weil ich Will liebe | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | 9783423715843 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850776fdbc42356c416c6 / geprüft am 26.11.2026 |
 | B150 | P2 | Wie man die Zeit anhält | Matt Haig | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B151 | P2 | Zur See | Dörte Hansen | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
+| B151 | P2 | Zur See | Dörte Hansen | Liebe, Familie und Gegenwartsliteratur | 9783328602224 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850776fdbc42356c416c7 / geprüft am 26.11.2026 |
 | B152 | P2 | Zurück ins Leben geliebt | Colleen Hoover | Liebe, Familie und Gegenwartsliteratur | offen | Vorschlag | — | — |
-| B153 | P2 | Atemschaukel | Herta Müller | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B153 | P2 | Atemschaukel | Herta Müller | Romane und Gegenwart | 9783446233911 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850776fdbc42356c416c9 / geprüft am 26.11.2026 |
 | B154 | P2 | Auf Erden sind wir kurz grandios | Ocean Vuong | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B155 | P2 | Brüste und Eier | Mieko Kawakami | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B155 | P2 | Brüste und Eier | Mieko Kawakami | Romane und Gegenwart | 9783832165994 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850776fdbc42356c416cb / geprüft am 26.11.2026 |
 | B156 | P2 | Der Fluch des Hasen | Bora Chung | Romane und Gegenwart | offen | Vorschlag | — | — |
 | B157 | P2 | Der Freund | Sigrid Nunez | Romane und Gegenwart | offen | Vorschlag | — | — |
 | B158 | P2 | Der Gesang der Flusskrebse – Das Kochbuch | Delia Owens | Romane und Gegenwart | offen | Vorschlag | — | — |
 | B159 | P2 | Der Namensvetter | Jhumpa Lahiri | Romane und Gegenwart | offen | Vorschlag | — | — |
 | B160 | P2 | Die Insel der verlorenen Bäume | Elif Shafak | Romane und Gegenwart | offen | Vorschlag | — | — |
 | B161 | P2 | Die Interessanten | Meg Wolitzer | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B162 | P2 | Die vierzig Geheimnisse der Liebe | Elif Shafak | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B162 | P2 | Die vierzig Geheimnisse der Liebe | Elif Shafak | Romane und Gegenwart | 9783036959122 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850786fdbc42356c416cd / geprüft am 26.11.2026 |
 | B163 | P2 | Himmel | Mieko Kawakami | Romane und Gegenwart | offen | Vorschlag | — | — |
-| B164 | P2 | Outline | Rachel Cusk | Romane und Gegenwart | offen | Vorschlag | — | — |
+| B164 | P2 | Outline | Rachel Cusk | Romane und Gegenwart | 9783518425282 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850786fdbc42356c416cf / geprüft am 26.11.2026 |
 | B165 | P2 | Alte Wege | Robert Macfarlane | Sachbuch und Biografie | offen | Vorschlag | — | — |
 | B166 | P2 | Challenger | Sally Ride | Sachbuch und Biografie | offen | Vorschlag | — | — |
 | B167 | P2 | Das Vermächtnis | Jane Goodall | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B168 | P2 | Die Mutter aller Fragen | Rebecca Solnit | Sachbuch und Biografie | offen | Vorschlag | — | — |
+| B168 | P2 | Die Mutter aller Fragen | Rebecca Solnit | Sachbuch und Biografie | 9783455001785 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850786fdbc42356c416d1 / geprüft am 26.11.2026 |
 | B169 | P2 | Ein Leben auf unserer Erde | David Attenborough | Sachbuch und Biografie | offen | Vorschlag | — | — |
 | B170 | P2 | Warum Zebras keine Migräne bekommen | Robert Sapolsky | Sachbuch und Biografie | offen | Vorschlag | — | — |
-| B171 | P2 | … trotzdem Ja zum Leben sagen | Viktor E. Frankl | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B172 | P2 | Befreit | Tara Westover | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B173 | P2 | Bullshit Jobs | David Graeber | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B174 | P2 | Darm mit Charme | Giulia Enders | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B175 | P2 | Das geheime Leben der Bäume | Peter Wohlleben | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B176 | P2 | Das Licht in uns | Michelle Obama | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B177 | P2 | Das Seelenleben der Tiere | Peter Wohlleben | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B178 | P2 | Das Universum in der Nussschale | Stephen Hawking | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B179 | P2 | Der Drache in meiner Garage | Carl Sagan | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B180 | P2 | Der lange Weg zur Freiheit | Nelson Mandela | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B181 | P2 | Die 1%-Methode | James Clear | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B182 | P2 | Die kleinste gemeinsame Wirklichkeit | Mai Thi Nguyen-Kim | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B183 | P2 | Die Macht der Gewohnheit | Charles Duhigg | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B184 | P2 | Die Ordnung der Zeit | Carlo Rovelli | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B185 | P2 | Die Selbstgerechten | Sahra Wagenknecht | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B186 | P2 | Digitaler Minimalismus | Cal Newport | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B187 | P2 | Ein verheißenes Land | Barack Obama | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B188 | P2 | Eine kurze Geschichte der Zeit | Stephen Hawking | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B189 | P2 | Eine kurze Geschichte des menschlichen Körpers | Bill Bryson | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B190 | P2 | Eine kurze Geschichte von fast allem | Bill Bryson | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B191 | P2 | Factfulness | Hans Rosling / Ola Rosling / Anna Rosling Rönnlund | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B192 | P2 | Homo Deus | Yuval Noah Harari | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B193 | P2 | Ich bin hier, und alles ist jetzt | Edith Eger | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B171 | P2 | … trotzdem Ja zum Leben sagen | Viktor E. Frankl | Sachbücher, Wissen und Biografien | 9783423301428 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850786fdbc42356c416d3 / geprüft am 26.11.2026 |
+| B172 | P2 | Befreit | Tara Westover | Sachbücher, Wissen und Biografien | 9783462050127 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850786fdbc42356c416d5 / geprüft am 26.11.2026 |
+| B173 | P2 | Bullshit Jobs | David Graeber | Sachbücher, Wissen und Biografien | 9783608982459 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850786fdbc42356c416d7 / geprüft am 26.11.2026 |
+| B174 | P2 | Darm mit Charme | Giulia Enders | Sachbücher, Wissen und Biografien | 9783550080418 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850786fdbc42356c416d9 / geprüft am 26.11.2026 |
+| B175 | P2 | Das geheime Leben der Bäume | Peter Wohlleben | Sachbücher, Wissen und Biografien | 9783453281608 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850786fdbc42356c416db / geprüft am 26.11.2026 |
+| B176 | P2 | Das Licht in uns | Michelle Obama | Sachbücher, Wissen und Biografien | 9783442317134 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850786fdbc42356c416dc / geprüft am 26.11.2026 |
+| B177 | P2 | Das Seelenleben der Tiere | Peter Wohlleben | Sachbücher, Wissen und Biografien | 9783453280823 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850796fdbc42356c416dd / geprüft am 26.11.2026 |
+| B178 | P2 | Das Universum in der Nussschale | Stephen Hawking | Sachbücher, Wissen und Biografien | 9783423340892 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850796fdbc42356c416df / geprüft am 26.11.2026 |
+| B179 | P2 | Der Drache in meiner Garage | Carl Sagan | Sachbücher, Wissen und Biografien | 9783426269121 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850796fdbc42356c416e1 / geprüft am 26.11.2026 |
+| B180 | P2 | Der lange Weg zur Freiheit | Nelson Mandela | Sachbücher, Wissen und Biografien | 9783596138043 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850796fdbc42356c416e3 / geprüft am 26.11.2026 |
+| B181 | P2 | Die 1%-Methode | James Clear | Sachbücher, Wissen und Biografien | 9783442178582 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850796fdbc42356c416e5 / geprüft am 26.11.2026 |
+| B182 | P2 | Die kleinste gemeinsame Wirklichkeit | Mai Thi Nguyen-Kim | Sachbücher, Wissen und Biografien | 9783426278222 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850796fdbc42356c416e7 / geprüft am 26.11.2026 |
+| B183 | P2 | Die Macht der Gewohnheit | Charles Duhigg | Sachbücher, Wissen und Biografien | 9783492304078 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850796fdbc42356c416e9 / geprüft am 26.11.2026 |
+| B184 | P2 | Die Ordnung der Zeit | Carlo Rovelli | Sachbücher, Wissen und Biografien | 9783498053994 | Eingebaut | Codex / 26.11.2026 | /buch/6b0850796fdbc42356c416eb / geprüft am 26.11.2026 |
+| B185 | P2 | Die Selbstgerechten | Sahra Wagenknecht | Sachbücher, Wissen und Biografien | 9783593513904 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507a6fdbc42356c416ed / geprüft am 26.11.2026 |
+| B186 | P2 | Digitaler Minimalismus | Cal Newport | Sachbücher, Wissen und Biografien | 9783868817256 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507a6fdbc42356c416ef / geprüft am 26.11.2026 |
+| B187 | P2 | Ein verheißenes Land | Barack Obama | Sachbücher, Wissen und Biografien | 9783328600626 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507a6fdbc42356c416f1 / geprüft am 26.11.2026 |
+| B188 | P2 | Eine kurze Geschichte der Zeit | Stephen Hawking | Sachbücher, Wissen und Biografien | 9783499188503 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507a6fdbc42356c416f2 / geprüft am 26.11.2026 |
+| B189 | P2 | Eine kurze Geschichte des menschlichen Körpers | Bill Bryson | Sachbücher, Wissen und Biografien | 9783442313983 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507a6fdbc42356c416f4 / geprüft am 26.11.2026 |
+| B190 | P2 | Eine kurze Geschichte von fast allem | Bill Bryson | Sachbücher, Wissen und Biografien | 9783442310029 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507a6fdbc42356c416f5 / geprüft am 26.11.2026 |
+| B191 | P2 | Factfulness | Hans Rosling / Ola Rosling / Anna Rosling Rönnlund | Sachbücher, Wissen und Biografien | 9783548060415 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507a6fdbc42356c416f7 / geprüft am 26.11.2026 |
+| B192 | P2 | Homo Deus | Yuval Noah Harari | Sachbücher, Wissen und Biografien | 9783406727863 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507a6fdbc42356c416f8 / geprüft am 26.11.2026 |
+| B193 | P2 | Ich bin hier, und alles ist jetzt | Edith Eger | Sachbücher, Wissen und Biografien | 9783442756964 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507a6fdbc42356c416fa / geprüft am 26.11.2026 |
 | B194 | P2 | Ich bin Malala | Malala Yousafzai / Christina Lamb | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B195 | P2 | Im Grunde gut | Rutger Bregman | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B196 | P2 | Komisch, alles chemisch! | Mai Thi Nguyen-Kim | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B197 | P2 | Konzentriert arbeiten | Cal Newport | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B198 | P2 | Kosmos | Carl Sagan | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B199 | P2 | Kurze Antworten auf große Fragen | Stephen Hawking | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
-| B200 | P2 | Liebe Ijeawele | Chimamanda Ngozi Adichie | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
+| B195 | P2 | Im Grunde gut | Rutger Bregman | Sachbücher, Wissen und Biografien | 9783499004162 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507b6fdbc42356c416fc / geprüft am 26.11.2026 |
+| B196 | P2 | Komisch, alles chemisch! | Mai Thi Nguyen-Kim | Sachbücher, Wissen und Biografien | 9783426277676 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507b6fdbc42356c416fd / geprüft am 26.11.2026 |
+| B197 | P2 | Konzentriert arbeiten | Cal Newport | Sachbücher, Wissen und Biografien | 9783864149351 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507b6fdbc42356c416fe / geprüft am 26.11.2026 |
+| B198 | P2 | Kosmos | Carl Sagan | Sachbücher, Wissen und Biografien | 9783426260586 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507b6fdbc42356c416ff / geprüft am 26.11.2026 |
+| B199 | P2 | Kurze Antworten auf große Fragen | Stephen Hawking | Sachbücher, Wissen und Biografien | 9783608983838 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507b6fdbc42356c41700 / geprüft am 26.11.2026 |
+| B200 | P2 | Liebe Ijeawele | Chimamanda Ngozi Adichie | Sachbücher, Wissen und Biografien | 9783596299683 | Eingebaut | Codex / 26.11.2026 | /buch/6b08507b6fdbc42356c41701 / geprüft am 26.11.2026 |
 | B201 | P2 | Mehr Feminismus! | Chimamanda Ngozi Adichie | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
 | B202 | P2 | Nexus | Yuval Noah Harari | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
 | B203 | P2 | Schnelles Denken, langsames Denken | Daniel Kahneman | Sachbücher, Wissen und Biografien | offen | Vorschlag | — | — |
